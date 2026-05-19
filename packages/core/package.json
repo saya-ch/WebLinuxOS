@@ -1,0 +1,22 @@
+{
+  "name": "@weblinuxos/core",
+  "version": "1.0.0",
+  "description": "WebLinuxOS core system",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "keywords": [
+    "weblinuxos",
+    "core"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "dexie": "^4.0.1",
+    "lucide-react": "^0.365.0",
+    "zustand": "^4.5.2"
+  }
+}

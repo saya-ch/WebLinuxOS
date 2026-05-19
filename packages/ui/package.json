@@ -1,0 +1,19 @@
+{
+  "name": "@weblinuxos/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.70",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10"
+  }
+}
