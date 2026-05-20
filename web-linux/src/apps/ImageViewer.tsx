@@ -1,118 +1,261 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
-const sampleImages = [
+interface ImageData {
+  name: string
+  width: number
+  height: number
+  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void
+}
+
+const images: ImageData[] = [
   {
-    name: '几何图案', render: () => (
-      <svg viewBox="0 0 400 300" style={{ width: '100%', height: '100%' }}>
-        <defs>
-          <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#e94560" /><stop offset="100%" stopColor="#0f3460" />
-          </linearGradient>
-          <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4ecca3" /><stop offset="100%" stopColor="#f5c542" />
-          </linearGradient>
-        </defs>
-        <rect width="400" height="300" fill="url(#g1)" />
-        <circle cx="200" cy="150" r="80" fill="url(#g2)" opacity="0.8" />
-        <rect x="120" y="70" width="160" height="160" rx="20" fill="none" stroke="#fff" strokeWidth="3" opacity="0.6" transform="rotate(45 200 150)" />
-        <polygon points="200,50 260,180 140,180" fill="none" stroke="#fff" strokeWidth="2" opacity="0.5" />
-      </svg>
-    )
+    name: '几何图案', width: 640, height: 480,
+    draw(ctx, w, h) {
+      const grad1 = ctx.createLinearGradient(0, 0, w, h)
+      grad1.addColorStop(0, '#e94560')
+      grad1.addColorStop(1, '#0f3460')
+      ctx.fillStyle = grad1
+      ctx.fillRect(0, 0, w, h)
+      const grad2 = ctx.createLinearGradient(0, h, w, 0)
+      grad2.addColorStop(0, '#4ecca3')
+      grad2.addColorStop(1, '#f5c542')
+      ctx.beginPath()
+      ctx.arc(w / 2, h / 2, 120, 0, Math.PI * 2)
+      ctx.fillStyle = grad2
+      ctx.globalAlpha = 0.8
+      ctx.fill()
+      ctx.globalAlpha = 1
+      ctx.save()
+      ctx.translate(w / 2, h / 2)
+      ctx.rotate(Math.PI / 4)
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)'
+      ctx.lineWidth = 3
+      ctx.strokeRect(-100, -100, 200, 200)
+      ctx.restore()
+      ctx.beginPath()
+      ctx.moveTo(w / 2, h / 2 - 140)
+      ctx.lineTo(w / 2 + 120, h / 2 + 80)
+      ctx.lineTo(w / 2 - 120, h / 2 + 80)
+      ctx.closePath()
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
   },
   {
-    name: '渐变色块', render: () => (
-      <svg viewBox="0 0 400 300" style={{ width: '100%', height: '100%' }}>
-        <defs>
-          <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#667eea" /><stop offset="100%" stopColor="#764ba2" />
-          </linearGradient>
-        </defs>
-        <rect width="400" height="300" fill="url(#g3)" />
-        <circle cx="80" cy="80" r="50" fill="rgba(255,255,255,0.15)" />
-        <circle cx="320" cy="80" r="70" fill="rgba(255,255,255,0.1)" />
-        <circle cx="200" cy="200" r="90" fill="rgba(255,255,255,0.12)" />
-        <circle cx="100" cy="250" r="40" fill="rgba(255,255,255,0.08)" />
-        <circle cx="340" cy="220" r="55" fill="rgba(255,255,255,0.1)" />
-      </svg>
-    )
+    name: '渐变色块', width: 640, height: 480,
+    draw(ctx, w, h) {
+      const grad = ctx.createLinearGradient(0, 0, w, h)
+      grad.addColorStop(0, '#667eea')
+      grad.addColorStop(1, '#764ba2')
+      ctx.fillStyle = grad
+      ctx.fillRect(0, 0, w, h)
+      const circles = [
+        { x: 0.15, y: 0.2, r: 0.12, a: 0.15 },
+        { x: 0.75, y: 0.2, r: 0.16, a: 0.1 },
+        { x: 0.45, y: 0.55, r: 0.2, a: 0.12 },
+        { x: 0.2, y: 0.75, r: 0.1, a: 0.08 },
+        { x: 0.8, y: 0.7, r: 0.13, a: 0.1 },
+      ]
+      circles.forEach(c => {
+        ctx.beginPath()
+        ctx.arc(w * c.x, h * c.y, Math.min(w, h) * c.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255,255,255,${c.a})`
+        ctx.fill()
+      })
+    }
   },
   {
-    name: '星空夜景', render: () => (
-      <svg viewBox="0 0 400 300" style={{ width: '100%', height: '100%' }}>
-        <defs>
-          <radialGradient id="star1"><stop offset="0%" stopColor="#fff" /><stop offset="100%" stopColor="transparent" /></radialGradient>
-        </defs>
-        <rect width="400" height="300" fill="#0a0a2e" />
-        <rect width="400" height="300" fill="url(#g3)" opacity="0.3" />
-        <circle cx="300" cy="80" r="30" fill="#f5c542" opacity="0.9" />
-        <circle cx="300" cy="80" r="40" fill="#f5c542" opacity="0.2" />
-        {Array.from({ length: 50 }, (_, i) => (
-          <circle key={i} cx={Math.random() * 400} cy={Math.random() * 300} r={Math.random() * 2 + 0.5}
-            fill="#fff" opacity={Math.random() * 0.8 + 0.2} />
-        ))}
-        <rect x="0" y="200" width="400" height="100" fill="#0f0f3a" opacity="0.8" />
-        <polygon points="0,200 20,180 40,200 60,170 80,200 100,160 120,200 140,175 160,200 180,165 200,200 220,180 240,200 260,170 280,200 300,175 320,200 340,160 360,200 380,170 400,200" fill="#0f0f3a" />
-        <polygon points="0,220 30,200 60,220 90,195 120,220 150,200 180,220 210,190 240,220 270,200 300,220 330,195 360,220 390,200 400,210 400,300 0,300" fill="#0a0a2e" />
-      </svg>
-    )
+    name: '星空夜景', width: 640, height: 480,
+    draw(ctx, w, h) {
+      ctx.fillStyle = '#0a0a2e'
+      ctx.fillRect(0, 0, w, h)
+      ctx.beginPath()
+      ctx.arc(w * 0.75, h * 0.2, 35, 0, Math.PI * 2)
+      ctx.fillStyle = '#f5c542'
+      ctx.globalAlpha = 0.9
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(w * 0.75, h * 0.2, 50, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(245,197,66,0.15)'
+      ctx.globalAlpha = 1
+      ctx.fill()
+      for (let i = 0; i < 80; i++) {
+        const sx = Math.random() * w
+        const sy = Math.random() * h * 0.65
+        const sr = Math.random() * 2 + 0.5
+        ctx.beginPath()
+        ctx.arc(sx, sy, sr, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.8 + 0.2})`
+        ctx.fill()
+      }
+      ctx.fillStyle = '#0f0f3a'
+      ctx.globalAlpha = 0.8
+      ctx.fillRect(0, h * 0.65, w, h * 0.35)
+      ctx.globalAlpha = 1
+      ctx.fillStyle = '#0a0a2e'
+      ctx.beginPath()
+      ctx.moveTo(0, h * 0.65)
+      for (let x = 0; x <= w; x += 20) {
+        ctx.lineTo(x, h * 0.65 - Math.random() * 40 - 10)
+      }
+      ctx.lineTo(w, h)
+      ctx.lineTo(0, h)
+      ctx.closePath()
+      ctx.fill()
+    }
   },
   {
-    name: '波浪线条', render: () => (
-      <svg viewBox="0 0 400 300" style={{ width: '100%', height: '100%' }}>
-        <rect width="400" height="300" fill="#1a1a2e" />
-        <path d="M0,150 C100,50 200,250 400,150" fill="none" stroke="#e94560" strokeWidth="4" opacity="0.8" />
-        <path d="M0,180 C100,80 200,280 400,180" fill="none" stroke="#f5c542" strokeWidth="4" opacity="0.6" />
-        <path d="M0,120 C100,20 200,220 400,120" fill="none" stroke="#4ecca3" strokeWidth="4" opacity="0.7" />
-        <path d="M0,210 C100,110 200,310 400,210" fill="none" stroke="#7b68ee" strokeWidth="4" opacity="0.5" />
-        <path d="M0,90 C100,-10 200,190 400,90" fill="none" stroke="#ff6b6b" strokeWidth="3" opacity="0.5" />
-      </svg>
-    )
+    name: '波浪线条', width: 640, height: 480,
+    draw(ctx, w, h) {
+      ctx.fillStyle = '#1a1a2e'
+      ctx.fillRect(0, 0, w, h)
+      const waves = [
+        { color: '#e94560', offset: 0, amp: 80 },
+        { color: '#f5c542', offset: 30, amp: 70 },
+        { color: '#4ecca3', offset: -20, amp: 90 },
+        { color: '#7b68ee', offset: 50, amp: 60 },
+        { color: '#ff6b6b', offset: -40, amp: 75 },
+      ]
+      waves.forEach(wave => {
+        ctx.beginPath()
+        ctx.moveTo(0, h / 2 + wave.offset)
+        for (let x = 0; x <= w; x += 2) {
+          const y = h / 2 + wave.offset + Math.sin(x * 0.01 + wave.offset * 0.1) * wave.amp
+          ctx.lineTo(x, y)
+        }
+        ctx.strokeStyle = wave.color
+        ctx.lineWidth = 4
+        ctx.globalAlpha = 0.7
+        ctx.stroke()
+        ctx.globalAlpha = 1
+      })
+    }
   },
   {
-    name: '抽象艺术', render: () => (
-      <svg viewBox="0 0 400 300" style={{ width: '100%', height: '100%' }}>
-        <rect width="400" height="300" fill="#2d2d2d" />
-        <rect x="50" y="50" width="100" height="80" rx="10" fill="#e94560" opacity="0.7" />
-        <rect x="160" y="30" width="80" height="130" rx="40" fill="#4ecca3" opacity="0.6" />
-        <rect x="250" y="70" width="90" height="90" rx="5" fill="#f5c542" opacity="0.7" transform="rotate(15 295 115)" />
-        <circle cx="100" cy="210" r="45" fill="#7b68ee" opacity="0.6" />
-        <circle cx="230" cy="200" r="35" fill="#48dbfb" opacity="0.5" />
-        <rect x="280" y="180" width="70" height="70" rx="35" fill="#ff6b6b" opacity="0.5" />
-        <line x1="30" y1="140" x2="370" y2="140" stroke="#fff" strokeWidth="1" opacity="0.15" />
-        <line x1="200" y1="20" x2="200" y2="280" stroke="#fff" strokeWidth="1" opacity="0.15" />
-      </svg>
-    )
+    name: '抽象艺术', width: 640, height: 480,
+    draw(ctx, w, h) {
+      ctx.fillStyle = '#2d2d2d'
+      ctx.fillRect(0, 0, w, h)
+      const shapes = [
+        { x: 0.12, y: 0.15, w: 0.18, h: 0.22, color: '#e94560', rot: 0 },
+        { x: 0.3, y: 0.08, w: 0.14, h: 0.35, color: '#4ecca3', rot: 0 },
+        { x: 0.5, y: 0.2, w: 0.16, h: 0.16, color: '#f5c542', rot: 0.26 },
+        { x: 0.18, y: 0.5, w: 0.12, h: 0.12, color: '#7b68ee', rot: 0 },
+        { x: 0.42, y: 0.55, w: 0.1, h: 0.1, color: '#48dbfb', rot: 0 },
+        { x: 0.55, y: 0.48, w: 0.13, h: 0.13, color: '#ff6b6b', rot: 0.5 },
+      ]
+      shapes.forEach(s => {
+        ctx.save()
+        ctx.translate(w * s.x + w * s.w / 2, h * s.y + h * s.h / 2)
+        ctx.rotate(s.rot)
+        ctx.fillStyle = s.color
+        ctx.globalAlpha = 0.6
+        ctx.fillRect(-w * s.w / 2, -h * s.h / 2, w * s.w, h * s.h)
+        ctx.restore()
+      })
+      ctx.globalAlpha = 0.15
+      ctx.strokeStyle = '#fff'
+      ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(0, h * 0.4); ctx.lineTo(w, h * 0.4); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(w * 0.5, 0); ctx.lineTo(w * 0.5, h); ctx.stroke()
+      ctx.globalAlpha = 1
+    }
   },
   {
-    name: '棋盘格', render: () => (
-      <svg viewBox="0 0 400 300" style={{ width: '100%', height: '100%' }}>
-        <rect width="400" height="300" fill="#f0f0f0" />
-        {Array.from({ length: 8 }, (_, r) =>
-          Array.from({ length: 10 }, (_, c) => (
-            <rect key={`${r}-${c}`} x={c * 40} y={r * 37.5} width={40} height={37.5}
-              fill={(r + c) % 2 === 0 ? '#333' : '#e94560'} opacity={(r + c) % 2 === 0 ? 0.9 : 0.7} />
-          ))
-        )}
-      </svg>
-    )
+    name: '棋盘格', width: 640, height: 480,
+    draw(ctx, w, h) {
+      const cols = 16
+      const rows = 12
+      const cw = w / cols
+      const ch = h / rows
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#333333' : '#e94560'
+          ctx.globalAlpha = (r + c) % 2 === 0 ? 0.9 : 0.7
+          ctx.fillRect(c * cw, r * ch, cw, ch)
+        }
+      }
+      ctx.globalAlpha = 1
+    }
   },
 ]
 
 export default function ImageViewer() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [scale, setScale] = useState(1)
-  const [fitMode, setFitMode] = useState<'fit' | 'fill' | 'original'>('fit')
+  const [rotation, setRotation] = useState(0)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [imageColors, setImageColors] = useState(0)
 
-  const handlePrev = () => setCurrentIndex((p) => (p > 0 ? p - 1 : sampleImages.length - 1))
-  const handleNext = () => setCurrentIndex((p) => (p < sampleImages.length - 1 ? p + 1 : 0))
-  const zoomIn = () => setScale((s) => Math.min(s + 0.25, 4))
-  const zoomOut = () => setScale((s) => Math.max(s - 0.25, 0.25))
-  const fitToWindow = () => { setFitMode('fit'); setScale(1) }
-  const actualSize = () => { setFitMode('original'); setScale(1) }
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const currentImage = images[currentIndex]
+
+  const renderImage = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    canvas.width = currentImage.width
+    canvas.height = currentImage.height
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    currentImage.draw(ctx, canvas.width, canvas.height)
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const colorSet = new Set<string>()
+    for (let i = 0; i < imageData.data.length; i += 16) {
+      const r = imageData.data[i]
+      const g = imageData.data[i + 1]
+      const b = imageData.data[i + 2]
+      colorSet.add(`${Math.floor(r / 32)}-${Math.floor(g / 32)}-${Math.floor(b / 32)}`)
+    }
+    setImageColors(colorSet.size)
+  }, [currentImage])
+
+  useEffect(() => {
+    renderImage()
+    setScale(1)
+    setRotation(0)
+    setOffset({ x: 0, y: 0 })
+  }, [currentIndex, renderImage])
+
+  const handlePrev = () => setCurrentIndex(p => (p > 0 ? p - 1 : images.length - 1))
+  const handleNext = () => setCurrentIndex(p => (p < images.length - 1 ? p + 1 : 0))
+  const zoomIn = () => setScale(s => Math.min(s + 0.25, 5))
+  const zoomOut = () => setScale(s => Math.max(s - 0.25, 0.25))
+  const rotateLeft = () => setRotation(r => r - 90)
+  const rotateRight = () => setRotation(r => r + 90)
+  const resetView = () => { setScale(1); setRotation(0); setOffset({ x: 0, y: 0 }) }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    if (e.deltaY < 0) zoomIn()
+    else zoomOut()
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    })
+  }
+
+  const handleMouseUp = () => setIsDragging(false)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e1e', color: '#d4d4d4', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#2d2d2d', borderBottom: '1px solid #333' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#2d2d2d', borderBottom: '1px solid #333', flexWrap: 'wrap' }}>
         <button onClick={handlePrev} style={imgBtn}>◀ 上一张</button>
         <button onClick={handleNext} style={imgBtn}>下一张 ▶</button>
         <div style={{ width: 1, height: 20, background: '#555', margin: '0 4px' }} />
@@ -120,41 +263,70 @@ export default function ImageViewer() {
         <span style={{ fontSize: 12, color: '#aaa', minWidth: 40, textAlign: 'center' }}>{Math.round(scale * 100)}%</span>
         <button onClick={zoomIn} style={imgBtn}>🔍+</button>
         <div style={{ width: 1, height: 20, background: '#555', margin: '0 4px' }} />
-        <button onClick={fitToWindow} style={{ ...imgBtn, background: fitMode === 'fit' ? '#007acc' : 'transparent' }}>适应窗口</button>
-        <button onClick={actualSize} style={{ ...imgBtn, background: fitMode === 'original' ? '#007acc' : 'transparent' }}>原始尺寸</button>
+        <button onClick={rotateLeft} style={imgBtn}>↺ 左转</button>
+        <button onClick={rotateRight} style={imgBtn}>↻ 右转</button>
+        <button onClick={resetView} style={imgBtn}>⟳ 重置</button>
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: 12, color: '#aaa' }}>{currentIndex + 1} / {sampleImages.length}</span>
+        <span style={{ fontSize: 12, color: '#aaa' }}>{currentIndex + 1} / {images.length}</span>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', overflow: 'hidden', position: 'relative' }}>
-        <button onClick={handlePrev} style={{ ...navArrow, left: 8 }}>‹</button>
+      <div
+        ref={containerRef}
+        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', overflow: 'hidden', position: 'relative', cursor: isDragging ? 'grabbing' : 'grab' }}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div style={{
-          transform: `scale(${scale})`, transformOrigin: 'center', transition: 'transform 0.2s',
-          maxWidth: fitMode === 'fit' ? '90%' : 'none', maxHeight: fitMode === 'fit' ? '90%' : 'none',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto'
+          transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale}) rotate(${rotation}deg)`,
+          transformOrigin: 'center',
+          transition: isDragging ? 'none' : 'transform 0.2s',
         }}>
-          <div style={{ width: 640, height: 480, maxWidth: '100%', maxHeight: '100%' }}>
-            {sampleImages[currentIndex].render()}
-          </div>
+          <canvas
+            ref={canvasRef}
+            style={{ display: 'block', maxWidth: '80vw', maxHeight: '60vh' }}
+          />
         </div>
-        <button onClick={handleNext} style={{ ...navArrow, right: 8 }}>›</button>
       </div>
 
-      <div style={{ background: '#252526', borderTop: '1px solid #333', padding: '6px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: 6, padding: '0 8px', overflow: 'auto' }}>
-          {sampleImages.map((img, i) => (
+      <div style={{ background: '#252526', borderTop: '1px solid #333', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: '#888' }}>
+        <span style={{ fontWeight: 600, color: '#ccc' }}>{currentImage.name}</span>
+        <span>尺寸: {currentImage.width}×{currentImage.height}</span>
+        <span>颜色数: ~{imageColors}</span>
+        <span>缩放: {Math.round(scale * 100)}%</span>
+        <span>旋转: {rotation}°</span>
+        <div style={{ flex: 1 }} />
+      </div>
+
+      <div style={{ background: '#252526', borderTop: '1px solid #333', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: 6, padding: '0 8px 8px', overflow: 'auto' }}>
+          {images.map((img, i) => (
             <div
               key={i}
               style={{
                 flexShrink: 0, width: 64, height: 48, cursor: 'pointer', borderRadius: 4, overflow: 'hidden',
                 border: i === currentIndex ? '2px solid #007acc' : '2px solid transparent',
-                opacity: i === currentIndex ? 1 : 0.6
+                opacity: i === currentIndex ? 1 : 0.6, position: 'relative',
               }}
               onClick={() => setCurrentIndex(i)}
             >
-              <div style={{ width: '100%', height: '100%', transform: 'scale(0.16)', transformOrigin: 'top left' }}>
-                {img.render()}
-              </div>
+              <canvas
+                width={64}
+                height={48}
+                ref={el => {
+                  if (!el) return
+                  const ctx = el.getContext('2d')
+                  if (!ctx) return
+                  const scaleX = 64 / img.width
+                  const scaleY = 48 / img.height
+                  ctx.save()
+                  ctx.scale(scaleX, scaleY)
+                  img.draw(ctx, img.width, img.height)
+                  ctx.restore()
+                }}
+              />
             </div>
           ))}
         </div>
@@ -166,10 +338,4 @@ export default function ImageViewer() {
 const imgBtn: React.CSSProperties = {
   background: 'transparent', border: 'none', color: '#ccc', cursor: 'pointer',
   padding: '4px 10px', borderRadius: 3, fontSize: 12
-}
-
-const navArrow: React.CSSProperties = {
-  position: 'absolute', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-  background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', cursor: 'pointer',
-  fontSize: 36, padding: '8px 12px', borderRadius: 4, lineHeight: 1
 }

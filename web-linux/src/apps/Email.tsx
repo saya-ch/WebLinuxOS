@@ -1,231 +1,235 @@
 import { useState } from 'react'
 
-interface EmailData {
+interface Email {
   id: string
   from: string
-  fromAvatar: string
+  to: string
   subject: string
-  preview: string
+  body: string
   date: string
   read: boolean
   starred: boolean
-  folder: 'inbox' | 'sent' | 'drafts' | 'spam'
-  body: string
+  folder: 'inbox' | 'sent' | 'drafts'
 }
 
-const PRESET_EMAILS: EmailData[] = [
-  {
-    id: 'e1', from: '张伟', fromAvatar: '👨', subject: '项目进度更新', preview: '本周项目进展顺利，已经完成了前端界面的初步设计...',
-    date: '10:30', read: false, starred: true, folder: 'inbox',
-    body: '你好！\n\n本周项目进展顺利，已经完成了前端界面的初步设计。\n\n我们计划在下周开始后端API的集成工作。如果你有任何建议或疑问，欢迎随时提出。\n\n祝好，\n张伟'
-  },
-  {
-    id: 'e2', from: '李娜', fromAvatar: '👩', subject: '会议纪要 - 2024年Q2规划', preview: '感谢大家参加今天的会议，以下是会议要点总结...',
-    date: '09:15', read: false, starred: false, folder: 'inbox',
-    body: '大家好，\n\n感谢大家参加今天的会议。以下是会议要点总结：\n\n1. Q2目标：完成核心功能开发\n2. 时间节点：6月底前完成测试\n3. 资源分配：增加2名开发人员\n\n请各团队按照分工推进。\n\n李娜'
-  },
-  {
-    id: 'e3', from: '王强', fromAvatar: '🧔', subject: '代码审查请求', preview: '请帮忙审查一下我提交的代码，主要涉及用户认证模块...',
-    date: '昨天', read: true, starred: false, folder: 'inbox',
-    body: '你好，\n\n请帮忙审查一下我提交的代码，主要涉及用户认证模块的重构。\n\nPR链接：https://github.com/example/pr/123\n\n主要改动：\n- 重构了登录逻辑\n- 添加了JWT token刷新机制\n- 修复了remember me功能\n\n谢谢！\n王强'
-  },
-  {
-    id: 'e4', from: '赵敏', fromAvatar: '👱', subject: '设计稿已更新', preview: '根据上次反馈，我已经更新了首页的设计稿，请查看附件...',
-    date: '昨天', read: true, starred: true, folder: 'inbox',
-    body: 'Hi，\n\n根据上次反馈，我已经更新了首页的设计稿。\n\n主要调整：\n1. 优化了导航栏的布局\n2. 调整了配色方案\n3. 增加了动画过渡效果\n\n设计稿链接：https://figma.com/example\n\n期待你的反馈！\n赵敏'
-  },
-  {
-    id: 'e5', from: '系统通知', fromAvatar: '🧑', subject: '安全更新提醒', preview: '您的系统有3个安全更新等待安装，请及时更新...',
-    date: '周一', read: true, starred: false, folder: 'inbox',
-    body: '系统通知\n\n您的系统有3个安全更新等待安装：\n\n1. OpenSSL 安全补丁 (CVE-2024-1234)\n2. 内核更新 5.15.0-91\n3. 系统库 libc 更新\n\n请及时更新以确保系统安全。\n\n-- Web Linux 系统管理'
-  },
-  {
-    id: 'e6', from: '陈明', fromAvatar: '👴', subject: '生日快乐！', preview: '祝生日快乐！希望新的一年里事事顺心，阖家幸福...',
-    date: '周一', read: true, starred: false, folder: 'inbox',
-    body: '生日快乐！🎂\n\n希望新的一年里事事顺心，阖家幸福。\n\n有空一起吃饭聚聚！\n\n陈明'
-  },
-  {
-    id: 'e7', from: '你', fromAvatar: '👤', subject: 'Re: 项目进度更新', preview: '收到，整体进展不错，继续保持这个节奏...',
-    date: '10:45', read: true, starred: false, folder: 'sent',
-    body: '收到，整体进展不错，继续保持这个节奏。\n\n后端API方面有什么需要协调的随时沟通。\n\n另外请关注一下性能优化的需求。'
-  },
-  {
-    id: 'e8', from: '你', fromAvatar: '👤', subject: '草稿：周报', preview: '本周工作总结：1.完成前端框架搭建 2.修复了3个...',
-    date: '未发送', read: true, starred: false, folder: 'drafts',
-    body: '本周工作总结：\n1.完成前端框架搭建\n2.修复了3个关键bug\n3.代码审查完成\n4.下周计划...\n\n（待补充）'
-  },
-  {
-    id: 'e9', from: '未知发件人', fromAvatar: '👵', subject: '恭喜！您中奖了！', preview: '恭喜您获得了100万大奖！请点击链接领取...',
-    date: '3天前', read: true, starred: false, folder: 'spam',
-    body: '恭喜！您中奖了！\n\n您获得了我们平台的100万大奖！\n\n请点击以下链接领取：\nhttp://fake-spam-site.example.com\n\n（此为垃圾邮件示例）'
-  },
+const initialEmails: Email[] = [
+  { id: '1', from: '张三 <zhangsan@example.com>', to: 'me@linux.local', subject: '项目进度更新', body: '你好，\n\n本周项目进展顺利，前端部分已完成80%，预计下周可以进入测试阶段。\n\n请查看附件中的详细进度报告。\n\n此致\n张三', date: '2025-01-15 09:30', read: false, starred: true, folder: 'inbox' },
+  { id: '2', from: '李四 <lisi@example.com>', to: 'me@linux.local', subject: '会议邀请：技术评审', body: '你好，\n\n诚邀你参加本周五下午2点的技术评审会议。\n\n会议地点：3号会议室\n议题：新架构方案讨论\n\n请准时参加。\n\n李四', date: '2025-01-14 14:20', read: false, starred: false, folder: 'inbox' },
+  { id: '3', from: '系统通知 <noreply@system.local>', to: 'me@linux.local', subject: '您的账户安全提醒', body: '尊敬的用户，\n\n我们检测到您的账户在新设备上登录。如果这不是您本人操作，请立即修改密码。\n\n登录时间：2025-01-14 08:15\n登录地点：北京\nIP地址：192.168.1.100\n\n安全团队', date: '2025-01-14 08:15', read: true, starred: false, folder: 'inbox' },
+  { id: '4', from: '王五 <wangwu@example.com>', to: 'me@linux.local', subject: '关于代码审查的反馈', body: '你好，\n\n我已审查了你提交的PR，总体写得很好。有几处建议：\n\n1. 建议将工具函数提取到单独模块\n2. 错误处理可以更完善\n3. 建议增加单元测试\n\n详细评论已在PR中标注。\n\n王五', date: '2025-01-13 16:45', read: true, starred: true, folder: 'inbox' },
+  { id: '5', from: 'me@linux.local', to: 'zhangsan@example.com', subject: 'Re: 项目进度更新', body: '张三你好，\n\n收到进度报告，辛苦了！\n\n关于测试阶段，建议提前准备测试用例。我这边会协调QA团队配合。\n\n谢谢', date: '2025-01-15 10:00', read: true, starred: false, folder: 'sent' },
+  { id: '6', from: 'me@linux.local', to: 'team@example.com', subject: '团队周报 - 第3周', body: '各位同事，\n\n本周工作总结：\n1. 完成用户模块重构\n2. 修复了5个关键bug\n3. 性能优化提升30%\n\n下周计划：\n1. 完成支付模块开发\n2. 集成测试\n3. 文档更新\n\n谢谢大家的努力！', date: '2025-01-12 18:00', read: true, starred: false, folder: 'sent' },
 ]
 
+type Folder = 'inbox' | 'sent' | 'drafts'
+
 export default function Email() {
-  const [emails] = useState<EmailData[]>(PRESET_EMAILS)
-  const [selectedFolder, setSelectedFolder] = useState<'inbox' | 'sent' | 'drafts' | 'spam'>('inbox')
-  const [selectedEmail, setSelectedEmail] = useState<string | null>(null)
-  const [showCompose, setShowCompose] = useState(false)
+  const [emails, setEmails] = useState<Email[]>(initialEmails)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [currentFolder, setCurrentFolder] = useState<Folder>('inbox')
+  const [composing, setComposing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [readEmails, setReadEmails] = useState<Set<string>>(new Set(emails.filter((e) => e.read).map((e) => e.id)))
+  const [composeTo, setComposeTo] = useState('')
+  const [composeSubject, setComposeSubject] = useState('')
+  const [composeBody, setComposeBody] = useState('')
+  const [replyingTo, setReplyingTo] = useState<Email | null>(null)
 
-  const filteredEmails = emails
-    .filter((e) => e.folder === selectedFolder)
-    .filter((e) => {
-      if (!searchQuery) return true
-      const q = searchQuery.toLowerCase()
-      return e.subject.toLowerCase().includes(q) || e.from.toLowerCase().includes(q) || e.preview.toLowerCase().includes(q)
-    })
+  const selectedEmail = emails.find(e => e.id === selectedId) || null
 
-  const selectedEmailData = selectedEmail ? emails.find((e) => e.id === selectedEmail) : null
+  const folderEmails = emails
+    .filter(e => e.folder === currentFolder)
+    .filter(e => !searchQuery || e.subject.toLowerCase().includes(searchQuery.toLowerCase()) || e.from.toLowerCase().includes(searchQuery.toLowerCase()) || e.body.toLowerCase().includes(searchQuery.toLowerCase()))
 
-  const folders: { id: string; name: string; icon: string; count: number }[] = [
-    { id: 'inbox', name: '收件箱', icon: '📥', count: emails.filter((e) => e.folder === 'inbox' && !readEmails.has(e.id)).length },
-    { id: 'sent', name: '已发送', icon: '📤', count: emails.filter((e) => e.folder === 'sent').length },
-    { id: 'drafts', name: '草稿箱', icon: '📝', count: emails.filter((e) => e.folder === 'drafts').length },
-    { id: 'spam', name: '垃圾邮件', icon: '🚫', count: emails.filter((e) => e.folder === 'spam').length },
-  ]
+  const unreadCount = emails.filter(e => e.folder === 'inbox' && !e.read).length
 
   const selectEmail = (id: string) => {
-    setSelectedEmail(id)
-    setReadEmails((prev) => new Set([...prev, id]))
+    setSelectedId(id)
+    setEmails(prev => prev.map(e => e.id === id ? { ...e, read: true } : e))
   }
 
+  const toggleStar = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    setEmails(prev => prev.map(em => em.id === id ? { ...em, starred: !em.starred } : em))
+  }
+
+  const deleteEmail = (id: string) => {
+    setEmails(prev => prev.filter(e => e.id !== id))
+    if (selectedId === id) setSelectedId(null)
+  }
+
+  const startCompose = () => {
+    setComposing(true)
+    setReplyingTo(null)
+    setComposeTo('')
+    setComposeSubject('')
+    setComposeBody('')
+  }
+
+  const startReply = (email: Email) => {
+    setComposing(true)
+    setReplyingTo(email)
+    setComposeTo(email.from.includes('<') ? email.from.match(/<(.+)>/)?.[1] || email.from : email.from)
+    setComposeSubject(`Re: ${email.subject.replace(/^Re:\s*/i, '')}`)
+    setComposeBody(`\n\n--- 原始邮件 ---\n发件人: ${email.from}\n日期: ${email.date}\n\n${email.body}`)
+  }
+
+  const sendEmail = () => {
+    if (!composeTo.trim() || !composeSubject.trim()) return
+    const newEmail: Email = {
+      id: Date.now().toString(),
+      from: 'me@linux.local',
+      to: composeTo,
+      subject: composeSubject,
+      body: composeBody,
+      date: new Date().toLocaleString('zh-CN'),
+      read: true,
+      starred: false,
+      folder: 'sent',
+    }
+    setEmails(prev => [newEmail, ...prev])
+    setComposing(false)
+    setReplyingTo(null)
+    setCurrentFolder('sent')
+    setSelectedId(newEmail.id)
+  }
+
+  const folders: Array<{ key: Folder; label: string; icon: string }> = [
+    { key: 'inbox', label: '收件箱', icon: '📥' },
+    { key: 'sent', label: '已发送', icon: '📤' },
+    { key: 'drafts', label: '草稿箱', icon: '📝' },
+  ]
+
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#1e1e1e', color: '#d4d4d4', fontFamily: 'sans-serif' }}>
-      <div style={{ width: 180, background: '#252526', borderRight: '1px solid #333', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ padding: '12px 12px 8px' }}>
-          <button
-            onClick={() => setShowCompose(!showCompose)}
-            style={{ width: '100%', padding: '8px 16px', background: '#007acc', border: 'none', borderRadius: 4, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-          >
-            ✏️ 新建邮件
+    <div style={{ display: 'flex', height: '100%', background: '#1e1e2e', color: '#cdd6f4', fontFamily: 'sans-serif', fontSize: 13 }}>
+      <div style={{ width: 160, background: '#181825', borderRight: '1px solid #313244', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        <div style={{ padding: 12 }}>
+          <button onClick={startCompose} style={{
+            width: '100%', padding: '8px', background: '#89b4fa', color: '#1e1e2e',
+            border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+          }}>
+            ✉️ 写邮件
           </button>
         </div>
-
-        <div style={{ padding: '0 8px' }}>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索邮件..."
+        {folders.map(f => (
+          <div key={f.key} onClick={() => { setCurrentFolder(f.key); setSelectedId(null) }}
             style={{
-              width: '100%', padding: '5px 10px', border: '1px solid #444', borderRadius: 4,
-              background: '#1e1e1e', color: '#ccc', fontSize: 12, outline: 'none', boxSizing: 'border-box'
-            }}
-          />
-        </div>
-
-        <div style={{ padding: '8px 0', flex: 1, overflow: 'auto' }}>
-          {folders.map((f) => (
-            <div
-              key={f.id}
-              style={{
-                padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                background: selectedFolder === f.id ? '#094771' : 'transparent',
-                borderLeft: selectedFolder === f.id ? '3px solid #007acc' : '3px solid transparent',
-                fontSize: 13
-              }}
-              onClick={() => { setSelectedFolder(f.id as typeof selectedFolder); setSelectedEmail(null) }}
-              onMouseEnter={(e) => { if (selectedFolder !== f.id) e.currentTarget.style.background = '#2a2d2e' }}
-              onMouseLeave={(e) => { if (selectedFolder !== f.id) e.currentTarget.style.background = 'transparent' }}
-            >
-              <span>{f.icon}</span>
-              <span style={{ flex: 1 }}>{f.name}</span>
-              {f.count > 0 && (
-                <span style={{
-                  background: '#007acc', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 600
-                }}>
-                  {f.count}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+              padding: '10px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              background: currentFolder === f.key ? '#313244' : 'transparent',
+              borderLeft: currentFolder === f.key ? '3px solid #89b4fa' : '3px solid transparent',
+            }}>
+            <span>{f.icon} {f.label}</span>
+            {f.key === 'inbox' && unreadCount > 0 && (
+              <span style={{ background: '#f38ba8', color: '#1e1e2e', borderRadius: 10, padding: '1px 6px', fontSize: 11, fontWeight: 600 }}>{unreadCount}</span>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div style={{ width: 320, background: '#1e1e1e', borderRight: '1px solid #333', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 }}>
-        <div style={{ padding: '10px 14px', fontWeight: 600, fontSize: 14, borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span>{folders.find((f) => f.id === selectedFolder)?.name}</span>
-          <span style={{ fontSize: 11, color: '#888' }}>{filteredEmails.length} 封</span>
+      <div style={{ width: 280, borderRight: '1px solid #313244', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid #313244' }}>
+          <input type="text" placeholder="搜索邮件..." value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: '1px solid #45475a', background: '#181825', color: '#cdd6f4', fontSize: 12, boxSizing: 'border-box', outline: 'none' }}
+          />
         </div>
         <div style={{ flex: 1, overflow: 'auto' }}>
-          {filteredEmails.map((email) => (
-            <div
-              key={email.id}
+          {folderEmails.map(email => (
+            <div key={email.id} onClick={() => selectEmail(email.id)}
               style={{
-                padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #333',
-                background: selectedEmail === email.id ? '#094771' : 'transparent',
-                display: 'flex', gap: 10
-              }}
-              onClick={() => selectEmail(email.id)}
-              onMouseEnter={(e) => { if (selectedEmail !== email.id) e.currentTarget.style.background = '#252526' }}
-              onMouseLeave={(e) => { if (selectedEmail !== email.id) e.currentTarget.style.background = 'transparent' }}
-            >
-              <div style={{ fontSize: 20, flexShrink: 0 }}>{email.fromAvatar}</div>
-              <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <span style={{ fontSize: 13, fontWeight: readEmails.has(email.id) ? 400 : 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                    {email.from}
-                  </span>
-                  {email.starred && <span style={{ fontSize: 12 }}>⭐</span>}
-                  {!readEmails.has(email.id) && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#007acc', flexShrink: 0 }} />}
-                  <span style={{ fontSize: 10, color: '#888', flexShrink: 0 }}>{email.date}</span>
-                </div>
-                <div style={{ fontSize: 12, fontWeight: readEmails.has(email.id) ? 400 : 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>
-                  {email.subject}
-                </div>
-                <div style={{ fontSize: 11, color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {email.preview}
-                </div>
+                padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #313244',
+                background: selectedId === email.id ? '#313244' : (!email.read ? '#1e1e2e' : 'transparent'),
+                borderLeft: !email.read ? '3px solid #89b4fa' : '3px solid transparent',
+              }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                <span style={{ fontWeight: !email.read ? 700 : 400, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                  {currentFolder === 'sent' ? email.to : email.from.split('<')[0].trim()}
+                </span>
+                <span onClick={(e) => toggleStar(email.id, e)} style={{ cursor: 'pointer', fontSize: 12, flexShrink: 0 }}>
+                  {email.starred ? '⭐' : '☆'}
+                </span>
               </div>
+              <div style={{ fontWeight: !email.read ? 600 : 400, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>
+                {email.subject}
+              </div>
+              <div style={{ fontSize: 11, color: '#6c7086', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {email.body.split('\n')[0].substring(0, 50)}
+              </div>
+              <div style={{ fontSize: 10, color: '#585b70', marginTop: 4 }}>{email.date}</div>
             </div>
           ))}
-          {filteredEmails.length === 0 && (
-            <div style={{ padding: 30, textAlign: 'center', color: '#666', fontSize: 13 }}>
-              没有邮件
+          {folderEmails.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: '#6c7086', fontSize: 12 }}>
+              {searchQuery ? '未找到匹配的邮件' : '暂无邮件'}
             </div>
           )}
         </div>
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {selectedEmailData && !showCompose ? (
-          <>
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #333' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{selectedEmailData.subject}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 24 }}>{selectedEmailData.fromAvatar}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{selectedEmailData.from}</div>
-                  <div style={{ fontSize: 11, color: '#888' }}>{selectedEmailData.date}</div>
-                </div>
-                <button onClick={() => setSelectedEmail(null)} style={actionBtn}>✕</button>
-              </div>
+        {composing ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontWeight: 700, fontSize: 16 }}>{replyingTo ? '回复邮件' : '新邮件'}</span>
+              <button onClick={() => { setComposing(false); setReplyingTo(null) }} style={{ background: 'none', border: 'none', color: '#6c7086', cursor: 'pointer', fontSize: 16 }}>✕</button>
             </div>
-            <div style={{ flex: 1, padding: '20px 24px', overflow: 'auto', whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.8 }}>
-              {selectedEmailData.body}
+            <div style={{ marginBottom: 8 }}>
+              <input type="text" placeholder="收件人" value={composeTo} onChange={(e) => setComposeTo(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #45475a', background: '#181825', color: '#cdd6f4', fontSize: 13, boxSizing: 'border-box', outline: 'none' }}
+              />
             </div>
-          </>
-        ) : showCompose ? (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 16 }}>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 14 }}>新建邮件</div>
-            <input placeholder="收件人" style={composeInput} />
-            <input placeholder="主题" style={composeInput} />
-            <textarea placeholder="邮件内容..." style={{ ...composeInput, flex: 1, resize: 'none', fontFamily: 'sans-serif' }} />
-            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <button onClick={() => setShowCompose(false)} style={{ ...composeInput, width: 'auto', padding: '8px 24px', background: '#007acc', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: 4 }}>
+            <div style={{ marginBottom: 8 }}>
+              <input type="text" placeholder="主题" value={composeSubject} onChange={(e) => setComposeSubject(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #45475a', background: '#181825', color: '#cdd6f4', fontSize: 13, boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
+            <div style={{ flex: 1, marginBottom: 12 }}>
+              <textarea placeholder="正文..." value={composeBody} onChange={(e) => setComposeBody(e.target.value)}
+                style={{ width: '100%', height: '100%', padding: '10px', borderRadius: 4, border: '1px solid #45475a', background: '#181825', color: '#cdd6f4', fontSize: 13, boxSizing: 'border-box', outline: 'none', resize: 'none', lineHeight: 1.6 }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={sendEmail} disabled={!composeTo.trim() || !composeSubject.trim()}
+                style={{
+                  padding: '8px 20px', background: (!composeTo.trim() || !composeSubject.trim()) ? '#45475a' : '#89b4fa',
+                  color: '#1e1e2e', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                }}>
                 发送
               </button>
-              <button onClick={() => setShowCompose(false)} style={{ ...composeInput, width: 'auto', padding: '8px 24px', background: '#555', border: 'none', color: '#ccc', cursor: 'pointer', borderRadius: 4 }}>
+              <button onClick={() => { setComposing(false); setReplyingTo(null) }}
+                style={{ padding: '8px 20px', background: 'transparent', border: '1px solid #45475a', color: '#cdd6f4', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
                 取消
               </button>
             </div>
           </div>
+        ) : selectedEmail ? (
+          <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <h2 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 700 }}>{selectedEmail.subject}</h2>
+                <div style={{ fontSize: 12, color: '#a6adc8' }}>
+                  <div>发件人: {selectedEmail.from}</div>
+                  <div>收件人: {selectedEmail.to}</div>
+                  <div>日期: {selectedEmail.date}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <button onClick={() => toggleStar(selectedEmail.id)} style={emailActionBtn}>
+                  {selectedEmail.starred ? '⭐' : '☆'}
+                </button>
+                <button onClick={() => startReply(selectedEmail)} style={emailActionBtn}>↩ 回复</button>
+                <button onClick={() => deleteEmail(selectedEmail.id)} style={{ ...emailActionBtn, color: '#f38ba8' }}>🗑️</button>
+              </div>
+            </div>
+            <div style={{ borderTop: '1px solid #313244', paddingTop: 16, whiteSpace: 'pre-wrap', lineHeight: 1.8, fontSize: 13 }}>
+              {selectedEmail.body}
+            </div>
+          </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#666', fontSize: 14, flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontSize: 48, opacity: 0.3 }}>📧</div>
-            <div>选择一封邮件查看内容</div>
-            <div style={{ fontSize: 11, color: '#444' }}>或点击"新建邮件"开始撰写</div>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c7086' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>📧</div>
+              <div style={{ fontSize: 14 }}>选择一封邮件查看</div>
+            </div>
           </div>
         )}
       </div>
@@ -233,13 +237,7 @@ export default function Email() {
   )
 }
 
-const actionBtn: React.CSSProperties = {
-  background: 'transparent', border: '1px solid #555', color: '#aaa', cursor: 'pointer',
-  padding: '3px 10px', borderRadius: 3, fontSize: 14
-}
-
-const composeInput: React.CSSProperties = {
-  width: '100%', padding: '8px 12px', border: '1px solid #444', borderRadius: 4,
-  background: '#2d2d2d', color: '#d4d4d4', fontSize: 13, outline: 'none',
-  marginBottom: 8, boxSizing: 'border-box'
+const emailActionBtn: React.CSSProperties = {
+  padding: '4px 10px', background: 'transparent', border: '1px solid #45475a',
+  color: '#cdd6f4', borderRadius: 4, cursor: 'pointer', fontSize: 12
 }
