@@ -5,7 +5,7 @@ import {
   PackageIcon, ShoppingCartIcon, HardDriveIcon, ListTodoIcon, ServerIcon,
   WifiIcon, ShieldIcon, UserIcon, CameraIcon, PaintIcon, GridIcon,
   PresentationIcon, MailIcon, MessageIcon, ContactsIcon, CheckListIcon,
-  LockIcon, BackupIcon, ZipIcon, FileIcon, FileSearchIcon, TypeIcon,
+  LockIcon, BackupIcon, ZipIcon, FileSearchIcon, TypeIcon,
   BookIcon, LanguagesIcon, MapPinIcon, VideoRecorderIcon, MicIcon,
   BluetoothIcon, BatteryIcon, InfoIcon, HelpIcon, CommandIcon,
   PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon
