@@ -3,14 +3,14 @@ import { useStore } from '../store'
 import { PaletteIcon, ImageIcon, VolumeIcon, WifiIcon, BatteryIcon, InfoIcon, SettingsIcon } from '../icons'
 
 const wallpapers = [
-  { id: 'default', name: '默认', style: { background: '#1e1e2e' } },
-  { id: 'sunset', name: '日落', style: { background: 'linear-gradient(135deg, #ff6b6b, #feca57)' } },
-  { id: 'ocean', name: '海洋', style: { background: 'linear-gradient(135deg, #0c3483, #a2b6df)' } },
-  { id: 'forest', name: '森林', style: { background: 'linear-gradient(135deg, #134e5e, #71b280)' } },
-  { id: 'purple', name: '紫色', style: { background: 'linear-gradient(135deg, #6a0572, #ab83a1)' } },
-  { id: 'midnight', name: '午夜', style: { background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' } },
-  { id: 'cherry', name: '樱花', style: { background: 'linear-gradient(135deg, #ffb7b2, #e2f0cb)' } },
-  { id: 'fire', name: '火焰', style: { background: 'linear-gradient(135deg, #f12711, #f5af19)' } },
+  { id: 'default', name: '默认', style: { background: '#1e1e2e' }, css: '' },
+  { id: 'sunset', name: '日落', style: { background: 'linear-gradient(135deg, #ff6b6b, #feca57)' }, css: 'linear-gradient(135deg, #ff6b6b, #feca57)' },
+  { id: 'ocean', name: '海洋', style: { background: 'linear-gradient(135deg, #0c3483, #a2b6df)' }, css: 'linear-gradient(135deg, #0c3483, #a2b6df)' },
+  { id: 'forest', name: '森林', style: { background: 'linear-gradient(135deg, #134e5e, #71b280)' }, css: 'linear-gradient(135deg, #134e5e, #71b280)' },
+  { id: 'purple', name: '紫色', style: { background: 'linear-gradient(135deg, #6a0572, #ab83a1)' }, css: 'linear-gradient(135deg, #6a0572, #ab83a1)' },
+  { id: 'midnight', name: '午夜', style: { background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' }, css: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' },
+  { id: 'cherry', name: '樱花', style: { background: 'linear-gradient(135deg, #ffb7b2, #e2f0cb)' }, css: 'linear-gradient(135deg, #ffb7b2, #e2f0cb)' },
+  { id: 'fire', name: '火焰', style: { background: 'linear-gradient(135deg, #f12711, #f5af19)' }, css: 'linear-gradient(135deg, #f12711, #f5af19)' },
 ]
 
 const wifiNetworks = [
@@ -121,18 +121,18 @@ export default function Settings() {
               {wallpapers.map((wp) => (
                 <div
                   key={wp.id}
-                  onClick={() => setWallpaper(wp.id)}
+                  onClick={() => setWallpaper(wp.css)}
                   style={{
                     cursor: 'pointer',
                     borderRadius: 8,
                     overflow: 'hidden',
-                    border: wallpaper === wp.id ? '2px solid var(--accent)' : '1px solid #333',
+                    border: wallpaper === wp.css ? '2px solid var(--accent)' : '1px solid #333',
                   }}
                 >
                   <div style={{ ...wp.style, height: 80 }} />
                   <div style={{ padding: '6px 8px', fontSize: 12, textAlign: 'center', background: '#2d2d2d' }}>
                     {wp.name}
-                    {wallpaper === wp.id && <span style={{ marginLeft: 4, color: 'var(--accent)' }}>✓</span>}
+                    {wallpaper === wp.css && <span style={{ marginLeft: 4, color: 'var(--accent)' }}>✓</span>}
                   </div>
                 </div>
               ))}
