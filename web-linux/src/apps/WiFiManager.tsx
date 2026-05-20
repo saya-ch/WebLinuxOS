@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { WifiIcon } from '../icons'
 
 interface WiFiNetwork {
   id: string
@@ -128,7 +129,7 @@ export default function WiFiManager() {
               }}
             >
               <span style={{ color: signalColor(network.signal), fontSize: '18px' }}>
-                {network.connected ? '📶' : ''}
+                {network.connected ? <WifiIcon /> : ''}
               </span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>{network.ssid}</div>

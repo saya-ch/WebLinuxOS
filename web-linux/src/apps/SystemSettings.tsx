@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
+import { PaletteIcon, ImageIcon, VolumeIcon, WifiIcon, BatteryIcon, InfoIcon, SettingsIcon } from '../icons'
 
 const wallpapers = [
   { id: 'default', name: '默认', style: { background: '#1e1e2e' } },
@@ -22,18 +23,18 @@ const wifiNetworks = [
 function SignalIcon({ level }: { level: number }) {
   return (
     <span style={{ fontSize: 14, opacity: level >= 3 ? 1 : level >= 2 ? 0.7 : 0.3 }}>
-      {level === 4 ? '📶' : level === 3 ? '📶' : level === 2 ? '📶' : '📶'}
+      <WifiIcon />
     </span>
   )
 }
 
 const categories = [
-  { id: 'appearance', name: '外观', icon: '🎨' },
-  { id: 'wallpaper', name: '壁纸', icon: '🖼️' },
-  { id: 'sound', name: '声音', icon: '🔊' },
-  { id: 'network', name: '网络', icon: '🌐' },
-  { id: 'power', name: '电源', icon: '🔋' },
-  { id: 'about', name: '关于', icon: 'ℹ️' },
+  { id: 'appearance', name: '外观', icon: <PaletteIcon /> },
+  { id: 'wallpaper', name: '壁纸', icon: <ImageIcon /> },
+  { id: 'sound', name: '声音', icon: <VolumeIcon /> },
+  { id: 'network', name: '网络', icon: <WifiIcon /> },
+  { id: 'power', name: '电源', icon: <BatteryIcon /> },
+  { id: 'about', name: '关于', icon: <InfoIcon /> },
 ]
 
 export default function Settings() {
@@ -154,7 +155,7 @@ export default function Settings() {
                   onChange={(e) => setVolume(parseInt(e.target.value))}
                   style={{ flex: 1 }}
                 />
-                <span>🔊</span>
+                <span><VolumeIcon /></span>
                 <span style={{ fontFamily: 'monospace', width: 40, textAlign: 'right' }}>{volume}%</span>
               </div>
             </div>
@@ -293,7 +294,7 @@ export default function Settings() {
           <div>
             <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>关于系统</h3>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 64, marginBottom: 8 }}>🐧</div>
+              <div style={{ fontSize: 64, marginBottom: 8 }}><SettingsIcon /></div>
               <div style={{ fontSize: 24, fontWeight: 600 }}>Web Linux</div>
               <div style={{ fontSize: 14, color: '#888', marginTop: 4 }}>版本 1.0.0</div>
             </div>

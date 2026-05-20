@@ -1,14 +1,9 @@
-export default function About() {
-  const techStack = [
-    { name: 'React', version: '19.x', icon: '⚛️', desc: '用户界面框架' },
-    { name: 'TypeScript', version: '5.x', icon: '🔷', desc: '类型安全编程语言' },
-    { name: 'Zustand', version: '5.x', icon: '🐻', desc: '轻量级状态管理' },
-    { name: 'Vite', version: '6.x', icon: '⚡', desc: '快速构建工具' },
-  ]
+import { TerminalIcon } from '../icons'
 
+export default function About() {
   const specs = [
     { label: '系统名称', value: 'Web Linux' },
-    { label: '版本号', value: '1.0.0-beta' },
+    { label: '版本号', value: '1.0.0' },
     { label: '内核版本', value: 'Web Linux 6.8.0' },
     { label: '架构', value: 'x86_64 (Browser)' },
     { label: '桌面环境', value: 'Web DE 1.0' },
@@ -17,13 +12,22 @@ export default function About() {
     { label: '许可证', value: 'MIT' },
   ]
 
+  const techStack = [
+    { name: 'React', version: '19.x', icon: '⚛️', desc: '用户界面框架' },
+    { name: 'TypeScript', version: '5.x', icon: '🔷', desc: '类型安全编程语言' },
+    { name: 'Zustand', version: '5.x', icon: '🐻', desc: '轻量级状态管理' },
+    { name: 'Vite', version: '6.x', icon: '⚡', desc: '快速构建工具' },
+  ]
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e2e',
       color: '#cdd6f4', overflowY: 'auto', padding: '20px',
     }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ fontSize: '48px', marginBottom: '8px' }}>🐧</div>
+        <div style={{ fontSize: '48px', marginBottom: '8px' }}>
+          <TerminalIcon className="w-12 h-12" />
+        </div>
         <h1 style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: 700 }}>Web Linux</h1>
         <div style={{ fontSize: '13px', color: '#a6adc8' }}>浏览器中的 Linux 桌面环境</div>
       </div>
@@ -74,7 +78,7 @@ export default function About() {
       </div>
 
       <div style={{ textAlign: 'center', fontSize: '11px', color: '#6c7086', lineHeight: 1.8 }}>
-        <div>Web Linux &copy; 2024</div>
+        <div>Web Linux © 2024</div>
         <div>基于 Web 技术构建 · 使用 React + TypeScript + Zustand + Vite</div>
         <div>开源项目 · MIT License</div>
         <div style={{ marginTop: '4px', color: '#585b70' }}>

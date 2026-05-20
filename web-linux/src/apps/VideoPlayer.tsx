@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { VolumeIcon, VideoRecorderIcon } from '../icons'
 
 const PLAYLIST = [
   { title: 'Web Linux 宣传片', duration: '3:24', thumbnail: '#e94560', src: '' },
@@ -93,7 +94,7 @@ export default function VideoPlayer() {
           background: `linear-gradient(135deg, ${currentVideo.thumbnail}, ${currentVideo.thumbnail}44, #1a1a2e)`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
         }}>
-          <div style={{ fontSize: 64, opacity: 0.6, marginBottom: 16 }}>🎬</div>
+          <div style={{ fontSize: 64, opacity: 0.6, marginBottom: 16 }}><VideoRecorderIcon /></div>
           <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{currentVideo.title}</div>
           <div style={{ fontSize: 13, color: '#aaa' }}>{currentVideo.duration}</div>
           {!isPlaying && (
@@ -139,7 +140,7 @@ export default function VideoPlayer() {
             <button onClick={handleNext} style={vidBtn}>⏭</button>
             <span style={{ fontSize: 11, color: '#aaa' }}>{formatTime(currentTime)} / {currentVideo.duration}</span>
             <div style={{ flex: 1 }} />
-            <button onClick={() => { setIsMuted(!isMuted); setVolume(isMuted ? 50 : 0) }} style={vidBtn}>{isMuted ? '🔇' : '🔊'}</button>
+            <button onClick={() => { setIsMuted(!isMuted); setVolume(isMuted ? 50 : 0) }} style={vidBtn}>{isMuted ? '🔇' : <VolumeIcon />}</button>
             <input
               type="range"
               min={0}

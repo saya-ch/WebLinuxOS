@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useStore } from '../../store'
+import { WifiIcon, VolumeIcon, BatteryIcon, GridIcon } from '../../icons'
 
 export default function Taskbar() {
   const windows = useStore((s) => s.windows)
@@ -47,7 +48,7 @@ export default function Taskbar() {
           onClick={toggleLauncher}
           title="启动器"
         >
-          🐧
+          <GridIcon />
         </div>
       </div>
 
@@ -69,9 +70,9 @@ export default function Taskbar() {
       </div>
 
       <div className="taskbar-right">
-        <div className="taskbar-tray-item" title="网络">📶</div>
-        <div className="taskbar-tray-item" title="音量">🔊</div>
-        <div className="taskbar-tray-item" title="电源">🔋</div>
+        <div className="taskbar-tray-item" title="网络"><WifiIcon /></div>
+        <div className="taskbar-tray-item" title="音量"><VolumeIcon /></div>
+        <div className="taskbar-tray-item" title="电源"><BatteryIcon /></div>
         <div className="taskbar-clock">
           <div style={{ fontSize: 12, lineHeight: 1.2 }}>{formatTime(time)}</div>
           <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.2 }}>{formatDate(time)}</div>

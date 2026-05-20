@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
+import { VolumeIcon } from '../icons'
 
 interface DictEntry {
   word: string
@@ -97,7 +98,7 @@ export default function Dictionary() {
               <button onClick={() => speak(selected.word)} style={{
                 width: 36, height: 36, borderRadius: '50%', border: `1px solid ${borderColor}`,
                 background: cardBg, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>🔊</button>
+              }}><VolumeIcon /></button>
             </div>
 
             <div style={{ fontSize: 16, color: isDark ? '#9ca3af' : '#666', marginBottom: 16 }}>{selected.phonetic}</div>

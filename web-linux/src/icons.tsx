@@ -390,6 +390,14 @@ export const BluetoothIcon = ({ className = 'w-6 h-6' }: { className?: string })
   </svg>
 )
 
+export const VolumeIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M15 9C16.4741 10.1255 17.5 12.1603 17.5 14.5C17.5 16.8397 16.4741 18.8745 15 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M13 12C13.9214 12.6755 14.5 13.738 14.5 15C14.5 16.262 13.9214 17.3245 13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+)
+
 export const BatteryIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="1" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2"/>

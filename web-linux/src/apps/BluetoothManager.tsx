@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BatteryIcon } from '../icons'
 
 interface BluetoothDevice {
   id: string
@@ -102,7 +103,7 @@ export default function BluetoothManager() {
               }} />
               <span style={{ fontWeight: 600, flex: 1 }}>{device.name}</span>
               <span style={{ color: '#a6adc8' }}>{device.type}</span>
-              {device.battery && <span style={{ color: '#f9e2af' }}>🔋{device.battery}%</span>}
+              {device.battery && <span style={{ color: '#f9e2af' }}><BatteryIcon />{device.battery}%</span>}
               <button
                 onClick={(e) => { e.stopPropagation(); toggleConnect(device.id) }}
                 style={{
