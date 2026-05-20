@@ -4,6 +4,13 @@
   box-sizing: border-box;
 }
 
+.w-6 {
+  width: 1.5rem;
+}
+.h-6 {
+  height: 1.5rem;
+}
+
 :root {
   --desktop-bg: #1a1a2e;
   --window-bg: #252536;
