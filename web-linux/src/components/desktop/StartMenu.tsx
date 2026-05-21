@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import { useStore } from '../../store'
 
 interface CategoryDef {
@@ -20,7 +20,7 @@ const categories: CategoryDef[] = [
 
 const favoriteAppIds = ['terminal', 'files', 'browser', 'code-editor', 'settings', 'calculator', 'notepad']
 
-export default function StartMenu() {
+const StartMenu = memo(function StartMenu() {
   const apps = useStore((s) => s.apps)
   const openApp = useStore((s) => s.openApp)
   const closeLauncher = useStore((s) => s.closeLauncher)
@@ -121,4 +121,6 @@ export default function StartMenu() {
       </div>
     </>
   )
-}
+})
+
+export default StartMenu

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState, memo } from 'react'
 import { useStore } from '../../store'
 import type { WindowState } from '../../types'
 
@@ -7,7 +7,7 @@ interface WindowProps {
   children: React.ReactNode
 }
 
-export default function Window({ window: win, children }: WindowProps) {
+const Window = memo(function Window({ window: win, children }: WindowProps) {
   const focusWindow = useStore((s) => s.focusWindow)
   const closeWindow = useStore((s) => s.closeWindow)
   const minimizeWindow = useStore((s) => s.minimizeWindow)
@@ -183,4 +183,6 @@ export default function Window({ window: win, children }: WindowProps) {
       )}
     </div>
   )
-}
+})
+
+export default Window

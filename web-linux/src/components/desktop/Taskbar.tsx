@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
 
-export default function Taskbar() {
+const Taskbar = memo(function Taskbar() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
 
@@ -82,4 +82,6 @@ export default function Taskbar() {
       </div>
     </div>
   )
-}
+})
+
+export default Taskbar

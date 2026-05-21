@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
 import { useStore } from '../../store'
 
 const wallpapers = [
@@ -28,7 +28,7 @@ interface MenuSeparator {
 
 type MenuEntry = MenuItem | MenuSeparator
 
-export default function Desktop() {
+const Desktop = memo(function Desktop() {
   const desktopIcons = useStore((s) => s.desktopIcons)
   const openApp = useStore((s) => s.openApp)
   const contextMenu = useStore((s) => s.contextMenu)
@@ -143,4 +143,6 @@ export default function Desktop() {
       )}
     </div>
   )
-}
+})
+
+export default Desktop

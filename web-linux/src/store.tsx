@@ -5,6 +5,56 @@ import {
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon
 } from './icons'
 
+function findNodeById(nodes: FileNode[], id: string): FileNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node
+    if (node.children) {
+      const found = findNodeById(node.children, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function findParentNode(nodes: FileNode[], childId: string): FileNode | null {
+  for (const node of nodes) {
+    if (node.children) {
+      if (node.children.some(c => c.id === childId)) {
+        return node
+      }
+      const found = findParentNode(node.children, childId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function findNodeByPath(files: FileNode[], path: string): FileNode | null {
+  if (path === '/' || path === '') return files[0]
+  const parts = path.replace(/^\//, '').split('/')
+  let current: FileNode | null = files[0]
+  for (const part of parts) {
+    if (!part || !current?.children) continue
+    current = current.children.find((c) => c.name === part) || null
+    if (!current) return null
+  }
+  return current
+}
+
+function resolvePath(cwd: string, target: string): string {
+  if (target.startsWith('/')) return target
+  const parts = (cwd + '/' + target).split('/').filter(Boolean)
+  const resolved: string[] = []
+  for (const part of parts) {
+    if (part === '..') {
+      resolved.pop()
+    } else if (part !== '.') {
+      resolved.push(part)
+    }
+  }
+  return '/' + resolved.join('/')
+}
+
 const defaultIcons: DesktopIcon[] = [
   { id: 'icon-files', appId: 'files', name: '文件管理器', icon: <FolderIcon />, x: 20, y: 20 },
   { id: 'icon-terminal', appId: 'terminal', name: '终端', icon: <TerminalIcon />, x: 20, y: 120 },
@@ -240,3 +290,5 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 }))
+
+export { findNodeById, findParentNode, findNodeByPath, resolvePath }

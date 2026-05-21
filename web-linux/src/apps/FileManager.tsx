@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useStore } from '../store'
+import { useStore, findNodeById } from '../store'
 import type { FileNode } from '../types'
 
 function formatSize(size: number | undefined): string {
@@ -24,10 +24,8 @@ export default function FileManager() {
   const files = useStore((s) => s.files)
   const addFile = useStore((s) => s.addFile)
   const deleteFile = useStore((s) => s.deleteFile)
-
   const renameFile = useStore((s) => s.renameFile)
   const openFileWith = useStore((s) => s.openFileWith)
-
 
   const [currentPath, setCurrentPath] = useState<string[]>(['root'])
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['root']))
@@ -37,17 +35,6 @@ export default function FileManager() {
   const [renameValue, setRenameValue] = useState('')
   const [newItemInput, setNewItemInput] = useState<'file' | 'folder' | null>(null)
   const [newItemName, setNewItemName] = useState('')
-
-  function findNodeById(nodes: FileNode[], id: string): FileNode | null {
-    for (const n of nodes) {
-      if (n.id === id) return n
-      if (n.children) {
-        const found = findNodeById(n.children, id)
-        if (found) return found
-      }
-    }
-    return null
-  }
 
   const currentNodeId = currentPath[currentPath.length - 1]
   const currentNode = findNodeById(files, currentNodeId)

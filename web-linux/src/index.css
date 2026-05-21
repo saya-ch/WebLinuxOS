@@ -37,6 +37,48 @@
   --scrollbar-thumb-hover: #4a4a7a;
 }
 
+@keyframes windowOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes windowClose {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes launcherOpen {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
   background: var(--desktop-bg);
@@ -71,10 +113,16 @@ body {
   cursor: pointer;
   user-select: none;
   border: 1px solid transparent;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .desktop-icon:hover {
   background: rgba(255, 255, 255, 0.04);
+  transform: scale(1.02);
+}
+
+.desktop-icon:active {
+  transform: scale(0.98);
 }
 
 .desktop-icon.selected {
@@ -108,6 +156,11 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
   overflow: hidden;
+  animation: windowOpen 0.2s ease-out;
+}
+
+.window.closing {
+  animation: windowClose 0.15s ease-in forwards;
 }
 
 .window.focused {
@@ -317,7 +370,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -326,6 +379,11 @@ body {
 
 .taskbar-button:hover {
   background: var(--taskbar-button-hover);
+  transform: scale(1.02);
+}
+
+.taskbar-button:active {
+  transform: scale(0.98);
 }
 
 .taskbar-button.active {
@@ -398,6 +456,7 @@ body {
   display: flex;
   overflow: hidden;
   z-index: 9999;
+  animation: launcherOpen 0.2s ease-out;
 }
 
 .launcher-sidebar {
@@ -475,11 +534,16 @@ body {
   padding: 10px 6px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s ease;
 }
 
 .launcher-app-item:hover {
   background: var(--launcher-category-hover);
+  transform: scale(1.05);
+}
+
+.launcher-app-item:active {
+  transform: scale(0.95);
 }
 
 .launcher-app-item-icon {

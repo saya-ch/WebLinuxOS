@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, memo } from 'react'
 import { useStore } from '../../store'
 import Window from './Window'
 
@@ -41,7 +41,7 @@ function preloadComponents() {
   })
 }
 
-export default function WindowManager() {
+const WindowManager = memo(function WindowManager() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
 
@@ -79,4 +79,6 @@ export default function WindowManager() {
       })}
     </>
   )
-}
+})
+
+export default WindowManager

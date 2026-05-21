@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, memo } from 'react'
 import { useStore } from './store'
 import { appRegistry } from './apps'
 import Desktop from './components/desktop/Desktop'
@@ -6,7 +6,7 @@ import WindowManager from './components/desktop/WindowManager'
 import Taskbar from './components/desktop/Taskbar'
 import StartMenu from './components/desktop/StartMenu'
 
-export default function App() {
+const App = memo(function App() {
   const registerApp = useStore((s) => s.registerApp)
   const openApp = useStore((s) => s.openApp)
   const toggleLauncher = useStore((s) => s.toggleLauncher)
@@ -100,6 +100,35 @@ export default function App() {
         openApp('browser')
         return
       }
+
+      if (isMod && isAlt && e.key === 'F4') {
+        e.preventDefault()
+        const lastFocusedWindow = windows.filter(w => w.focused)[0]
+        if (lastFocusedWindow) {
+          closeWindow(lastFocusedWindow.id)
+        }
+        return
+      }
+
+      if (isMod && e.key === 'm') {
+        e.preventDefault()
+        const lastFocusedWindow = windows.filter(w => w.focused)[0]
+        if (lastFocusedWindow) {
+          const minimizeWindow = useStore.getState().minimizeWindow
+          minimizeWindow(lastFocusedWindow.id)
+        }
+        return
+      }
+
+      if (e.key === 'F11') {
+        e.preventDefault()
+        const lastFocusedWindow = windows.filter(w => w.focused)[0]
+        if (lastFocusedWindow) {
+          const maximizeWindow = useStore.getState().maximizeWindow
+          maximizeWindow(lastFocusedWindow.id)
+        }
+        return
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -114,4 +143,6 @@ export default function App() {
       <Taskbar />
     </>
   )
-}
+})
+
+export default App

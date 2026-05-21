@@ -1,36 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useStore } from '../store'
+import { useStore, findNodeByPath, resolvePath } from '../store'
 import type { FileNode } from '../types'
 
 interface HistoryEntry {
   input: string
   output: string
-}
-
-function findNodeByPath(files: FileNode[], path: string): FileNode | null {
-  if (path === '/' || path === '') return files[0]
-  const parts = path.replace(/^\//, '').split('/')
-  let current: FileNode | null = files[0]
-  for (const part of parts) {
-    if (!part || !current?.children) continue
-    current = current.children.find((c) => c.name === part) || null
-    if (!current) return null
-  }
-  return current
-}
-
-function resolvePath(cwd: string, target: string): string {
-  if (target.startsWith('/')) return target
-  const parts = (cwd + '/' + target).split('/').filter(Boolean)
-  const resolved: string[] = []
-  for (const part of parts) {
-    if (part === '..') {
-      resolved.pop()
-    } else if (part !== '.') {
-      resolved.push(part)
-    }
-  }
-  return '/' + resolved.join('/')
 }
 
 function listDir(files: FileNode[], path: string): string {
