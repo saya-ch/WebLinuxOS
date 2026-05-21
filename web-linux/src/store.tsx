@@ -67,6 +67,9 @@ const defaultIcons: DesktopIcon[] = [
   { id: 'icon-monitor', appId: 'system-monitor', name: '系统监视器', icon: <ActivityIcon />, x: 140, y: 320 },
 ]
 
+const initialTheme: 'dark' | 'light' = (localStorage.getItem('weblinux-theme') as 'dark' | 'light') || 'dark'
+const initialWallpaper: string = localStorage.getItem('weblinux-wallpaper') || ''
+
 const initialFiles: FileNode[] = [
   { id: 'root', name: '/', type: 'folder', parentId: null, children: [
     { id: 'home', name: 'home', type: 'folder', parentId: 'root', children: [
@@ -137,8 +140,8 @@ export const useStore = create<Store>((set, get) => ({
   desktopIcons: defaultIcons,
   files: initialFiles,
   nextZIndex: 0,
-  theme: 'dark',
-  wallpaper: '',
+  theme: initialTheme,
+  wallpaper: initialWallpaper,
   launcherOpen: false,
   contextMenu: { x: 0, y: 0, visible: false },
 
@@ -238,8 +241,14 @@ export const useStore = create<Store>((set, get) => ({
   closeLauncher: () => set({ launcherOpen: false }),
   showContextMenu: (x, y) => set({ contextMenu: { x, y, visible: true } }),
   hideContextMenu: () => set({ contextMenu: { x: 0, y: 0, visible: false } }),
-  setTheme: (theme) => set({ theme }),
-  setWallpaper: (wallpaper) => set({ wallpaper }),
+  setTheme: (theme) => {
+    localStorage.setItem('weblinux-theme', theme)
+    set({ theme })
+  },
+  setWallpaper: (wallpaper) => {
+    localStorage.setItem('weblinux-wallpaper', wallpaper)
+    set({ wallpaper })
+  },
 
   deleteFile: (id) =>
     set((s) => {

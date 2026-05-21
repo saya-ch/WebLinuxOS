@@ -84,7 +84,20 @@ export default function Terminal() {
       case '':
         break
       case 'help':
-        output = `可用命令:\n  ls, cd, pwd, cat, echo, clear, help, date, whoami, uname,\n  mkdir, touch, rm, cp, mv, find, grep, ps, top, df, free,\n  history, neofetch, lsb_release, hostname, ping, tree, wc, which,\n  uptime, cal, env, export, alias, unalias, type, man`
+        output = `可用命令:
+  文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc
+  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top
+  网络工具: ping, ifconfig
+  系统工具: clear, help, history, neofetch, alias, type, man
+  工具命令: echo, find, grep, env, export
+
+快捷键:
+  Ctrl+L - 切换启动器
+  Ctrl+N - 新建终端
+  Ctrl+W - 关闭窗口
+  Ctrl+M - 最小化窗口
+  F11 - 全屏/还原窗口
+  Ctrl+Alt+Tab - 切换窗口`
         break
       case 'clear':
         setHistory([])
@@ -102,7 +115,19 @@ export default function Terminal() {
         output = new Date().toString()
         break
       case 'uname':
-        output = args.includes('-a') ? `Linux web-linux 6.1.0-web ${new Date().toISOString().slice(0, 10)} x86_64 GNU/Linux` : 'Linux'
+        if (args.includes('-a')) {
+          output = 'Linux web-linux 6.1.0-web #1 SMP PREEMPT_DYNAMIC ' + new Date().toISOString().slice(0, 10) + ' x86_64 GNU/Linux'
+        } else if (args.includes('-r')) {
+          output = '6.1.0-web'
+        } else if (args.includes('-s')) {
+          output = 'Linux'
+        } else if (args.includes('-n')) {
+          output = 'web-linux'
+        } else if (args.includes('-m')) {
+          output = 'x86_64'
+        } else {
+          output = 'Linux'
+        }
         break
       case 'lsb_release':
         output = args.includes('-a')
@@ -367,8 +392,27 @@ export default function Terminal() {
         if (args.length === 0) {
           output = 'ping: 用法: ping 目标地址'
         } else {
-          output = `PING ${args[0]} 56(84) bytes of data.\n64 bytes from ${args[0]}: icmp_seq=1 ttl=64 time=${(Math.random() * 30 + 10).toFixed(1)} ms\n64 bytes from ${args[0]}: icmp_seq=2 ttl=64 time=${(Math.random() * 30 + 10).toFixed(1)} ms\n64 bytes from ${args[0]}: icmp_seq=3 ttl=64 time=${(Math.random() * 30 + 10).toFixed(1)} ms`
+          const times = []
+          for (let i = 0; i < 4; i++) {
+            times.push(`${(Math.random() * 30 + 10).toFixed(2)} ms`)
+          }
+          output = `PING ${args[0]} 56(84) bytes of data.\n64 bytes from ${args[0]}: icmp_seq=1 ttl=64 time=${times[0]}\n64 bytes from ${args[0]}: icmp_seq=2 ttl=64 time=${times[1]}\n64 bytes from ${args[0]}: icmp_seq=3 ttl=64 time=${times[2]}\n64 bytes from ${args[0]}: icmp_seq=4 ttl=64 time=${times[3]}\n\n--- ${args[0]} ping statistics ---\n4 packets transmitted, 4 received, 0% packet loss`
         }
+        break
+      case 'ifconfig':
+        output = `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.100  netmask 255.255.255.0  broadcast 192.168.1.255
+        inet6 fe80::a00:27ff:fe8e:8aa8  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:8e:8a:a8  txqueuelen 1000  (Ethernet)
+        RX packets 12345  bytes 12345678 (11.7 MiB)
+        TX packets 5432  bytes 987654 (964.5 KiB)
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 234  bytes 23456 (22.9 KiB)
+        TX packets 234  bytes 23456 (22.9 KiB)`
         break
       default:
         output = `bash: ${command}: 未找到命令 (输入 'help' 查看可用命令)`
@@ -381,7 +425,10 @@ export default function Terminal() {
     if (e.key === 'Enter') {
       const cmd = input.trim()
       if (cmd) {
-        setCmdHistory((prev) => [...prev, cmd])
+        setCmdHistory((prev) => {
+          const filtered = prev.filter(c => c !== cmd)
+          return [...filtered, cmd]
+        })
         setHistoryIndex(-1)
       }
       executeCommand(cmd)

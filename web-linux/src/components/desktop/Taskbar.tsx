@@ -9,6 +9,7 @@ const Taskbar = memo(function Taskbar() {
   const restoreWindow = useStore((s) => s.restoreWindow)
   const toggleLauncher = useStore((s) => s.toggleLauncher)
   const launcherOpen = useStore((s) => s.launcherOpen)
+  const openApp = useStore((s) => s.openApp)
 
   const [time, setTime] = useState(new Date())
 
@@ -48,7 +49,7 @@ const Taskbar = memo(function Taskbar() {
         <div
           className={`taskbar-launcher ${launcherOpen ? 'active' : ''}`}
           onClick={toggleLauncher}
-          title="启动器"
+          title="启动器 (Ctrl+Shift+L)"
         >
           🐧
         </div>
@@ -62,7 +63,7 @@ const Taskbar = memo(function Taskbar() {
               key={win.id}
               className={`taskbar-button ${win.focused && !win.minimized ? 'active' : ''}`}
               onClick={() => handleTaskbarButtonClick(win.appId, win.id, win.focused, win.minimized)}
-              title={win.title}
+              title={`${win.title}${win.minimized ? ' (已最小化)' : ''}`}
             >
               <span className="taskbar-button-icon">{app?.icon}</span>
               <span className="taskbar-button-title">{win.title}</span>
@@ -72,9 +73,9 @@ const Taskbar = memo(function Taskbar() {
       </div>
 
       <div className="taskbar-right">
-        <div className="taskbar-tray-item" title="网络">📶</div>
-        <div className="taskbar-tray-item" title="音量">🔊</div>
-        <div className="taskbar-tray-item" title="电源">🔋</div>
+        <div className="taskbar-tray-item" title="网络已连接" onClick={() => openApp('network-monitor')}>📶</div>
+        <div className="taskbar-tray-item" title={`音量: ${80}%`}>🔊</div>
+        <div className="taskbar-tray-item" title="电池: 100%" onClick={() => openApp('power-manager')}>🔋</div>
         <div className="taskbar-clock">
           <div style={{ fontSize: 12, lineHeight: 1.2 }}>{formatTime(time)}</div>
           <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.2 }}>{formatDate(time)}</div>

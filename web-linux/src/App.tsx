@@ -34,7 +34,6 @@ const App = memo(function App() {
       if (launcherOpen) {
         if (e.key === 'Escape') {
           toggleLauncher()
-          return
         }
         return
       }
@@ -98,15 +97,6 @@ const App = memo(function App() {
       if (isMod && e.key === '3') {
         e.preventDefault()
         openApp('browser')
-        return
-      }
-
-      if (isMod && isAlt && e.key === 'F4') {
-        e.preventDefault()
-        const lastFocusedWindow = windows.filter(w => w.focused)[0]
-        if (lastFocusedWindow) {
-          closeWindow(lastFocusedWindow.id)
-        }
         return
       }
 

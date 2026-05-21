@@ -182,10 +182,11 @@ export default function FileManager() {
   }
 
   function getFileDate(node: FileNode): string {
+    const baseTime = new Date('2024-01-01').getTime()
     const hash = node.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-    const now = new Date()
-    const past = new Date(now.getTime() - (hash % 90) * 86400000)
-    return past.toLocaleDateString('zh-CN')
+    const offset = (hash % 365) * 86400000
+    const date = new Date(baseTime + offset)
+    return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
   }
 
   function getFileSize(node: FileNode): string {

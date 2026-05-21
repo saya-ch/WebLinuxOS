@@ -4,15 +4,10 @@ import Window from './Window'
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<Record<string, never>>>> = {}
 
-const commonComponents = [
-  'Terminal', 'FileManager', 'TextEditor', 'Calculator', 'Settings',
-  'SystemMonitor', 'WebBrowser', 'CodeEditor', 'Notepad'
-]
-
 function loadComponent(name: string) {
   if (!componentCache[name]) {
     componentCache[name] = lazy(() =>
-      import(`../../apps/${name}.tsx`).catch(() => ({
+      import(`../../apps/${name}.tsx`).then(module => ({ default: module.default })).catch(() => ({
         default: () => (
           <div
             style={{
@@ -24,9 +19,26 @@ function loadComponent(name: string) {
               alignItems: 'center',
               justifyContent: 'center',
               height: '100%',
+              flexDirection: 'column',
+              gap: 12,
             }}
           >
-            {name} - 加载失败，请重试
+            <span style={{ fontSize: 48 }}>⚠️</span>
+            <div>{name} - 应用加载失败</div>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 6,
+                border: 'none',
+                background: 'var(--accent)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: 12,
+              }}
+            >
+              重新加载页面
+            </button>
           </div>
         ),
       })),
@@ -36,8 +48,12 @@ function loadComponent(name: string) {
 }
 
 function preloadComponents() {
+  const commonComponents = [
+    'Terminal', 'FileManager', 'TextEditor', 'Calculator', 'Settings',
+    'SystemMonitor', 'WebBrowser', 'CodeEditor', 'Notepad'
+  ]
   commonComponents.forEach(name => {
-    import(`../../apps/${name}.tsx`).catch(() => {})
+    loadComponent(name)
   })
 }
 
@@ -46,8 +62,7 @@ const WindowManager = memo(function WindowManager() {
   const apps = useStore((s) => s.apps)
 
   useEffect(() => {
-    const timer = setTimeout(preloadComponents, 2000)
-    return () => clearTimeout(timer)
+    preloadComponents()
   }, [])
 
   return (

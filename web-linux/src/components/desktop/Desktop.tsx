@@ -55,6 +55,14 @@ const Desktop = memo(function Desktop() {
     [openApp],
   )
 
+  const handleIconDoubleClick = useCallback(
+    (appId: string) => {
+      openApp(appId)
+      setSelectedIconId(null)
+    },
+    [openApp],
+  )
+
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault()
@@ -110,6 +118,7 @@ const Desktop = memo(function Desktop() {
             e.stopPropagation()
             handleIconClick(icon.appId, icon.id)
           }}
+          onDoubleClick={() => handleIconDoubleClick(icon.appId)}
         >
           <span className="desktop-icon-icon">{icon.icon}</span>
           <span className="desktop-icon-name">{icon.name}</span>
