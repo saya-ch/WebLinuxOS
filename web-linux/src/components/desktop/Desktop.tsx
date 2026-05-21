@@ -119,6 +119,15 @@ const Desktop = memo(function Desktop() {
             handleIconClick(icon.appId, icon.id)
           }}
           onDoubleClick={() => handleIconDoubleClick(icon.appId)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && selectedIconId === icon.id) {
+              openApp(icon.appId)
+              setSelectedIconId(null)
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={icon.name}
         >
           <span className="desktop-icon-icon">{icon.icon}</span>
           <span className="desktop-icon-name">{icon.name}</span>

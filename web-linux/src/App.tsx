@@ -31,6 +31,24 @@ const App = memo(function App() {
         return
       }
 
+      if (isMod && isShift && e.key === 's') {
+        e.preventDefault()
+        openApp('settings')
+        return
+      }
+
+      if (isMod && isShift && e.key === 'f') {
+        e.preventDefault()
+        openApp('files')
+        return
+      }
+
+      if (isMod && isShift && e.key === 't') {
+        e.preventDefault()
+        openApp('terminal')
+        return
+      }
+
       const state = useStore.getState()
       if (state.launcherOpen) {
         if (e.key === 'Escape') {
@@ -128,6 +146,18 @@ const App = memo(function App() {
       if (isMod && e.key === 't') {
         e.preventDefault()
         openApp('text-editor')
+        return
+      }
+
+      if (e.key === 'PrintScreen') {
+        e.preventDefault()
+        openApp('screenshot')
+        return
+      }
+
+      if (isMod && e.key === 'p') {
+        e.preventDefault()
+        openApp('paint')
         return
       }
     }

@@ -19,23 +19,33 @@ function listDir(files: FileNode[], path: string): string {
   return items.join('  ')
 }
 
+const ANSI_COLORS: Record<string, string> = {
+  '34': '#569cd6',
+  '32': '#6a9955',
+  '31': '#f44747',
+  '33': '#dcdcaa',
+  '36': '#4ec9b0',
+  '35': '#c586c0',
+}
+
 function processOutput(text: string): React.ReactNode[] {
-  // 使用字符代码匹配ANSI转义序列，避免直接的控制字符
   const escapeChar = String.fromCharCode(27)
   const regex = new RegExp(`(${escapeChar}\\[[0-9;]*m)`, 'g')
   const parts = text.split(regex)
   const result: React.ReactNode[] = []
   let currentStyle: React.CSSProperties = {}
+  
   for (let i = 0; i < parts.length; i++) {
     if (parts[i].startsWith(escapeChar + '[')) {
       const code = parts[i].replace(escapeChar + '[', '').replace('m', '')
-      if (code === '0') currentStyle = {}
-      else if (code === '34') currentStyle = { color: '#569cd6' }
-      else if (code === '32') currentStyle = { color: '#6a9955' }
-      else if (code === '31') currentStyle = { color: '#f44747' }
-      else if (code === '33') currentStyle = { color: '#dcdcaa' }
-      else if (code === '1') currentStyle = { ...currentStyle, fontWeight: 'bold' }
-    } else {
+      if (code === '0') {
+        currentStyle = {}
+      } else if (code === '1') {
+        currentStyle = { ...currentStyle, fontWeight: 'bold' }
+      } else if (ANSI_COLORS[code]) {
+        currentStyle = { ...currentStyle, color: ANSI_COLORS[code] }
+      }
+    } else if (parts[i]) {
       result.push(<span key={i} style={currentStyle}>{parts[i]}</span>)
     }
   }
@@ -97,11 +107,20 @@ export default function Terminal() {
   工具命令: echo, find, grep, env, export
 
 快捷键:
-  Ctrl+L - 切换启动器
+  Ctrl+Shift+L - 切换启动器
+  Ctrl+Shift+S - 打开设置
+  Ctrl+Shift+F - 打开文件管理器
+  Ctrl+Shift+T - 打开终端
   Ctrl+N - 新建终端
   Ctrl+W - 关闭窗口
   Ctrl+M - 最小化窗口
+  Ctrl+E - 打开文件管理器
+  Ctrl+B - 打开浏览器
+  Ctrl+T - 打开文本编辑器
+  Ctrl+P - 打开画图
+  Ctrl+A - 打开计算器
   F11 - 全屏/还原窗口
+  PrintScreen - 打开截图工具
   Ctrl+Alt+Tab - 切换窗口`
         break
       case 'clear':

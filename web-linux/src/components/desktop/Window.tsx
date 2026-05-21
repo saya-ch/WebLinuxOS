@@ -18,6 +18,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
 
   const [dragging, setDragging] = useState(false)
   const [resizing, setResizing] = useState<'bottom' | 'right' | 'left' | 'corner' | null>(null)
+  const [isClosing, setIsClosing] = useState(false)
   const stateRef = useRef({
     startX: 0,
     startY: 0,
@@ -118,9 +119,16 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     focusWindow(win.id)
   }, [win.id, focusWindow])
 
+  const handleClose = useCallback(() => {
+    setIsClosing(true)
+    setTimeout(() => {
+      closeWindow(win.id)
+    }, 150)
+  }, [win.id, closeWindow])
+
   return (
     <div
-      className={`window ${win.focused ? 'focused' : ''} ${win.maximized ? 'maximized' : ''}`}
+      className={`window ${win.focused ? 'focused' : ''} ${win.maximized ? 'maximized' : ''} ${isClosing ? 'closing' : ''}`}
       style={{
         left: win.maximized ? 0 : win.x,
         top: win.maximized ? 0 : win.y,
@@ -154,7 +162,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           <button
             className="window-titlebar-button close"
             onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => closeWindow(win.id)}
+            onClick={handleClose}
           >
             &#x2715;
           </button>
