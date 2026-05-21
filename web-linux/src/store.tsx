@@ -55,6 +55,23 @@ function resolvePath(cwd: string, target: string): string {
   return '/' + resolved.join('/')
 }
 
+export function validateFileName(name: string): { valid: boolean; error?: string } {
+  if (!name || name.trim().length === 0) {
+    return { valid: false, error: '文件名不能为空' }
+  }
+  if (name.length > 255) {
+    return { valid: false, error: '文件名过长（最大255字符）' }
+  }
+  const invalidChars = /[<>:"|?*]/
+  if (invalidChars.test(name)) {
+    return { valid: false, error: '文件名包含非法字符' }
+  }
+  if (name === '.' || name === '..') {
+    return { valid: false, error: '不能使用此文件名' }
+  }
+  return { valid: true }
+}
+
 const defaultIcons: DesktopIcon[] = [
   { id: 'icon-files', appId: 'files', name: '文件管理器', icon: <FolderIcon />, x: 20, y: 20 },
   { id: 'icon-terminal', appId: 'terminal', name: '终端', icon: <TerminalIcon />, x: 20, y: 120 },

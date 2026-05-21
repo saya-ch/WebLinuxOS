@@ -72,6 +72,11 @@ export default function Terminal() {
   const username = 'user'
   const hostname = 'web-linux'
 
+  const searchHistory = useCallback((query: string): string[] => {
+    if (!query) return cmdHistory
+    return cmdHistory.filter(cmd => cmd.toLowerCase().includes(query.toLowerCase()))
+  }, [cmdHistory])
+
   const executeCommand = useCallback((cmd: string) => {
     const trimmed = cmd.trim()
     const parts = trimmed.split(/\s+/)
@@ -386,7 +391,18 @@ export default function Terminal() {
         output = `              总计         已用         空闲\n内存:       ${Math.floor(Math.random() * 4000 + 4000)}MB      ${Math.floor(Math.random() * 3000)}MB      ${Math.floor(Math.random() * 3000)}MB\n交换:       ${Math.floor(Math.random() * 2000 + 1000)}MB           0MB      ${Math.floor(Math.random() * 2000 + 1000)}MB`
         break
       case 'history':
-        output = cmdHistory.map((h, i) => `  ${i + 1}  ${h}`).join('\n')
+        if (args.length > 0 && args[0] === '-c') {
+          setCmdHistory([])
+          output = '历史记录已清除'
+        } else if (args.length > 0) {
+          const searchTerm = args[0].replace(/^-+/, '')
+          const results = searchHistory(searchTerm)
+          output = results.length > 0
+            ? results.map((h, i) => `  ${i + 1}  ${h}`).join('\n')
+            : `未找到包含 "${searchTerm}" 的命令`
+        } else {
+          output = cmdHistory.map((h, i) => `  ${i + 1}  ${h}`).join('\n')
+        }
         break
       case 'ping':
         if (args.length === 0) {
@@ -419,7 +435,7 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
     }
 
     setHistory((prev) => [...prev, { input: trimmed, output }])
-  }, [cwd, files, addFile, deleteFile, cmdHistory, theme, username, hostname])
+  }, [cwd, files, addFile, deleteFile, cmdHistory, theme, username, hostname, searchHistory])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

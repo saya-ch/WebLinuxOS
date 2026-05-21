@@ -1093,3 +1093,69 @@ svg {
 .app-settings-power-btn:hover {
   background: #3d3d3d;
 }
+
+@keyframes taskbarBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.taskbar-button.notify {
+  animation: taskbarBounce 0.3s ease-in-out;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.desktop-icon.new {
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+.app-tooltip {
+  position: absolute;
+  background: rgba(30, 30, 50, 0.95);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 10001;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.window-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.window-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--window-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

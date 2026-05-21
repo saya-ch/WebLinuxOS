@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useStore, findNodeById } from '../store'
+import { useStore, findNodeById, validateFileName } from '../store'
 import type { FileNode } from '../types'
 
 function formatSize(size: number | undefined): string {
@@ -114,6 +114,11 @@ export default function FileManager() {
 
   function handleRenameSubmit() {
     if (renameTarget && renameValue.trim()) {
+      const validation = validateFileName(renameValue.trim())
+      if (!validation.valid) {
+        alert(validation.error || '文件名无效')
+        return
+      }
       renameFile(renameTarget, renameValue.trim())
     }
     setRenameTarget(null)
@@ -128,6 +133,13 @@ export default function FileManager() {
 
   function handleNewItemSubmit() {
     if (newItemName.trim() && newItemInput) {
+      const validation = validateFileName(newItemName.trim())
+      if (!validation.valid) {
+        alert(validation.error || '文件名无效')
+        setNewItemInput(null)
+        setNewItemName('')
+        return
+      }
       addFile(currentNodeId, newItemName.trim(), newItemInput)
     }
     setNewItemInput(null)

@@ -10,10 +10,10 @@ const App = memo(function App() {
   const registerApp = useStore((s) => s.registerApp)
   const openApp = useStore((s) => s.openApp)
   const toggleLauncher = useStore((s) => s.toggleLauncher)
-  const launcherOpen = useStore((s) => s.launcherOpen)
-  const windows = useStore((s) => s.windows)
   const closeWindow = useStore((s) => s.closeWindow)
   const focusWindow = useStore((s) => s.focusWindow)
+  const minimizeWindow = useStore((s) => s.minimizeWindow)
+  const maximizeWindow = useStore((s) => s.maximizeWindow)
 
   useEffect(() => {
     appRegistry.forEach((app) => registerApp(app))
@@ -31,7 +31,8 @@ const App = memo(function App() {
         return
       }
 
-      if (launcherOpen) {
+      const state = useStore.getState()
+      if (state.launcherOpen) {
         if (e.key === 'Escape') {
           toggleLauncher()
         }
@@ -64,7 +65,7 @@ const App = memo(function App() {
 
       if (isMod && e.key === 'w') {
         e.preventDefault()
-        const lastFocusedWindow = windows.filter(w => w.focused)[0]
+        const lastFocusedWindow = state.windows.filter(w => w.focused)[0]
         if (lastFocusedWindow) {
           closeWindow(lastFocusedWindow.id)
         }
@@ -73,7 +74,7 @@ const App = memo(function App() {
 
       if (isMod && isAlt && e.key === 'Tab') {
         e.preventDefault()
-        const sortedWindows = [...windows].sort((a, b) => b.zIndex - a.zIndex)
+        const sortedWindows = [...state.windows].sort((a, b) => b.zIndex - a.zIndex)
         if (sortedWindows.length > 1) {
           const currentIndex = sortedWindows.findIndex(w => w.focused)
           const nextIndex = (currentIndex + 1) % sortedWindows.length
@@ -102,9 +103,8 @@ const App = memo(function App() {
 
       if (isMod && e.key === 'm') {
         e.preventDefault()
-        const lastFocusedWindow = windows.filter(w => w.focused)[0]
+        const lastFocusedWindow = state.windows.filter(w => w.focused)[0]
         if (lastFocusedWindow) {
-          const minimizeWindow = useStore.getState().minimizeWindow
           minimizeWindow(lastFocusedWindow.id)
         }
         return
@@ -112,18 +112,29 @@ const App = memo(function App() {
 
       if (e.key === 'F11') {
         e.preventDefault()
-        const lastFocusedWindow = windows.filter(w => w.focused)[0]
+        const lastFocusedWindow = state.windows.filter(w => w.focused)[0]
         if (lastFocusedWindow) {
-          const maximizeWindow = useStore.getState().maximizeWindow
           maximizeWindow(lastFocusedWindow.id)
         }
+        return
+      }
+
+      if (isMod && e.key === 'a') {
+        e.preventDefault()
+        openApp('calculator')
+        return
+      }
+
+      if (isMod && e.key === 't') {
+        e.preventDefault()
+        openApp('text-editor')
         return
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [openApp, toggleLauncher, launcherOpen, windows, closeWindow, focusWindow])
+  }, [openApp, toggleLauncher, closeWindow, focusWindow, minimizeWindow, maximizeWindow])
 
   return (
     <>
