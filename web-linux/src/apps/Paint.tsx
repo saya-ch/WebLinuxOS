@@ -232,7 +232,7 @@ export default function Paint() {
 
   useEffect(() => {
     redrawAll()
-  }, [actions.length])
+  }, [actions, redrawAll])
 
   const clearCanvas = () => {
     setActions([])

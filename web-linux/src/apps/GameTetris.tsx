@@ -162,7 +162,7 @@ export default function GameTetris() {
     }
   }
 
-  const spawnPiece = () => {
+  const spawnPiece = useCallback(() => {
     pieceRef.current = nextPieceRef.current
     nextPieceRef.current = randomPiece()
     drawNext()
@@ -171,7 +171,7 @@ export default function GameTetris() {
       setGameOver(true)
       setStarted(false)
     }
-  }
+  }, [drawNext])
 
   const moveDown = useCallback((): boolean => {
     const piece = pieceRef.current
@@ -185,26 +185,26 @@ export default function GameTetris() {
     spawnPiece()
     drawBoard()
     return false
-  }, [drawBoard, drawNext])
+  }, [drawBoard, spawnPiece])
 
-  const moveHorizontal = (dx: number) => {
+  const moveHorizontal = useCallback((dx: number) => {
     const piece = pieceRef.current
     if (!isCollision(piece.shape, piece.x + dx, piece.y)) {
       pieceRef.current = { ...piece, x: piece.x + dx }
       drawBoard()
     }
-  }
+  }, [drawBoard])
 
-  const rotate = () => {
+  const rotate = useCallback(() => {
     const piece = pieceRef.current
     const rotated = rotateShape(piece.shape)
     if (!isCollision(rotated, piece.x, piece.y)) {
       pieceRef.current = { ...piece, shape: rotated }
       drawBoard()
     }
-  }
+  }, [drawBoard])
 
-  const hardDrop = () => {
+  const hardDrop = useCallback(() => {
     const piece = pieceRef.current
     let dropY = piece.y
     while (!isCollision(piece.shape, piece.x, dropY + 1)) {
@@ -214,7 +214,7 @@ export default function GameTetris() {
     setScore(scoreRef.current)
     pieceRef.current = { ...piece, y: dropY }
     moveDown()
-  }
+  }, [moveDown])
 
   useEffect(() => {
     gameLoopRef.current = () => {
@@ -275,7 +275,7 @@ export default function GameTetris() {
     drawBoard()
     drawNext()
     return () => window.removeEventListener('keydown', handleKey)
-  }, [drawBoard, drawNext, moveDown])
+  }, [drawBoard, drawNext, moveDown, moveHorizontal, rotate, hardDrop])
 
   return (
     <div style={{

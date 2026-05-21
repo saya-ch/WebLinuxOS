@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { useStore } from '../store'
 import type { FileNode } from '../types'
 
@@ -18,7 +18,7 @@ export default function TextEditor() {
   const files = useStore((s) => s.files)
   const updateFileContent = useStore((s) => s.updateFileContent)
 
-  const allFiles = flattenFiles(files).filter((f) => f.type === 'file')
+  const allFiles = useMemo(() => flattenFiles(files).filter((f) => f.type === 'file'), [files])
 
   const [openFileId, setOpenFileId] = useState<string | null>(null)
   const [content, setContent] = useState('')
@@ -44,40 +44,39 @@ export default function TextEditor() {
     }
   }, [openFileId, content, updateFileContent])
 
-  const handleNew = () => {
+  const handleNew = useCallback(() => {
     setOpenFileId(null)
     setContent('')
     setSavedContent('')
-  }
+  }, [])
 
-  const handleUndo = () => document.execCommand('undo')
-  const handleRedo = () => document.execCommand('redo')
-  const handleCut = () => document.execCommand('cut')
-  const handleCopy = () => document.execCommand('copy')
-  const handlePaste = () => document.execCommand('paste')
+  const handleUndo = useCallback(() => document.execCommand('undo'), [])
+  const handleRedo = useCallback(() => document.execCommand('redo'), [])
+  const handleCut = useCallback(() => document.execCommand('cut'), [])
+  const handleCopy = useCallback(() => document.execCommand('copy'), [])
+  const handlePaste = useCallback(() => document.execCommand('paste'), [])
 
-  const handleFind = () => {
+  const handleFind = useCallback(() => {
     setShowFind(true)
-  }
+  }, [])
 
-  const handleFindNext = () => {
+  const handleFindNext = useCallback(() => {
     if (!findText || !textareaRef.current) return
     const ta = textareaRef.current
     const idx = ta.value.indexOf(findText, ta.selectionEnd)
     if (idx !== -1) {
       ta.setSelectionRange(idx, idx + findText.length)
       ta.focus()
-      handleCursorChange()
     }
-  }
+  }, [findText])
 
-  const handleCursorChange = () => {
+  const handleCursorChange = useCallback(() => {
     const ta = textareaRef.current
     if (!ta) return
     const pos = ta.selectionStart
     const lines = ta.value.substring(0, pos).split('\n')
     setCursorPos({ line: lines.length, col: lines[lines.length - 1].length + 1 })
-  }
+  }, [])
 
   const isUnsaved = content !== savedContent
 
@@ -123,77 +122,198 @@ export default function TextEditor() {
     return () => window.removeEventListener('click', handler)
   }, [])
 
-  const menuItems = ['文件', '编辑', '查看', '工具']
-  const handleSelectAll = useCallback(() => {
-    if (textareaRef.current) textareaRef.current.select()
-  }, [])
-
+  // handleSelectAll 不使用 useCallback 避免依赖问题，直接实现简单功能
   const handleWordCount = useCallback(() => {
     alert(`字数: ${content.length} | 行数: ${content.split('\n').length}`)
   }, [content])
 
-  const menuContent: Record<string, { label: string; action: () => void; shortcut?: string }[]> = {
-    '文件': [
-      { label: '新建', action: handleNew, shortcut: 'Ctrl+N' },
-      { label: '打开...', action: () => setShowOpenDialog(true), shortcut: 'Ctrl+O' },
-      { label: '保存', action: () => { handleSave(); setActiveMenu(null) }, shortcut: 'Ctrl+S' },
-      { label: '──', action: () => {} },
-      { label: '退出', action: () => {} },
-    ],
-    '编辑': [
-      { label: '撤销', action: handleUndo, shortcut: 'Ctrl+Z' },
-      { label: '重做', action: handleRedo, shortcut: 'Ctrl+Y' },
-      { label: '──', action: () => {} },
-      { label: '剪切', action: handleCut, shortcut: 'Ctrl+X' },
-      { label: '复制', action: handleCopy, shortcut: 'Ctrl+C' },
-      { label: '粘贴', action: handlePaste, shortcut: 'Ctrl+V' },
-      { label: '──', action: () => {} },
-      { label: '全选', action: handleSelectAll, shortcut: 'Ctrl+A' },
-      { label: '查找...', action: handleFind, shortcut: 'Ctrl+F' },
-    ],
-    '查看': [
-      { label: wordWrap ? '取消自动换行' : '自动换行', action: () => setWordWrap(!wordWrap) },
-      { label: '状态栏', action: () => {} },
-    ],
-    '工具': [
-      { label: '字数统计', action: handleWordCount },
-    ],
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e2e', color: '#cdd6f4', fontFamily: 'sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', background: '#313244', color: '#cdd6f4', padding: '2px 0', borderBottom: '1px solid #45475a', fontSize: 12, userSelect: 'none' }}>
-        {menuItems.map((item) => (
-          <div key={item} style={{ position: 'relative' }}>
-            <div
-              style={{ padding: '4px 12px', cursor: 'pointer', borderRadius: 3, background: activeMenu === item ? '#45475a' : 'transparent' }}
-              onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === item ? null : item) }}
-              onMouseEnter={() => { if (activeMenu) setActiveMenu(item) }}
-            >
-              {item}
-            </div>
-            {activeMenu === item && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, background: '#313244', border: '1px solid #45475a', minWidth: 200, zIndex: 100, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.4)', padding: '4px 0' }}>
-                {menuContent[item].map((entry, i) =>
-                  entry.label === '──' ? (
-                    <div key={i} style={{ height: 1, background: '#45475a', margin: '4px 8px' }} />
-                  ) : (
-                    <div
-                      key={entry.label}
-                      style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                      onClick={(e) => { e.stopPropagation(); entry.action(); setActiveMenu(null) }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <span>{entry.label}</span>
-                      {entry.shortcut && <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>{entry.shortcut}</span>}
-                    </div>
-                  )
-                )}
-              </div>
-            )}
+        {/* 文件菜单 */}
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{ padding: '4px 12px', cursor: 'pointer', borderRadius: 3, background: activeMenu === '文件' ? '#45475a' : 'transparent' }}
+            onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === '文件' ? null : '文件') }}
+            onMouseEnter={() => { if (activeMenu) setActiveMenu('文件') }}
+          >
+            文件
           </div>
-        ))}
+          {activeMenu === '文件' && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, background: '#313244', border: '1px solid #45475a', minWidth: 200, zIndex: 100, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.4)', padding: '4px 0' }}>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleNew(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>新建</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+N</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); setShowOpenDialog(true); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>打开...</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+O</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleSave(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>保存</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+S</span>
+              </div>
+              <div style={{ height: 1, background: '#45475a', margin: '4px 8px' }} />
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>退出</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 编辑菜单 */}
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{ padding: '4px 12px', cursor: 'pointer', borderRadius: 3, background: activeMenu === '编辑' ? '#45475a' : 'transparent' }}
+            onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === '编辑' ? null : '编辑') }}
+            onMouseEnter={() => { if (activeMenu) setActiveMenu('编辑') }}
+          >
+            编辑
+          </div>
+          {activeMenu === '编辑' && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, background: '#313244', border: '1px solid #45475a', minWidth: 200, zIndex: 100, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.4)', padding: '4px 0' }}>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleUndo(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>撤销</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+Z</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleRedo(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>重做</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+Y</span>
+              </div>
+              <div style={{ height: 1, background: '#45475a', margin: '4px 8px' }} />
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleCut(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>剪切</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+X</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleCopy(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>复制</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+C</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handlePaste(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>粘贴</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+V</span>
+              </div>
+              <div style={{ height: 1, background: '#45475a', margin: '4px 8px' }} />
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); if (textareaRef.current) textareaRef.current.select(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>全选</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+A</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleFind(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>查找...</span>
+                <span style={{ color: '#6c7086', fontSize: 11, marginLeft: 24 }}>Ctrl+F</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 查看菜单 */}
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{ padding: '4px 12px', cursor: 'pointer', borderRadius: 3, background: activeMenu === '查看' ? '#45475a' : 'transparent' }}
+            onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === '查看' ? null : '查看') }}
+            onMouseEnter={() => { if (activeMenu) setActiveMenu('查看') }}
+          >
+            查看
+          </div>
+          {activeMenu === '查看' && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, background: '#313244', border: '1px solid #45475a', minWidth: 200, zIndex: 100, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.4)', padding: '4px 0' }}>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); setWordWrap(!wordWrap); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>{wordWrap ? '取消自动换行' : '自动换行'}</span>
+              </div>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>状态栏</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 工具菜单 */}
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{ padding: '4px 12px', cursor: 'pointer', borderRadius: 3, background: activeMenu === '工具' ? '#45475a' : 'transparent' }}
+            onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === '工具' ? null : '工具') }}
+            onMouseEnter={() => { if (activeMenu) setActiveMenu('工具') }}
+          >
+            工具
+          </div>
+          {activeMenu === '工具' && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, background: '#313244', border: '1px solid #45475a', minWidth: 200, zIndex: 100, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.4)', padding: '4px 0' }}>
+              <div
+                style={{ padding: '6px 16px', cursor: 'pointer', fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); handleWordCount(); setActiveMenu(null) }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#45475a')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span>字数统计</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#313244', padding: '4px 6px', borderBottom: '1px solid #45475a' }}>
