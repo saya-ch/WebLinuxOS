@@ -6,7 +6,6 @@ const wallpapers = [
   'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
   'linear-gradient(135deg, #1a1a2e 0%, #2d1b69 50%, #1a1a2e 100%)',
   'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-  'linear-gradient(135deg, #0f0c29 0%, #302b63 0%, #24243e 100%)',
   'linear-gradient(135deg, #232526 0%, #414345 100%)',
   'linear-gradient(135deg, #134e5e 0%, #71b280 100%)',
   'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)',
@@ -66,6 +65,7 @@ const Desktop = memo(function Desktop() {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault()
+      e.stopPropagation()
       showContextMenu(e.clientX, e.clientY)
     },
     [showContextMenu],
@@ -80,6 +80,17 @@ const Desktop = memo(function Desktop() {
     const handleGlobalClick = () => hideContextMenu()
     window.addEventListener('click', handleGlobalClick)
     return () => window.removeEventListener('click', handleGlobalClick)
+  }, [hideContextMenu])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedIconId(null)
+        hideContextMenu()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [hideContextMenu])
 
   const handleWallpaperChange = useCallback(() => {
@@ -118,16 +129,22 @@ const Desktop = memo(function Desktop() {
             e.stopPropagation()
             handleIconClick(icon.appId, icon.id)
           }}
-          onDoubleClick={() => handleIconDoubleClick(icon.appId)}
+          onDoubleClick={(e) => {
+            e.stopPropagation()
+            handleIconDoubleClick(icon.appId)
+          }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && selectedIconId === icon.id) {
-              openApp(icon.appId)
-              setSelectedIconId(null)
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              if (selectedIconId === icon.id) {
+                openApp(icon.appId)
+                setSelectedIconId(null)
+              }
             }
           }}
           tabIndex={0}
           role="button"
-          aria-label={icon.name}
+          aria-label={`打开 ${icon.name}`}
         >
           <span className="desktop-icon-icon">{icon.icon}</span>
           <span className="desktop-icon-name">{icon.name}</span>
@@ -139,6 +156,7 @@ const Desktop = memo(function Desktop() {
           className="context-menu"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
         >
           {menuItems.map((item, i) =>
             'type' in item ? (
@@ -147,12 +165,21 @@ const Desktop = memo(function Desktop() {
               <div
                 key={i}
                 className="context-menu-item"
+                role="menuitem"
+                tabIndex={0}
                 onClick={() => {
                   item.action()
                   hideContextMenu()
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    item.action()
+                    hideContextMenu()
+                  }
+                }}
               >
-                <span>{item.icon}</span>
+                <span aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
               </div>
             ),

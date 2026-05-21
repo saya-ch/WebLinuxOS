@@ -25,6 +25,8 @@ const App = memo(function App() {
       const isShift = e.shiftKey
       const isAlt = e.altKey
 
+      const state = useStore.getState()
+
       if (isMod && isShift && e.key === 'l') {
         e.preventDefault()
         toggleLauncher()
@@ -49,7 +51,6 @@ const App = memo(function App() {
         return
       }
 
-      const state = useStore.getState()
       if (state.launcherOpen) {
         if (e.key === 'Escape') {
           toggleLauncher()

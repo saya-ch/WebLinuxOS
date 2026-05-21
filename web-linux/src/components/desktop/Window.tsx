@@ -82,7 +82,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         let newWidth = ref.startWidth
         let newHeight = ref.startHeight
         let newX = ref.startWindowX
-        const _newY = ref.startWindowY
+        const newY = ref.startWindowY
 
         if (resizing === 'right' || resizing === 'corner') {
           newWidth = ref.startWidth + dx
@@ -96,7 +96,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         }
 
         if (resizing === 'left') {
-          updateWindowPosition(win.id, newX, _newY)
+          updateWindowPosition(win.id, newX, newY)
         }
         updateWindowSize(win.id, newWidth, newHeight)
       }
@@ -149,6 +149,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-titlebar-button"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() => minimizeWindow(win.id)}
+            aria-label="Minimize"
           >
             &#x2014;
           </button>
@@ -156,6 +157,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-titlebar-button"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() => maximizeWindow(win.id)}
+            aria-label={win.maximized ? 'Restore' : 'Maximize'}
           >
             {win.maximized ? '❐' : '□'}
           </button>
@@ -163,6 +165,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-titlebar-button close"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={handleClose}
+            aria-label="Close"
           >
             &#x2715;
           </button>
