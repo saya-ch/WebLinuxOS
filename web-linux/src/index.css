@@ -135,6 +135,15 @@ body {
   line-height: 1.1;
   margin-bottom: 2px;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.desktop-icon-icon svg {
+  width: 32px;
+  height: 32px;
+  display: block;
 }
 
 .desktop-icon-name {
@@ -201,6 +210,14 @@ body {
   font-size: 14px;
   margin-right: 8px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.window-titlebar-icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .window-titlebar-title {
@@ -394,6 +411,14 @@ body {
 .taskbar-button-icon {
   font-size: 14px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.taskbar-button-icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .taskbar-button-title {
@@ -550,6 +575,15 @@ body {
   font-size: 28px;
   margin-bottom: 4px;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.launcher-app-item-icon svg {
+  width: 28px;
+  height: 28px;
+  display: block;
 }
 
 .launcher-app-item-name {
@@ -614,6 +648,11 @@ body {
 
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+svg {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .app-container {
