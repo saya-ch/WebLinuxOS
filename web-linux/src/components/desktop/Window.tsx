@@ -161,7 +161,7 @@ export default function Window({ window: win, children }: WindowProps) {
         </div>
       </div>
       <div className="window-content">{children}</div>
-      {win.resizable && !win.maximized && (
+      {!win.maximized && win.resizable && (
         <>
           <div
             className="window-resize-edge-bottom"

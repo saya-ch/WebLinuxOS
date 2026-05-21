@@ -38,9 +38,20 @@ export default function StartMenu() {
 
     if (search) {
       const q = search.toLowerCase()
+      const pinyinMap: Record<string, string> = {
+        '终端': 'zd', '文件管理器': 'wjgl', '文本编辑器': 'wbbj', '浏览器': 'llq',
+        '计算器': 'jsq', '日历': 'rl', '时钟': 'sj', '天气': 'tq',
+        '系统监视器': 'xtjcq', '设置': 'sz', '记事本': 'jsb',
+        '图片查看器': 'tpckq', '音乐播放器': 'yybfq', '视频播放器': 'spbfq',
+        '代码编辑器': 'dmbj', '待办事项': 'dbsx', '关于系统': 'gyxt',
+        '帮助': 'bz', '画图': 'ht', '截图工具': 'jtgj',
+      }
       list = list.filter(
         (a) =>
-          a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q),
+          a.name.toLowerCase().includes(q) ||
+          a.id.toLowerCase().includes(q) ||
+          (pinyinMap[a.name] && pinyinMap[a.name].includes(q)) ||
+          (q.length >= 2 && pinyinMap[a.name] && pinyinMap[a.name].startsWith(q.slice(0, 2)))
       )
     }
     return list

@@ -1,8 +1,13 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { useStore } from '../../store'
 import Window from './Window'
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<Record<string, never>>>> = {}
+
+const commonComponents = [
+  'Terminal', 'FileManager', 'TextEditor', 'Calculator', 'Settings',
+  'SystemMonitor', 'WebBrowser', 'CodeEditor', 'Notepad'
+]
 
 function loadComponent(name: string) {
   if (!componentCache[name]) {
@@ -30,9 +35,20 @@ function loadComponent(name: string) {
   return componentCache[name]
 }
 
+function preloadComponents() {
+  commonComponents.forEach(name => {
+    import(`../../apps/${name}.tsx`).catch(() => {})
+  })
+}
+
 export default function WindowManager() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
+
+  useEffect(() => {
+    const timer = setTimeout(preloadComponents, 2000)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <>

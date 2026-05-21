@@ -110,7 +110,7 @@ export default function Terminal() {
       case '':
         break
       case 'help':
-        output = `可用命令:\n  ls, cd, pwd, cat, echo, clear, help, date, whoami, uname,\n  mkdir, touch, rm, cp, mv, find, grep, ps, top, df, free,\n  history, neofetch, lsb_release, hostname, ping`
+        output = `可用命令:\n  ls, cd, pwd, cat, echo, clear, help, date, whoami, uname,\n  mkdir, touch, rm, cp, mv, find, grep, ps, top, df, free,\n  history, neofetch, lsb_release, hostname, ping, tree, wc, which,\n  uptime, cal, env, export, alias, unalias, type, man`
         break
       case 'clear':
         setHistory([])
@@ -155,7 +155,12 @@ export default function Terminal() {
         break
       case 'ls': {
         const target = args[0] ? resolvePath(cwd, args[0]) : cwd
+        const showAll = args.includes('-a') || args.includes('-l')
         output = listDir(files, target)
+        if (showAll) {
+          const escapeChar = String.fromCharCode(27)
+          output = `${escapeChar}[34m.\n${escapeChar}[34m..\n` + output
+        }
         break
       }
       case 'cd': {
@@ -244,11 +249,121 @@ export default function Terminal() {
         break
       }
       case 'cp':
-        output = 'cp: 已模拟复制操作'
+        output = 'cp: 已模拟复制操作（实际复制需要完整实现）'
         break
       case 'mv':
-        output = 'mv: 已模拟移动操作'
+        output = 'mv: 已模拟移动操作（实际移动需要完整实现）'
         break
+      case 'tree': {
+        const target = args[0] ? resolvePath(cwd, args[0]) : cwd
+        const node = findNodeByPath(files, target)
+        if (node && node.type === 'folder') {
+          const buildTree = (n: FileNode, prefix = '', isLast = true): string => {
+            const connector = isLast ? '└── ' : '├── '
+            let result = prefix + connector + n.name + (n.type === 'folder' ? '/' : '') + '\n'
+            if (n.children) {
+              const newPrefix = prefix + (isLast ? '    ' : '│   ')
+              n.children.forEach((child, idx) => {
+                result += buildTree(child, newPrefix, idx === n.children!.length - 1)
+              })
+            }
+            return result
+          }
+          output = target + '/\n' + (node.children || []).map((child, idx) => 
+            buildTree(child, '', idx === (node.children?.length || 0) - 1)
+          ).join('')
+        } else {
+          output = `tree: ${args[0] || target}: 没有那个文件或目录`
+        }
+        break
+      }
+      case 'wc': {
+        if (args.length === 0) {
+          output = 'wc: 缺少操作数'
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          const node = findNodeByPath(files, resolved)
+          if (node && node.type === 'file') {
+            const lines = (node.content || '').split('\n').length
+            const words = (node.content || '').split(/\s+/).filter(w => w).length
+            const chars = (node.content || '').length
+            output = `  ${lines}  ${words}  ${chars} ${node.name}`
+          } else {
+            output = `wc: ${args[0]}: 没有那个文件或目录`
+          }
+        }
+        break
+      }
+      case 'which': {
+        if (args.length === 0) {
+          output = 'which: 缺少操作数'
+        } else {
+          const commands = ['ls', 'cd', 'pwd', 'cat', 'echo', 'help', 'date', 'whoami', 'uname', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'find', 'grep', 'ps', 'top', 'df', 'free', 'history', 'neofetch', 'tree', 'wc', 'ping', 'uptime', 'cal', 'clear']
+          if (commands.includes(args[0])) {
+            output = `/usr/bin/${args[0]}`
+          } else {
+            output = `${args[0]}: 未找到命令`
+          }
+        }
+        break
+      }
+      case 'uptime':
+        output = `${new Date().toLocaleString('zh-CN')} - 系统运行中\n负载平均值: ${(Math.random() * 2).toFixed(2)}, ${(Math.random() * 2).toFixed(2)}, ${(Math.random() * 2).toFixed(2)}`
+        break
+      case 'cal': {
+        const now = new Date()
+        const year = args[0] ? parseInt(args[0]) : now.getFullYear()
+        const month = args[1] ? parseInt(args[1]) : now.getMonth() + 1
+        const daysInMonth = new Date(year, month, 0).getDate()
+        const firstDay = new Date(year, month - 1, 1).getDay()
+        output = `     ${year}年 ${month}月\n日 一 二 三 四 五 六\n${'   '.repeat(firstDay)}`
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayOfWeek = (firstDay + day - 1) % 7
+          const prefix = dayOfWeek === 0 && day > 1 ? '\n' : ''
+          output += `${prefix}${day.toString().padStart(2)} `
+        }
+        output += '\n'
+        break
+      }
+      case 'env':
+        output = `HOME=/home/${username}\nUSER=${username}\nSHELL=/bin/bash\nPWD=${cwd}\nHOSTNAME=${hostname}\nTERM=xterm-256color`
+        break
+      case 'export': {
+        if (args.length === 0) {
+          output = `HOME=/home/${username}\nUSER=${username}\nSHELL=/bin/bash\nPWD=${cwd}\nHOSTNAME=${hostname}`
+        } else {
+          output = `已设置环境变量: ${args.join(' ')}`
+        }
+        break
+      }
+      case 'alias':
+        if (args.length === 0) {
+          output = '未定义别名'
+        } else {
+          output = `alias ${args[0]}='${args.slice(1).join(' ')}'`
+        }
+        break
+      case 'type': {
+        if (args.length === 0) {
+          output = 'type: 缺少操作数'
+        } else {
+          const builtins = ['ls', 'cd', 'pwd', 'echo', 'help', 'date', 'mkdir', 'touch', 'rm', 'cat', 'clear']
+          if (builtins.includes(args[0])) {
+            output = `${args[0]} 是 shell 内建命令`
+          } else {
+            output = `${args[0]}: 未找到`
+          }
+        }
+        break
+      }
+      case 'man': {
+        if (args.length === 0) {
+          output = 'what manual page do you want?\n例如: man ls, man cd, man cat'
+        } else {
+          output = `Manual page ${args[0]}(1)\n\nNAME\n       ${args[0]} - ${args[0]} 命令的手册页\n\nSYNOPSIS\n       ${args[0]} [OPTION]... [FILE]...\n\nDESCRIPTION\n       显示 ${args[0]} 命令的帮助信息。`
+        }
+        break
+      }
       case 'find':
         output = args.length > 0
           ? `./${args[0]}\n./home/user/documents/${args[0] || 'results'}`
@@ -282,7 +397,7 @@ export default function Terminal() {
         }
         break
       default:
-        output = `bash: ${command}: 未找到命令`
+        output = `bash: ${command}: 未找到命令 (输入 'help' 查看可用命令)`
     }
 
     setHistory((prev) => [...prev, { input: trimmed, output }])

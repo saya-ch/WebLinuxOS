@@ -6,6 +6,14 @@ const wallpapers = [
   'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
   'linear-gradient(135deg, #1a1a2e 0%, #2d1b69 50%, #1a1a2e 100%)',
   'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+  'linear-gradient(135deg, #0f0c29 0%, #302b63 0%, #24243e 100%)',
+  'linear-gradient(135deg, #232526 0%, #414345 100%)',
+  'linear-gradient(135deg, #134e5e 0%, #71b280 100%)',
+  'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)',
+  'linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)',
+  'linear-gradient(135deg, #6a0572 0%, #ab83a1 100%)',
+  'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
+  'linear-gradient(135deg, #ffb7b2 0%, #e2f0cb 100%)',
 ]
 
 interface MenuItem {
