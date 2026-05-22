@@ -19,6 +19,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const [dragging, setDragging] = useState(false)
   const [resizing, setResizing] = useState<'bottom' | 'right' | 'left' | 'corner' | null>(null)
   const [isClosing, setIsClosing] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const stateRef = useRef({
     startX: 0,
     startY: 0,
@@ -159,18 +160,32 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     }, 200)
   }, [win.id, minimizeWindow])
 
+  const getWindowStyle = useCallback((): React.CSSProperties => {
+    const baseStyle: React.CSSProperties = {
+      left: win.maximized ? 0 : win.x,
+      top: win.maximized ? 0 : win.y,
+      width: win.maximized ? '100%' : win.width,
+      height: win.maximized ? '100%' : win.height,
+      zIndex: win.zIndex,
+      display: win.minimized ? 'none' : 'flex',
+    }
+
+    if (win.focused && !win.maximized) {
+      baseStyle.boxShadow = isHovered
+        ? '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--accent), 0 12px 40px rgba(108, 92, 231, 0.25)'
+        : '0 4px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--accent), 0 8px 32px rgba(108, 92, 231, 0.2)'
+    }
+
+    return baseStyle
+  }, [win, isHovered])
+
   return (
     <div
       className={`window ${win.focused ? 'focused' : ''} ${win.maximized ? 'maximized' : ''} ${isClosing ? 'closing' : ''} ${isMinimizing ? 'minimizing' : ''}`}
-      style={{
-        left: win.maximized ? 0 : win.x,
-        top: win.maximized ? 0 : win.y,
-        width: win.maximized ? '100%' : win.width,
-        height: win.maximized ? '100%' : win.height,
-        zIndex: win.zIndex,
-        display: win.minimized ? 'none' : 'flex',
-      }}
+      style={getWindowStyle()}
       onMouseDown={handleWindowClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       role="dialog"
       aria-label={win.title}
       aria-modal="false"

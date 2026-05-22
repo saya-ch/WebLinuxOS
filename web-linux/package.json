@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:github": "tsc -b && vite build --mode github-pages",
-    "deploy": "npm run build:github && cp -r ../dist/* ../"
+    "clean": "rm -rf ../dist ../assets ../index.html ../favicon.svg ../icons.svg ../.nojekyll",
+    "predeploy": "npm run clean",
+    "deploy": "npm run build:github"
   },
   "dependencies": {
     "react": "^19.2.6",

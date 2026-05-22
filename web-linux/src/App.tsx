@@ -5,6 +5,7 @@ import Desktop from './components/desktop/Desktop'
 import WindowManager from './components/desktop/WindowManager'
 import Taskbar from './components/desktop/Taskbar'
 import StartMenu from './components/desktop/StartMenu'
+import ErrorBoundary from './components/ErrorBoundary'
 
 interface ShortcutKey {
   modifier?: 'mod' | 'modShift' | 'modAlt' | 'modAltShift'
@@ -191,12 +192,12 @@ const App = memo(function App() {
   }, [handleKeyDown])
 
   return (
-    <>
+    <ErrorBoundary>
       <Desktop />
       <WindowManager />
       <StartMenu />
       <Taskbar />
-    </>
+    </ErrorBoundary>
   )
 })
 

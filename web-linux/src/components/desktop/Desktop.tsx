@@ -46,7 +46,15 @@ const Desktop = memo(function Desktop() {
   const setWallpaper = useStore((s) => s.setWallpaper)
 
   const [selectedIconId, setSelectedIconId] = useState<string | null>(null)
+  const [showSplash, setShowSplash] = useState(true)
   const lastClickRef = useRef<{ id: string; time: number } | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false)
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleIconClick = useCallback(
     (appId: string, iconId: string) => {
@@ -121,6 +129,98 @@ const Desktop = memo(function Desktop() {
       ? { background: wallpaper }
       : { backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' as const }
     : undefined
+
+  if (showSplash) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          animation: 'fadeOut 0.5s ease-out 1.5s forwards',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '72px',
+            marginBottom: '24px',
+            animation: 'bounceIn 0.6s ease-out',
+          }}
+        >
+          🐧
+        </div>
+        <div
+          style={{
+            fontSize: '32px',
+            fontWeight: '600',
+            color: '#e0e0e8',
+            marginBottom: '8px',
+            animation: 'slideUp 0.6s ease-out 0.2s both',
+          }}
+        >
+          WebLinuxOS
+        </div>
+        <div
+          style={{
+            fontSize: '14px',
+            color: '#9090a4',
+            animation: 'fadeIn 0.6s ease-out 0.4s both',
+          }}
+        >
+          正在启动桌面环境...
+        </div>
+        <div
+          style={{
+            width: '200px',
+            height: '4px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '2px',
+            marginTop: '24px',
+            overflow: 'hidden',
+            animation: 'slideUp 0.6s ease-out 0.6s both',
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              background: 'linear-gradient(90deg, #6c5ce7, #a29bfe)',
+              borderRadius: '2px',
+              animation: 'loadingBar 1.5s ease-out forwards',
+            }}
+          />
+        </div>
+        <style>{`
+          @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+          }
+          @keyframes loadingBar {
+            from { width: 0%; }
+            to { width: 100%; }
+          }
+        `}</style>
+      </div>
+    )
+  }
 
   return (
     <div

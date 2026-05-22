@@ -74,11 +74,19 @@ const Taskbar = memo(function Taskbar() {
       </div>
 
       <div className="taskbar-right">
-        <div className="taskbar-tray-item" title="网络已连接" onClick={() => openApp('network-monitor')}>📶</div>
-        <div className="taskbar-tray-item" title={`音量: ${80}%`}>🔊</div>
-        <div className="taskbar-tray-item" title="电池: 100%" onClick={() => openApp('power-manager')}>🔋</div>
-        <div className="taskbar-clock">
-          <div style={{ fontSize: 12, lineHeight: 1.2 }}>{formatTime(time)}</div>
+        <div className="taskbar-tray-item" title="网络已连接" onClick={() => openApp('network-monitor')} style={{ cursor: 'pointer', transition: 'background 0.2s, transform 0.1s' }}>📶</div>
+        <div className="taskbar-tray-item" title={`音量: ${80}%`} style={{ cursor: 'pointer', transition: 'background 0.2s' }}>🔊</div>
+        <div className="taskbar-tray-item" title="电池: 100%" onClick={() => openApp('power-manager')} style={{ cursor: 'pointer', transition: 'background 0.2s' }}>🔋</div>
+        <div
+          className="taskbar-tray-item"
+          title="系统通知"
+          onClick={() => {}}
+          style={{ cursor: 'pointer', transition: 'background 0.2s, transform 0.1s' }}
+        >
+          🔔
+        </div>
+        <div className="taskbar-clock" style={{ cursor: 'pointer' }} onClick={() => openApp('settings')}>
+          <div style={{ fontSize: 12, lineHeight: 1.2, fontWeight: 500 }}>{formatTime(time)}</div>
           <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.2 }}>{formatDate(time)}</div>
         </div>
       </div>
