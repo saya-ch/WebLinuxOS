@@ -24,12 +24,15 @@ const Taskbar = memo(function Taskbar() {
 
   useEffect(() => {
     const batteryTimer = setInterval(() => {
-      setBattery(prev => Math.max(10, Math.min(100, prev + (isCharging ? 1 : -0.5))))
-      if (battery <= 20) setIsCharging(true)
-      if (battery >= 95) setIsCharging(false)
+      setBattery(prev => {
+        let newBattery = Math.max(10, Math.min(100, prev + (isCharging ? 1 : -0.5)))
+        if (newBattery <= 20) setIsCharging(true)
+        if (newBattery >= 95) setIsCharging(false)
+        return newBattery
+      })
     }, 60000)
     return () => clearInterval(batteryTimer)
-  }, [battery, isCharging])
+  }, [isCharging])
 
   const handleTaskbarButtonClick = useCallback(
     (_appId: string, winId: string, focused: boolean, minimized: boolean) => {

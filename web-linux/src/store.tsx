@@ -41,6 +41,8 @@ function findNodeByPath(files: FileNode[], path: string): FileNode | null {
   return current
 }
 
+
+
 function resolvePath(cwd: string, target: string): string {
   if (target.startsWith('/')) return target
   const parts = (cwd + '/' + target).split('/').filter(Boolean)

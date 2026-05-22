@@ -63,9 +63,19 @@ function preloadComponents() {
     'TodoList', 'Contacts', 'Email', 'Help', 'About',
     'Screenshot', 'ScreenRecorder', 'SoundRecorder', 'Camera'
   ]
-  commonComponents.forEach(name => {
-    loadComponent(name)
-  })
+  // 使用 requestIdleCallback 进行空闲时预加载
+  const loadNext = (index: number) => {
+    if (index >= commonComponents.length) return
+    loadComponent(commonComponents[index])
+    if (index < commonComponents.length - 1) {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => loadNext(index + 1))
+      } else {
+        setTimeout(() => loadNext(index + 1), 100)
+      }
+    }
+  }
+  loadNext(0)
 }
 
 const LoadingFallback = memo(function LoadingFallback() {
