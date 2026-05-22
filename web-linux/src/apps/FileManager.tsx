@@ -104,7 +104,7 @@ export default function FileManager() {
 
   const children = currentNode?.children || []
 
-  function navigateTo(nodeId: string) {
+  const navigateTo = useCallback((nodeId: string) => {
     const node = findNodeById(files, nodeId)
     if (!node) return
     if (node.type === 'folder') {
@@ -119,7 +119,7 @@ export default function FileManager() {
       setExpandedFolders((prev) => new Set([...prev, nodeId]))
       setSelectedFileId(null)
     }
-  }
+  }, [files])
 
   function navigateToPathSegment(index: number) {
     const newPath = currentPath.slice(0, index + 1)
@@ -139,7 +139,7 @@ export default function FileManager() {
     })
   }, [])
 
-  function handleFileDoubleClick(file: FileNode) {
+  const handleFileDoubleClick = useCallback((file: FileNode) => {
     if (file.type === 'folder') {
       navigateTo(file.id)
     } else {
@@ -148,13 +148,13 @@ export default function FileManager() {
       const appId = codeExts.includes(ext || '') ? 'code-editor' : 'text-editor'
       openFileWith(file.id, appId)
     }
-  }
+  }, [openFileWith, navigateTo])
 
-  function handleContextMenu(e: React.MouseEvent, fileId: string) {
+  const handleContextMenu = useCallback((e: React.MouseEvent, fileId: string) => {
     e.preventDefault()
     e.stopPropagation()
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, fileId })
-  }
+  }, [])
 
   function closeContextMenu() {
     setContextMenu({ visible: false, x: 0, y: 0, fileId: '' })
@@ -236,7 +236,7 @@ export default function FileManager() {
         onToggle={toggleFolderExpand}
       />
     ))
-  }, [files, expandedFolders, selectedFileId])
+  }, [files, expandedFolders, selectedFileId, handleFileDoubleClick, handleContextMenu, toggleFolderExpand])
 
   function getFileDate(node: FileNode): string {
     const baseTime = new Date('2024-01-01').getTime()
