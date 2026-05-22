@@ -92,10 +92,11 @@ export default function Terminal() {
   const [cwd, setCwd] = useState('/home/user')
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([
-    { input: '', output: 'Web Linux 终端 v1.1\n输入 "help" 查看可用命令' },
+    { input: '', output: 'Web Linux 终端 v1.2\n输入 "help" 查看可用命令' },
   ])
   const [cmdHistory, setCmdHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
+  const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number }>({ visible: false, x: 0, y: 0 })
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -693,6 +694,20 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
       return
     }
     
+    if (e.ctrlKey && e.key === 'a') {
+      e.preventDefault()
+      inputRef.current?.select()
+      return
+    }
+
+    if (e.ctrlKey && e.key === 'd') {
+      e.preventDefault()
+      const activeWindows = getWindows
+      const currentWin = activeWindows.find((w: any) => w.appId === 'terminal' && w.focused)
+      if (currentWin) closeWindow(currentWin.id)
+      return
+    }
+    
     if (e.key === 'Enter') {
       const cmd = input.trim()
       if (cmd) {
@@ -737,17 +752,46 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
     }
   }
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY })
+  }
+
+  const handleCopy = async () => {
+    const selectedText = window.getSelection()?.toString()
+    if (selectedText) {
+      await navigator.clipboard.writeText(selectedText)
+    }
+    setContextMenu({ visible: false, x: 0, y: 0 })
+  }
+
+  const handlePaste = async () => {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      const text = await navigator.clipboard.readText()
+      setInput(prev => prev + text)
+    }
+    setContextMenu({ visible: false, x: 0, y: 0 })
+  }
+
+  const handleClearTerminal = () => {
+    setHistory([])
+    setContextMenu({ visible: false, x: 0, y: 0 })
+  }
+
   return (
     <div className="app-container app-terminal" style={{ 
       background: theme === 'light' ? '#f0f0f0' : '#1e1e1e', 
       color: theme === 'light' ? '#000000' : '#00ff00', 
       fontFamily: '"Fira Code", "Cascadia Code", Consolas, monospace', 
       fontSize: 14, 
-      overflow: 'hidden' 
-    }} onClick={() => inputRef.current?.focus()}>
+      overflow: 'hidden',
+      position: 'relative'
+    }} onClick={() => { inputRef.current?.focus(); setContextMenu({ visible: false, x: 0, y: 0 }) }}>
       <div
         ref={containerRef}
         className="app-terminal-output"
+        onContextMenu={handleContextMenu}
         style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
       >
         {history.map((entry, i) => (
@@ -783,6 +827,7 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          onContextMenu={handleContextMenu}
           style={{
             flex: 1,
             background: 'transparent',
@@ -796,6 +841,60 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
           spellCheck={false}
         />
       </div>
+      {contextMenu.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            left: contextMenu.x,
+            top: contextMenu.y,
+            background: theme === 'light' ? '#ffffff' : '#2d2d3a',
+            border: `1px solid ${theme === 'light' ? '#d1d1d6' : '#444'}`,
+            borderRadius: 6,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            padding: 4,
+            zIndex: 10000,
+            minWidth: 180
+          }}
+        >
+          <div
+            style={{
+              padding: '8px 12px',
+              cursor: 'pointer',
+              borderRadius: 4,
+              fontSize: 13,
+              color: theme === 'light' ? '#000' : '#e0e0e8'
+            }}
+            onClick={handleCopy}
+          >
+            复制 (Ctrl+C)
+          </div>
+          <div
+            style={{
+              padding: '8px 12px',
+              cursor: 'pointer',
+              borderRadius: 4,
+              fontSize: 13,
+              color: theme === 'light' ? '#000' : '#e0e0e8'
+            }}
+            onClick={handlePaste}
+          >
+            粘贴 (Ctrl+V)
+          </div>
+          <div style={{ height: 1, background: theme === 'light' ? '#d1d1d6' : '#444', margin: '4px 0' }} />
+          <div
+            style={{
+              padding: '8px 12px',
+              cursor: 'pointer',
+              borderRadius: 4,
+              fontSize: 13,
+              color: theme === 'light' ? '#000' : '#e0e0e8'
+            }}
+            onClick={handleClearTerminal}
+          >
+            清空终端 (Ctrl+L)
+          </div>
+        </div>
+      )}
     </div>
   )
 }
