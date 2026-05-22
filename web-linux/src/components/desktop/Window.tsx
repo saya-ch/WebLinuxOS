@@ -31,6 +31,23 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
 
   const app = apps.find((a) => a.id === win.appId)
 
+  const [isMinimizing, setIsMinimizing] = useState(false)
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true)
+    setTimeout(() => {
+      closeWindow(win.id)
+    }, 200)
+  }, [win.id, closeWindow])
+
+  const handleMinimize = useCallback(() => {
+    setIsMinimizing(true)
+    setTimeout(() => {
+      minimizeWindow(win.id)
+      setIsMinimizing(false)
+    }, 200)
+  }, [win.id, minimizeWindow])
+
   // 添加键盘快捷键支持
   useEffect(() => {
     if (!win.focused) return;
@@ -56,7 +73,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [win.focused, win.id]);
+  }, [win.focused, win.id, win.maximized, handleClose, handleMinimize, maximizeWindow]);
 
   const handleDragStart = useCallback(
     (e: React.MouseEvent) => {
@@ -169,23 +186,6 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const handleDoubleClickTitlebar = useCallback(() => {
     maximizeWindow(win.id)
   }, [win.id, maximizeWindow])
-
-  const [isMinimizing, setIsMinimizing] = useState(false)
-
-  const handleClose = useCallback(() => {
-    setIsClosing(true)
-    setTimeout(() => {
-      closeWindow(win.id)
-    }, 200)
-  }, [win.id, closeWindow])
-
-  const handleMinimize = useCallback(() => {
-    setIsMinimizing(true)
-    setTimeout(() => {
-      minimizeWindow(win.id)
-      setIsMinimizing(false)
-    }, 200)
-  }, [win.id, minimizeWindow])
 
   const getWindowStyle = useCallback((): React.CSSProperties => {
     const baseStyle: React.CSSProperties = {
