@@ -31,6 +31,33 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
 
   const app = apps.find((a) => a.id === win.appId)
 
+  // 添加键盘快捷键支持
+  useEffect(() => {
+    if (!win.focused) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
+        e.preventDefault();
+        handleClose();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+        e.preventDefault();
+        handleMinimize();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+        e.preventDefault();
+        maximizeWindow(win.id);
+      }
+      if (e.key === 'Escape' && win.maximized) {
+        e.preventDefault();
+        maximizeWindow(win.id);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [win.focused, win.id]);
+
   const handleDragStart = useCallback(
     (e: React.MouseEvent) => {
       if (win.maximized) return
@@ -83,7 +110,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           const dx = e.clientX - ref.startX
           const dy = e.clientY - ref.startY
           const newX = Math.max(-ref.startWidth + 100, ref.startWindowX + dx)
-          const newY = Math.max(0, ref.startWindowY + dy)
+          const newY = Math.max(0, Math.min(ref.startWindowY + dy, window.innerHeight - 40))
           updateWindowPosition(win.id, newX, newY)
         }
         if (resizing) {
@@ -106,7 +133,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             }
           }
           if (resizing === 'bottom' || resizing === 'corner') {
-            newHeight = Math.max(win.minHeight, Math.min(ref.startHeight + dy, win.maxHeight || window.innerHeight))
+            newHeight = Math.max(win.minHeight, Math.min(ref.startHeight + dy, (win.maxHeight || window.innerHeight) - 40))
           }
 
           updateWindowPosition(win.id, newX, newY)
@@ -201,8 +228,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-titlebar-button"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={handleMinimize}
-            aria-label="最小化"
-            title="最小化"
+            aria-label="最小化 (Ctrl+M)"
+            title="最小化 (Ctrl+M)"
           >
             &#x2014;
           </button>
@@ -210,8 +237,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-titlebar-button"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() => maximizeWindow(win.id)}
-            aria-label={win.maximized ? '还原' : '最大化'}
-            title={win.maximized ? '还原' : '最大化'}
+            aria-label={win.maximized ? '还原' : '最大化 (Ctrl+Shift+M)'}
+            title={win.maximized ? '还原' : '最大化 (Ctrl+Shift+M)'}
           >
             {win.maximized ? '❐' : '□'}
           </button>
@@ -219,8 +246,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-titlebar-button close"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={handleClose}
-            aria-label="关闭"
-            title="关闭"
+            aria-label="关闭 (Ctrl+W)"
+            title="关闭 (Ctrl+W)"
           >
             &#x2715;
           </button>

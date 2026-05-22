@@ -92,7 +92,7 @@ export default function Terminal() {
   const [cwd, setCwd] = useState('/home/user')
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([
-    { input: '', output: 'Web Linux 终端 v1.0\n输入 "help" 查看可用命令' },
+    { input: '', output: 'Web Linux 终端 v1.1\n输入 "help" 查看可用命令' },
   ])
   const [cmdHistory, setCmdHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
@@ -105,14 +105,17 @@ export default function Terminal() {
   const getWindowsRef = useLatest(getWindows)
   const closeWindowRef = useLatest(closeWindow)
 
+  // 自动滚动到底部
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
   }, [history])
 
+  // 自动聚焦输入框
   useEffect(() => {
-    inputRef.current?.focus()
+    const focusInput = () => inputRef.current?.focus()
+    setTimeout(focusInput, 100)
   }, [])
 
   const username = 'user'
@@ -157,10 +160,10 @@ export default function Terminal() {
       case '?':
         output = `可用命令:
   文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc
-  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard
+  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard, neofetch
   网络工具: ping, ifconfig, curl
-  系统工具: clear, help, history, neofetch, alias, type, man, exit
-  工具命令: echo, find, grep, env, export, pwd
+  系统工具: clear, help, history, alias, type, man, exit, cls, reset
+  工具命令: echo, find, grep, env, export
 
 快捷键:
   Ctrl+Shift+L - 切换启动器
@@ -178,9 +181,31 @@ export default function Terminal() {
   Ctrl+A - 打开计算器
   F11 - 全屏/还原窗口
   PrintScreen - 打开截图工具
-  Ctrl+Alt+Tab - 切换窗口`
+  Ctrl+Alt+Tab - 切换窗口
+
+更多命令:
+  clear / cls / reset - 清空屏幕
+  whoami - 显示当前用户
+  hostname - 显示主机名
+  date - 显示日期时间
+  uname - 系统信息
+  neofetch - 系统详情
+  uptime - 系统运行时间
+  cal - 日历
+  free - 内存使用
+  df - 磁盘使用
+  ps - 进程列表
+  top - 系统监控
+  tree - 目录树
+  wc - 统计字数
+  history - 命令历史
+  ifconfig - 网络信息
+  ping - 网络连接测试
+  curl - 网页请求`
         break
       case 'clear':
+      case 'cls':
+      case 'reset':
         setHistory([])
         return
       case 'pwd':
