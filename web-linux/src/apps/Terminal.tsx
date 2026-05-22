@@ -7,6 +7,14 @@ interface HistoryEntry {
   output: string
 }
 
+const COMMANDS = [
+  'help', 'clear', 'pwd', 'whoami', 'hostname', 'date', 'uname', 'lsb_release',
+  'neofetch', 'ls', 'cd', 'cat', 'echo', 'mkdir', 'touch', 'rm', 'cp', 'mv',
+  'tree', 'wc', 'which', 'uptime', 'cal', 'env', 'export', 'alias', 'type',
+  'man', 'find', 'grep', 'ps', 'top', 'df', 'free', 'history', 'ping', 'ifconfig',
+  'curl', 'exit', 'dashboard'
+]
+
 function listDir(files: FileNode[], path: string): string {
   const node = findNodeByPath(files, path)
   if (!node || node.type !== 'folder') return `ls: 无法访问'${path}': 没有那个文件或目录`
@@ -98,6 +106,25 @@ export default function Terminal() {
     if (!query) return cmdHistory
     return cmdHistory.filter(cmd => cmd.toLowerCase().includes(query.toLowerCase()))
   }, [cmdHistory])
+
+  const getCompletions = useCallback((partial: string): string[] => {
+    const trimmed = partial.trim()
+    if (!trimmed) return []
+    
+    const parts = trimmed.split(/\s+/)
+    if (parts.length === 1) {
+      return COMMANDS.filter(cmd => cmd.startsWith(parts[0]))
+    } else if (parts[0] === 'cd' || parts[0] === 'cat' || parts[0] === 'rm' || parts[0] === 'ls') {
+      const currentPartial = parts[parts.length - 1]
+      const currentFiles = findNodeByPath(files, cwd)?.children || []
+      const matches = currentFiles.filter((f: FileNode) => f.name.startsWith(currentPartial)).map((f: FileNode) => f.name)
+      if (matches.length === 1) {
+        return [parts.slice(0, -1).join(' ') + ' ' + matches[0]]
+      }
+      return matches
+    }
+    return []
+  }, [files, cwd])
 
   const executeCommand = useCallback((cmd: string) => {
     const trimmed = cmd.trim()
@@ -309,14 +336,11 @@ export default function Terminal() {
             const parentNode = findNodeByPath(files, parentPath)
             if (parentNode) {
               copyFile(sourceNode.id, parentNode.id)
-              setTimeout(() => {
-                const state = useStore.getState()
-                const newFile = findNodeByPath(state.files, target)
-                if (newFile) {
-                  const state2 = useStore.getState()
-                  state2.renameFile(newFile.id, fileName)
-                }
-              }, 50)
+              const updatedFiles = useStore.getState().files
+              const newFile = findNodeByPath(updatedFiles, target)
+              if (newFile) {
+                useStore.getState().renameFile(newFile.id, fileName)
+              }
               output = ''
             } else {
               output = `cp: 无法创建'${args[1]}': 没有那个文件或目录`
@@ -351,14 +375,11 @@ export default function Terminal() {
             const parentNode = findNodeByPath(files, parentPath)
             if (parentNode) {
               moveFile(sourceNode.id, parentNode.id)
-              setTimeout(() => {
-                const state = useStore.getState()
-                const movedFile = findNodeByPath(state.files, target)
-                if (movedFile) {
-                  const state2 = useStore.getState()
-                  state2.renameFile(movedFile.id, fileName)
-                }
-              }, 50)
+              const updatedFiles = useStore.getState().files
+              const movedFile = findNodeByPath(updatedFiles, target)
+              if (movedFile) {
+                useStore.getState().renameFile(movedFile.id, fileName)
+              }
               output = ''
             } else {
               output = `mv: 无法移动'${args[1]}': 没有那个文件或目录`
@@ -657,6 +678,17 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
           setHistoryIndex(newIndex)
           setInput(cmdHistory[newIndex])
         }
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      const completions = getCompletions(input)
+      if (completions.length === 1) {
+        setInput(completions[0])
+      } else if (completions.length > 1) {
+        setHistory((prev) => [...prev, { 
+          input: '', 
+          output: completions.join('  ') 
+        }])
       }
     }
   }
