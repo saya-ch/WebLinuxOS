@@ -49,7 +49,6 @@ const App = memo(function App() {
       const isAlt = e.altKey
       const key = e.key.toLowerCase()
 
-      // Handle launcher specific keys first
       if (launcherOpen) {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -58,7 +57,6 @@ const App = memo(function App() {
         return
       }
 
-      // System-wide shortcuts
       if (isMod && isShift && key === 'l') {
         e.preventDefault()
         toggleLauncher()
@@ -92,7 +90,13 @@ const App = memo(function App() {
         return
       }
 
-      // App shortcuts with Ctrl/Cmd combinations
+      if (isMod && isAlt && key === 'f4') {
+        e.preventDefault()
+        const focusedWindow = getFocusedWindow()
+        if (focusedWindow) closeWindow(focusedWindow.id)
+        return
+      }
+
       if (isMod) {
         if (isShift) {
           switch (key) {
@@ -107,6 +111,10 @@ const App = memo(function App() {
             case 't':
               e.preventDefault()
               openApp('terminal')
+              return
+            case 'n':
+              e.preventDefault()
+              openApp('notes')
               return
           }
         } else {
@@ -150,6 +158,14 @@ const App = memo(function App() {
             case 'p':
               e.preventDefault()
               openApp('paint')
+              return
+            case 'i':
+              e.preventDefault()
+              openApp('image-viewer')
+              return
+            case 'h':
+              e.preventDefault()
+              openApp('help')
               return
           }
         }

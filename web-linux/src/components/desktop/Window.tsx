@@ -74,7 +74,9 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       if (dragging) {
         const dx = e.clientX - ref.startX
         const dy = e.clientY - ref.startY
-        updateWindowPosition(win.id, ref.startWindowX + dx, ref.startWindowY + dy)
+        const newX = Math.max(-ref.startWidth + 100, ref.startWindowX + dx)
+        const newY = Math.max(0, ref.startWindowY + dy)
+        updateWindowPosition(win.id, newX, newY)
       }
       if (resizing) {
         const dx = e.clientX - ref.startX
@@ -85,19 +87,21 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         const newY = ref.startWindowY
 
         if (resizing === 'right' || resizing === 'corner') {
-          newWidth = ref.startWidth + dx
+          newWidth = Math.max(win.minWidth, ref.startWidth + dx)
         }
         if (resizing === 'left') {
-          newWidth = ref.startWidth - dx
-          newX = ref.startWindowX + dx
+          newWidth = Math.max(win.minWidth, ref.startWidth - dx)
+          if (newWidth === win.minWidth && dx > 0) {
+            newX = ref.startWindowX + ref.startWidth - win.minWidth
+          } else {
+            newX = Math.max(-newWidth + 100, ref.startWindowX + dx)
+          }
         }
         if (resizing === 'bottom' || resizing === 'corner') {
-          newHeight = ref.startHeight + dy
+          newHeight = Math.max(win.minHeight, ref.startHeight + dy)
         }
 
-        if (resizing === 'left') {
-          updateWindowPosition(win.id, newX, newY)
-        }
+        updateWindowPosition(win.id, newX, newY)
         updateWindowSize(win.id, newWidth, newHeight)
       }
     }
@@ -113,11 +117,15 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [dragging, resizing, win.id, updateWindowPosition, updateWindowSize])
+  }, [dragging, resizing, win.id, win.minWidth, win.minHeight, updateWindowPosition, updateWindowSize])
 
   const handleWindowClick = useCallback(() => {
     focusWindow(win.id)
   }, [win.id, focusWindow])
+
+  const handleDoubleClickTitlebar = useCallback(() => {
+    maximizeWindow(win.id)
+  }, [win.id, maximizeWindow])
 
   const handleClose = useCallback(() => {
     setIsClosing(true)
@@ -140,7 +148,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       onMouseDown={handleWindowClick}
     >
       <div className="window-titlebar">
-        <div className="window-titlebar-drag" onMouseDown={handleDragStart}>
+        <div className="window-titlebar-drag" onMouseDown={handleDragStart} onDoubleClick={handleDoubleClickTitlebar}>
           <span className="window-titlebar-icon">{app?.icon}</span>
           <span className="window-titlebar-title">{win.title}</span>
         </div>

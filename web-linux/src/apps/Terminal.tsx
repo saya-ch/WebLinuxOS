@@ -512,9 +512,13 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
     
     if (e.ctrlKey && e.key === 'v') {
       e.preventDefault()
-      navigator.clipboard.readText().then(text => {
-        setInput(prev => prev + text)
-      })
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(text => {
+          setInput(prev => prev + text)
+        }).catch(() => {
+          setInput(prev => prev)
+        })
+      }
       return
     }
     

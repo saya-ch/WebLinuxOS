@@ -1,0 +1,64 @@
+import{a as e,c as t,i as n,l as r,r as i,s as a}from"./index-xPivfP-q.js";var o=r(t(),1),s=a();function c(e,t){let n=i(e,t);return!n||n.type!==`folder`?`ls: 无法访问'${t}': 没有那个文件或目录`:!n.children||n.children.length===0?``:n.children.map(e=>`${e.type===`folder`?`\x1B[34m`:`\x1B[0m`}${e.name}[0m`).join(`  `)}var l={34:`#0066cc`,32:`#00aa00`,31:`#cc0000`,33:`#aaaa00`,36:`#00aaaa`,35:`#aa00aa`},u={34:`#569cd6`,32:`#6a9955`,31:`#f44747`,33:`#dcdcaa`,36:`#4ec9b0`,35:`#c586c0`};function d(e,t){let n=RegExp(`(\x1B\\[[0-9;]*m)`,`g`),r=e.split(n),i=[],a={},o=t===`light`?l:u;for(let e=0;e<r.length;e++)if(r[e].startsWith(`\x1B[`)){let t=r[e].replace(`\x1B[`,``).replace(`m`,``);t===`0`?a={}:t===`1`?a={...a,fontWeight:`bold`}:o[t]&&(a={...a,color:o[t]})}else r[e]&&i.push((0,s.jsx)(`span`,{style:a,children:r[e]},e));return i}function f(){let t=e(e=>e.files),r=e(e=>e.addFile),a=e(e=>e.deleteFile),l=e(e=>e.theme),[u,f]=(0,o.useState)(`/home/user`),[p,m]=(0,o.useState)(``),[h,g]=(0,o.useState)([{input:``,output:`Web Linux 终端 v1.0
+输入 "help" 查看可用命令`}]),[_,v]=(0,o.useState)([]),[y,b]=(0,o.useState)(-1),x=(0,o.useRef)(null),S=(0,o.useRef)(null);(0,o.useEffect)(()=>{S.current&&(S.current.scrollTop=S.current.scrollHeight)},[h]),(0,o.useEffect)(()=>{x.current?.focus()},[]);let C=`user`,w=`web-linux`,T=(0,o.useCallback)(e=>e?_.filter(t=>t.toLowerCase().includes(e.toLowerCase())):_,[_]),E=(0,o.useCallback)(o=>{let s=o.trim(),d=s.split(/\s+/),p=d[0].toLowerCase(),m=d.slice(1),h=``;switch(p){case``:break;case`help`:case`?`:h=`可用命令:
+  文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc
+  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top
+  网络工具: ping, ifconfig, curl
+  系统工具: clear, help, history, neofetch, alias, type, man, exit
+  工具命令: echo, find, grep, env, export, pwd
+
+快捷键:
+  Ctrl+Shift+L - 切换启动器
+  Ctrl+Shift+S - 打开设置
+  Ctrl+Shift+F - 打开文件管理器
+  Ctrl+Shift+T - 打开终端
+  Ctrl+Shift+M - 最大化/还原窗口
+  Ctrl+N - 新建终端
+  Ctrl+W - 关闭窗口
+  Ctrl+M - 最小化窗口
+  Ctrl+E - 打开文件管理器
+  Ctrl+B - 打开浏览器
+  Ctrl+T - 打开文本编辑器
+  Ctrl+P - 打开画图
+  Ctrl+A - 打开计算器
+  F11 - 全屏/还原窗口
+  PrintScreen - 打开截图工具
+  Ctrl+Alt+Tab - 切换窗口`;break;case`clear`:g([]);return;case`pwd`:h=u;break;case`whoami`:h=C;break;case`hostname`:h=w;break;case`date`:h=new Date().toString();break;case`uname`:h=m.includes(`-a`)?`Linux web-linux 6.1.0-web #1 SMP PREEMPT_DYNAMIC `+new Date().toISOString().slice(0,10)+` x86_64 GNU/Linux`:m.includes(`-r`)?`6.1.0-web`:m.includes(`-s`)?`Linux`:m.includes(`-n`)?`web-linux`:m.includes(`-m`)?`x86_64`:`Linux`;break;case`lsb_release`:h=m.includes(`-a`)?`Distributor ID: WebLinux
+Description:    Web Linux 1.0
+Release:        1.0
+Codename:       web`:`Web Linux 1.0`;break;case`neofetch`:h=[`            .-/+oossssoo+/-.               ${C}@${w}`,"        `:+ssssssssssssssssss+:`           -------------",`      -+ssssssssssssssssssssssso+-         OS: Web Linux 1.0`,`    /osssssssssssssssssssssssssso/        Kernel: 6.1.0-web`,`  /ossssssssssssssssssssssssssssso/       Shell: bash 5.2`,` :sssssssssssssssssssssssssssssssss:      DE: WebDE`,` ossssssssssssssssssssssssssssssssso      Theme: ${l}`,` ossssssssssssssssssssssssssssssssso      Uptime: ${Math.floor(Math.random()*24)} hours`,` :sssssssssssssssssssssssssssssssss:      Packages: ${Math.floor(Math.random()*500+100)}`,`  /ossssssssssssssssssssssssssssso/       Memory: ${Math.floor(Math.random()*4096+1024)}MB / 8192MB`,`    /osssssssssssssssssssssssssso/`,`      -+ssssssssssssssssssssssso+-`,"        `:+ssssssssssssssssss+:`",`            .-/+oossssoo+/-.`].join(`
+`);break;case`ls`:{let e=m[0]?n(u,m[0]):u,r=m.includes(`-a`)||m.includes(`-l`);h=c(t,e),r&&(h=`\x1B[34m.
+\x1B[34m..
+`+h);break}case`cd`:if(m.length===0)f(`/home/user`);else{let e=n(u,m[0]),r=i(t,e);r&&r.type===`folder`?f(e):h=`cd: ${m[0]}: 没有那个文件或目录`}break;case`cat`:if(m.length===0)h=`cat: 缺少操作数`;else{let e=i(t,n(u,m[0]));h=e&&e.type===`file`?e.content||``:`cat: ${m[0]}: 没有那个文件或目录`}break;case`echo`:h=m.join(` `);break;case`mkdir`:if(m.length===0)h=`mkdir: 缺少操作数`;else{let e=n(u,m[0]).split(`/`).filter(Boolean),a=`/`+e.slice(0,-1).join(`/`)||`/`,o=e[e.length-1],s=i(t,a);s?(r(s.id,o,`folder`),h=``):h=`mkdir: 无法创建目录'${m[0]}': 没有那个文件或目录`}break;case`touch`:if(m.length===0)h=`touch: 缺少操作数`;else{let e=n(u,m[0]),a=e.split(`/`).filter(Boolean),o=`/`+a.slice(0,-1).join(`/`)||`/`,s=a[a.length-1],c=i(t,o);i(t,e)?h=``:c?(r(c.id,s,`file`),h=``):h=`touch: 无法创建'${m[0]}': 没有那个文件或目录`}break;case`rm`:if(m.length===0)h=`rm: 缺少操作数`;else{let e=i(t,n(u,m[0]));e?(a(e.id),h=``):h=`rm: 无法删除'${m[0]}': 没有那个文件或目录`}break;case`cp`:h=`cp: 已模拟复制操作（实际复制需要完整实现）`;break;case`mv`:h=`mv: 已模拟移动操作（实际移动需要完整实现）`;break;case`tree`:{let e=m[0]?n(u,m[0]):u,r=i(t,e);if(r&&r.type===`folder`){let t=(e,n=``,r=!0)=>{let i=n+(r?`└── `:`├── `)+e.name+(e.type===`folder`?`/`:``)+`
+`;if(e.children){let a=n+(r?`    `:`│   `);e.children.forEach((n,r)=>{i+=t(n,a,r===e.children.length-1)})}return i};h=e+`/
+`+(r.children||[]).map((e,n)=>t(e,``,n===(r.children?.length||0)-1)).join(``)}else h=`tree: ${m[0]||e}: 没有那个文件或目录`;break}case`wc`:if(m.length===0)h=`wc: 缺少操作数`;else{let e=i(t,n(u,m[0]));h=e&&e.type===`file`?`  ${(e.content||``).split(`
+`).length}  ${(e.content||``).split(/\s+/).filter(e=>e).length}  ${(e.content||``).length} ${e.name}`:`wc: ${m[0]}: 没有那个文件或目录`}break;case`which`:h=m.length===0?`which: 缺少操作数`:`ls.cd.pwd.cat.echo.help.date.whoami.uname.mkdir.touch.rm.cp.mv.find.grep.ps.top.df.free.history.neofetch.tree.wc.ping.uptime.cal.clear`.split(`.`).includes(m[0])?`/usr/bin/${m[0]}`:`${m[0]}: 未找到命令`;break;case`uptime`:h=`${new Date().toLocaleString(`zh-CN`)} - 系统运行中\n负载平均值: ${(Math.random()*2).toFixed(2)}, ${(Math.random()*2).toFixed(2)}, ${(Math.random()*2).toFixed(2)}`;break;case`cal`:{let e=new Date,t=m[0]?parseInt(m[0]):e.getFullYear(),n=m[1]?parseInt(m[1]):e.getMonth()+1,r=new Date(t,n,0).getDate(),i=new Date(t,n-1,1).getDay();h=`     ${t}年 ${n}月\n日 一 二 三 四 五 六\n${`   `.repeat(i)}`;for(let e=1;e<=r;e++){let t=(i+e-1)%7==0&&e>1?`
+`:``;h+=`${t}${e.toString().padStart(2)} `}h+=`
+`;break}case`env`:h=`HOME=/home/${C}\nUSER=${C}\nSHELL=/bin/bash\nPWD=${u}\nHOSTNAME=${w}\nTERM=xterm-256color`;break;case`export`:h=m.length===0?`HOME=/home/${C}\nUSER=${C}\nSHELL=/bin/bash\nPWD=${u}\nHOSTNAME=${w}`:`已设置环境变量: ${m.join(` `)}`;break;case`alias`:h=m.length===0?`未定义别名`:`alias ${m[0]}='${m.slice(1).join(` `)}'`;break;case`type`:h=m.length===0?`type: 缺少操作数`:[`ls`,`cd`,`pwd`,`echo`,`help`,`date`,`mkdir`,`touch`,`rm`,`cat`,`clear`].includes(m[0])?`${m[0]} 是 shell 内建命令`:`${m[0]}: 未找到`;break;case`man`:h=m.length===0?`what manual page do you want?
+例如: man ls, man cd, man cat`:`Manual page ${m[0]}(1)\n\nNAME\n       ${m[0]} - ${m[0]} 命令的手册页\n\nSYNOPSIS\n       ${m[0]} [OPTION]... [FILE]...\n\nDESCRIPTION\n       显示 ${m[0]} 命令的帮助信息。`;break;case`find`:h=m.length>0?`./${m[0]}\n./home/user/documents/${m[0]||`results`}`:`find: 缺少操作数`;break;case`grep`:h=m.length>=2?`匹配到 3 行结果:\n  第10行: ...包含"${m[1]}"的内容...\n  第25行: ...包含"${m[1]}"的内容...\n  第42行: ...包含"${m[1]}"的内容...`:`grep: 用法: grep [选项] 模式 [文件...]`;break;case`ps`:h=`  PID TTY          TIME CMD
+    1 ?        00:00:01 systemd
+  234 ?        00:00:00 terminal
+  567 ?        00:00:05 browser
+  890 ?        00:00:02 file-manager`;break;case`top`:h=`top - ${new Date().toLocaleTimeString()} up ${Math.floor(Math.random()*24)}:${String(Math.floor(Math.random()*60)).padStart(2,`0`)}, 1 user\nTasks: ${Math.floor(Math.random()*50+50)} total\n%Cpu(s): ${(Math.random()*20+5).toFixed(1)} us, ${(Math.random()*5).toFixed(1)} sy\nMiB Mem: ${(Math.random()*2e3+6e3).toFixed(1)} total, ${(Math.random()*3e3).toFixed(1)} free`;break;case`df`:h=`文件系统           大小  已用  可用 使用%
+/dev/sda1          50G   12G   38G   24%
+tmpfs             3.9G  1.2M  3.9G    1%`;break;case`free`:h=`              总计         已用         空闲\n内存:       ${Math.floor(Math.random()*4e3+4e3)}MB      ${Math.floor(Math.random()*3e3)}MB      ${Math.floor(Math.random()*3e3)}MB\n交换:       ${Math.floor(Math.random()*2e3+1e3)}MB           0MB      ${Math.floor(Math.random()*2e3+1e3)}MB`;break;case`history`:if(m.length>0&&m[0]===`-c`)v([]),h=`历史记录已清除`;else if(m.length>0){let e=m[0].replace(/^-+/,``),t=T(e);h=t.length>0?t.map((e,t)=>`  ${t+1}  ${e}`).join(`
+`):`未找到包含 "${e}" 的命令`}else h=_.map((e,t)=>`  ${t+1}  ${e}`).join(`
+`);break;case`ping`:if(m.length===0)h=`ping: 用法: ping 目标地址`;else{let e=[];for(let t=0;t<4;t++)e.push(`${(Math.random()*30+10).toFixed(2)} ms`);h=`PING ${m[0]} 56(84) bytes of data.\n64 bytes from ${m[0]}: icmp_seq=1 ttl=64 time=${e[0]}\n64 bytes from ${m[0]}: icmp_seq=2 ttl=64 time=${e[1]}\n64 bytes from ${m[0]}: icmp_seq=3 ttl=64 time=${e[2]}\n64 bytes from ${m[0]}: icmp_seq=4 ttl=64 time=${e[3]}\n\n--- ${m[0]} ping statistics ---\n4 packets transmitted, 4 received, 0% packet loss`}break;case`ifconfig`:h=`eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.100  netmask 255.255.255.0  broadcast 192.168.1.255
+        inet6 fe80::a00:27ff:fe8e:8aa8  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:8e:8a:a8  txqueuelen 1000  (Ethernet)
+        RX packets 12345  bytes 12345678 (11.7 MiB)
+        TX packets 5432  bytes 987654 (964.5 KiB)
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 234  bytes 23456 (22.9 KiB)
+        TX packets 234  bytes 23456 (22.9 KiB)`;break;case`curl`:h=m.length===0?`curl: 请指定 URL`:`<!DOCTYPE html>
+<html>
+<head><title>WebLinuxOS Test</title></head>
+<body>
+  <h1>Hello from WebLinuxOS!</h1>
+  <p>You requested: ${m[0]}</p>
+</body>
+</html>`;break;case`exit`:case`quit`:case`q`:h=`Exiting terminal... (closing window)`,setTimeout(()=>{let t=e.getState(),n=t.windows.find(e=>e.appId===`terminal`&&e.focused);n&&t.closeWindow(n.id)},500);break;default:h=`bash: ${p}: 未找到命令 (输入 'help' 查看可用命令)`}g(e=>[...e,{input:s,output:h}])},[u,t,r,a,_,l,C,w,T]);return(0,s.jsxs)(`div`,{className:`app-container app-terminal`,style:{background:l===`light`?`#f0f0f0`:`#1e1e1e`,color:l===`light`?`#000000`:`#00ff00`,fontFamily:`"Fira Code", "Cascadia Code", Consolas, monospace`,fontSize:14,overflow:`hidden`},onClick:()=>x.current?.focus(),children:[(0,s.jsx)(`div`,{ref:S,className:`app-terminal-output`,style:{flex:1,overflowY:`auto`,padding:`12px 16px`,whiteSpace:`pre-wrap`,wordBreak:`break-all`},children:h.map((e,t)=>(0,s.jsxs)(`div`,{style:{marginBottom:2},children:[e.input&&(0,s.jsxs)(`div`,{children:[(0,s.jsxs)(`span`,{style:{color:l===`light`?`#0066cc`:`#569cd6`},children:[C,`@`]}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#00aa00`:`#6a9955`},children:w}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#333`:`#d4d4d4`},children:`:`}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#0066cc`:`#569cd6`},children:u}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#333`:`#d4d4d4`},children:`$ `}),(0,s.jsx)(`span`,{children:e.input})]}),e.output&&(0,s.jsx)(`div`,{children:d(e.output,l)})]},t))}),(0,s.jsxs)(`div`,{style:{display:`flex`,alignItems:`center`,padding:`4px 16px 8px`,borderTop:`1px solid ${l===`light`?`#d1d1d6`:`#333`}`},children:[(0,s.jsxs)(`span`,{style:{color:l===`light`?`#0066cc`:`#569cd6`,whiteSpace:`nowrap`},children:[C,`@`]}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#00aa00`:`#6a9955`,whiteSpace:`nowrap`},children:w}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#333`:`#d4d4d4`,whiteSpace:`nowrap`},children:`:`}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#0066cc`:`#569cd6`,whiteSpace:`nowrap`},children:u}),(0,s.jsx)(`span`,{style:{color:l===`light`?`#333`:`#d4d4d4`,whiteSpace:`nowrap`},children:`$\xA0`}),(0,s.jsx)(`input`,{ref:x,type:`text`,value:p,onChange:e=>m(e.target.value),onKeyDown:e=>{if(e.ctrlKey&&e.key===`c`){e.preventDefault();let t=p.trim();t&&(v(e=>[...e.filter(e=>e!==t),t]),b(-1)),g(e=>[...e,{input:`^C`,output:``}]),m(``);return}if(e.ctrlKey&&e.key===`v`){e.preventDefault(),navigator.clipboard&&navigator.clipboard.readText&&navigator.clipboard.readText().then(e=>{m(t=>t+e)}).catch(()=>{m(e=>e)});return}if(e.ctrlKey&&e.key===`l`){e.preventDefault(),g([]);return}if(e.key===`Enter`){let e=p.trim();e&&(v(t=>[...t.filter(t=>t!==e),e]),b(-1)),E(e),m(``)}else if(e.key===`ArrowUp`){if(e.preventDefault(),_.length>0){let e=y===-1?_.length-1:Math.max(0,y-1);b(e),m(_[e])}}else if(e.key===`ArrowDown`&&(e.preventDefault(),y>=0)){let e=y+1;e>=_.length?(b(-1),m(``)):(b(e),m(_[e]))}},style:{flex:1,background:`transparent`,border:`none`,outline:`none`,color:l===`light`?`#000000`:`#00ff00`,fontFamily:`inherit`,fontSize:`inherit`,caretColor:l===`light`?`#000000`:`#00ff00`},spellCheck:!1})]})]})}export{f as default};

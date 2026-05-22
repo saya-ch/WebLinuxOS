@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, memo, useMemo } from 'react'
 import { useStore, findNodeById, validateFileName } from '../store'
 import type { FileNode } from '../types'
 
@@ -12,6 +12,69 @@ function formatSize(size: number | undefined): string {
 function getFileIcon(type: 'file' | 'folder'): string {
   return type === 'folder' ? '📁' : '📄'
 }
+
+interface TreeItemProps {
+  node: FileNode
+  depth: number
+  isExpanded: boolean
+  isSelected: boolean
+  onSelect: (id: string) => void
+  onDoubleClick: (node: FileNode) => void
+  onContextMenu: (e: React.MouseEvent, id: string) => void
+  onToggle: (id: string) => void
+}
+
+const TreeItem = memo(function TreeItem({
+  node,
+  depth,
+  isExpanded,
+  isSelected,
+  onSelect,
+  onDoubleClick,
+  onContextMenu,
+  onToggle,
+}: TreeItemProps) {
+  const hasChildren = node.children && node.children.length > 0
+  
+  return (
+    <div>
+      <div
+        className={`app-file-tree-item${isSelected ? ' selected' : ''}`}
+        style={{ paddingLeft: `${12 + depth * 16}px` }}
+        onClick={() => {
+          onSelect(node.id)
+          if (node.type === 'folder') {
+            onToggle(node.id)
+          }
+        }}
+        onDoubleClick={() => onDoubleClick(node)}
+        onContextMenu={(e) => onContextMenu(e, node.id)}
+      >
+        <span className="app-file-tree-icon">
+          {node.type === 'folder' ? (isExpanded ? '📂' : '📁') : '📄'}
+        </span>
+        <span className="app-file-tree-name">{node.name}</span>
+      </div>
+      {node.type === 'folder' && isExpanded && hasChildren && (
+        <div className="app-file-tree-children">
+          {node.children!.map((child) => (
+            <TreeItem
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              isExpanded={false}
+              isSelected={false}
+              onSelect={onSelect}
+              onDoubleClick={onDoubleClick}
+              onContextMenu={onContextMenu}
+              onToggle={onToggle}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+})
 
 interface ContextMenuState {
   visible: boolean
@@ -159,39 +222,21 @@ export default function FileManager() {
     setContextMenu({ visible: false, x: 0, y: 0, fileId: '' })
   }
 
-  function buildTree(nodes: FileNode[], depth: number = 0): React.ReactNode[] {
-    return nodes.map((node) => {
-      const isExpanded = expandedFolders.has(node.id)
-      const isSelected = selectedFileId === node.id
-      const hasChildren = node.children && node.children.length > 0
-      return (
-        <div key={node.id}>
-          <div
-            className={`app-file-tree-item${isSelected ? ' selected' : ''}`}
-            style={{ paddingLeft: `${12 + depth * 16}px` }}
-            onClick={() => {
-              setSelectedFileId(node.id)
-              if (node.type === 'folder') {
-                toggleFolderExpand(node.id)
-              }
-            }}
-            onDoubleClick={() => handleFileDoubleClick(node)}
-            onContextMenu={(e) => handleContextMenu(e, node.id)}
-          >
-            <span className="app-file-tree-icon">
-              {node.type === 'folder' ? (isExpanded ? '📂' : '📁') : '📄'}
-            </span>
-            <span className="app-file-tree-name">{node.name}</span>
-          </div>
-          {node.type === 'folder' && isExpanded && hasChildren && (
-            <div className="app-file-tree-children">
-              {buildTree(node.children!, depth + 1)}
-            </div>
-          )}
-        </div>
-      )
-    })
-  }
+  const treeContent = useMemo(() => {
+    return files.map((node) => (
+      <TreeItem
+        key={node.id}
+        node={node}
+        depth={0}
+        isExpanded={expandedFolders.has(node.id)}
+        isSelected={selectedFileId === node.id}
+        onSelect={setSelectedFileId}
+        onDoubleClick={handleFileDoubleClick}
+        onContextMenu={handleContextMenu}
+        onToggle={toggleFolderExpand}
+      />
+    ))
+  }, [files, expandedFolders, selectedFileId])
 
   function getFileDate(node: FileNode): string {
     const baseTime = new Date('2024-01-01').getTime()
@@ -257,7 +302,7 @@ export default function FileManager() {
         <div className="app-file-sidebar">
           <div className="app-file-sidebar-header">目录树</div>
           <div className="app-file-tree">
-            {buildTree(files)}
+            {treeContent}
           </div>
         </div>
         <div className="app-file-list-container">

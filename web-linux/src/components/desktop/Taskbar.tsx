@@ -10,6 +10,7 @@ const Taskbar = memo(function Taskbar() {
   const toggleLauncher = useStore((s) => s.toggleLauncher)
   const launcherOpen = useStore((s) => s.launcherOpen)
   const openApp = useStore((s) => s.openApp)
+  const focusWindow = useStore((s) => s.focusWindow)
 
   const [time, setTime] = useState(new Date())
 
@@ -25,10 +26,10 @@ const Taskbar = memo(function Taskbar() {
       } else if (focused) {
         minimizeWindow(winId)
       } else {
-        restoreWindow(winId)
+        focusWindow(winId)
       }
     },
-    [minimizeWindow, restoreWindow],
+    [minimizeWindow, restoreWindow, focusWindow],
   )
 
   const formatTime = (d: Date) => {
