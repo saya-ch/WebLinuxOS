@@ -343,11 +343,11 @@ body {
 }
 
 .window.closing {
-  animation: windowClose 0.15s ease-in forwards;
+  animation: windowClose 0.2s ease-in forwards;
 }
 
 .window.minimizing {
-  animation: windowMinimize 0.15s ease-in forwards;
+  animation: windowMinimize 0.2s ease-in forwards;
 }
 
 .window.focused {

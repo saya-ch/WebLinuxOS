@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const isGitHubPages = mode === 'github-pages'
   
@@ -13,10 +12,19 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: isGitHubPages ? false : true,
       rollupOptions: {
         output: {
-          manualChunks: undefined
+          manualChunks: isGitHubPages ? {
+            vendor: ['react', 'react-dom'],
+            store: ['zustand'],
+          } : undefined
         }
       },
-      publicDir: 'public'
+      publicDir: 'public',
+      sourcemap: false,
+      minify: 'esbuild',
+      target: 'esnext'
+    },
+    esbuild: {
+      keepNames: true
     }
   }
 })

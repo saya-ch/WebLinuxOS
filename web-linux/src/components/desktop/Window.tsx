@@ -153,7 +153,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     setIsClosing(true)
     setTimeout(() => {
       closeWindow(win.id)
-    }, 150)
+    }, 200)
   }, [win.id, closeWindow])
 
   const handleMinimize = useCallback(() => {
@@ -161,7 +161,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     setTimeout(() => {
       minimizeWindow(win.id)
       setIsMinimizing(false)
-    }, 150)
+    }, 200)
   }, [win.id, minimizeWindow])
 
   return (
