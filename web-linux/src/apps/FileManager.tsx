@@ -1,4 +1,4 @@
-import { useState, useCallback, memo, useMemo } from 'react'
+import { useState, useCallback, memo, useMemo, useEffect } from 'react'
 import { useStore, findNodeById, validateFileName } from '../store'
 import type { FileNode } from '../types'
 
@@ -98,6 +98,8 @@ export default function FileManager() {
   const [renameValue, setRenameValue] = useState('')
   const [newItemInput, setNewItemInput] = useState<'file' | 'folder' | null>(null)
   const [newItemName, setNewItemName] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<FileNode[]>([])
 
   const currentNodeId = currentPath[currentPath.length - 1]
   const currentNode = findNodeById(files, currentNodeId)
@@ -153,7 +155,11 @@ export default function FileManager() {
   const handleContextMenu = useCallback((e: React.MouseEvent, fileId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, fileId })
+    const menuWidth = 200
+    const menuHeight = 180
+    const x = Math.min(e.clientX, window.innerWidth - menuWidth)
+    const y = Math.min(e.clientY, window.innerHeight - menuHeight)
+    setContextMenu({ visible: true, x, y, fileId })
   }, [])
 
   function closeContextMenu() {
@@ -222,6 +228,73 @@ export default function FileManager() {
     setContextMenu({ visible: false, x: 0, y: 0, fileId: '' })
   }
 
+  function searchFiles(query: string, nodes: FileNode[]): FileNode[] {
+    if (!query.trim()) return []
+    const results: FileNode[] = []
+    const lowerQuery = query.toLowerCase()
+    
+    function search(node: FileNode) {
+      if (node.name.toLowerCase().includes(lowerQuery)) {
+        results.push(node)
+      }
+      if (node.children) {
+        node.children.forEach(search)
+      }
+    }
+    
+    nodes.forEach(search)
+    return results
+  }
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query)
+    const results = searchFiles(query, files)
+    setSearchResults(results)
+  }, [files])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault()
+        const searchInput = document.querySelector('.app-search-input') as HTMLInputElement
+        searchInput?.focus()
+        return
+      }
+
+      if (e.key === 'Backspace' && !searchQuery && selectedFileId && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault()
+        goToParent()
+        return
+      }
+
+      if (e.key === 'Enter' && selectedFileId && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault()
+        const node = findNodeById(files, selectedFileId)
+        if (node) {
+          handleFileDoubleClick(node)
+        }
+        return
+      }
+
+      if (e.key === 'Delete' && selectedFileId && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault()
+        handleDelete(selectedFileId)
+        return
+      }
+
+      if (e.key === 'Escape') {
+        setSearchQuery('')
+        setSearchResults([])
+        setSelectedFileId(null)
+        closeContextMenu()
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedFileId, searchQuery, files, goToParent, handleFileDoubleClick, handleDelete])
+
   const treeContent = useMemo(() => {
     return files.map((node) => (
       <TreeItem
@@ -279,6 +352,18 @@ export default function FileManager() {
             />
           </span>
         )}
+        {!newItemInput && (
+          <span className="app-toolbar-inline-form" style={{ marginLeft: 'auto' }}>
+            <input
+              type="text"
+              className="app-input app-search-input"
+              placeholder="搜索文件 (Ctrl+F)"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{ width: 180 }}
+            />
+          </span>
+        )}
       </div>
 
       <div className="app-file-path-bar">
@@ -313,41 +398,69 @@ export default function FileManager() {
             <span className="app-file-col-date">修改日期</span>
           </div>
           <div className="app-file-list">
-            {children.map((file) => (
-              <div
-                key={file.id}
-                className={`app-file-row${selectedFileId === file.id ? ' selected' : ''}`}
-                onClick={() => setSelectedFileId(file.id)}
-                onDoubleClick={() => handleFileDoubleClick(file)}
-                onContextMenu={(e) => handleContextMenu(e, file.id)}
-              >
-                <span className="app-file-col-name">
-                  <span className="app-file-icon">{getFileIcon(file.type)}</span>
-                  {renameTarget === file.id ? (
-                    <input
-                      autoFocus
-                      value={renameValue}
-                      onChange={(e) => setRenameValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleRenameSubmit()
-                        if (e.key === 'Escape') { setRenameTarget(null); setRenameValue('') }
-                      }}
-                      onBlur={handleRenameSubmit}
-                      className="app-input"
-                      style={{ width: 100 }}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    file.name
-                  )}
-                </span>
-                <span className="app-file-col-type">{file.type === 'folder' ? '文件夹' : '文本文件'}</span>
-                <span className="app-file-col-size">{getFileSize(file)}</span>
-                <span className="app-file-col-date">{getFileDate(file)}</span>
-              </div>
-            ))}
-            {children.length === 0 && (
+            {searchResults.length > 0 ? (
+              searchResults.map((file) => (
+                <div
+                  key={file.id}
+                  className={`app-file-row${selectedFileId === file.id ? ' selected' : ''}`}
+                  onClick={() => {
+                    setSelectedFileId(file.id)
+                    navigateTo(file.parentId || 'root')
+                  }}
+                  onDoubleClick={() => handleFileDoubleClick(file)}
+                  onContextMenu={(e) => handleContextMenu(e, file.id)}
+                >
+                  <span className="app-file-col-name">
+                    <span className="app-file-icon">{getFileIcon(file.type)}</span>
+                    {file.name}
+                  </span>
+                  <span className="app-file-col-type">{file.type === 'folder' ? '文件夹' : '文本文件'}</span>
+                  <span className="app-file-col-size">{getFileSize(file)}</span>
+                  <span className="app-file-col-date">{getFileDate(file)}</span>
+                </div>
+              ))
+            ) : (
+              children.map((file) => (
+                <div
+                  key={file.id}
+                  className={`app-file-row${selectedFileId === file.id ? ' selected' : ''}`}
+                  onClick={() => setSelectedFileId(file.id)}
+                  onDoubleClick={() => handleFileDoubleClick(file)}
+                  onContextMenu={(e) => handleContextMenu(e, file.id)}
+                >
+                  <span className="app-file-col-name">
+                    <span className="app-file-icon">{getFileIcon(file.type)}</span>
+                    {renameTarget === file.id ? (
+                      <input
+                        autoFocus
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameSubmit()
+                          if (e.key === 'Escape') { setRenameTarget(null); setRenameValue('') }
+                        }}
+                        onBlur={handleRenameSubmit}
+                        className="app-input"
+                        style={{ width: 100 }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      file.name
+                    )}
+                  </span>
+                  <span className="app-file-col-type">{file.type === 'folder' ? '文件夹' : '文本文件'}</span>
+                  <span className="app-file-col-size">{getFileSize(file)}</span>
+                  <span className="app-file-col-date">{getFileDate(file)}</span>
+                </div>
+              ))
+            )}
+            {searchResults.length === 0 && children.length === 0 && (
               <div className="app-file-empty">此文件夹为空</div>
+            )}
+            {searchResults.length > 0 && (
+              <div className="app-file-empty" style={{ paddingTop: '12px' }}>
+                找到 {searchResults.length} 个搜索结果
+              </div>
             )}
           </div>
         </div>

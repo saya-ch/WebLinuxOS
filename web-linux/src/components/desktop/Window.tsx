@@ -69,44 +69,61 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   useEffect(() => {
     if (!dragging && !resizing) return
 
+    let rafId: number | null = null
+    let lastUpdateTime = 0
+
     const handleMouseMove = (e: MouseEvent) => {
-      const ref = stateRef.current
-      if (dragging) {
-        const dx = e.clientX - ref.startX
-        const dy = e.clientY - ref.startY
-        const newX = Math.max(-ref.startWidth + 100, ref.startWindowX + dx)
-        const newY = Math.max(0, ref.startWindowY + dy)
-        updateWindowPosition(win.id, newX, newY)
-      }
-      if (resizing) {
-        const dx = e.clientX - ref.startX
-        const dy = e.clientY - ref.startY
-        let newWidth = ref.startWidth
-        let newHeight = ref.startHeight
-        let newX = ref.startWindowX
-        const newY = ref.startWindowY
+      const now = performance.now()
+      if (now - lastUpdateTime < 16) return
+      lastUpdateTime = now
 
-        if (resizing === 'right' || resizing === 'corner') {
-          newWidth = Math.max(win.minWidth, ref.startWidth + dx)
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+      }
+
+      rafId = requestAnimationFrame(() => {
+        const ref = stateRef.current
+        if (dragging) {
+          const dx = e.clientX - ref.startX
+          const dy = e.clientY - ref.startY
+          const newX = Math.max(-ref.startWidth + 100, ref.startWindowX + dx)
+          const newY = Math.max(0, ref.startWindowY + dy)
+          updateWindowPosition(win.id, newX, newY)
         }
-        if (resizing === 'left') {
-          newWidth = Math.max(win.minWidth, ref.startWidth - dx)
-          if (newWidth === win.minWidth && dx > 0) {
-            newX = ref.startWindowX + ref.startWidth - win.minWidth
-          } else {
-            newX = Math.max(-newWidth + 100, ref.startWindowX + dx)
+        if (resizing) {
+          const dx = e.clientX - ref.startX
+          const dy = e.clientY - ref.startY
+          let newWidth = ref.startWidth
+          let newHeight = ref.startHeight
+          let newX = ref.startWindowX
+          const newY = ref.startWindowY
+
+          if (resizing === 'right' || resizing === 'corner') {
+            newWidth = Math.max(win.minWidth, ref.startWidth + dx)
           }
-        }
-        if (resizing === 'bottom' || resizing === 'corner') {
-          newHeight = Math.max(win.minHeight, ref.startHeight + dy)
-        }
+          if (resizing === 'left') {
+            newWidth = Math.max(win.minWidth, ref.startWidth - dx)
+            if (newWidth === win.minWidth && dx > 0) {
+              newX = ref.startWindowX + ref.startWidth - win.minWidth
+            } else {
+              newX = Math.max(-newWidth + 100, ref.startWindowX + dx)
+            }
+          }
+          if (resizing === 'bottom' || resizing === 'corner') {
+            newHeight = Math.max(win.minHeight, ref.startHeight + dy)
+          }
 
-        updateWindowPosition(win.id, newX, newY)
-        updateWindowSize(win.id, newWidth, newHeight)
-      }
+          updateWindowPosition(win.id, newX, newY)
+          updateWindowSize(win.id, newWidth, newHeight)
+        }
+      })
     }
 
     const handleMouseUp = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+        rafId = null
+      }
       setDragging(false)
       setResizing(null)
     }
@@ -114,6 +131,9 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
     return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+      }
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }

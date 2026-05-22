@@ -2,6 +2,14 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useStore, findNodeByPath, resolvePath } from '../store'
 import type { FileNode } from '../types'
 
+function useLatest<T>(value: T): { current: T } {
+  const ref = useRef<T>(value)
+  useEffect(() => {
+    ref.current = value
+  }, [value])
+  return ref
+}
+
 interface HistoryEntry {
   input: string
   output: string
@@ -76,6 +84,9 @@ export default function Terminal() {
   const deleteFile = useStore((s) => s.deleteFile)
   const copyFile = useStore((s) => s.copyFile)
   const moveFile = useStore((s) => s.moveFile)
+  const renameFile = useStore((s) => s.renameFile)
+  const getWindows = useStore((s) => s.windows)
+  const closeWindow = useStore((s) => s.closeWindow)
   const theme = useStore((s) => s.theme)
 
   const [cwd, setCwd] = useState('/home/user')
@@ -88,6 +99,11 @@ export default function Terminal() {
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const filesRef = useLatest(files)
+  const renameFileRef = useLatest(renameFile)
+  const getWindowsRef = useLatest(getWindows)
+  const closeWindowRef = useLatest(closeWindow)
 
   useEffect(() => {
     if (containerRef.current) {
@@ -330,22 +346,22 @@ export default function Terminal() {
             copyFile(sourceNode.id, targetNode.id)
             output = ''
           } else if (sourceNode.type === 'file' && !targetNode) {
-            const parts = target.split('/').filter(Boolean)
-            const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-            const fileName = parts[parts.length - 1]
-            const parentNode = findNodeByPath(files, parentPath)
-            if (parentNode) {
-              copyFile(sourceNode.id, parentNode.id)
-              const updatedFiles = useStore.getState().files
-              const newFile = findNodeByPath(updatedFiles, target)
-              if (newFile) {
-                useStore.getState().renameFile(newFile.id, fileName)
+              const parts = target.split('/').filter(Boolean)
+              const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
+              const fileName = parts[parts.length - 1]
+              const parentNode = findNodeByPath(files, parentPath)
+              if (parentNode) {
+                copyFile(sourceNode.id, parentNode.id)
+                const updatedFiles = filesRef.current
+                const newFile = findNodeByPath(updatedFiles, target)
+                if (newFile) {
+                  renameFileRef.current(newFile.id, fileName)
+                }
+                output = ''
+              } else {
+                output = `cp: 无法创建'${args[1]}': 没有那个文件或目录`
               }
-              output = ''
             } else {
-              output = `cp: 无法创建'${args[1]}': 没有那个文件或目录`
-            }
-          } else {
             output = `cp: 无法复制'${args[0]}': 无效的目标`
           }
         }
@@ -369,22 +385,22 @@ export default function Terminal() {
             moveFile(sourceNode.id, targetNode.id)
             output = ''
           } else if (sourceNode.type === 'file' && !targetNode) {
-            const parts = target.split('/').filter(Boolean)
-            const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-            const fileName = parts[parts.length - 1]
-            const parentNode = findNodeByPath(files, parentPath)
-            if (parentNode) {
-              moveFile(sourceNode.id, parentNode.id)
-              const updatedFiles = useStore.getState().files
-              const movedFile = findNodeByPath(updatedFiles, target)
-              if (movedFile) {
-                useStore.getState().renameFile(movedFile.id, fileName)
+              const parts = target.split('/').filter(Boolean)
+              const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
+              const fileName = parts[parts.length - 1]
+              const parentNode = findNodeByPath(files, parentPath)
+              if (parentNode) {
+                moveFile(sourceNode.id, parentNode.id)
+                const updatedFiles = filesRef.current
+                const movedFile = findNodeByPath(updatedFiles, target)
+                if (movedFile) {
+                  renameFileRef.current(movedFile.id, fileName)
+                }
+                output = ''
+              } else {
+                output = `mv: 无法移动'${args[1]}': 没有那个文件或目录`
               }
-              output = ''
             } else {
-              output = `mv: 无法移动'${args[1]}': 没有那个文件或目录`
-            }
-          } else {
             output = `mv: 无法移动'${args[0]}': 无效的目标`
           }
         }
@@ -601,10 +617,10 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
       case 'q':
         output = 'Exiting terminal... (closing window)'
         setTimeout(() => {
-          const state = useStore.getState()
-          const thisWindow = state.windows.find(w => w.appId === 'terminal' && w.focused)
+          const windows = getWindowsRef.current
+          const thisWindow = windows.find(w => w.appId === 'terminal' && w.focused)
           if (thisWindow) {
-            state.closeWindow(thisWindow.id)
+            closeWindowRef.current(thisWindow.id)
           }
         }, 500)
         break

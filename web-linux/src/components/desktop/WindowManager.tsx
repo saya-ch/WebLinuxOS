@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, memo } from 'react'
 import { useStore } from '../../store'
 import Window from './Window'
+import ErrorBoundary from '../ErrorBoundary'
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<Record<string, never>>>> = {}
 
@@ -76,22 +77,24 @@ const WindowManager = memo(function WindowManager() {
         const Component = loadComponent(app.component)
         return (
           <Window key={win.id} window={win}>
-            <Suspense
-              fallback={
-                <div
-                  style={{
-                    padding: 40,
-                    color: 'var(--text-secondary)',
-                    textAlign: 'center',
-                    fontSize: 14,
-                  }}
-                >
-                  加载中...
-                </div>
-              }
-            >
-              <Component />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      padding: 40,
+                      color: 'var(--text-secondary)',
+                      textAlign: 'center',
+                      fontSize: 14,
+                    }}
+                  >
+                    加载中...
+                  </div>
+                }
+              >
+                <Component />
+              </Suspense>
+            </ErrorBoundary>
           </Window>
         )
       })}
