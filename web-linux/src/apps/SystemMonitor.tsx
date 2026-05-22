@@ -39,13 +39,20 @@ export default function SystemMonitor() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const newCpu = Math.max(2, Math.min(95, cpuUsage + (Math.random() - 0.5) * 10))
-      setCpuUsage(Math.round(newCpu * 10) / 10)
+      setCpuUsage((prevCpu) => {
+        const newCpu = Math.max(2, Math.min(95, prevCpu + (Math.random() - 0.5) * 10))
+        return Math.round(newCpu * 10) / 10
+      })
       setMemoryUsed(Math.round((3400 + (Math.random() - 0.5) * 200) * 10) / 10)
       setDiskUsed(Math.round((45 + (Math.random() - 0.5) * 0.5) * 10) / 10)
       setNetDown(Math.round((1.2 + (Math.random() - 0.5) * 0.5) * 10) / 10)
       setNetUp(Math.round((0.3 + (Math.random() - 0.5) * 0.2) * 10) / 10)
-      setCpuHistory((prev) => [...prev.slice(1), Math.round(newCpu)])
+      
+      setCpuHistory((prev) => {
+        const lastVal = prev[prev.length - 1]
+        const newVal = Math.max(2, Math.min(95, lastVal + (Math.random() - 0.5) * 10))
+        return [...prev.slice(1), Math.round(newVal)]
+      })
 
       setProcesses((prev) =>
         prev.map((p) => ({
@@ -56,7 +63,7 @@ export default function SystemMonitor() {
       )
     }, 2000)
     return () => clearInterval(interval)
-  }, [cpuUsage])
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current

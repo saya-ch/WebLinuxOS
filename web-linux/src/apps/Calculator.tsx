@@ -22,7 +22,7 @@ export default function Calculator() {
         const char = sanitized[i]
         if (char.match(/[0-9.]/)) {
           current += char
-        } else if (char.match(/[+\-*/()]/) || char === '*' || char === '/') {
+        } else if (char.match(/[+\-*/()]/)) {
           if (current) {
             tokens.push({ type: 'number', value: current })
             current = ''
@@ -31,7 +31,7 @@ export default function Calculator() {
             tokens.push({ type: 'operator', value: '**' })
             i++
           } else {
-            tokens.push({ type: 'operator', value: char })
+            tokens.push({ type: char === '(' || char === ')' ? 'paren' : 'operator', value: char })
           }
         }
       }
@@ -39,59 +39,71 @@ export default function Calculator() {
         tokens.push({ type: 'number', value: current })
       }
 
-      let result = 0
-      let operator = '+'
-      let pendingValue: number | null = null
-      let pendingOp: string | null = null
+      const applyOperator = (a: number, b: number, op: string): number => {
+        switch (op) {
+          case '+': return a + b
+          case '-': return a - b
+          case '*': return a * b
+          case '/': 
+            if (b === 0) throw new Error('除零错误')
+            return a / b
+          case '**': return Math.pow(a, b)
+          default: throw new Error('未知操作符')
+        }
+      }
 
-      for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i]
+      const precedence = (op: string): number => {
+        if (op === '**') return 3
+        if (op === '*' || op === '/') return 2
+        if (op === '+' || op === '-') return 1
+        return 0
+      }
+
+      const output: (number | string)[] = []
+      const operators: string[] = []
+
+      for (const token of tokens) {
         if (token.type === 'number') {
-          const num = parseFloat(token.value)
-          if (pendingOp !== null && pendingValue !== null) {
-            if (pendingOp === '**') {
-              pendingValue = Math.pow(pendingValue, num)
-            } else if (pendingOp === '*' || pendingOp === '/') {
-              pendingValue = pendingOp === '*' ? pendingValue * num : pendingValue / num
-            }
-            pendingOp = null
-          } else if (pendingValue !== null) {
-            if (token.value.includes('**')) {
-              pendingValue = Math.pow(pendingValue, parseFloat(token.value.split('**')[1]))
-            } else {
-              if (operator === '+') result += pendingValue
-              else if (operator === '-') result -= pendingValue
-              pendingValue = num
-            }
-          } else {
-            if (operator === '+') result += num
-            else if (operator === '-') result -= num
-          }
+          output.push(parseFloat(token.value))
         } else if (token.type === 'operator') {
-          if (token.value === '**' || token.value === '*' || token.value === '/') {
-            if (pendingValue === null) {
-              pendingValue = result
-              result = 0
-              operator = '+'
+          while (
+            operators.length > 0 &&
+            operators[operators.length - 1] !== '(' &&
+            precedence(operators[operators.length - 1]) >= precedence(token.value)
+          ) {
+            output.push(operators.pop()!)
+          }
+          operators.push(token.value)
+        } else if (token.type === 'paren') {
+          if (token.value === '(') {
+            operators.push(token.value)
+          } else if (token.value === ')') {
+            while (operators.length > 0 && operators[operators.length - 1] !== '(') {
+              output.push(operators.pop()!)
             }
-            pendingOp = token.value
-          } else {
-            if (pendingValue !== null && pendingOp !== null) {
-              if (operator === '+') result += pendingValue
-              else if (operator === '-') result -= pendingValue
-              pendingValue = null
-              pendingOp = null
-            }
-            operator = token.value
+            operators.pop()
           }
         }
       }
-      if (pendingValue !== null) {
-        if (operator === '+') result += pendingValue
-        else if (operator === '-') result -= pendingValue
+
+      while (operators.length > 0) {
+        output.push(operators.pop()!)
       }
-      
-      return result
+
+      const stack: number[] = []
+      for (const item of output) {
+        if (typeof item === 'number') {
+          stack.push(item)
+        } else {
+          const b = stack.pop()
+          const a = stack.pop()
+          if (a === undefined || b === undefined) throw new Error('表达式错误')
+          stack.push(applyOperator(a, b, item))
+        }
+      }
+
+      if (stack.length !== 1) throw new Error('计算错误')
+      return stack[0]
     } catch {
       throw new Error('计算错误')
     }
@@ -123,18 +135,7 @@ export default function Calculator() {
   const handleEqual = useCallback(() => {
     try {
       const fullExp = expression + display
-      const sanitized = fullExp
-        .replace(/×/g, '*')
-        .replace(/÷/g, '/')
-        .replace(/π/g, String(Math.PI))
-        .replace(/e(?![xp])/g, String(Math.E))
-      
-      let evalResult: number
-      try {
-        evalResult = Function('"use strict"; return (' + sanitized + ')')()
-      } catch {
-        evalResult = safeCalculate(fullExp)
-      }
+      const evalResult = safeCalculate(fullExp)
       
       if (!isFinite(evalResult) || isNaN(evalResult)) {
         throw new Error('无效结果')
