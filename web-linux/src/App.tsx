@@ -14,10 +14,19 @@ const App = memo(function App() {
   const focusWindow = useStore((s) => s.focusWindow)
   const minimizeWindow = useStore((s) => s.minimizeWindow)
   const maximizeWindow = useStore((s) => s.maximizeWindow)
+  const theme = useStore((s) => s.theme)
 
   useEffect(() => {
     appRegistry.forEach((app) => registerApp(app))
   }, [registerApp])
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light')
+    } else {
+      document.documentElement.classList.remove('light')
+    }
+  }, [theme])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

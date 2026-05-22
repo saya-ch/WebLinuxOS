@@ -37,6 +37,39 @@
   --scrollbar-thumb-hover: #4a4a7a;
 }
 
+:root.light {
+  --desktop-bg: #f5f5f7;
+  --window-bg: #ffffff;
+  --window-border: #d1d1d6;
+  --titlebar-bg: #f0f0f5;
+  --titlebar-active-bg: #e5e5ea;
+  --titlebar-text: #333333;
+  --titlebar-button-hover: rgba(0, 0, 0, 0.05);
+  --titlebar-close-hover: #ff3b30;
+  --taskbar-bg: #f0f0f5;
+  --taskbar-border: #d1d1d6;
+  --taskbar-button-bg: transparent;
+  --taskbar-button-hover: rgba(0, 0, 0, 0.04);
+  --taskbar-button-active: rgba(0, 0, 0, 0.06);
+  --launcher-bg: #ffffff;
+  --launcher-border: #d1d1d6;
+  --launcher-category-hover: rgba(0, 0, 0, 0.03);
+  --launcher-category-active: rgba(0, 0, 0, 0.05);
+  --context-menu-bg: #ffffff;
+  --context-menu-hover: rgba(0, 0, 0, 0.05);
+  --text-primary: #1c1c1e;
+  --text-secondary: #8e8e93;
+  --accent: #007aff;
+  --accent-hover: #409cff;
+  --accent-bg: rgba(0, 122, 255, 0.1);
+  --desktop-icon-text: #1c1c1e;
+  --desktop-icon-selected: rgba(0, 122, 255, 0.15);
+  --desktop-icon-selected-border: rgba(0, 122, 255, 0.4);
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb: #c7c7cc;
+  --scrollbar-thumb-hover: #a1a1a6;
+}
+
 @keyframes windowOpen {
   from {
     opacity: 0;

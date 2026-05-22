@@ -20,20 +20,30 @@ function listDir(files: FileNode[], path: string): string {
 }
 
 const ANSI_COLORS: Record<string, string> = {
-  '34': '#569cd6',
-  '32': '#6a9955',
-  '31': '#f44747',
-  '33': '#dcdcaa',
-  '36': '#4ec9b0',
-  '35': '#c586c0',
-}
+    '34': '#0066cc',
+    '32': '#00aa00',
+    '31': '#cc0000',
+    '33': '#aaaa00',
+    '36': '#00aaaa',
+    '35': '#aa00aa',
+  }
 
-function processOutput(text: string): React.ReactNode[] {
+  const ANSI_COLORS_DARK: Record<string, string> = {
+    '34': '#569cd6',
+    '32': '#6a9955',
+    '31': '#f44747',
+    '33': '#dcdcaa',
+    '36': '#4ec9b0',
+    '35': '#c586c0',
+  }
+
+function processOutput(text: string, theme: 'dark' | 'light'): React.ReactNode[] {
   const escapeChar = String.fromCharCode(27)
   const regex = new RegExp(`(${escapeChar}\\[[0-9;]*m)`, 'g')
   const parts = text.split(regex)
   const result: React.ReactNode[] = []
   let currentStyle: React.CSSProperties = {}
+  const colors = theme === 'light' ? ANSI_COLORS : ANSI_COLORS_DARK
   
   for (let i = 0; i < parts.length; i++) {
     if (parts[i].startsWith(escapeChar + '[')) {
@@ -42,8 +52,8 @@ function processOutput(text: string): React.ReactNode[] {
         currentStyle = {}
       } else if (code === '1') {
         currentStyle = { ...currentStyle, fontWeight: 'bold' }
-      } else if (ANSI_COLORS[code]) {
-        currentStyle = { ...currentStyle, color: ANSI_COLORS[code] }
+      } else if (colors[code]) {
+        currentStyle = { ...currentStyle, color: colors[code] }
       }
     } else if (parts[i]) {
       result.push(<span key={i} style={currentStyle}>{parts[i]}</span>)
@@ -491,7 +501,13 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
   }
 
   return (
-    <div className="app-container app-terminal" style={{ background: '#1e1e1e', color: '#00ff00', fontFamily: '"Fira Code", "Cascadia Code", Consolas, monospace', fontSize: 14, overflow: 'hidden' }} onClick={() => inputRef.current?.focus()}>
+    <div className="app-container app-terminal" style={{ 
+      background: theme === 'light' ? '#f0f0f0' : '#1e1e1e', 
+      color: theme === 'light' ? '#000000' : '#00ff00', 
+      fontFamily: '"Fira Code", "Cascadia Code", Consolas, monospace', 
+      fontSize: 14, 
+      overflow: 'hidden' 
+    }} onClick={() => inputRef.current?.focus()}>
       <div
         ref={containerRef}
         className="app-terminal-output"
@@ -501,24 +517,29 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
           <div key={i} style={{ marginBottom: 2 }}>
             {entry.input && (
               <div>
-                <span style={{ color: '#569cd6' }}>{username}@</span>
-                <span style={{ color: '#6a9955' }}>{hostname}</span>
-                <span style={{ color: '#d4d4d4' }}>:</span>
-                <span style={{ color: '#569cd6' }}>{cwd}</span>
-                <span style={{ color: '#d4d4d4' }}>$ </span>
+                <span style={{ color: theme === 'light' ? '#0066cc' : '#569cd6' }}>{username}@</span>
+                <span style={{ color: theme === 'light' ? '#00aa00' : '#6a9955' }}>{hostname}</span>
+                <span style={{ color: theme === 'light' ? '#333' : '#d4d4d4' }}>:</span>
+                <span style={{ color: theme === 'light' ? '#0066cc' : '#569cd6' }}>{cwd}</span>
+                <span style={{ color: theme === 'light' ? '#333' : '#d4d4d4' }}>$ </span>
                 <span>{entry.input}</span>
               </div>
             )}
-            {entry.output && <div>{processOutput(entry.output)}</div>}
+            {entry.output && <div>{processOutput(entry.output, theme)}</div>}
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '4px 16px 8px', borderTop: '1px solid #333' }}>
-        <span style={{ color: '#569cd6', whiteSpace: 'nowrap' }}>{username}@</span>
-        <span style={{ color: '#6a9955', whiteSpace: 'nowrap' }}>{hostname}</span>
-        <span style={{ color: '#d4d4d4', whiteSpace: 'nowrap' }}>:</span>
-        <span style={{ color: '#569cd6', whiteSpace: 'nowrap' }}>{cwd}</span>
-        <span style={{ color: '#d4d4d4', whiteSpace: 'nowrap' }}>$&nbsp;</span>
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        padding: '4px 16px 8px', 
+        borderTop: `1px solid ${theme === 'light' ? '#d1d1d6' : '#333'}` 
+      }}>
+        <span style={{ color: theme === 'light' ? '#0066cc' : '#569cd6', whiteSpace: 'nowrap' }}>{username}@</span>
+        <span style={{ color: theme === 'light' ? '#00aa00' : '#6a9955', whiteSpace: 'nowrap' }}>{hostname}</span>
+        <span style={{ color: theme === 'light' ? '#333' : '#d4d4d4', whiteSpace: 'nowrap' }}>:</span>
+        <span style={{ color: theme === 'light' ? '#0066cc' : '#569cd6', whiteSpace: 'nowrap' }}>{cwd}</span>
+        <span style={{ color: theme === 'light' ? '#333' : '#d4d4d4', whiteSpace: 'nowrap' }}>$&nbsp;</span>
         <input
           ref={inputRef}
           type="text"
@@ -530,10 +551,10 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            color: '#00ff00',
+            color: theme === 'light' ? '#000000' : '#00ff00',
             fontFamily: 'inherit',
             fontSize: 'inherit',
-            caretColor: '#00ff00',
+            caretColor: theme === 'light' ? '#000000' : '#00ff00',
           }}
           spellCheck={false}
         />
