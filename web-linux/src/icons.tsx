@@ -531,3 +531,30 @@ export const PomodoroIcon = () => (
     <path d="M17 12L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 )
+
+export const PetIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+)
+
+export const WallpaperIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <path d="M3 9L10 3L17 9L21 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="7" cy="17" r="3" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+)
+
+export const MindMapIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+    <path d="M15 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M4 6H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M4 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M4 18H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="22" cy="12" r="2" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="9" cy="6" r="2" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="9" cy="18" r="2" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+)
