@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
 type Token = { type: 'number' | 'operator' | 'paren', value: string }
 
@@ -114,17 +114,17 @@ export default function Calculator() {
       setDisplay(num)
       setResetFlag(false)
     } else {
-      setDisplay((prev) => (prev === '0' ? num : prev + num))
+      setDisplay((prev) => (prev === '0' || prev === 'Error' ? num : prev + num))
     }
   }, [resetFlag])
 
   const handleOperator = useCallback((op: string) => {
-    setExpression((prev) => prev + display + op)
+    setExpression((prev) => prev + (display !== 'Error' ? display : '') + op)
     setResetFlag(true)
   }, [display])
 
   const handleDecimal = useCallback(() => {
-    if (resetFlag) {
+    if (resetFlag || display === 'Error') {
       setDisplay('0.')
       setResetFlag(false)
     } else if (!display.includes('.')) {
@@ -132,7 +132,18 @@ export default function Calculator() {
     }
   }, [resetFlag, display])
 
+  const handleClear = useCallback(() => {
+    setDisplay('0')
+    setExpression('')
+    setResetFlag(false)
+  }, [])
+
   const handleEqual = useCallback(() => {
+    if (display === 'Error') {
+      handleClear()
+      return
+    }
+    
     try {
       const fullExp = expression + display
       const evalResult = safeCalculate(fullExp)
@@ -141,7 +152,13 @@ export default function Calculator() {
         throw new Error('无效结果')
       }
       
-      setDisplay(String(evalResult))
+      // 格式化结果，移除多余的零
+      let formatted = String(evalResult)
+      if (formatted.includes('.')) {
+        formatted = formatted.replace(/\.?0+$/, '')
+      }
+      
+      setDisplay(formatted)
       setExpression('')
       setResetFlag(true)
     } catch {
@@ -149,13 +166,7 @@ export default function Calculator() {
       setExpression('')
       setResetFlag(true)
     }
-  }, [expression, display, safeCalculate])
-
-  const handleClear = useCallback(() => {
-    setDisplay('0')
-    setExpression('')
-    setResetFlag(false)
-  }, [])
+  }, [expression, display, safeCalculate, handleClear])
 
   const handleClearEntry = useCallback(() => {
     setDisplay('0')
@@ -163,10 +174,14 @@ export default function Calculator() {
   }, [])
 
   const handleBackspace = useCallback(() => {
-    setDisplay((prev) => (prev.length <= 1 || (prev.length === 2 && prev.startsWith('-')) ? '0' : prev.slice(0, -1)))
+    setDisplay((prev) => {
+      if (prev === 'Error') return '0'
+      return (prev.length <= 1 || (prev.length === 2 && prev.startsWith('-'))) ? '0' : prev.slice(0, -1)
+    })
   }, [])
 
   const handlePercent = useCallback(() => {
+    if (display === 'Error') return
     try {
       const val = parseFloat(display) / 100
       setDisplay(String(val))
@@ -177,12 +192,13 @@ export default function Calculator() {
   }, [display])
 
   const handleSign = useCallback(() => {
-    if (display !== '0') {
+    if (display !== '0' && display !== 'Error') {
       setDisplay((prev) => (prev.startsWith('-') ? prev.slice(1) : '-' + prev))
     }
   }, [display])
 
   const handleUnary = useCallback((fn: (x: number) => number) => {
+    if (display === 'Error') return
     try {
       const val = parseFloat(display)
       const result = fn(val)
@@ -195,18 +211,16 @@ export default function Calculator() {
   }, [display])
 
   const handleConstant = useCallback((value: string) => {
-    if (resetFlag) {
+    if (resetFlag || display === 'Error') {
       setDisplay(value)
       setResetFlag(false)
     } else if (display === '0') {
       setDisplay(value)
-    } else {
-      setDisplay((prev) => prev + value)
     }
   }, [resetFlag, display])
 
   const handleOpenParen = useCallback(() => {
-    if (resetFlag) {
+    if (resetFlag || display === 'Error') {
       setExpression((prev) => prev + '(')
       setDisplay('0')
       setResetFlag(false)
@@ -219,72 +233,111 @@ export default function Calculator() {
   }, [resetFlag, display])
 
   const handleCloseParen = useCallback(() => {
-    setExpression((prev) => prev + display + ')')
-    setResetFlag(true)
+    if (display !== 'Error') {
+      setExpression((prev) => prev + display + ')')
+      setResetFlag(true)
+    }
   }, [display])
 
-  const btnStyle: React.CSSProperties = {
-    padding: '10px 0',
-    fontSize: 16,
-    border: '1px solid #555',
-    background: '#3c3c3c',
-    color: '#fff',
-    cursor: 'pointer',
-    borderRadius: 4,
-  }
-
-  const opBtnStyle: React.CSSProperties = { ...btnStyle, background: '#555' }
-  const funcBtnStyle: React.CSSProperties = { ...btnStyle, background: '#2d2d2d', color: '#aaa' }
-  const eqBtnStyle: React.CSSProperties = { ...btnStyle, background: '#0078d4', color: '#fff', fontWeight: 'bold' }
+  // 使用 useMemo 优化按钮样式
+  const buttonStyles = useMemo(() => ({
+    btn: {
+      padding: '10px 0',
+      fontSize: 16,
+      border: '1px solid #555',
+      background: '#3c3c3c',
+      color: '#fff',
+      cursor: 'pointer',
+      borderRadius: 4,
+    },
+    op: {
+      padding: '10px 0',
+      fontSize: 16,
+      border: '1px solid #555',
+      background: '#555',
+      color: '#fff',
+      cursor: 'pointer',
+      borderRadius: 4,
+    },
+    func: {
+      padding: '10px 0',
+      fontSize: 16,
+      border: '1px solid #555',
+      background: '#2d2d2d',
+      color: '#aaa',
+      cursor: 'pointer',
+      borderRadius: 4,
+    },
+    eq: {
+      padding: '10px 0',
+      fontSize: 16,
+      border: '1px solid #555',
+      background: '#0078d4',
+      color: '#fff',
+      cursor: 'pointer',
+      borderRadius: 4,
+      fontWeight: 'bold'
+    }
+  }), [])
 
   return (
     <div className="app-container app-calculator" style={{ background: '#1e1e1e', padding: 8 }}>
-      <div className="app-calc-display" style={{ background: '#2d2d2d', borderRadius: 8, padding: '16px 12px', marginBottom: 8, textAlign: 'right', minHeight: 80, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <div className="app-calc-display" style={{ 
+        background: '#2d2d2d', 
+        borderRadius: 8, 
+        padding: '16px 12px', 
+        marginBottom: 8, 
+        textAlign: 'right', 
+        minHeight: 80, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'flex-end' 
+      }}>
         <div style={{ color: '#888', fontSize: 13, minHeight: 20, wordBreak: 'break-all' }}>{expression}</div>
         <div style={{ color: '#fff', fontSize: 32, fontWeight: 300, wordBreak: 'break-all' }}>{display}</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 }}>
-        <button style={funcBtnStyle} onClick={handleClear}>C</button>
-        <button style={funcBtnStyle} onClick={handleClearEntry}>CE</button>
-        <button style={funcBtnStyle} onClick={handleBackspace}>⌫</button>
-        <button style={funcBtnStyle} onClick={handlePercent}>%</button>
-        <button style={opBtnStyle} onClick={() => handleOperator('÷')}>÷</button>
+        <button style={buttonStyles.func} onClick={handleClear}>C</button>
+        <button style={buttonStyles.func} onClick={handleClearEntry}>CE</button>
+        <button style={buttonStyles.func} onClick={handleBackspace}>⌫</button>
+        <button style={buttonStyles.func} onClick={handlePercent}>%</button>
+        <button style={buttonStyles.op} onClick={() => handleOperator('÷')}>÷</button>
 
-        <button style={funcBtnStyle} onClick={() => handleUnary((x) => x * x)}>x²</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary((x) => x * x * x)}>x³</button>
-        <button style={funcBtnStyle} onClick={() => handleOperator('**')}>xⁿ</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary(Math.sqrt)}>√</button>
-        <button style={opBtnStyle} onClick={() => handleOperator('×')}>×</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary((x) => x * x)}>x²</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary((x) => x * x * x)}>x³</button>
+        <button style={buttonStyles.func} onClick={() => handleOperator('**')}>xⁿ</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary(Math.sqrt)}>√</button>
+        <button style={buttonStyles.op} onClick={() => handleOperator('×')}>×</button>
 
-        <button style={btnStyle} onClick={() => handleNumber('7')}>7</button>
-        <button style={btnStyle} onClick={() => handleNumber('8')}>8</button>
-        <button style={btnStyle} onClick={() => handleNumber('9')}>9</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary(Math.sin)}>sin</button>
-        <button style={opBtnStyle} onClick={() => handleOperator('-')}>−</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('7')}>7</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('8')}>8</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('9')}>9</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary(Math.sin)}>sin</button>
+        <button style={buttonStyles.op} onClick={() => handleOperator('-')}>−</button>
 
-        <button style={btnStyle} onClick={() => handleNumber('4')}>4</button>
-        <button style={btnStyle} onClick={() => handleNumber('5')}>5</button>
-        <button style={btnStyle} onClick={() => handleNumber('6')}>6</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary(Math.cos)}>cos</button>
-        <button style={opBtnStyle} onClick={() => handleOperator('+')}>+</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('4')}>4</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('5')}>5</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('6')}>6</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary(Math.cos)}>cos</button>
+        <button style={buttonStyles.op} onClick={() => handleOperator('+')}>+</button>
 
-        <button style={btnStyle} onClick={() => handleNumber('1')}>1</button>
-        <button style={btnStyle} onClick={() => handleNumber('2')}>2</button>
-        <button style={btnStyle} onClick={() => handleNumber('3')}>3</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary(Math.tan)}>tan</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary((x) => 1 / x)}>1/x</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('1')}>1</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('2')}>2</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('3')}>3</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary(Math.tan)}>tan</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary((x) => x !== 0 ? 1 / x : NaN)}>1/x</button>
 
-        <button style={btnStyle} onClick={handleSign}>±</button>
-        <button style={btnStyle} onClick={() => handleNumber('0')}>0</button>
-        <button style={btnStyle} onClick={handleDecimal}>.</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary(Math.log10)}>log</button>
-        <button style={eqBtnStyle} onClick={handleEqual}>=</button>
+        <button style={buttonStyles.btn} onClick={handleSign}>±</button>
+        <button style={buttonStyles.btn} onClick={() => handleNumber('0')}>0</button>
+        <button style={buttonStyles.btn} onClick={handleDecimal}>.</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary(Math.log10)}>log</button>
+        <button style={buttonStyles.eq} onClick={handleEqual}>=</button>
 
-        <button style={funcBtnStyle} onClick={handleOpenParen}>(</button>
-        <button style={funcBtnStyle} onClick={handleCloseParen}>)</button>
-        <button style={funcBtnStyle} onClick={() => handleConstant('π')}>π</button>
-        <button style={funcBtnStyle} onClick={() => handleConstant('e')}>e</button>
-        <button style={funcBtnStyle} onClick={() => handleUnary(Math.log)}>ln</button>
+        <button style={buttonStyles.func} onClick={handleOpenParen}>(</button>
+        <button style={buttonStyles.func} onClick={handleCloseParen}>)</button>
+        <button style={buttonStyles.func} onClick={() => handleConstant(String(Math.PI))}>π</button>
+        <button style={buttonStyles.func} onClick={() => handleConstant(String(Math.E))}>e</button>
+        <button style={buttonStyles.func} onClick={() => handleUnary(Math.log)}>ln</button>
       </div>
     </div>
   )
