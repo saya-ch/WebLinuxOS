@@ -25,7 +25,7 @@ const Taskbar = memo(function Taskbar() {
   useEffect(() => {
     const batteryTimer = setInterval(() => {
       setBattery(prev => {
-        let newBattery = Math.max(10, Math.min(100, prev + (isCharging ? 1 : -0.5)))
+        const newBattery = Math.max(10, Math.min(100, prev + (isCharging ? 1 : -0.5)))
         if (newBattery <= 20) setIsCharging(true)
         if (newBattery >= 95) setIsCharging(false)
         return newBattery

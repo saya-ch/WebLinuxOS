@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useStore, findNodeByPath, resolvePath } from '../store'
-import type { FileNode } from '../types'
+import type { FileNode, WindowState } from '../types'
 
 function useLatest<T>(value: T): { current: T } {
   const ref = useRef<T>(value)
@@ -703,7 +703,7 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
     if (e.ctrlKey && e.key === 'd') {
       e.preventDefault()
       const activeWindows = getWindows
-      const currentWin = activeWindows.find((w: any) => w.appId === 'terminal' && w.focused)
+      const currentWin = activeWindows.find((w: WindowState) => w.appId === 'terminal' && w.focused)
       if (currentWin) closeWindow(currentWin.id)
       return
     }
