@@ -19,27 +19,39 @@ const colors = [
 ]
 
 const MindMap = () => {
-  const [nodes, setNodes] = useState<Node[]>([])
-  const [connections, setConnections] = useState<Connection[]>([])
+  const [nodes, setNodes] = useState<Node[]>(() => {
+    const saved = localStorage.getItem('web-linux-mindmap')
+    if (saved) {
+      try {
+        const data = JSON.parse(saved)
+        return data.nodes || []
+      } catch {
+        return []
+      }
+    }
+    return [
+      { id: '1', x: 300, y: 200, text: 'Main Idea', color: colors[4] }
+    ]
+  })
+  
+  const [connections, setConnections] = useState<Connection[]>(() => {
+    const saved = localStorage.getItem('web-linux-mindmap')
+    if (saved) {
+      try {
+        const data = JSON.parse(saved)
+        return data.connections || []
+      } catch {
+        return []
+      }
+    }
+    return []
+  })
+  
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [dragging, setDragging] = useState<string | null>(null)
   const [connecting, setConnecting] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const canvasRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const saved = localStorage.getItem('web-linux-mindmap')
-    if (saved) {
-      const data = JSON.parse(saved)
-      setNodes(data.nodes || [])
-      setConnections(data.connections || [])
-    } else {
-      const initialNodes: Node[] = [
-        { id: '1', x: 300, y: 200, text: 'Main Idea', color: colors[4] }
-      ]
-      setNodes(initialNodes)
-    }
-  }, [])
 
   useEffect(() => {
     localStorage.setItem('web-linux-mindmap', JSON.stringify({ nodes, connections }))

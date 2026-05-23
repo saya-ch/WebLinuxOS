@@ -39,37 +39,6 @@ export default function Whiteboard() {
     return { canvas, ctx };
   };
 
-  const resizeCanvas = () => {
-    const { canvas, ctx } = getCanvasContext() || {};
-    if (!canvas || !ctx) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    
-    redrawAll();
-  };
-
-  useEffect(() => {
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
-  }, []);
-
-  useEffect(() => {
-    redrawAll();
-  }, [strokes]);
-
-  const redrawAll = () => {
-    const { canvas, ctx } = getCanvasContext() || {};
-    if (!canvas || !ctx) return;
-
-    ctx.fillStyle = theme === 'light' ? '#ffffff' : '#1e1e2e';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    strokes.forEach(stroke => drawStroke(ctx, stroke));
-  };
-
   const drawStroke = (ctx: CanvasRenderingContext2D, stroke: Stroke) => {
     ctx.strokeStyle = stroke.color;
     ctx.fillStyle = stroke.color;
@@ -124,6 +93,37 @@ export default function Whiteboard() {
         break;
     }
   };
+
+  const redrawAll = () => {
+    const { canvas, ctx } = getCanvasContext() || {};
+    if (!canvas || !ctx) return;
+
+    ctx.fillStyle = theme === 'light' ? '#ffffff' : '#1e1e2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    strokes.forEach(stroke => drawStroke(ctx, stroke));
+  };
+
+  const resizeCanvas = () => {
+    const { canvas, ctx } = getCanvasContext() || {};
+    if (!canvas || !ctx) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    redrawAll();
+  };
+
+  useEffect(() => {
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
+  }, [])
+
+  useEffect(() => {
+    redrawAll()
+  }, [strokes]);
 
   const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const { canvas } = getCanvasContext() || {};

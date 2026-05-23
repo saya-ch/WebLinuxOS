@@ -16,6 +16,21 @@ interface Column {
   tasks: Task[];
 }
 
+interface StoredTask {
+  id: string;
+  title: string;
+  description?: string;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+}
+
+interface StoredColumn {
+  id: string;
+  title: string;
+  color: string;
+  tasks: StoredTask[];
+}
+
 const initialColumns: Column[] = [
   {
     id: 'todo',
@@ -56,10 +71,10 @@ export default function KanbanBoard() {
     const saved = localStorage.getItem('weblinux-kanban');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        return parsed.map((col: any) => ({
+        const parsed = JSON.parse(saved) as StoredColumn[];
+        return parsed.map((col) => ({
           ...col,
-          tasks: col.tasks.map((t: any) => ({
+          tasks: col.tasks.map((t) => ({
             ...t,
             createdAt: new Date(t.createdAt),
           })),
@@ -198,7 +213,7 @@ export default function KanbanBoard() {
           </select>
           <select
             value={selectedPriority}
-            onChange={(e) => setSelectedPriority(e.target.value as any)}
+            onChange={(e) => setSelectedPriority(e.target.value as 'low' | 'medium' | 'high')}
             style={{
               padding: '8px 12px',
               borderRadius: '8px',

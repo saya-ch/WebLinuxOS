@@ -74,7 +74,7 @@ const Pomodoro: React.FC = () => {
     }
     setCurrentPhaseIndex(newIndex)
     setTimeLeft(phases[newIndex].duration)
-  }, [currentPhaseIndex])
+  }, [currentPhaseIndex, phases])
 
   const previousPhase = () => {
     let newIndex = currentPhaseIndex - 1
@@ -99,9 +99,7 @@ const Pomodoro: React.FC = () => {
     }
   }, [])
 
-  useEffect(() => {
-    setTimeLeft(currentPhase.duration)
-  }, [currentPhase])
+  // 不再需要这个 useEffect，因为我们已经在 nextPhase 和 previousPhase 中处理了
 
   return (
     <div className="h-full w-full flex flex-col p-6 gap-6 bg-slate-900/80">

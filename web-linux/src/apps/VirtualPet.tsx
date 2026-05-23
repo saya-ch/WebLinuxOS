@@ -19,7 +19,7 @@ const Pet = () => {
 
   const [petType, setPetType] = useState<'cat' | 'dog' | 'bunny'>('cat')
   const [petName, setPetName] = useState('Pixel')
-  const [lastUpdated, setLastUpdated] = useState(Date.now())
+  const [lastUpdated, setLastUpdated] = useState(() => Date.now())
 
   useEffect(() => {
     const saved = localStorage.getItem('web-linux-pet')

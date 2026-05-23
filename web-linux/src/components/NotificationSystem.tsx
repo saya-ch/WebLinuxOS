@@ -11,6 +11,12 @@ export interface NotificationData {
   timestamp?: Date
 }
 
+interface StoreType {
+  notifications: NotificationData[]
+  addNotification?: (notification: NotificationData) => void
+  removeNotification?: (id: string) => void
+}
+
 interface NotificationItemProps {
   notification: NotificationData
   onClose: (id: string) => void
@@ -151,7 +157,7 @@ interface NotificationCenterProps {
 }
 
 export const NotificationCenter = memo(function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
-  const notifications = useStore((s: any) => s.notifications || [])
+  const notifications = useStore((s: StoreType) => s.notifications || [])
   
   if (!isOpen) return null
 
@@ -221,7 +227,7 @@ export const NotificationCenter = memo(function NotificationCenter({ isOpen, onC
               key={notif.id}
               notification={notif}
               onClose={(id) => {
-                const store = useStore.getState() as any
+                const store = useStore.getState() as StoreType
                 if (store.removeNotification) {
                   store.removeNotification(id)
                 }
@@ -248,7 +254,7 @@ export const NotificationCenter = memo(function NotificationCenter({ isOpen, onC
 
 export function useNotifications() {
   const addNotification = useCallback((data: Omit<NotificationData, 'id' | 'timestamp'>) => {
-    const store = useStore.getState() as any
+    const store = useStore.getState() as StoreType
     if (store.addNotification) {
       store.addNotification({
         ...data,

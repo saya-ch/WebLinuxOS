@@ -54,3 +54,13 @@ export interface FileNode {
   children?: FileNode[]
   parentId: string | null
 }
+
+export interface Notification {
+  id: string
+  title: string
+  message: string
+  icon?: string
+  type?: 'info' | 'success' | 'warning' | 'error'
+  duration?: number
+  timestamp?: Date
+}

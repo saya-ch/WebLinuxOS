@@ -300,7 +300,7 @@ export const useStore = create<Store>((set, get) => ({
     if (!app.multiple && existing.length > 0) {
       const win = existing[0]
       set((s) => {
-        const winDesktop = Object.entries(s.windowsPerDesktop).find(([_, ids]) => ids.includes(win.id))?.[0] || String(s.currentDesktop)
+        const winDesktop = Object.entries(s.windowsPerDesktop).find(([, ids]) => ids.includes(win.id))?.[0] || String(s.currentDesktop)
         const winDesktopNum = Number(winDesktop)
         if (winDesktopNum !== s.currentDesktop) {
           return {
@@ -370,7 +370,7 @@ export const useStore = create<Store>((set, get) => ({
     }
   }),
 
-  switchDesktop: (desktopNumber) => set((_) => {
+  switchDesktop: (desktopNumber) => set(() => {
     localStorage.setItem('weblinux-current-desktop', String(desktopNumber))
     return { currentDesktop: desktopNumber }
   }),

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { useStore } from '../store'
+import type { FileNode } from '../types'
 
 interface SearchResult {
   type: 'file' | 'app'
@@ -42,7 +43,7 @@ const GlobalSearch = memo(function GlobalSearch({ isOpen, onClose }: GlobalSearc
       }
     })
 
-    const searchFiles = (nodes: any[], path: string = '') => {
+    const searchFiles = (nodes: FileNode[], path: string = '') => {
       nodes.forEach((node) => {
         if (node.name.toLowerCase().includes(lowerQuery)) {
           searchResults.push({

@@ -36,7 +36,7 @@ const QuickCommands = memo(function QuickCommands() {
       try {
         const parsed = JSON.parse(stored)
         setCommands(parsed)
-      } catch (e) {
+      } catch {
         setCommands(defaultCommands)
       }
     } else {

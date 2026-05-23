@@ -11,13 +11,16 @@ interface Particle {
   color: string
 }
 
+type ColorMode = 'rainbow' | 'blue' | 'fire'
+type InteractionMode = 'gravity' | 'repel' | 'none'
+
 const ParticleSystem: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [particleCount, setParticleCount] = useState(200)
   const [speed, setSpeed] = useState(1)
   const [size, setSize] = useState(3)
-  const [colorMode, setColorMode] = useState<'rainbow' | 'blue' | 'fire'>('rainbow')
-  const [interactionMode, setInteractionMode] = useState<'gravity' | 'repel' | 'none'>('gravity')
+  const [colorMode, setColorMode] = useState<ColorMode>('rainbow')
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>('gravity')
   
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: 0, y: 0, z: 0, active: false })
@@ -295,7 +298,7 @@ const ParticleSystem: React.FC = () => {
           <select 
             value={colorMode}
             onChange={(e) => {
-              setColorMode(e.target.value as any)
+              setColorMode(e.target.value as ColorMode)
               resetParticles()
             }}
             style={{
@@ -316,7 +319,7 @@ const ParticleSystem: React.FC = () => {
           <label style={{ color: '#a0a0c0', fontSize: '12px' }}>Interaction</label>
           <select 
             value={interactionMode}
-            onChange={(e) => setInteractionMode(e.target.value as any)}
+            onChange={(e) => setInteractionMode(e.target.value as InteractionMode)}
             style={{
               padding: '4px 8px',
               borderRadius: '4px',

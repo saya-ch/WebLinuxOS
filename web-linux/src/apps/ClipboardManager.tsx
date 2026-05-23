@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../store'
+import type { Notification } from '../types'
 
 interface ClipboardItem {
   id: string
@@ -9,23 +10,31 @@ interface ClipboardItem {
   preview: string
 }
 
+interface StoredClipboardItem {
+  id: string
+  content: string
+  type: 'text' | 'image' | 'link'
+  timestamp: string
+  preview: string
+}
+
 const ClipboardManager = memo(function ClipboardManager() {
   const [clipboardHistory, setClipboardHistory] = useState<ClipboardItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isMonitoring, setIsMonitoring] = useState(true)
-  const addNotification = useStore((s) => (s as any).addNotification)
+  const addNotification = useStore((s) => s.addNotification as ((notification: Omit<Notification, 'id' | 'timestamp'>) => void))
 
   useEffect(() => {
     const stored = localStorage.getItem('clipboard-history')
     if (stored) {
       try {
-        const parsed = JSON.parse(stored)
-        setClipboardHistory(parsed.map((item: any) => ({
+        const parsed = JSON.parse(stored) as StoredClipboardItem[]
+        setClipboardHistory(parsed.map((item) => ({
           ...item,
           timestamp: new Date(item.timestamp)
         })))
-      } catch (e) {
+      } catch {
         console.error('Failed to parse clipboard history')
       }
     }
@@ -34,6 +43,21 @@ const ClipboardManager = memo(function ClipboardManager() {
   useEffect(() => {
     localStorage.setItem('clipboard-history', JSON.stringify(clipboardHistory))
   }, [clipboardHistory])
+
+  const addToHistory = useCallback((content: string) => {
+    const newItem: ClipboardItem = {
+      id: Date.now().toString(),
+      content,
+      type: detectType(content),
+      timestamp: new Date(),
+      preview: getPreview(content, detectType(content))
+    }
+    setClipboardHistory(prev => {
+      // 避免重复
+      const filtered = prev.filter(item => item.content !== content)
+      return [newItem, ...filtered].slice(0, 100) // 限制最多100条
+    })
+  }, [])
 
   // 监听剪贴板变化
   useEffect(() => {
@@ -50,7 +74,7 @@ const ClipboardManager = memo(function ClipboardManager() {
             addToHistory(content)
           }
         }
-      } catch (e) {
+      } catch {
         // 忽略剪贴板访问错误
       }
     }
@@ -58,7 +82,7 @@ const ClipboardManager = memo(function ClipboardManager() {
     const interval = setInterval(checkClipboard, 1000)
 
     // 监听复制事件
-    const handleCopy = (_e: ClipboardEvent) => {
+    const handleCopy = () => {
       const selection = window.getSelection()?.toString()
       if (selection && selection.trim()) {
         setTimeout(() => checkClipboard(), 100)
@@ -73,22 +97,7 @@ const ClipboardManager = memo(function ClipboardManager() {
       document.removeEventListener('copy', handleCopy)
       document.removeEventListener('cut', handleCopy)
     }
-  }, [isMonitoring])
-
-  const addToHistory = useCallback((content: string) => {
-    const newItem: ClipboardItem = {
-      id: Date.now().toString(),
-      content,
-      type: detectType(content),
-      timestamp: new Date(),
-      preview: getPreview(content, detectType(content))
-    }
-    setClipboardHistory(prev => {
-      // 避免重复
-      const filtered = prev.filter(item => item.content !== content)
-      return [newItem, ...filtered].slice(0, 100) // 限制最多100条
-    })
-  }, [])
+  }, [isMonitoring, addToHistory])
 
   const copyToClipboard = useCallback((content: string) => {
     navigator.clipboard.writeText(content).then(() => {
