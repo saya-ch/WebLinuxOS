@@ -5,6 +5,7 @@ import {
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon
 } from './icons'
 
+// 文件树操作辅助函数
 function findNodeById(nodes: FileNode[], id: string): FileNode | null {
   for (const node of nodes) {
     if (node.id === id) return node
@@ -40,8 +41,6 @@ function findNodeByPath(files: FileNode[], path: string): FileNode | null {
   }
   return current
 }
-
-
 
 function resolvePath(cwd: string, target: string): string {
   if (target.startsWith('/')) return target
