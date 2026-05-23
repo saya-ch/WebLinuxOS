@@ -4,6 +4,9 @@ import { useStore } from '../../store'
 const Taskbar = memo(function Taskbar() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
+  const currentDesktop = useStore((s) => s.currentDesktop)
+  const totalDesktops = useStore((s) => s.totalDesktops)
+  const windowsPerDesktop = useStore((s) => s.windowsPerDesktop)
 
   const minimizeWindow = useStore((s) => s.minimizeWindow)
   const restoreWindow = useStore((s) => s.restoreWindow)
@@ -11,6 +14,10 @@ const Taskbar = memo(function Taskbar() {
   const launcherOpen = useStore((s) => s.launcherOpen)
   const openApp = useStore((s) => s.openApp)
   const focusWindow = useStore((s) => s.focusWindow)
+  const switchDesktop = useStore((s) => s.switchDesktop)
+  const addDesktop = useStore((s) => s.addDesktop)
+  const removeDesktop = useStore((s) => s.removeDesktop)
+  const moveWindowToDesktop = useStore((s) => s.moveWindowToDesktop)
 
   const [time, setTime] = useState(new Date())
   const [volume, setVolume] = useState(80)
@@ -73,6 +80,12 @@ const Taskbar = memo(function Taskbar() {
     return '🔊'
   }
 
+  const handleDesktopSwitch = useCallback((num: number) => {
+    switchDesktop(num)
+  }, [switchDesktop])
+
+  const desktopNumbers = Array.from({ length: totalDesktops }, (_, i) => i + 1)
+
   return (
     <div className="taskbar">
       <div className="taskbar-left">
@@ -83,23 +96,91 @@ const Taskbar = memo(function Taskbar() {
         >
           🐧
         </div>
+        
+        <div className="taskbar-desktops">
+          {desktopNumbers.map((num) => (
+            <button
+              key={num}
+              className={`taskbar-desktop-btn ${currentDesktop === num ? 'active' : ''}`}
+              onClick={() => handleDesktopSwitch(num)}
+              title={`工作区 ${num} (${windowsPerDesktop[num]?.length || 0} 个窗口)`}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                if (totalDesktops > 1) removeDesktop(num)
+              }}
+            >
+              <span>{num}</span>
+              {windowsPerDesktop[num] && windowsPerDesktop[num].length > 0 && (
+                <span className="taskbar-desktop-dot"></span>
+              )}
+            </button>
+          ))}
+          <button
+            className="taskbar-desktop-add"
+            onClick={addDesktop}
+            title="添加工作区"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       <div className="taskbar-center">
-        {windows.map((win) => {
-          const app = apps.find((a) => a.id === win.appId)
-          return (
-            <button
-              key={win.id}
-              className={`taskbar-button ${win.focused && !win.minimized ? 'active' : ''}`}
-              onClick={() => handleTaskbarButtonClick(win.appId, win.id, win.focused, win.minimized)}
-              title={`${win.title}${win.minimized ? ' (已最小化)' : ''}`}
-            >
-              <span className="taskbar-button-icon">{app?.icon}</span>
-              <span className="taskbar-button-title">{win.title}</span>
-            </button>
-          )
-        })}
+        {windows
+          .filter((win) => (windowsPerDesktop[currentDesktop] || []).includes(win.id))
+          .map((win) => {
+            const app = apps.find((a) => a.id === win.appId)
+            return (
+              <button
+                key={win.id}
+                className={`taskbar-button ${win.focused && !win.minimized ? 'active' : ''}`}
+                onClick={() => handleTaskbarButtonClick(win.appId, win.id, win.focused, win.minimized)}
+                title={`${win.title}${win.minimized ? ' (已最小化)' : ''}`}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  const menu = document.createElement('div')
+                  menu.style.cssText = `
+                    position: fixed;
+                    background: var(--panel-bg);
+                    border: 1px solid var(--border);
+                    border-radius: 8px;
+                    padding: 4px;
+                    z-index: 99999;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    min-width: 160px;
+                  `
+                  menu.innerHTML = desktopNumbers.map((dnum) => `
+                    <div style="padding: 8px 12px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
+                      <span style="width: 20px; text-align: center;">${dnum}</span>
+                      <span>${dnum === currentDesktop ? '当前工作区' : '移动到工作区 ' + dnum}</span>
+                    </div>
+                  `).join('')
+                  menu.style.left = `${e.clientX}px`
+                  menu.style.top = `${e.clientY}px`
+                  
+                  menu.querySelectorAll('div').forEach((el, idx) => {
+                    el.addEventListener('click', () => {
+                      moveWindowToDesktop(win.id, desktopNumbers[idx])
+                      document.body.removeChild(menu)
+                    })
+                    el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,255,255,0.1)')
+                    el.addEventListener('mouseleave', () => el.style.background = 'transparent')
+                  })
+                  
+                  const closeMenu = () => {
+                    if (document.body.contains(menu)) document.body.removeChild(menu)
+                    document.removeEventListener('click', closeMenu)
+                  }
+                  
+                  document.body.appendChild(menu)
+                  setTimeout(() => document.addEventListener('click', closeMenu), 0)
+                }}
+              >
+                <span className="taskbar-button-icon">{app?.icon}</span>
+                <span className="taskbar-button-title">{win.title}</span>
+              </button>
+            )
+          })}
       </div>
 
       <div className="taskbar-right">

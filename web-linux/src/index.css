@@ -1501,6 +1501,90 @@ button, input, textarea, select {
   will-change: transform;
 }
 
+.taskbar-desktops {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+  margin-left: 4px;
+}
+
+.taskbar-desktop-btn {
+  width: 24px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.taskbar-desktop-btn:hover {
+  background: var(--taskbar-button-hover);
+  color: var(--text-primary);
+}
+
+.taskbar-desktop-btn:active {
+  transform: scale(0.95);
+}
+
+.taskbar-desktop-btn.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-bg);
+}
+
+.taskbar-desktop-dot {
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.taskbar-desktop-add {
+  width: 24px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.taskbar-desktop-add:hover {
+  background: var(--taskbar-button-hover);
+  color: var(--text-primary);
+}
+
+.taskbar-desktop-add:active {
+  transform: scale(0.95);
+}
+
+@keyframes desktopSwitch {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;

@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="icon" type="image/svg+xml" href="./icons.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="WebLinuxOS - 一个完全运行在浏览器中的功能性Linux桌面环境，包含56个应用程序、完整的窗口管理系统、虚拟文件系统和终端仿真器" />
     <meta name="keywords" content="Linux, Web OS, 桌面环境, 虚拟系统, 浏览器, React, TypeScript, 终端, 文件管理器" />
     <meta name="author" content="Saya Ch" />
+    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#1a1a2e" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -15,14 +15,26 @@
     <meta property="og:description" content="一个完全运行在浏览器中的功能性Linux桌面环境" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://saya-ch.github.io/WebLinuxOS/" />
-    <meta property="og:image" content="./assets/og-image.png" />
+    <meta property="og:image" content="https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="WebLinuxOS" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="WebLinuxOS - Web Linux 桌面环境" />
     <meta name="twitter:description" content="一个完全运行在浏览器中的功能性Linux桌面环境" />
     <link rel="manifest" href="/WebLinuxOS/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>WebLinuxOS - Web Linux 桌面环境</title>
-    <script type="module" crossorigin src="/WebLinuxOS/assets/index-DHC4U3Sm.js"></script>
-    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-DW5Klzq7.css">
+    <script>
+      try {
+        const theme = localStorage.getItem('weblinux-theme');
+        if (theme === 'light') {
+          document.documentElement.classList.add('light');
+        }
+      } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="/WebLinuxOS/assets/index-BJaroa9o.js"></script>
+    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-DebQYaS6.css">
   </head>
   <body>
     <noscript>

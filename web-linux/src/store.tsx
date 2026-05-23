@@ -132,6 +132,8 @@ const defaultIcons: DesktopIcon[] = [
 
 const initialTheme: 'dark' | 'light' = (localStorage.getItem('weblinux-theme') as 'dark' | 'light') || 'dark'
 const initialWallpaper: string = localStorage.getItem('weblinux-wallpaper') || ''
+const initialCurrentDesktop = Number(localStorage.getItem('weblinux-current-desktop')) || 1
+const initialTotalDesktops = 4
 
 const initialFiles: FileNode[] = [
   { id: 'root', name: '/', type: 'folder', parentId: null, children: [
@@ -182,6 +184,9 @@ interface Store {
   contextMenu: { x: number; y: number; visible: boolean }
   fileOperationHistory: FileOperation[]
   historyIndex: number
+  currentDesktop: number
+  totalDesktops: number
+  windowsPerDesktop: Record<number, string[]>
 
   registerApp: (app: AppDefinition) => void
   openApp: (appId: string) => void
@@ -210,6 +215,12 @@ interface Store {
   redoFileOperation: () => void
   canUndo: () => boolean
   canRedo: () => boolean
+  switchDesktop: (desktopNumber: number) => void
+  addDesktop: () => void
+  removeDesktop: (desktopNumber: number) => void
+  moveWindowToDesktop: (windowId: string, desktopNumber: number) => void
+  moveWindowToNextDesktop: () => void
+  moveWindowToPrevDesktop: () => void
 }
 
 let windowIdCounter = 0
@@ -226,6 +237,9 @@ export const useStore = create<Store>((set, get) => ({
   contextMenu: { x: 0, y: 0, visible: false },
   fileOperationHistory: [],
   historyIndex: -1,
+  currentDesktop: initialCurrentDesktop,
+  totalDesktops: initialTotalDesktops,
+  windowsPerDesktop: { 1: [], 2: [], 3: [], 4: [] },
 
   registerApp: (app) => set((s) => ({ apps: [...s.apps.filter((a) => a.id !== app.id), app] })),
 
@@ -234,12 +248,25 @@ export const useStore = create<Store>((set, get) => ({
     const existing = state.windows.filter((w) => w.appId === app.id)
     if (!app.multiple && existing.length > 0) {
       const win = existing[0]
-      set((s) => ({
-        windows: s.windows.map((w) =>
-          w.id === win.id ? { ...w, minimized: false, focused: true, zIndex: s.nextZIndex + 1 } : { ...w, focused: false }
-        ),
-        nextZIndex: s.nextZIndex + 1,
-      }))
+      set((s) => {
+        const winDesktop = Object.entries(s.windowsPerDesktop).find(([_, ids]) => ids.includes(win.id))?.[0] || String(s.currentDesktop)
+        const winDesktopNum = Number(winDesktop)
+        if (winDesktopNum !== s.currentDesktop) {
+          return {
+            currentDesktop: winDesktopNum,
+            windows: s.windows.map((w) =>
+              w.id === win.id ? { ...w, minimized: false, focused: true, zIndex: s.nextZIndex + 1 } : { ...w, focused: false }
+            ),
+            nextZIndex: s.nextZIndex + 1,
+          }
+        }
+        return {
+          windows: s.windows.map((w) =>
+            w.id === win.id ? { ...w, minimized: false, focused: true, zIndex: s.nextZIndex + 1 } : { ...w, focused: false }
+          ),
+          nextZIndex: s.nextZIndex + 1,
+        }
+      })
       return win
     }
     const id = `window-${++windowIdCounter}`
@@ -267,6 +294,10 @@ export const useStore = create<Store>((set, get) => ({
     set((s) => ({
       windows: [...s.windows.map((w) => ({ ...w, focused: false })), newWindow],
       nextZIndex: s.nextZIndex + 1,
+      windowsPerDesktop: {
+        ...s.windowsPerDesktop,
+        [s.currentDesktop]: [...(s.windowsPerDesktop[s.currentDesktop] || []), id]
+      }
     }))
     return newWindow
   },
@@ -277,7 +308,104 @@ export const useStore = create<Store>((set, get) => ({
     if (app) state.addWindow(app)
   },
 
-  closeWindow: (id) => set((s) => ({ windows: s.windows.filter((w) => w.id !== id) })),
+  closeWindow: (id) => set((s) => {
+    const newWindowsPerDesktop = { ...s.windowsPerDesktop }
+    Object.keys(newWindowsPerDesktop).forEach((d) => {
+      newWindowsPerDesktop[Number(d)] = newWindowsPerDesktop[Number(d)].filter((wid) => wid !== id)
+    })
+    return {
+      windows: s.windows.filter((w) => w.id !== id),
+      windowsPerDesktop: newWindowsPerDesktop
+    }
+  }),
+
+  switchDesktop: (desktopNumber) => set((_) => {
+    localStorage.setItem('weblinux-current-desktop', String(desktopNumber))
+    return { currentDesktop: desktopNumber }
+  }),
+
+  addDesktop: () => set((s) => {
+    const newDesktopNum = s.totalDesktops + 1
+    return {
+      totalDesktops: newDesktopNum,
+      windowsPerDesktop: { ...s.windowsPerDesktop, [newDesktopNum]: [] }
+    }
+  }),
+
+  removeDesktop: (desktopNumber) => set((s) => {
+    if (s.totalDesktops <= 1) return s
+    const newWindowsPerDesktop = { ...s.windowsPerDesktop }
+    const movingWindows = newWindowsPerDesktop[desktopNumber] || []
+    delete newWindowsPerDesktop[desktopNumber]
+    
+    const remainingDesktops = Object.keys(newWindowsPerDesktop).map(Number).sort((a, b) => a - b)
+    const targetDesktop = remainingDesktops[0] || 1
+    
+    newWindowsPerDesktop[targetDesktop] = [
+      ...(newWindowsPerDesktop[targetDesktop] || []),
+      ...movingWindows
+    ]
+    
+    let newCurrentDesktop = s.currentDesktop
+    if (s.currentDesktop === desktopNumber) {
+      newCurrentDesktop = targetDesktop
+      localStorage.setItem('weblinux-current-desktop', String(newCurrentDesktop))
+    }
+    
+    return {
+      totalDesktops: s.totalDesktops - 1,
+      windowsPerDesktop: newWindowsPerDesktop,
+      currentDesktop: newCurrentDesktop
+    }
+  }),
+
+  moveWindowToDesktop: (windowId, desktopNumber) => set((s) => {
+    const newWindowsPerDesktop = { ...s.windowsPerDesktop }
+    Object.keys(newWindowsPerDesktop).forEach((d) => {
+      newWindowsPerDesktop[Number(d)] = newWindowsPerDesktop[Number(d)].filter((wid) => wid !== windowId)
+    })
+    if (!newWindowsPerDesktop[desktopNumber]) {
+      newWindowsPerDesktop[desktopNumber] = []
+    }
+    newWindowsPerDesktop[desktopNumber].push(windowId)
+    return { windowsPerDesktop: newWindowsPerDesktop }
+  }),
+
+  moveWindowToNextDesktop: () => set((s) => {
+    const focusedWin = s.windows.find(w => w.focused)
+    if (!focusedWin) return s
+    const nextDesktop = (s.currentDesktop % s.totalDesktops) + 1
+    const newWindowsPerDesktop = { ...s.windowsPerDesktop }
+    Object.keys(newWindowsPerDesktop).forEach((d) => {
+      newWindowsPerDesktop[Number(d)] = newWindowsPerDesktop[Number(d)].filter((wid) => wid !== focusedWin.id)
+    })
+    if (!newWindowsPerDesktop[nextDesktop]) {
+      newWindowsPerDesktop[nextDesktop] = []
+    }
+    newWindowsPerDesktop[nextDesktop].push(focusedWin.id)
+    return {
+      windowsPerDesktop: newWindowsPerDesktop,
+      currentDesktop: nextDesktop
+    }
+  }),
+
+  moveWindowToPrevDesktop: () => set((s) => {
+    const focusedWin = s.windows.find(w => w.focused)
+    if (!focusedWin) return s
+    const prevDesktop = ((s.currentDesktop - 2 + s.totalDesktops) % s.totalDesktops) + 1
+    const newWindowsPerDesktop = { ...s.windowsPerDesktop }
+    Object.keys(newWindowsPerDesktop).forEach((d) => {
+      newWindowsPerDesktop[Number(d)] = newWindowsPerDesktop[Number(d)].filter((wid) => wid !== focusedWin.id)
+    })
+    if (!newWindowsPerDesktop[prevDesktop]) {
+      newWindowsPerDesktop[prevDesktop] = []
+    }
+    newWindowsPerDesktop[prevDesktop].push(focusedWin.id)
+    return {
+      windowsPerDesktop: newWindowsPerDesktop,
+      currentDesktop: prevDesktop
+    }
+  }),
 
   minimizeWindow: (id) =>
     set((s) => {

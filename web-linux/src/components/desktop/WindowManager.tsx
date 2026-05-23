@@ -111,19 +111,24 @@ const LoadingFallback = memo(function LoadingFallback() {
 const WindowManager = memo(function WindowManager() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
+  const currentDesktop = useStore((s) => s.currentDesktop)
+  const windowsPerDesktop = useStore((s) => s.windowsPerDesktop)
 
   useEffect(() => {
     preloadComponents()
   }, [])
 
   const memoizedWindows = useMemo(() => {
-    return windows.map((win) => {
-      const app = apps.find((a) => a.id === win.appId)
-      if (!app) return null
-      const Component = loadComponent(app.component)
-      return { win, Component, app }
-    }).filter(Boolean) as WindowComponent[]
-  }, [windows, apps])
+    const currentDesktopWindows = windowsPerDesktop[currentDesktop] || []
+    return windows
+      .filter((win) => currentDesktopWindows.includes(win.id))
+      .map((win) => {
+        const app = apps.find((a) => a.id === win.appId)
+        if (!app) return null
+        const Component = loadComponent(app.component)
+        return { win, Component, app }
+      }).filter(Boolean) as WindowComponent[]
+  }, [windows, apps, currentDesktop, windowsPerDesktop])
 
   useEffect(() => {
     const handleVisibilityChange = () => {

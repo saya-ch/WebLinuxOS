@@ -139,6 +139,62 @@ const App = memo(function App() {
         return
       }
 
+      // 桌面切换快捷键
+      if (e.ctrlKey && e.altKey && e.key >= '1' && e.key <= '9') {
+        e.preventDefault()
+        const desktopNum = parseInt(e.key)
+        const total = useStore.getState().totalDesktops
+        if (desktopNum <= total) {
+          useStore.getState().switchDesktop(desktopNum)
+        }
+        return
+      }
+
+      // 切换到上一个/下一个桌面
+      if (e.ctrlKey && e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const { currentDesktop, totalDesktops, switchDesktop } = useStore.getState()
+        const newDesktop = currentDesktop === 1 ? totalDesktops : currentDesktop - 1
+        switchDesktop(newDesktop)
+        return
+      }
+
+      if (e.ctrlKey && e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault()
+        const { currentDesktop, totalDesktops, switchDesktop } = useStore.getState()
+        const newDesktop = currentDesktop === totalDesktops ? 1 : currentDesktop + 1
+        switchDesktop(newDesktop)
+        return
+      }
+
+      // 移动当前窗口到其他桌面
+      if (e.ctrlKey && e.shiftKey && e.altKey && e.key >= '1' && e.key <= '9') {
+        e.preventDefault()
+        const desktopNum = parseInt(e.key)
+        const { windows, totalDesktops, moveWindowToDesktop } = useStore.getState()
+        const focusedWindow = windows.find(w => w.focused)
+        if (focusedWindow && desktopNum <= totalDesktops) {
+          moveWindowToDesktop(focusedWindow.id, desktopNum)
+        }
+        return
+      }
+
+      // 移动窗口到下一个桌面并跟随
+      if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault()
+        const { moveWindowToNextDesktop } = useStore.getState()
+        moveWindowToNextDesktop()
+        return
+      }
+
+      // 移动窗口到上一个桌面并跟随
+      if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const { moveWindowToPrevDesktop } = useStore.getState()
+        moveWindowToPrevDesktop()
+        return
+      }
+
       if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
         e.preventDefault()
         const focusedWindow = getFocusedWindow()
