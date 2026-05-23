@@ -508,3 +508,26 @@ export const SearchIcon = () => (
     <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 )
+
+export const CommandPaletteIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <path d="M7 9L9 11L7 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M11 13H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="8" cy="11" r="1" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="12" cy="11" r="1" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="16" cy="11" r="1" stroke="currentColor" strokeWidth="1.5"/>
+  </svg>
+)
+
+export const PomodoroIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
+    <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    <path d="M12 3V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M12 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M5 12L7 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M17 12L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+)

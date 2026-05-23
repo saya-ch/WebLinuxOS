@@ -7,6 +7,7 @@ import Taskbar from './components/desktop/Taskbar'
 import StartMenu from './components/desktop/StartMenu'
 import ErrorBoundary from './components/ErrorBoundary'
 import GlobalSearch from './apps/GlobalSearch'
+import CommandPalette from './components/CommandPalette'
 
 interface ShortcutConfig {
   mod?: boolean
@@ -62,6 +63,7 @@ const App = memo(function App() {
   const launcherOpen = useStore((s) => s.launcherOpen)
 
   const [searchOpen, setSearchOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   useEffect(() => {
     appRegistry.forEach((app) => registerApp(app))
@@ -145,6 +147,12 @@ const App = memo(function App() {
       if (isMod && key === 'k') {
         e.preventDefault()
         setSearchOpen(true)
+        return
+      }
+      
+      if (isMod && key === 'p') {
+        e.preventDefault()
+        setCommandPaletteOpen(true)
         return
       }
 
@@ -271,6 +279,7 @@ const App = memo(function App() {
       <StartMenu />
       <Taskbar />
       <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
     </ErrorBoundary>
   )
 })
