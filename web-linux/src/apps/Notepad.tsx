@@ -1,6 +1,41 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../store'
 import type { FileNode } from '../types'
+
+const LineNumbers = memo(function LineNumbers({ lines, scrollTop }: { lines: number; scrollTop: number }) {
+  const lineNumRef = useRef<HTMLDivElement>(null)
+  const visibleLines = Math.min(lines, Math.ceil(scrollTop / 19.5) + 50)
+  const startLine = Math.floor(scrollTop / 19.5)
+
+  useEffect(() => {
+    if (lineNumRef.current) {
+      lineNumRef.current.scrollTop = scrollTop
+    }
+  }, [scrollTop])
+
+  return (
+    <div
+      ref={lineNumRef}
+      style={{
+        width: 40,
+        background: '#181825',
+        color: '#6c7086',
+        textAlign: 'right',
+        padding: '8px 6px 8px 0',
+        fontSize: 13,
+        fontFamily: 'monospace',
+        lineHeight: 1.5,
+        userSelect: 'none',
+        overflow: 'hidden',
+        borderRight: '1px solid #313244',
+      }}
+    >
+      {Array.from({ length: visibleLines }, (_, i) => (
+        <div key={startLine + i + 1}>{startLine + i + 1}</div>
+      ))}
+    </div>
+  )
+})
 
 export default function Notepad() {
   const files = useStore((s) => s.files)
@@ -21,8 +56,8 @@ export default function Notepad() {
   const [matchCount, setMatchCount] = useState(0)
   const [currentMatch, setCurrentMatch] = useState(0)
   const [wordWrap, setWordWrap] = useState(true)
+  const [scrollTop, setScrollTop] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const lineNumRef = useRef<HTMLDivElement>(null)
 
   const findFolderByName = useCallback((nodes: FileNode[], name: string): FileNode | undefined => {
     const search = (ns: FileNode[]): FileNode | undefined => {
@@ -131,11 +166,11 @@ export default function Notepad() {
     setContent(newContent); setIsModified(true)
   }
 
-  const handleScroll = () => {
-    if (textareaRef.current && lineNumRef.current) {
-      lineNumRef.current.scrollTop = textareaRef.current.scrollTop
+  const handleScroll = useCallback(() => {
+    if (textareaRef.current) {
+      setScrollTop(textareaRef.current.scrollTop)
     }
-  }
+  }, [])
 
   const lines = content.split('\n')
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0
@@ -178,9 +213,7 @@ export default function Notepad() {
       )}
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <div ref={lineNumRef} style={{ width: 40, background: '#181825', color: '#6c7086', textAlign: 'right', padding: '8px 6px 8px 0', fontSize: 13, fontFamily: 'monospace', lineHeight: 1.5, userSelect: 'none', overflow: 'hidden', borderRight: '1px solid #313244' }}>
-          {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
-        </div>
+        <LineNumbers lines={lines.length} scrollTop={scrollTop} />
         <textarea
           ref={textareaRef}
           value={content}
