@@ -583,3 +583,13 @@ export const ParticleIcon = () => (
     <path d="M7 17L12 12" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 2"/>
   </svg>
 )
+
+export const WhiteboardIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="3" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <path d="M6 21H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M8 21V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M16 21V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M6 7L10 11L14 9L18 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
