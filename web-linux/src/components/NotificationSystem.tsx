@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useCallback } from 'react'
-import { useStore } from '../../store'
+import { useStore } from '../store'
 
 export interface NotificationData {
   id: string
@@ -59,8 +59,8 @@ const NotificationItem = memo(function NotificationItem({ notification, onClose 
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-        transform: isVisible ? 'translateX(0)' : 'translateX(100%)',
-        opacity: isVisible ? 1 : 0,
+        transform: isExiting ? 'translateX(100%)' : isVisible ? 'translateX(0)' : 'translateX(100%)',
+        opacity: isExiting ? 0 : isVisible ? 1 : 0,
         transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
         overflow: 'hidden',
       }}
@@ -151,7 +151,7 @@ interface NotificationCenterProps {
 }
 
 export const NotificationCenter = memo(function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
-  const notifications = useStore((s) => (s as any).notifications || [])
+  const notifications = useStore((s: any) => s.notifications || [])
   
   if (!isOpen) return null
 

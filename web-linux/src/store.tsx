@@ -3,7 +3,7 @@ import type { AppDefinition, WindowState, DesktopIcon, FileNode } from './types'
 import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
-  ClipboardIcon, LightningIcon
+  ClipboardIcon, LightningIcon, SearchIcon
 } from './icons'
 
 // 文件树操作辅助函数
@@ -120,6 +120,7 @@ export function validateFileName(name: string): { valid: boolean; error?: string
 }
 
 const defaultIcons: DesktopIcon[] = [
+  { id: 'icon-smart-search', appId: 'smart-search', name: '智慧搜索', icon: <SearchIcon />, x: 260, y: 320 },
   { id: 'icon-files', appId: 'files', name: '文件管理器', icon: <FolderIcon />, x: 20, y: 20 },
   { id: 'icon-terminal', appId: 'terminal', name: '终端', icon: <TerminalIcon />, x: 20, y: 120 },
   { id: 'icon-editor', appId: 'text-editor', name: '文本编辑器', icon: <FileTextIcon />, x: 20, y: 220 },

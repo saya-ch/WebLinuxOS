@@ -16,6 +16,7 @@ interface ShortcutConfig {
 }
 
 const appShortcuts: Record<string, { config: ShortcutConfig; appId: string }> = {
+  'smart-search': { config: { mod: true, shift: true, key: 's' }, appId: 'smart-search' },
   'terminal-n': { config: { mod: true, key: 'n' }, appId: 'terminal' },
   'files-e': { config: { mod: true, key: 'e' }, appId: 'files' },
   'browser-b': { config: { mod: true, key: 'b' }, appId: 'browser' },
@@ -27,7 +28,6 @@ const appShortcuts: Record<string, { config: ShortcutConfig; appId: string }> = 
   'help-h': { config: { mod: true, key: 'h' }, appId: 'help' },
   'terminal-shift-t': { config: { mod: true, shift: true, key: 't' }, appId: 'terminal' },
   'files-shift-f': { config: { mod: true, shift: true, key: 'f' }, appId: 'files' },
-  'settings-shift-s': { config: { mod: true, shift: true, key: 's' }, appId: 'settings' },
   'notes-shift-n': { config: { mod: true, shift: true, key: 'n' }, appId: 'notes' },
   'calendar-c': { config: { mod: true, key: 'c' }, appId: 'calendar' },
   'music-m': { config: { mod: true, key: 'm' }, appId: 'music-player' },

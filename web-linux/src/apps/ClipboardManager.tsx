@@ -13,6 +13,7 @@ const ClipboardManager = memo(function ClipboardManager() {
   const [clipboardHistory, setClipboardHistory] = useState<ClipboardItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [isMonitoring, setIsMonitoring] = useState(true)
   const addNotification = useStore((s) => (s as any).addNotification)
 
   useEffect(() => {
@@ -33,6 +34,61 @@ const ClipboardManager = memo(function ClipboardManager() {
   useEffect(() => {
     localStorage.setItem('clipboard-history', JSON.stringify(clipboardHistory))
   }, [clipboardHistory])
+
+  // 监听剪贴板变化
+  useEffect(() => {
+    if (!isMonitoring) return
+
+    let lastContent = ''
+    
+    const checkClipboard = async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const content = await navigator.clipboard.readText()
+          if (content && content !== lastContent && content.trim()) {
+            lastContent = content
+            addToHistory(content)
+          }
+        }
+      } catch (e) {
+        // 忽略剪贴板访问错误
+      }
+    }
+
+    const interval = setInterval(checkClipboard, 1000)
+
+    // 监听复制事件
+    const handleCopy = (_e: ClipboardEvent) => {
+      const selection = window.getSelection()?.toString()
+      if (selection && selection.trim()) {
+        setTimeout(() => checkClipboard(), 100)
+      }
+    }
+
+    document.addEventListener('copy', handleCopy)
+    document.addEventListener('cut', handleCopy)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('copy', handleCopy)
+      document.removeEventListener('cut', handleCopy)
+    }
+  }, [isMonitoring])
+
+  const addToHistory = useCallback((content: string) => {
+    const newItem: ClipboardItem = {
+      id: Date.now().toString(),
+      content,
+      type: detectType(content),
+      timestamp: new Date(),
+      preview: getPreview(content, detectType(content))
+    }
+    setClipboardHistory(prev => {
+      // 避免重复
+      const filtered = prev.filter(item => item.content !== content)
+      return [newItem, ...filtered].slice(0, 100) // 限制最多100条
+    })
+  }, [])
 
   const copyToClipboard = useCallback((content: string) => {
     navigator.clipboard.writeText(content).then(() => {
@@ -119,8 +175,40 @@ const ClipboardManager = memo(function ClipboardManager() {
               color: 'var(--text-primary)',
               fontSize: '13px',
               outline: 'none',
+              marginBottom: '8px',
             }}
           />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
+                transition: 'background 0.2s',
+              }}
+              onClick={() => setIsMonitoring(!isMonitoring)}
+            >
+              <div
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: isMonitoring ? '#4ade80' : '#94a3b8',
+                  boxShadow: isMonitoring ? '0 0 8px rgba(74, 222, 128, 0.5)' : 'none',
+                }}
+              />
+              {isMonitoring ? '监控中' : '已暂停'}
+            </div>
+            <div style={{ flex: 1 }} />
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {clipboardHistory.length} 条记录
+            </div>
+          </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
           {filteredHistory.length === 0 ? (

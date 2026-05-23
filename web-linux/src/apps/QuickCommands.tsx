@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, memo } from 'react'
-import { useStore } from '../store'
 
 interface QuickCommand {
   id: string

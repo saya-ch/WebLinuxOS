@@ -17,9 +17,14 @@ export default defineConfig(({ mode }) => {
       cssMinify: true,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor': ['react', 'react-dom'],
-            'store': ['zustand'],
+          manualChunks: (id) => {
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+              return 'vendor'
+            }
+            if (id.includes('node_modules/zustand')) {
+              return 'store'
+            }
+            return undefined
           }
         }
       }
