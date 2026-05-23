@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import type { AppDefinition, WindowState, DesktopIcon, FileNode } from './types'
 import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
-  CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon
+  CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
+  ClipboardIcon, LightningIcon
 } from './icons'
 
 // 文件树操作辅助函数
@@ -130,6 +131,8 @@ const defaultIcons: DesktopIcon[] = [
   { id: 'icon-monitor', appId: 'system-monitor', name: '系统监视器', icon: <ActivityIcon />, x: 140, y: 320 },
   { id: 'icon-ai', appId: 'ai-helper', name: 'AI 助手', icon: <ChatIcon />, x: 140, y: 420 },
   { id: 'icon-kanban', appId: 'kanban-board', name: '任务看板', icon: <BoardIcon />, x: 260, y: 20 },
+  { id: 'icon-clipboard', appId: 'clipboard-manager', name: '剪贴板管理', icon: <ClipboardIcon />, x: 260, y: 120 },
+  { id: 'icon-commands', appId: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, x: 260, y: 220 },
 ]
 
 const initialTheme: 'dark' | 'light' = (localStorage.getItem('weblinux-theme') as 'dark' | 'light') || 'dark'
@@ -174,6 +177,16 @@ interface FileOperation {
   fileName?: string
 }
 
+interface Notification {
+  id: string
+  title: string
+  message: string
+  icon?: string
+  type?: 'info' | 'success' | 'warning' | 'error'
+  duration?: number
+  timestamp?: Date
+}
+
 interface Store {
   windows: WindowState[]
   apps: AppDefinition[]
@@ -189,6 +202,8 @@ interface Store {
   currentDesktop: number
   totalDesktops: number
   windowsPerDesktop: Record<number, string[]>
+  notifications: Notification[]
+  notificationCenterOpen: boolean
 
   registerApp: (app: AppDefinition) => void
   openApp: (appId: string) => void
@@ -223,6 +238,10 @@ interface Store {
   moveWindowToDesktop: (windowId: string, desktopNumber: number) => void
   moveWindowToNextDesktop: () => void
   moveWindowToPrevDesktop: () => void
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void
+  removeNotification: (id: string) => void
+  toggleNotificationCenter: () => void
+  closeNotificationCenter: () => void
 }
 
 let windowIdCounter = 0
@@ -242,6 +261,35 @@ export const useStore = create<Store>((set, get) => ({
   currentDesktop: initialCurrentDesktop,
   totalDesktops: initialTotalDesktops,
   windowsPerDesktop: { 1: [], 2: [], 3: [], 4: [] },
+  notifications: [],
+  notificationCenterOpen: false,
+
+  addNotification: (notification) => {
+    const id = `notif-${Date.now()}-${Math.random()}`
+    set((s) => ({
+      notifications: [
+        ...s.notifications,
+        { ...notification, id, timestamp: new Date() }
+      ]
+    }))
+    setTimeout(() => {
+      get().removeNotification(id)
+    }, notification.duration || 5000)
+  },
+
+  removeNotification: (id) => {
+    set((s) => ({
+      notifications: s.notifications.filter((n) => n.id !== id)
+    }))
+  },
+
+  toggleNotificationCenter: () => {
+    set((s) => ({ notificationCenterOpen: !s.notificationCenterOpen }))
+  },
+
+  closeNotificationCenter: () => {
+    set({ notificationCenterOpen: false })
+  },
 
   registerApp: (app) => set((s) => ({ apps: [...s.apps.filter((a) => a.id !== app.id), app] })),
 

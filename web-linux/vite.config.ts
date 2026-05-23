@@ -14,10 +14,19 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       target: 'esnext',
       minify: 'terser',
-      cssMinify: true
+      cssMinify: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor': ['react', 'react-dom'],
+            'store': ['zustand'],
+          }
+        }
+      }
     },
     optimizeDeps: {
-      include: ['react', 'react-dom', 'zustand']
+      include: ['react', 'react-dom', 'zustand'],
+      prebuildNotifications: false
     },
     server: {
       port: 5173,

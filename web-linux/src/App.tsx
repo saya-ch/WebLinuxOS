@@ -1,4 +1,4 @@
-import { useEffect, memo, useCallback } from 'react'
+import { useEffect, memo, useCallback, useState } from 'react'
 import { useStore } from './store'
 import { appRegistry } from './apps'
 import Desktop from './components/desktop/Desktop'
@@ -6,6 +6,7 @@ import WindowManager from './components/desktop/WindowManager'
 import Taskbar from './components/desktop/Taskbar'
 import StartMenu from './components/desktop/StartMenu'
 import ErrorBoundary from './components/ErrorBoundary'
+import GlobalSearch from './apps/GlobalSearch'
 
 interface ShortcutConfig {
   mod?: boolean
@@ -43,7 +44,7 @@ const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }
   'cycle-windows-reverse': { config: { mod: true, alt: true, shift: true, key: 'Tab' }, action: 'cycle-windows-reverse' },
   'maximize-f11': { config: { key: 'F11' }, action: 'maximize-f11' },
   'screenshot': { config: { key: 'PrintScreen' }, action: 'screenshot' },
-  'close-window': { config: { mod: true, key: 'w' }, action: 'close-window' },
+  'close-window': { config: { mod: true, key: 'q' }, action: 'close-window' },
   'minimize-window': { config: { mod: true, key: 'm' }, action: 'minimize-window' },
   'new-terminal': { config: { mod: true, shift: true, key: 'n' }, action: 'new-terminal' },
 }
@@ -59,6 +60,8 @@ const App = memo(function App() {
   const theme = useStore((s) => s.theme)
   const windows = useStore((s) => s.windows)
   const launcherOpen = useStore((s) => s.launcherOpen)
+
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
     appRegistry.forEach((app) => registerApp(app))
@@ -136,6 +139,12 @@ const App = memo(function App() {
           e.preventDefault()
           toggleLauncher()
         }
+        return
+      }
+
+      if (isMod && key === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
         return
       }
 
@@ -261,6 +270,7 @@ const App = memo(function App() {
       <WindowManager />
       <StartMenu />
       <Taskbar />
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </ErrorBoundary>
   )
 })
