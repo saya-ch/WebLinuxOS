@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { AppDefinition, WindowState, DesktopIcon, FileNode } from './types'
 import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
-  CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon
+  CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon
 } from './icons'
 
 // 文件树操作辅助函数
@@ -128,6 +128,8 @@ const defaultIcons: DesktopIcon[] = [
   { id: 'icon-calendar', appId: 'calendar', name: '日历', icon: <CalendarIcon />, x: 140, y: 120 },
   { id: 'icon-settings', appId: 'settings', name: '设置', icon: <SettingsIcon />, x: 140, y: 220 },
   { id: 'icon-monitor', appId: 'system-monitor', name: '系统监视器', icon: <ActivityIcon />, x: 140, y: 320 },
+  { id: 'icon-ai', appId: 'ai-helper', name: 'AI 助手', icon: <ChatIcon />, x: 140, y: 420 },
+  { id: 'icon-kanban', appId: 'kanban-board', name: '任务看板', icon: <BoardIcon />, x: 260, y: 20 },
 ]
 
 const initialTheme: 'dark' | 'light' = (localStorage.getItem('weblinux-theme') as 'dark' | 'light') || 'dark'

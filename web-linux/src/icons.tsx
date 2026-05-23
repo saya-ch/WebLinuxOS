@@ -466,3 +466,23 @@ export const TetrisIcon = () => (
     <rect x="13" y="13" width="4" height="4" fill="currentColor" opacity="0.3"/>
   </svg>
 )
+
+export const ChatIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 11.5C21 16.1944 17.1944 20 12.5 20H6L3 23V11.5C3 6.80558 6.80558 3 11.5 3H12.5C17.1944 3 21 6.80558 21 11.5Z" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="9" cy="12" r="1" fill="currentColor"/>
+    <circle cx="13" cy="12" r="1" fill="currentColor"/>
+    <circle cx="17" cy="12" r="1" fill="currentColor"/>
+  </svg>
+)
+
+export const BoardIcon = () => (
+  <svg width='1em' height='1em' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <path d="M8 4V20" stroke="currentColor" strokeWidth="2"/>
+    <path d="M16 4V20" stroke="currentColor" strokeWidth="2"/>
+    <rect x="4" y="6" width="3" height="3" rx="1" fill="currentColor" opacity="0.5"/>
+    <rect x="9" y="8" width="5" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+    <rect x="17" y="5" width="4" height="4" rx="1" fill="currentColor" opacity="0.7"/>
+  </svg>
+)

@@ -8,7 +8,7 @@ import {
   LockIcon, BackupIcon, ZipIcon, FileSearchIcon, TypeIcon,
   BookIcon, LanguagesIcon, MapPinIcon, VideoRecorderIcon, MicIcon,
   BluetoothIcon, BatteryIcon, InfoIcon, HelpIcon, CommandIcon,
-  PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon
+  PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon, ChatIcon, BoardIcon
 } from './icons'
 import type { AppDefinition } from './types'
 
@@ -70,4 +70,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'magnifier', name: '放大镜', icon: <MagnifierIcon />, component: 'Magnifier', category: 'utilities', defaultWidth: 400, defaultHeight: 350, minWidth: 300, minHeight: 250, resizable: false, multiple: false },
   { id: 'game-snake', name: '贪吃蛇', icon: <SnakeIcon />, component: 'GameSnake', category: 'games', defaultWidth: 400, defaultHeight: 450, minWidth: 350, minHeight: 400, resizable: false, multiple: false },
   { id: 'game-tetris', name: '俄罗斯方块', icon: <TetrisIcon />, component: 'GameTetris', category: 'games', defaultWidth: 400, defaultHeight: 520, minWidth: 300, minHeight: 450, resizable: false, multiple: false },
+  { id: 'ai-helper', name: 'AI 助手', icon: <ChatIcon />, component: 'AIHelper', category: 'utilities', defaultWidth: 500, defaultHeight: 600, minWidth: 350, minHeight: 400, resizable: true, multiple: false },
+  { id: 'kanban-board', name: '任务看板', icon: <BoardIcon />, component: 'KanbanBoard', category: 'office', defaultWidth: 900, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
 ]
