@@ -16,6 +16,7 @@ import {
 import type { AppDefinition } from './types'
 
 export const appRegistry: AppDefinition[] = [
+  { id: 'task-dashboard', name: '协作任务看板', icon: '📊', component: 'TaskDashboard', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'system-dashboard', name: '系统仪表盘', icon: '📊', component: 'SystemDashboard', category: 'system', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'task-automation', name: '任务自动化', icon: <AutomationIcon />, component: 'TaskAutomation', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'music-visualizer', name: '音乐可视化', icon: '🎵', component: 'MusicVisualizer', category: 'multimedia', defaultWidth: 1000, defaultHeight: 750, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
