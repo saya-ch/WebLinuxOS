@@ -22,12 +22,18 @@ const Taskbar = memo(function Taskbar() {
 
   const [time, setTime] = useState(new Date())
   const [volume, setVolume] = useState(80)
+  const [brightness, setBrightness] = useState(80)
   const [battery, setBattery] = useState(94)
   const [isCharging, setIsCharging] = useState(false)
   const [showQuickSettings, setShowQuickSettings] = useState(false)
   const [wifiEnabled, setWifiEnabled] = useState(true)
   const [bluetoothEnabled, setBluetoothEnabled] = useState(false)
   const [nightMode, setNightMode] = useState(false)
+  
+  // 同步亮度到页面
+  useEffect(() => {
+    document.documentElement.style.filter = `brightness(${brightness}%)`
+  }, [brightness])
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -154,13 +160,13 @@ const Taskbar = memo(function Taskbar() {
                   const menu = document.createElement('div')
                   menu.style.cssText = `
                     position: fixed;
-                    background: var(--panel-bg);
-                    border: 1px solid var(--border);
+                    background: var(--context-menu-bg);
+                    border: 1px solid var(--window-border);
                     border-radius: 8px;
                     padding: 4px;
                     z-index: 99999;
                     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                    min-width: 160px;
+                    min-width: 180px;
                   `
                   menu.innerHTML = desktopNumbers.map((dnum) => `
                     <div style="padding: 8px 12px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
@@ -275,6 +281,18 @@ const Taskbar = memo(function Taskbar() {
               onChange={(e) => setVolume(Number(e.target.value))}
             />
             <span style={{ minWidth: '35px', textAlign: 'right', fontSize: 12 }}>{volume}%</span>
+          </div>
+
+          <div className="quick-settings-slider">
+            <span>💡</span>
+            <input
+              type="range"
+              min="30"
+              max="100"
+              value={brightness}
+              onChange={(e) => setBrightness(Number(e.target.value))}
+            />
+            <span style={{ minWidth: '35px', textAlign: 'right', fontSize: 12 }}>{brightness}%</span>
           </div>
 
           <div className="quick-settings-slider">

@@ -1,15 +1,6 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
-assets/
-*.js
-*.css
-!assets/
-!assets/**/*.js
-!assets/**/*.css
-
 # Development
 .env
 .env.local
@@ -35,5 +26,3 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
-assets/
-manifest.json
