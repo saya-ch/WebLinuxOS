@@ -202,6 +202,7 @@ export default function Terminal() {
   网络工具: ping, ifconfig, curl
   系统工具: clear, help, history, alias, type, man, exit, cls, reset
   工具命令: echo, find, grep, env, export
+  趣味命令: cowsay, fortune, sl - 试试这些有趣的小命令!
 
 快捷键:
   Ctrl+Shift+L - 切换启动器
@@ -239,7 +240,10 @@ export default function Terminal() {
   history - 命令历史
   ifconfig - 网络信息
   ping - 网络连接测试
-  curl - 网页请求`
+  curl - 网页请求
+  cowsay <消息> - 让牛说话
+  fortune - 显示随机名言
+  sl - 火车动画`
         break
       case 'clear':
       case 'cls':
@@ -282,10 +286,10 @@ export default function Terminal() {
         output = [
           `            .-/+oossssoo+/-.               ${username}@${hostname}`,
           `        \`:+ssssssssssssssssss+:\`           -------------`,
-          `      -+ssssssssssssssssssssssso+-         OS: Web Linux 1.0`,
-          `    /osssssssssssssssssssssssssso/        Kernel: 6.1.0-web`,
-          `  /ossssssssssssssssssssssssssssso/       Shell: bash 5.2`,
-          ` :sssssssssssssssssssssssssssssssss:      DE: WebDE`,
+          `      -+ssssssssssssssssssssssso+-         OS: Web Linux 2.1.0`,
+          `    /osssssssssssssssssssssssssso/        Kernel: 6.8.0-web`,
+          `  /ossssssssssssssssssssssssssssso/       Shell: bash 5.2.21`,
+          ` :sssssssssssssssssssssssssssssssss:      DE: WebDE 2.1`,
           ` ossssssssssssssssssssssssssssssssso      Theme: ${theme}`,
           ` ossssssssssssssssssssssssssssssssso      Uptime: ${Math.floor(Math.random() * 24)} hours`,
           ` :sssssssssssssssssssssssssssssssss:      Packages: ${Math.floor(Math.random() * 500 + 100)}`,
@@ -294,6 +298,41 @@ export default function Terminal() {
           `      -+ssssssssssssssssssssssso+-`,
           `        \`:+ssssssssssssssssss+:\``,
           `            .-/+oossssoo+/-.`,
+        ].join('\n')
+        break
+      case ' cowsay':
+        output = [
+          ` _______________________`,
+          `< ${args.join(' ') || 'Hello World!'} >`,
+          ` -----------------------`,
+          `        \\   ^__^`,
+          `         \\  (oo)\\_______`,
+          `            (__)\\       )\\/\\`,
+          `                ||----w |`,
+          `                ||     ||`,
+        ].join('\n')
+        break
+      case 'fortune': {
+        const fortunes = [
+          '人生苦短，我用Python。',
+          '代码是写给人读的，顺便让机器运行。',
+          'Talk is cheap. Show me the code.',
+          '程序员的三大谎言：我明天就改，这个bug很简单。',
+          '不要评论你的代码，要让它自己说话。',
+          '最好的代码就是没有代码。',
+        ]
+        output = fortunes[Math.floor(Math.random() * fortunes.length)]
+        break
+      }
+      case 'sl':
+        output = [
+          `     ====        ________                ___________`,
+          `     ||  |      /        \\              /           \\`,
+          `     ||  |     /  /~~\\~~\\  \\            /    ______/`,
+          `   \\\\____/     |  |      |  \\            |   |          `,
+          `    |    |     \\  \\__/  /  /              \\   \\`,
+          `    |    |      \\       /  /                \\   \\`,
+          `    ====         \\______/  /                  \\___\\`,
         ].join('\n')
         break
       case 'ls': {

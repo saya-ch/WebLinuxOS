@@ -43,7 +43,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     setIsClosing(true)
     setTimeout(() => {
       closeWindow(win.id)
-    }, 200)
+    }, 250)
   }, [win.id, closeWindow])
 
   const handleMinimize = useCallback(() => {
@@ -51,7 +51,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     setTimeout(() => {
       minimizeWindow(win.id)
       setIsMinimizing(false)
-    }, 200)
+    }, 250)
   }, [win.id, minimizeWindow])
 
   const handleKeyboardShortcuts = useCallback(() => {

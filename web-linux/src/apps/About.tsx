@@ -93,14 +93,14 @@ export default function About() {
 
   const specs = [
     { label: '系统名称', value: 'Web Linux' },
-    { label: '版本号', value: '2.0.0' },
+    { label: '版本号', value: '2.1.0' },
     { label: '内核版本', value: 'Web Linux 6.8.0' },
     { label: '架构', value: 'x86_64 (Browser)' },
-    { label: '桌面环境', value: 'Web DE 2.0' },
+    { label: '桌面环境', value: 'Web DE 2.1' },
     { label: '窗口系统', value: 'Web Window Manager' },
     { label: '浏览器', value: `${ua.browser} ${ua.version}` },
     { label: '操作系统', value: ua.os },
-    { label: '应用数量', value: '50+' },
+    { label: '应用数量', value: '60+' },
     { label: '许可证', value: 'MIT' },
   ]
 
@@ -120,7 +120,7 @@ export default function About() {
   ]
 
   const changelog = [
-    { version: '2.1.0', date: '2026-05-22', changes: ['性能优化：改进窗口拖拽和调整大小', '添加最大化窗口尺寸记忆功能', '增强错误边界处理', '优化resize边界检查'] },
+    { version: '2.1.0', date: '2026-05-24', changes: ['性能优化：改进窗口拖拽和调整大小', '添加最大化窗口尺寸记忆功能', '增强错误边界处理', '优化resize边界检查', '增强终端功能：添加cowsay、fortune、sl等趣味命令', '更新系统信息显示', '优化内存使用和性能'] },
     { version: '2.0.0', date: '2025-05-15', changes: ['全新界面设计', '新增 20+ 应用', '性能优化 50%', '支持多窗口拖拽'] },
     { version: '1.5.0', date: '2025-03-01', changes: ['添加文件管理器', '新增终端模拟器', '修复窗口重叠问题'] },
     { version: '1.2.0', date: '2025-01-10', changes: ['添加系统设置', '新增主题切换', '优化内存使用'] },
@@ -158,7 +158,7 @@ export default function About() {
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #313244', textAlign: 'center' }}>
         <div style={{ fontSize: '40px', marginBottom: '4px' }}>🐧</div>
         <h1 style={{ margin: '0 0 2px', fontSize: '22px', fontWeight: 700 }}>Web Linux</h1>
-        <div style={{ fontSize: '12px', color: '#a6adc8' }}>浏览器中的 Linux 桌面环境 · v2.0.0</div>
+        <div style={{ fontSize: '12px', color: '#a6adc8' }}>浏览器中的 Linux 桌面环境 · v2.1.0</div>
       </div>
 
       <div style={{ display: 'flex', borderBottom: '1px solid #313244' }}>

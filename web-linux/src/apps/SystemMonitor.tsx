@@ -38,6 +38,8 @@ export default function SystemMonitor() {
       { pid: 890, name: 'weather', cpu: 0.3, memory: 22.4, status: '休眠' },
       { pid: 901, name: 'calendar', cpu: 0.2, memory: 18.9, status: '运行中' },
       { pid: 1012, name: 'clock', cpu: 0.1, memory: 10.2, status: '运行中' },
+      { pid: 1123, name: 'system-monitor', cpu: 1.2, memory: 42.8, status: '运行中' },
+      { pid: 1234, name: 'about', cpu: 0.3, memory: 15.6, status: '运行中' },
     ]
     requestAnimationFrame(() => {
       setProcesses(procs)

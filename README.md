@@ -32,6 +32,7 @@
 ### 🛠️ 强大的终端模拟器
 
 - **40+ 内置命令** - 完整的命令行工具集
+- **趣味命令** - cowsay、fortune、sl 等有趣的 ASCII 艺术命令
 - **Python 运行时** - 浏览器内实时执行 Python 代码（由 Pyodide 提供）
 - **语法高亮** - 代码编辑器支持多语言语法高亮
 - **实时执行** - JavaScript 和 Python 代码即时运行和调试
@@ -296,6 +297,12 @@ web-linux/
 
 ## 🔧 最近的改进
 
+### v2.1.0 (2026-05-24)
+- 终端模拟器新增趣味命令：`cowsay`、`fortune`、`sl`
+- 优化窗口动画效果，关闭和最小化动画更加流畅
+- 系统监视器增加更多进程信息
+- 更新系统信息显示，版本号更新至2.1.0
+
 ### 性能优化
 - 使用 `requestAnimationFrame` 优化窗口拖拽和调整大小性能
 - 改进窗口动画，使用 CSS cubic-bezier 缓动函数
@@ -353,7 +360,7 @@ web-linux/
 <p align="center">
   <strong>Made with ❤️ and ☕</strong>
   <br>
-  <sub>© 2024 WebLinuxOS. All rights reserved.</sub>
+  <sub>© 2024-2026 WebLinuxOS. All rights reserved.</sub>
 </p>
 
 [![Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=social)](https://github.com/saya-ch/WebLinuxOS/stargazers)
