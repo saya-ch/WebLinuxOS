@@ -6,6 +6,20 @@ import {
   ClipboardIcon, LightningIcon, SearchIcon
 } from './icons'
 
+// 持久化键
+const STORAGE_KEYS = {
+  FILES: 'weblinux-files',
+  THEME: 'weblinux-theme',
+  WALLPAPER: 'weblinux-wallpaper',
+  LIVE_WALLPAPER: 'weblinux-live-wallpaper',
+  LIVE_WALLPAPER_ENABLED: 'weblinux-live-wallpaper-enabled',
+  CURRENT_DESKTOP: 'weblinux-current-desktop',
+  TOTAL_DESKTOPS: 'weblinux-total-desktops',
+  DESKTOP_ICONS: 'weblinux-desktop-icons',
+  FAVORITES: 'weblinux-favorites',
+  PINNED_APPS: 'weblinux-pinned-apps',
+}
+
 // 文件树操作辅助函数
 function findNodeById(nodes: FileNode[], id: string): FileNode | null {
   for (const node of nodes) {
@@ -106,6 +120,7 @@ export function validateFileName(name: string): { valid: boolean; error?: string
   return { valid: true }
 }
 
+// 默认桌面图标
 const defaultIcons: DesktopIcon[] = [
   { id: 'icon-smart-search', appId: 'smart-search', name: '智慧搜索', icon: <SearchIcon />, x: 260, y: 320 },
   { id: 'icon-files', appId: 'files', name: '文件管理器', icon: <FolderIcon />, x: 20, y: 20 },
@@ -123,14 +138,8 @@ const defaultIcons: DesktopIcon[] = [
   { id: 'icon-commands', appId: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, x: 260, y: 220 },
 ]
 
-const initialTheme: 'dark' | 'light' = (localStorage.getItem('weblinux-theme') as 'dark' | 'light') || 'dark'
-const initialWallpaper: string = localStorage.getItem('weblinux-wallpaper') || ''
-const initialLiveWallpaper: string = localStorage.getItem('weblinux-live-wallpaper') || 'particles'
-const initialLiveWallpaperEnabled: boolean = localStorage.getItem('weblinux-live-wallpaper-enabled') === 'true'
-const initialCurrentDesktop = Number(localStorage.getItem('weblinux-current-desktop')) || 1
-const initialTotalDesktops = 4
-
-const initialFiles: FileNode[] = [
+// 默认文件系统
+const defaultFiles: FileNode[] = [
   { id: 'root', name: '/', type: 'folder', parentId: null, children: [
     { id: 'home', name: 'home', type: 'folder', parentId: 'root', children: [
       { id: 'user', name: 'user', type: 'folder', parentId: 'home', children: [
@@ -157,6 +166,37 @@ const initialFiles: FileNode[] = [
     ] },
   ] },
 ]
+
+// 从 localStorage 加载数据
+function loadFromStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const stored = localStorage.getItem(key)
+    return stored ? JSON.parse(stored) : defaultValue
+  } catch {
+    return defaultValue
+  }
+}
+
+// 保存到 localStorage
+function saveToStorage(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch (e) {
+    console.warn('Failed to save to localStorage:', e)
+  }
+}
+
+// 加载初始数据
+const initialTheme: 'dark' | 'light' = loadFromStorage(STORAGE_KEYS.THEME, 'dark')
+const initialWallpaper: string = loadFromStorage(STORAGE_KEYS.WALLPAPER, '')
+const initialLiveWallpaper: string = loadFromStorage(STORAGE_KEYS.LIVE_WALLPAPER, 'particles')
+const initialLiveWallpaperEnabled: boolean = loadFromStorage(STORAGE_KEYS.LIVE_WALLPAPER_ENABLED, false)
+const initialCurrentDesktop = loadFromStorage(STORAGE_KEYS.CURRENT_DESKTOP, 1)
+const initialTotalDesktops = loadFromStorage(STORAGE_KEYS.TOTAL_DESKTOPS, 4)
+const initialFiles: FileNode[] = loadFromStorage(STORAGE_KEYS.FILES, defaultFiles)
+const initialDesktopIcons: DesktopIcon[] = loadFromStorage(STORAGE_KEYS.DESKTOP_ICONS, defaultIcons)
+const initialFavorites: string[] = loadFromStorage(STORAGE_KEYS.FAVORITES, [])
+const initialPinnedApps: string[] = loadFromStorage(STORAGE_KEYS.PINNED_APPS, ['terminal', 'files', 'browser', 'settings'])
 
 interface FileOperation {
   type: 'add' | 'delete' | 'update' | 'rename' | 'move' | 'copy'
@@ -246,14 +286,25 @@ interface Store {
   togglePinnedApp: (appId: string) => void
   clearRecentFiles: () => void
   clearFavorites: () => void
+  updateDesktopIconPosition: (id: string, x: number, y: number) => void
+  resetToDefaults: () => void
 }
 
 let windowIdCounter = 0
 
+// 初始化 windowsPerDesktop
+function initWindowsPerDesktop(total: number): Record<number, string[]> {
+  const result: Record<number, string[]> = {}
+  for (let i = 1; i <= total; i++) {
+    result[i] = []
+  }
+  return result
+}
+
 export const useStore = create<Store>((set, get) => ({
   windows: [],
   apps: [],
-  desktopIcons: defaultIcons,
+  desktopIcons: initialDesktopIcons,
   files: initialFiles,
   nextZIndex: 0,
   theme: initialTheme,
@@ -266,13 +317,13 @@ export const useStore = create<Store>((set, get) => ({
   historyIndex: -1,
   currentDesktop: initialCurrentDesktop,
   totalDesktops: initialTotalDesktops,
-  windowsPerDesktop: { 1: [], 2: [], 3: [], 4: [] },
+  windowsPerDesktop: initWindowsPerDesktop(initialTotalDesktops),
   notifications: [],
   notificationCenterOpen: false,
   searchQuery: '',
   recentFiles: [],
-  favorites: [],
-  pinnedApps: ['terminal', 'files', 'browser', 'settings'],
+  favorites: initialFavorites,
+  pinnedApps: initialPinnedApps,
 
   addNotification: (notification) => {
     const id = `notif-${Date.now()}-${Math.random()}`
@@ -315,19 +366,23 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   toggleFavorite: (fileId: string) => {
-    set((s) => ({
-      favorites: s.favorites.includes(fileId)
+    set((s) => {
+      const newFavorites = s.favorites.includes(fileId)
         ? s.favorites.filter(id => id !== fileId)
         : [...s.favorites, fileId]
-    }))
+      saveToStorage(STORAGE_KEYS.FAVORITES, newFavorites)
+      return { favorites: newFavorites }
+    })
   },
 
   togglePinnedApp: (appId: string) => {
-    set((s) => ({
-      pinnedApps: s.pinnedApps.includes(appId)
+    set((s) => {
+      const newPinnedApps = s.pinnedApps.includes(appId)
         ? s.pinnedApps.filter(id => id !== appId)
         : [...s.pinnedApps, appId]
-    }))
+      saveToStorage(STORAGE_KEYS.PINNED_APPS, newPinnedApps)
+      return { pinnedApps: newPinnedApps }
+    })
   },
 
   clearRecentFiles: () => {
@@ -336,6 +391,36 @@ export const useStore = create<Store>((set, get) => ({
 
   clearFavorites: () => {
     set({ favorites: [] })
+    saveToStorage(STORAGE_KEYS.FAVORITES, [])
+  },
+
+  updateDesktopIconPosition: (id: string, x: number, y: number) => {
+    set((s) => {
+      const newIcons = s.desktopIcons.map(icon => 
+        icon.id === id ? { ...icon, x, y } : icon
+      )
+      saveToStorage(STORAGE_KEYS.DESKTOP_ICONS, newIcons)
+      return { desktopIcons: newIcons }
+    })
+  },
+
+  resetToDefaults: () => {
+    // 清除所有 localStorage 数据
+    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key))
+    // 重置状态
+    set({
+      files: defaultFiles,
+      desktopIcons: defaultIcons,
+      theme: 'dark',
+      wallpaper: '',
+      liveWallpaper: 'particles',
+      liveWallpaperEnabled: false,
+      currentDesktop: 1,
+      totalDesktops: 4,
+      windowsPerDesktop: initWindowsPerDesktop(4),
+      favorites: [],
+      pinnedApps: ['terminal', 'files', 'browser', 'settings'],
+    })
   },
 
   registerApp: (app) => set((s) => ({ apps: [...s.apps.filter((a) => a.id !== app.id), app] })),
@@ -417,15 +502,17 @@ export const useStore = create<Store>((set, get) => ({
   }),
 
   switchDesktop: (desktopNumber) => set(() => {
-    localStorage.setItem('weblinux-current-desktop', String(desktopNumber))
+    saveToStorage(STORAGE_KEYS.CURRENT_DESKTOP, String(desktopNumber))
     return { currentDesktop: desktopNumber }
   }),
 
   addDesktop: () => set((s) => {
     const newDesktopNum = s.totalDesktops + 1
+    const newTotal = newDesktopNum
+    saveToStorage(STORAGE_KEYS.TOTAL_DESKTOPS, String(newTotal))
     return {
-      totalDesktops: newDesktopNum,
-      windowsPerDesktop: { ...s.windowsPerDesktop, [newDesktopNum]: [] }
+      totalDesktops: newTotal,
+      windowsPerDesktop: { ...s.windowsPerDesktop, [newTotal]: [] }
     }
   }),
 
@@ -446,11 +533,13 @@ export const useStore = create<Store>((set, get) => ({
     let newCurrentDesktop = s.currentDesktop
     if (s.currentDesktop === desktopNumber) {
       newCurrentDesktop = targetDesktop
-      localStorage.setItem('weblinux-current-desktop', String(newCurrentDesktop))
+      saveToStorage(STORAGE_KEYS.CURRENT_DESKTOP, String(newCurrentDesktop))
     }
     
+    const newTotal = s.totalDesktops - 1
+    saveToStorage(STORAGE_KEYS.TOTAL_DESKTOPS, String(newTotal))
     return {
-      totalDesktops: s.totalDesktops - 1,
+      totalDesktops: newTotal,
       windowsPerDesktop: newWindowsPerDesktop,
       currentDesktop: newCurrentDesktop
     }
@@ -564,20 +653,20 @@ export const useStore = create<Store>((set, get) => ({
   showContextMenu: (x, y) => set({ contextMenu: { x, y, visible: true } }),
   hideContextMenu: () => set({ contextMenu: { x: 0, y: 0, visible: false } }),
   setTheme: (theme) => {
-    localStorage.setItem('weblinux-theme', theme)
+    saveToStorage(STORAGE_KEYS.THEME, theme)
     set({ theme })
   },
   setWallpaper: (wallpaper) => {
-    localStorage.setItem('weblinux-wallpaper', wallpaper)
+    saveToStorage(STORAGE_KEYS.WALLPAPER, wallpaper)
     set({ wallpaper })
   },
   setLiveWallpaper: (liveWallpaper) => {
-    localStorage.setItem('weblinux-live-wallpaper', liveWallpaper)
+    saveToStorage(STORAGE_KEYS.LIVE_WALLPAPER, liveWallpaper)
     set({ liveWallpaper })
   },
   toggleLiveWallpaper: () => {
     const newState = !get().liveWallpaperEnabled
-    localStorage.setItem('weblinux-live-wallpaper-enabled', String(newState))
+    saveToStorage(STORAGE_KEYS.LIVE_WALLPAPER_ENABLED, newState)
     set({ liveWallpaperEnabled: newState })
   },
 
@@ -601,6 +690,7 @@ export const useStore = create<Store>((set, get) => ({
         }
       ]
       
+      saveToStorage(STORAGE_KEYS.FILES, newFiles)
       return {
         files: newFiles,
         fileOperationHistory: newHistory,
@@ -629,6 +719,8 @@ export const useStore = create<Store>((set, get) => ({
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
         { type: 'add' as const, fileId: id, newState: newNode, parentId }
       ]
+      
+      saveToStorage(STORAGE_KEYS.FILES, newFiles)
       return {
         files: newFiles,
         fileOperationHistory: newHistory,
@@ -651,8 +743,10 @@ export const useStore = create<Store>((set, get) => ({
         }
       ]
       
+      const newFiles = updateInTree(s.files, id, (node) => ({ ...node, content }))
+      saveToStorage(STORAGE_KEYS.FILES, newFiles)
       return {
-        files: updateInTree(s.files, id, (node) => ({ ...node, content })),
+        files: newFiles,
         fileOperationHistory: newHistory,
         historyIndex: newHistory.length - 1
       }
@@ -674,8 +768,10 @@ export const useStore = create<Store>((set, get) => ({
         }
       ]
       
+      const newFiles = updateInTree(s.files, id, (node) => ({ ...node, name }))
+      saveToStorage(STORAGE_KEYS.FILES, newFiles)
       return {
-        files: updateInTree(s.files, id, (node) => ({ ...node, name })),
+        files: newFiles,
         fileOperationHistory: newHistory,
         historyIndex: newHistory.length - 1
       }
@@ -730,6 +826,8 @@ export const useStore = create<Store>((set, get) => ({
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
         { type: 'copy' as const, fileId: id, newState: newNode, parentId: targetParentId }
       ]
+      
+      saveToStorage(STORAGE_KEYS.FILES, newFiles)
       return { 
         files: newFiles, 
         fileOperationHistory: newHistory, 
@@ -766,6 +864,8 @@ export const useStore = create<Store>((set, get) => ({
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
         { type: 'move' as const, fileId: sourceId, previousState, newState: nodeWithNewParent }
       ]
+      
+      saveToStorage(STORAGE_KEYS.FILES, withNode)
       return { files: withNode, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
     })
   },
@@ -782,6 +882,7 @@ export const useStore = create<Store>((set, get) => ({
         set((s) => {
           const newFiles = removeFromTree(s.files, operation.fileId)
           const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
+          saveToStorage(STORAGE_KEYS.FILES, newFiles)
           return { files: newFiles, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
         })
         break
@@ -795,6 +896,7 @@ export const useStore = create<Store>((set, get) => ({
               return undefined
             })
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
+            saveToStorage(STORAGE_KEYS.FILES, restored)
             return { files: restored, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
           })
         }
@@ -804,6 +906,7 @@ export const useStore = create<Store>((set, get) => ({
           set((s) => {
             const updated = updateInTree(s.files, operation.fileId, () => operation.previousState!)
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
+            saveToStorage(STORAGE_KEYS.FILES, updated)
             return { files: updated, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
           })
         }
@@ -813,6 +916,7 @@ export const useStore = create<Store>((set, get) => ({
           set((s) => {
             const updated = updateInTree(s.files, operation.fileId, () => operation.previousState!)
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
+            saveToStorage(STORAGE_KEYS.FILES, updated)
             return { files: updated, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
           })
         }
@@ -828,6 +932,7 @@ export const useStore = create<Store>((set, get) => ({
               return undefined
             })
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
+            saveToStorage(STORAGE_KEYS.FILES, withNode)
             return { files: withNode, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
           })
         }
@@ -837,6 +942,7 @@ export const useStore = create<Store>((set, get) => ({
           set((s) => {
             const newFiles = removeFromTree(s.files, operation.fileId)
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
+            saveToStorage(STORAGE_KEYS.FILES, newFiles)
             return { files: newFiles, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
           })
         }
@@ -854,37 +960,50 @@ export const useStore = create<Store>((set, get) => ({
     switch (operation.type) {
       case 'add':
         if (operation.newState && operation.parentId) {
-          set((s) => ({
-            files: traverseTree(s.files, (node) => {
+          set((s) => {
+            const newFiles = traverseTree(s.files, (node) => {
               if (node.id === operation.parentId && node.children !== undefined) {
                 return { ...node, children: [...node.children, operation.newState!] }
               }
               return undefined
-            }),
-            historyIndex: state.historyIndex + 1
-          }))
+            })
+            saveToStorage(STORAGE_KEYS.FILES, newFiles)
+            return {
+              files: newFiles,
+              historyIndex: state.historyIndex + 1
+            }
+          })
         }
         break
       case 'delete':
         set((s) => {
           const newFiles = removeFromTree(s.files, operation.fileId)
+          saveToStorage(STORAGE_KEYS.FILES, newFiles)
           return { files: newFiles, historyIndex: state.historyIndex + 1 }
         })
         break
       case 'rename':
         if (operation.newState) {
-          set((s) => ({
-            files: updateInTree(s.files, operation.fileId, () => operation.newState!),
-            historyIndex: state.historyIndex + 1
-          }))
+          set((s) => {
+            const newFiles = updateInTree(s.files, operation.fileId, () => operation.newState!)
+            saveToStorage(STORAGE_KEYS.FILES, newFiles)
+            return {
+              files: newFiles,
+              historyIndex: state.historyIndex + 1
+            }
+          })
         }
         break
       case 'update':
         if (operation.newState) {
-          set((s) => ({
-            files: updateInTree(s.files, operation.fileId, () => operation.newState!),
-            historyIndex: state.historyIndex + 1
-          }))
+          set((s) => {
+            const newFiles = updateInTree(s.files, operation.fileId, () => operation.newState!)
+            saveToStorage(STORAGE_KEYS.FILES, newFiles)
+            return {
+              files: newFiles,
+              historyIndex: state.historyIndex + 1
+            }
+          })
         }
         break
       case 'move':
@@ -897,21 +1016,26 @@ export const useStore = create<Store>((set, get) => ({
               }
               return undefined
             })
+            saveToStorage(STORAGE_KEYS.FILES, withNode)
             return { files: withNode, historyIndex: state.historyIndex + 1 }
           })
         }
         break
       case 'copy':
         if (operation.newState && operation.parentId) {
-          set((s) => ({
-            files: traverseTree(s.files, (node) => {
+          set((s) => {
+            const newFiles = traverseTree(s.files, (node) => {
               if (node.id === operation.parentId && node.children !== undefined) {
                 return { ...node, children: [...node.children, operation.newState!] }
               }
               return undefined
-            }),
-            historyIndex: state.historyIndex + 1
-          }))
+            })
+            saveToStorage(STORAGE_KEYS.FILES, newFiles)
+            return {
+              files: newFiles,
+              historyIndex: state.historyIndex + 1
+            }
+          })
         }
         break
     }
