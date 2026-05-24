@@ -35,7 +35,7 @@ const ClipboardManager = memo(function ClipboardManager() {
           timestamp: new Date(item.timestamp)
         })))
       } catch {
-        console.error('Failed to parse clipboard history')
+        // Ignore parse errors for clipboard history
       }
     }
   }, [])

@@ -68,17 +68,6 @@ function traverseTree(nodes: FileNode[], callback: (node: FileNode, parent?: Fil
   }).filter((node): node is FileNode => node !== null)
 }
 
-function findInTree(nodes: FileNode[], id: string): FileNode | null {
-  for (const node of nodes) {
-    if (node.id === id) return node
-    if (node.children) {
-      const found = findInTree(node.children, id)
-      if (found) return found
-    }
-  }
-  return null
-}
-
 function removeFromTree(nodes: FileNode[], id: string): FileNode[] {
   return nodes
     .filter(node => node.id !== id)
@@ -89,8 +78,6 @@ function removeFromTree(nodes: FileNode[], id: string): FileNode[] {
       return node
     })
 }
-
-
 
 function updateInTree(nodes: FileNode[], id: string, updater: (node: FileNode) => FileNode): FileNode[] {
   return nodes.map(node => {
@@ -528,7 +515,7 @@ export const useStore = create<Store>((set, get) => ({
 
   deleteFile: (id) =>
     set((s) => {
-      const deletedNode = findInTree(s.files, id)
+      const deletedNode = findNodeById(s.files, id)
       const parent = findParentNode(s.files, id)
       
       if (!deletedNode || !parent) {
@@ -605,7 +592,7 @@ export const useStore = create<Store>((set, get) => ({
 
   renameFile: (id, name) =>
     set((s) => {
-      const node = findInTree(s.files, id)
+      const node = findNodeById(s.files, id)
       if (!node) return s
       
       const previousName = node.name
@@ -685,8 +672,8 @@ export const useStore = create<Store>((set, get) => ({
 
   moveFile: (sourceId, targetParentId) => {
     const state = get()
-    const sourceNode = findInTree(state.files, sourceId)
-    const targetParent = findInTree(state.files, targetParentId)
+    const sourceNode = findNodeById(state.files, sourceId)
+    const targetParent = findNodeById(state.files, targetParentId)
     
     if (!sourceNode || !targetParent || targetParent.type !== 'folder') {
       return
