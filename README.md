@@ -13,7 +13,7 @@
 
 ## 概述
 
-WebLinuxOS 是一个完整的 Linux 桌面环境模拟器，完全运行在浏览器中，无需后端依赖。它具有完整的窗口管理系统、虚拟文件系统、带40+内置命令的终端模拟器，以及**59个预装应用程序**，涵盖系统工具、办公工具、互联网客户端、多媒体编辑器、开发工具和游戏。
+WebLinuxOS 是一个完整的 Linux 桌面环境模拟器，完全运行在浏览器中，无需后端依赖。它具有完整的窗口管理系统、虚拟文件系统、带40+内置命令的终端模拟器，以及**60个预装应用程序**，涵盖系统工具、办公工具、互联网客户端、多媒体编辑器、开发工具和游戏。
 
 每个组件都使用现代 Web 技术从零开始构建。整个桌面体验在单个页面中加载，无需服务器、安装或设置。
 
@@ -119,12 +119,13 @@ WebLinuxOS 包含 **59个应用程序**，分为七个类别。
 | Instant Messenger | Real-time chat interface |
 | Maps | 交互式地图查看器 |
 
-### 多媒体应用 (7)
+### 多媒体应用 (8)
 
 | Application | Description |
 |---|---|
 | Image Viewer | View and browse image files |
 | Music Player | Audio playback with Web Audio API |
+| Music Visualizer | Real-time audio visualization with multiple themes |
 | Video Player | Play video files |
 | Paint | Drawing and image editing canvas |
 | Camera | Webcam access with live filters |
@@ -193,7 +194,7 @@ WebLinuxOS 采用组件驱动的架构，基于 React 19，使用 Zustand 进行
 ```
 web-linux/
   src/
-    apps/           # 59 个应用程序组件
+    apps/           # 60 个应用程序组件
     components/     # 桌面、窗口、任务栏、开始菜单
     store.tsx       # Zustand 全局状态
     apps.tsx        # 应用程序注册表
