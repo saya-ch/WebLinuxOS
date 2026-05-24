@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 
 interface Process {
   pid: number
@@ -6,9 +6,11 @@ interface Process {
   cpu: number
   memory: number
   status: string
+  user: string
+  threads: number
 }
 
-export default function SystemMonitor() {
+const SystemMonitor = memo(function SystemMonitor() {
   const [cpuUsage, setCpuUsage] = useState(15)
   const [cpuCores, setCpuCores] = useState<number[]>([12, 18, 15, 22, 8, 25, 14, 19])
   const [memoryUsed, setMemoryUsed] = useState(3400)
@@ -21,25 +23,26 @@ export default function SystemMonitor() {
   const [memHistory, setMemHistory] = useState<number[]>(Array(60).fill(0))
   const [netHistoryDown, setNetHistoryDown] = useState<number[]>(Array(60).fill(0))
   const [netHistoryUp, setNetHistoryUp] = useState<number[]>(Array(60).fill(0))
-  const [activeTab, setActiveTab] = useState<'overview' | 'processes' | 'performance'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'processes' | 'performance' | 'network'>('overview')
+  const [batteryLevel, setBatteryLevel] = useState(87)
   const cpuCanvasRef = useRef<HTMLCanvasElement>(null)
   const memCanvasRef = useRef<HTMLCanvasElement>(null)
   const netCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const procs: Process[] = [
-      { pid: 1, name: 'systemd', cpu: 0.1, memory: 12.5, status: '运行中' },
-      { pid: 234, name: 'terminal', cpu: 2.3, memory: 45.2, status: '运行中' },
-      { pid: 345, name: 'file-manager', cpu: 1.5, memory: 67.8, status: '运行中' },
-      { pid: 456, name: 'browser', cpu: 8.7, memory: 234.5, status: '运行中' },
-      { pid: 567, name: 'code-editor', cpu: 3.2, memory: 156.3, status: '运行中' },
-      { pid: 678, name: 'music-player', cpu: 1.8, memory: 89.1, status: '运行中' },
-      { pid: 789, name: 'settings', cpu: 0.5, memory: 34.7, status: '运行中' },
-      { pid: 890, name: 'weather', cpu: 0.3, memory: 22.4, status: '休眠' },
-      { pid: 901, name: 'calendar', cpu: 0.2, memory: 18.9, status: '运行中' },
-      { pid: 1012, name: 'clock', cpu: 0.1, memory: 10.2, status: '运行中' },
-      { pid: 1123, name: 'system-monitor', cpu: 1.2, memory: 42.8, status: '运行中' },
-      { pid: 1234, name: 'about', cpu: 0.3, memory: 15.6, status: '运行中' },
+      { pid: 1, name: 'systemd', cpu: 0.1, memory: 12.5, status: '运行中', user: 'root', threads: 3 },
+      { pid: 234, name: 'terminal', cpu: 2.3, memory: 45.2, status: '运行中', user: 'user', threads: 5 },
+      { pid: 345, name: 'file-manager', cpu: 1.5, memory: 67.8, status: '运行中', user: 'user', threads: 8 },
+      { pid: 456, name: 'browser', cpu: 8.7, memory: 234.5, status: '运行中', user: 'user', threads: 24 },
+      { pid: 567, name: 'code-editor', cpu: 3.2, memory: 156.3, status: '运行中', user: 'user', threads: 12 },
+      { pid: 678, name: 'music-player', cpu: 1.8, memory: 89.1, status: '运行中', user: 'user', threads: 6 },
+      { pid: 789, name: 'settings', cpu: 0.5, memory: 34.7, status: '运行中', user: 'user', threads: 4 },
+      { pid: 890, name: 'weather', cpu: 0.3, memory: 22.4, status: '休眠', user: 'user', threads: 2 },
+      { pid: 901, name: 'calendar', cpu: 0.2, memory: 18.9, status: '运行中', user: 'user', threads: 3 },
+      { pid: 1012, name: 'clock', cpu: 0.1, memory: 10.2, status: '运行中', user: 'user', threads: 2 },
+      { pid: 1123, name: 'system-monitor', cpu: 1.2, memory: 42.8, status: '运行中', user: 'user', threads: 5 },
+      { pid: 1234, name: 'about', cpu: 0.3, memory: 15.6, status: '运行中', user: 'user', threads: 2 },
     ]
     requestAnimationFrame(() => {
       setProcesses(procs)
@@ -59,6 +62,8 @@ export default function SystemMonitor() {
       setMemoryUsed(memVal)
       
       setDiskUsed(Math.round((45 + (Math.random() - 0.5) * 0.5) * 10) / 10)
+      
+      setBatteryLevel(Math.max(0, Math.min(100, batteryLevel + (Math.random() - 0.5) * 2)))
       
       const newDown = Math.round((1.2 + (Math.random() - 0.5) * 0.5) * 10) / 10
       const newUp = Math.round((0.3 + (Math.random() - 0.5) * 0.2) * 10) / 10
@@ -389,4 +394,6 @@ export default function SystemMonitor() {
       </div>
     </div>
   )
-}
+})
+
+export default SystemMonitor

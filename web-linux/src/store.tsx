@@ -192,6 +192,10 @@ interface Store {
   windowsPerDesktop: Record<number, string[]>
   notifications: Notification[]
   notificationCenterOpen: boolean
+  searchQuery: string
+  recentFiles: FileNode[]
+  favorites: string[]
+  pinnedApps: string[]
 
   registerApp: (app: AppDefinition) => void
   openApp: (appId: string) => void
@@ -251,6 +255,10 @@ export const useStore = create<Store>((set, get) => ({
   windowsPerDesktop: { 1: [], 2: [], 3: [], 4: [] },
   notifications: [],
   notificationCenterOpen: false,
+  searchQuery: '',
+  recentFiles: [],
+  favorites: [],
+  pinnedApps: ['terminal', 'files', 'browser', 'settings'],
 
   addNotification: (notification) => {
     const id = `notif-${Date.now()}-${Math.random()}`
@@ -277,6 +285,43 @@ export const useStore = create<Store>((set, get) => ({
 
   closeNotificationCenter: () => {
     set({ notificationCenterOpen: false })
+  },
+
+  setSearchQuery: (query: string) => {
+    set({ searchQuery: query })
+  },
+
+  addRecentFile: (file: FileNode) => {
+    set((s) => ({
+      recentFiles: [
+        file,
+        ...s.recentFiles.filter(f => f.id !== file.id)
+      ].slice(0, 10)
+    }))
+  },
+
+  toggleFavorite: (fileId: string) => {
+    set((s) => ({
+      favorites: s.favorites.includes(fileId)
+        ? s.favorites.filter(id => id !== fileId)
+        : [...s.favorites, fileId]
+    }))
+  },
+
+  togglePinnedApp: (appId: string) => {
+    set((s) => ({
+      pinnedApps: s.pinnedApps.includes(appId)
+        ? s.pinnedApps.filter(id => id !== appId)
+        : [...s.pinnedApps, appId]
+    }))
+  },
+
+  clearRecentFiles: () => {
+    set({ recentFiles: [] })
+  },
+
+  clearFavorites: () => {
+    set({ favorites: [] })
   },
 
   registerApp: (app) => set((s) => ({ apps: [...s.apps.filter((a) => a.id !== app.id), app] })),

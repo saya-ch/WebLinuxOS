@@ -32,6 +32,9 @@ const appShortcuts: Record<string, { config: ShortcutConfig; appId: string }> = 
   'music-player': { config: { mod: true, shift: true, key: 'm' }, appId: 'music-player' },
   'code-editor': { config: { mod: true, key: 'k' }, appId: 'code-editor' },
   'system-monitor': { config: { mod: true, key: 'd' }, appId: 'system-monitor' },
+  'weather': { config: { mod: true, shift: true, key: 'w' }, appId: 'weather' },
+  'camera': { config: { mod: true, shift: true, key: 'a' }, appId: 'camera' },
+  'password-manager': { config: { mod: true, shift: true, key: 'l' }, appId: 'password-manager' },
   'app-1': { config: { mod: true, key: '1' }, appId: 'terminal' },
   'app-2': { config: { mod: true, key: '2' }, appId: 'files' },
   'app-3': { config: { mod: true, key: '3' }, appId: 'browser' },
@@ -40,6 +43,7 @@ const appShortcuts: Record<string, { config: ShortcutConfig; appId: string }> = 
   'app-6': { config: { mod: true, key: '6' }, appId: 'text-editor' },
   'app-7': { config: { mod: true, key: '7' }, appId: 'music-player' },
   'app-8': { config: { mod: true, key: '8' }, appId: 'system-monitor' },
+  'app-9': { config: { mod: true, key: '9' }, appId: 'weather' },
 }
 
 const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }> = {
