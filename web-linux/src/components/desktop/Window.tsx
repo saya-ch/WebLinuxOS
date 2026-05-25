@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useState, memo } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo, memo } from 'react'
 import { useStore } from '../../store'
 import type { WindowState } from '../../types'
 
@@ -129,8 +129,13 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     if (!dragging && !resizing) return
 
     let rafId: number | null = null
+    let lastUpdateTime = 0
 
     const handleMouseMove = (e: MouseEvent) => {
+      const now = performance.now()
+      if (now - lastUpdateTime < 16) return
+      lastUpdateTime = now
+
       if (rafId) {
         cancelAnimationFrame(rafId)
       }
@@ -182,8 +187,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       setResizing(null)
     }
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mousemove', handleMouseMove, { passive: true })
+    document.addEventListener('mouseup', handleMouseUp, { passive: true })
     return () => {
       if (rafId) {
         cancelAnimationFrame(rafId)
@@ -201,7 +206,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     maximizeWindow(win.id)
   }, [win.id, maximizeWindow])
 
-  const getWindowStyle = useCallback((): React.CSSProperties => {
+  const windowStyle = useMemo((): React.CSSProperties => {
     const baseStyle: React.CSSProperties = {
       left: win.maximized ? 0 : win.x,
       top: win.maximized ? 0 : win.y,
@@ -212,8 +217,10 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       backdropFilter: 'blur(20px) saturate(180%)',
       border: win.focused ? '1px solid rgba(139, 124, 240, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
       transform: 'translateZ(0)',
-      willChange: 'transform',
-      contain: 'layout style paint',
+      willChange: dragging || resizing ? 'transform' : 'auto',
+      contain: 'strict',
+      backfaceVisibility: 'hidden',
+      perspective: '1000px',
     }
 
     if (win.focused && !win.maximized) {
@@ -225,12 +232,12 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     }
 
     return baseStyle
-  }, [win, isHovered])
+  }, [win, isHovered, dragging, resizing])
 
   return (
     <div
       className={`window ${win.focused ? 'focused' : ''} ${win.maximized ? 'maximized' : ''} ${isClosing ? 'closing' : ''} ${isMinimizing ? 'minimizing' : ''} ${isOpening ? 'opening' : ''}`}
-      style={getWindowStyle()}
+      style={windowStyle}
       onMouseDown={handleWindowClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

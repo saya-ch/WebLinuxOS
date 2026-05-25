@@ -27,7 +27,7 @@ export default function RegexTester() {
     const currentMatches: Match[] = []
     let currentReplaceResult = ''
 
-    let regex: RegExp | null = null
+    let regex: RegExp
     try {
       regex = new RegExp(pattern, flags)
     } catch (e) {

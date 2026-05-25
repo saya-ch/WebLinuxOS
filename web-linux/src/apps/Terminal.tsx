@@ -28,7 +28,9 @@ const COMMANDS = [
   'systemctl', 'journalctl', 'dmesg', 'lsblk', 'lsof', 'netstat', 'ss',
   'welcome', 'search', 'translate', 'qrcode', 'timer', 'stopwatch',
   'disk-usage', 'process-list', 'network-stats', 'system-info', 'memory-info', 'cpu-info',
-  'version', 'credits', 'about', 'todo', 'notes', 'encrypt', 'decrypt'
+  'version', 'credits', 'about', 'todo', 'notes', 'encrypt', 'decrypt',
+  'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
+  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -373,6 +375,310 @@ export default function Terminal() {
           `     /_____/   U`,
         ].join('\n')
         break
+      case 'calc': {
+        const expression = args.join(' ')
+        if (!expression) {
+          output = [
+            `🧮 计算器`,
+            ``,
+            `用法: calc <数学表达式>`,
+            ``,
+            `支持的运算符: +, -, *, /, %, **, ()`,
+            ``,
+            `示例:`,
+            `  calc 2 + 3 * 4`,
+            `  calc (2 + 3) * 4`,
+            `  calc 2 ** 10`,
+            `  calc sqrt(16)`,
+            `  calc sin(3.14)`,
+          ].join('\n')
+        } else {
+          try {
+            const sanitized = expression
+              .replace(/sqrt/g, 'Math.sqrt')
+              .replace(/sin/g, 'Math.sin')
+              .replace(/cos/g, 'Math.cos')
+              .replace(/tan/g, 'Math.tan')
+              .replace(/log/g, 'Math.log')
+              .replace(/log10/g, 'Math.log10')
+              .replace(/abs/g, 'Math.abs')
+              .replace(/ceil/g, 'Math.ceil')
+              .replace(/floor/g, 'Math.floor')
+              .replace(/round/g, 'Math.round')
+              .replace(/PI/g, 'Math.PI')
+              .replace(/E/g, 'Math.E')
+            const result = new Function(`return ${sanitized}`)()
+            output = `= ${result}`
+          } catch (e) {
+            output = `calc: 表达式错误 - ${(e as Error).message}`
+          }
+        }
+        break
+      }
+      case 'prime': {
+        const num = parseInt(args[0])
+        if (isNaN(num)) {
+          output = [
+            `🔢 质数检测`,
+            ``,
+            `用法: prime <数字>`,
+            ``,
+            `示例:`,
+            `  prime 17`,
+            `  prime 100`,
+          ].join('\n')
+        } else {
+          const isPrime = (n: number): boolean => {
+            if (n <= 1) return false
+            if (n <= 3) return true
+            if (n % 2 === 0 || n % 3 === 0) return false
+            let i = 5
+            while (i * i <= n) {
+              if (n % i === 0 || n % (i + 2) === 0) return false
+              i += 6
+            }
+            return true
+          }
+          if (isPrime(num)) {
+            output = `${num} 是质数 ✅`
+          } else {
+            output = `${num} 不是质数 ❌`
+          }
+        }
+        break
+      }
+      case 'factor': {
+        const num = parseInt(args[0])
+        if (isNaN(num) || num < 2) {
+          output = [
+            `🔧 质因数分解`,
+            ``,
+            `用法: factor <数字>`,
+            ``,
+            `示例:`,
+            `  factor 12`,
+            `  factor 100`,
+          ].join('\n')
+        } else {
+          const factors: number[] = []
+          let n = num
+          while (n % 2 === 0) {
+            factors.push(2)
+            n /= 2
+          }
+          let i = 3
+          while (i * i <= n) {
+            while (n % i === 0) {
+              factors.push(i)
+              n /= i
+            }
+            i += 2
+          }
+          if (n > 2) factors.push(n)
+          output = `${num} = ${factors.join(' × ')}`
+        }
+        break
+      }
+      case 'roman': {
+        const num = parseInt(args[0])
+        if (isNaN(num) || num < 1 || num > 3999) {
+          output = [
+            `🔤 罗马数字转换`,
+            ``,
+            `用法: roman <数字> (1-3999)`,
+            ``,
+            `示例:`,
+            `  roman 2024`,
+            `  roman 1999`,
+          ].join('\n')
+        } else {
+          const romanNumerals = [
+            { value: 1000, symbol: 'M' },
+            { value: 900, symbol: 'CM' },
+            { value: 500, symbol: 'D' },
+            { value: 400, symbol: 'CD' },
+            { value: 100, symbol: 'C' },
+            { value: 90, symbol: 'XC' },
+            { value: 50, symbol: 'L' },
+            { value: 40, symbol: 'XL' },
+            { value: 10, symbol: 'X' },
+            { value: 9, symbol: 'IX' },
+            { value: 5, symbol: 'V' },
+            { value: 4, symbol: 'IV' },
+            { value: 1, symbol: 'I' },
+          ]
+          let result = ''
+          let n = num
+          for (const { value, symbol } of romanNumerals) {
+            while (n >= value) {
+              result += symbol
+              n -= value
+            }
+          }
+          output = `${num} = ${result}`
+        }
+        break
+      }
+      case 'base64': {
+        const text = args.join(' ')
+        if (!text) {
+          output = [
+            `🔐 Base64 编码`,
+            ``,
+            `用法: base64 <文本>`,
+            ``,
+            `示例:`,
+            `  base64 Hello World`,
+          ].join('\n')
+        } else {
+          output = btoa(text)
+        }
+        break
+      }
+      case 'unbase64': {
+        const encoded = args.join(' ')
+        if (!encoded) {
+          output = [
+            `🔓 Base64 解码`,
+            ``,
+            `用法: unbase64 <编码文本>`,
+            ``,
+            `示例:`,
+            `  unbase64 SGVsbG8gV29ybGQ=`,
+          ].join('\n')
+        } else {
+          try {
+            output = atob(encoded)
+          } catch (e) {
+            output = `unbase64: 无效的 Base64 编码`
+          }
+        }
+        break
+      }
+      case 'hash': {
+        const text = args.join(' ')
+        if (!text) {
+          output = [
+            `🔑 哈希计算`,
+            ``,
+            `用法: hash <文本>`,
+            ``,
+            `示例:`,
+            `  hash password123`,
+          ].join('\n')
+        } else {
+          let hash = 0
+          for (let i = 0; i < text.length; i++) {
+            const char = text.charCodeAt(i)
+            hash = ((hash << 5) - hash) + char
+            hash = hash & hash
+          }
+          output = `MD5-like: ${Math.abs(hash).toString(16).padStart(32, '0')}`
+        }
+        break
+      }
+      case 'rev': {
+        const text = args.join(' ')
+        output = text.split('').reverse().join('') || 'rev: 请提供要反转的文本'
+        break
+      }
+      case 'fortune': {
+        const fortunes = [
+          `成功不是最终的，失败也不是致命的：重要的是继续前进的勇气。 - Winston Churchill`,
+          `生活不是等待风暴过去，而是学会在雨中翩翩起舞。 - Vivian Greene`,
+          `唯一不可能的事是你不去尝试。 - Audrey Hepburn`,
+          `成功的秘诀在于始终如一地坚持目标。 - Benjamin Disraeli`,
+          `不要等待机会，而要创造机会。 - Abraham Lincoln`,
+          `人生最大的错误是不断担心会犯错。 - Elbert Hubbard`,
+          `每一个不曾起舞的日子，都是对生命的辜负。 - 尼采`,
+          `你的时间有限，不要浪费在重复别人的生活上。 - Steve Jobs`,
+          `只有那些敢于相信自己内心深处有比现实更大力量的人，才能改变世界。 - J.K. Rowling`,
+          `成功的路上并不拥挤，因为坚持的人不多。`,
+          `今天的努力是明天的实力。`,
+          `相信自己，一切皆有可能。`,
+          `知识就是力量。 - Francis Bacon`,
+          `时间是最公平的资源，每个人每天都有24小时。`,
+          `不要让昨天占据今天太多时间。`,
+        ]
+        output = fortunes[Math.floor(Math.random() * fortunes.length)]
+        break
+      }
+      case 'sl': {
+        output = [
+          `      (@@) (  ) (@)  ( )  @@    ()    @     O     @     O      @`,
+          `   (   )    ) (    )   )  _)\\ /\\_   _)\\ /\\_    )\\ /\\_    )\\ /\\_`,
+          `  (@@@@@@)()@@@()()@@@()@@()  @    @()  @   @()  @   @()  @`,
+          `  (    )  (_)  (_)  (_)  (_)   )\\  )\\   )\\  )\\   )\\  )\\`,
+          `  (@@@@@@  @    @    @    @    @   @    @   @    @   @`,
+          `           _)\\  _)\\  _)\\  _)\\  _)\\  _)\\  _)\\  _)\\`,
+          ``,
+          `🚂 火车经过！`,
+        ].join('\n')
+        break
+      }
+      case 'banner': {
+        const text = args.join(' ') || 'BANNER'
+        const bannerChars: Record<string, string[]> = {
+          'A': ['  ██████  ', ' ██    ██ ', ' ████████ ', ' ██    ██ ', ' ██    ██ '],
+          'B': [' ██████   ', ' ██   ██  ', ' ██████   ', ' ██   ██  ', ' ██████   '],
+          'C': ['  ██████  ', ' ██       ', ' ██       ', ' ██       ', '  ██████  '],
+          'D': [' █████    ', ' ██   ██  ', ' ██   ██  ', ' ██   ██  ', ' █████    '],
+          'E': [' ███████  ', ' ██       ', ' ██████   ', ' ██       ', ' ███████  '],
+          'F': [' ███████  ', ' ██       ', ' ██████   ', ' ██       ', ' ██       '],
+          'G': ['  ██████  ', ' ██       ', ' ██   ██  ', ' ██   ██  ', '  ██████  '],
+          'H': [' ██   ██  ', ' ██   ██  ', ' ████████ ', ' ██   ██  ', ' ██   ██  '],
+          'I': ['  ██████  ', '    ██    ', '    ██    ', '    ██    ', '  ██████  '],
+          'J': ['     ████ ', '       ██ ', '       ██ ', ' ██   ██  ', '  █████   '],
+          'K': [' ██   ██  ', ' ██  ██   ', ' █████    ', ' ██  ██   ', ' ██   ██  '],
+          'L': [' ██       ', ' ██       ', ' ██       ', ' ██       ', ' ███████  '],
+          'M': [' ██   ██  ', ' ███ ███  ', ' ██ █ ██  ', ' ██   ██  ', ' ██   ██  '],
+          'N': [' ██   ██  ', ' ███  ██  ', ' ██ █ ██  ', ' ██  ███  ', ' ██   ██  '],
+          'O': ['  ██████  ', ' ██    ██ ', ' ██    ██ ', ' ██    ██ ', '  ██████  '],
+          'P': [' ██████   ', ' ██   ██  ', ' ██████   ', ' ██       ', ' ██       '],
+          'Q': ['  ██████  ', ' ██    ██ ', ' ██    ██ ', ' ██  ███  ', '  ██████  '],
+          'R': [' ██████   ', ' ██   ██  ', ' ██████   ', ' ██  ██   ', ' ██   ██  '],
+          'S': ['  ██████  ', ' ██       ', '  ██████  ', '       ██ ', ' ██████   '],
+          'T': [' ████████ ', '    ██    ', '    ██    ', '    ██    ', '    ██    '],
+          'U': [' ██   ██  ', ' ██   ██  ', ' ██   ██  ', ' ██   ██  ', '  ██████  '],
+          'V': [' ██   ██  ', ' ██   ██  ', ' ██   ██  ', '  ██ ██   ', '   ███    '],
+          'W': [' ██   ██  ', ' ██   ██  ', ' ██ █ ██  ', ' ███ ███  ', ' ██   ██  '],
+          'X': [' ██   ██  ', '  ██ ██   ', '   ███    ', '  ██ ██   ', ' ██   ██  '],
+          'Y': [' ██   ██  ', '  ██ ██   ', '   ███    ', '    ██    ', '    ██    '],
+          'Z': [' ████████ ', '       ██ ', '      ██  ', '    ██    ', ' ████████ '],
+          ' ': ['          ', '          ', '          ', '          ', '          '],
+          '0': ['  ██████  ', ' ██    ██ ', ' ██    ██ ', ' ██    ██ ', '  ██████  '],
+          '1': ['    ██    ', '   ███    ', '    ██    ', '    ██    ', ' ███████  '],
+          '2': ['  ██████  ', '       ██ ', '  ██████  ', ' ██       ', ' ████████ '],
+          '3': ['  ██████  ', '       ██ ', '  ██████  ', '       ██ ', '  ██████  '],
+          '4': [' ██    ██ ', ' ██    ██ ', ' ████████ ', '       ██ ', '       ██ '],
+          '5': [' ████████ ', ' ██       ', ' ███████  ', '       ██ ', '  ██████  '],
+          '6': ['  ██████  ', ' ██       ', ' ███████  ', ' ██    ██ ', '  ██████  '],
+          '7': [' ████████ ', '       ██ ', '      ██  ', '     ██   ', '    ██    '],
+          '8': ['  ██████  ', ' ██    ██ ', '  ██████  ', ' ██    ██ ', '  ██████  '],
+          '9': ['  ██████  ', ' ██    ██ ', '  ███████ ', '       ██ ', '  ██████  '],
+        }
+        const lines: string[] = ['', '', '', '', '']
+        for (const char of text.toUpperCase()) {
+          const chars = bannerChars[char] || bannerChars[' ']
+          for (let i = 0; i < 5; i++) {
+            lines[i] += chars[i] + '  '
+          }
+        }
+        output = lines.join('\n')
+        break
+      }
+      case 'lolcat': {
+        const text = args.join(' ') || 'RAINBOW!'
+        const colors = ['31', '33', '32', '36', '34', '35']
+        const escapeChar = String.fromCharCode(27)
+        let result = ''
+        for (let i = 0; i < text.length; i++) {
+          const color = colors[i % colors.length]
+          result += `${escapeChar}[${color}m${text[i]}${escapeChar}[0m`
+        }
+        output = result
+        break
+      }
       case 'starwars':
         output = [
           `   ____  ___  ____   ___  ____  ___  ____`,
@@ -1560,36 +1866,6 @@ Server:
 ✓ 本地存储已清理
 ✓ 临时文件已删除
 缓存清除完成!`
-        break
-      case 'sysinfo':
-        output = [
-          `═══════════════════════════════════════`,
-          `         WebLinux 系统信息工具`,
-          `═══════════════════════════════════════`,
-          ``,
-          `【系统】`,
-          `  操作系统:   WebLinuxOS ${Math.floor(Math.random() * 2 + 2)}.${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}`,
-          `  内核:       WebLinux 6.9.0-web`,
-          `  架构:       x86_64 (模拟)`,
-          `  运行时间:   ${Math.floor(Math.random() * 30 + 1)}天 ${Math.floor(Math.random() * 24)}小时`,
-          ``,
-          `【硬件】`,
-          `  CPU:        WebAssembly x86_64 @ ${Math.floor(Math.random() * 1000 + 2000)}MHz`,
-          `  内存:       ${Math.floor(Math.random() * 4000 + 4000)}MB`,
-          `  存储:       ${Math.floor(Math.random() * 500 + 50)}GB`,
-          ``,
-          `【网络】`,
-          `  IP:         192.168.1.${Math.floor(Math.random() * 200 + 50)}`,
-          `  主机名:     ${hostname}`,
-          `  DNS:        8.8.8.8`,
-          ``,
-          `【运行时】`,
-          `  Node.js:    v20.10.0`,
-          `  Python:     3.11.4`,
-          `  React:      19.2.6`,
-          ``,
-          `═══════════════════════════════════════`,
-        ].join('\n')
         break
       case 'kubectl':
         output = `kubectl: command not found (需要Kubernetes环境)`

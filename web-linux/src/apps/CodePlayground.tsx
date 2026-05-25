@@ -248,9 +248,9 @@ export default function CodePlayground() {
                 console.error('错误:', e.message);
                 console.error(e.stack);
               }
-            <\/script>
+            </script>
           </body>
-          <\/html>
+          </html>
         `;
       } else if (activeTab === 'html') {
         htmlContent = `
