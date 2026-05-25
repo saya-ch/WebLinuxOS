@@ -84,43 +84,46 @@ const Desktop = memo(function Desktop() {
       if (deltaTime >= frameInterval) {
         lastTime = currentTime - (deltaTime % frameInterval)
         
-        setParticles(prev => prev.map(p => {
-          let newX = p.x + p.vx
-          let newY = p.y + p.vy
-          let newVx = p.vx
-          let newVy = p.vy
+        setParticles(prev => {
+          const newParticles = prev.map(p => {
+            let newX = p.x + p.vx
+            let newY = p.y + p.vy
+            let newVx = p.vx
+            let newVy = p.vy
 
-          if (newX <= 0 || newX >= 100) {
-            newVx = -newVx
-            newX = Math.max(0, Math.min(100, newX))
-          }
-          if (newY <= 0 || newY >= 100) {
-            newVy = -newVy
-            newY = Math.max(0, Math.min(100, newY))
-          }
-
-          if (liveWallpaper === 'interactive') {
-            const dx = (mousePos.x - p.x) / 100
-            const dy = (mousePos.y - p.y) / 100
-            const dist = Math.sqrt(dx * dx + dy * dy)
-            if (dist < 0.3 && dist > 0) {
-              newVx -= dx * 0.01
-              newVy -= dy * 0.01
+            if (newX <= 0 || newX >= 100) {
+              newVx = -newVx
+              newX = Math.max(0, Math.min(100, newX))
             }
-          }
+            if (newY <= 0 || newY >= 100) {
+              newVy = -newVy
+              newY = Math.max(0, Math.min(100, newY))
+            }
 
-          newVx += (Math.random() - 0.5) * 0.01
-          newVy += (Math.random() - 0.5) * 0.01
+            if (liveWallpaper === 'interactive') {
+              const dx = (mousePos.x - p.x) / 100
+              const dy = (mousePos.y - p.y) / 100
+              const dist = Math.sqrt(dx * dx + dy * dy)
+              if (dist < 0.3 && dist > 0) {
+                newVx -= dx * 0.01
+                newVy -= dy * 0.01
+              }
+            }
 
-          const maxSpeed = 0.5
-          const speed = Math.sqrt(newVx * newVx + newVy * newVy)
-          if (speed > maxSpeed) {
-            newVx = (newVx / speed) * maxSpeed
-            newVy = (newVy / speed) * maxSpeed
-          }
+            newVx += (Math.random() - 0.5) * 0.01
+            newVy += (Math.random() - 0.5) * 0.01
 
-          return { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
-        }))
+            const maxSpeed = 0.5
+            const speed = Math.sqrt(newVx * newVx + newVy * newVy)
+            if (speed > maxSpeed) {
+              newVx = (newVx / speed) * maxSpeed
+              newVy = (newVy / speed) * maxSpeed
+            }
+
+            return { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
+          })
+          return newParticles
+        })
       }
       
       animationId = requestAnimationFrame(animate)

@@ -211,6 +211,9 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       display: win.minimized ? 'none' : 'flex',
       backdropFilter: 'blur(20px) saturate(180%)',
       border: win.focused ? '1px solid rgba(139, 124, 240, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
+      transform: 'translateZ(0)',
+      willChange: 'transform',
+      contain: 'layout style paint',
     }
 
     if (win.focused && !win.maximized) {

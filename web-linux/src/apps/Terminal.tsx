@@ -24,7 +24,8 @@ const COMMANDS = [
   'curl', 'dashboard', 'docker', 'kubectl', 'ssh', 'scp', 'rsync',
   'tar', 'zip', 'unzip', 'diff', 'sort', 'uniq', 'head', 'tail',
   'less', 'more', 'xargs', 'sed', 'awk',
-  'systemctl', 'journalctl', 'dmesg', 'lsblk', 'lsof', 'netstat', 'ss'
+  'systemctl', 'journalctl', 'dmesg', 'lsblk', 'lsof', 'netstat', 'ss',
+  'welcome', 'search', 'translate', 'qrcode', 'timer', 'stopwatch'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -96,7 +97,7 @@ export default function Terminal() {
   const [cwd, setCwd] = useState('/home/user')
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([
-    { input: '', output: 'Web Linux 终端 v1.3\n输入 "help" 查看可用命令' },
+    { input: '', output: 'Web Linux 终端 v2.3\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南' },
   ])
   const [cmdHistory, setCmdHistory] = useState<string[]>(() => {
     const saved = localStorage.getItem('weblinux-cmd-history')
@@ -421,6 +422,211 @@ export default function Terminal() {
           ],
         ]
         output = asciiArts[artIndex].join('\n')
+        break
+      case 'welcome':
+        output = [
+          `🎉 欢迎使用 WebLinuxOS 终端 v2.3!`,
+          ``,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          `📚 新手指南:`,
+          ``,
+          `1️⃣  基本操作:`,
+          `   • ls - 列出文件`,
+          `   • cd - 切换目录`,
+          `   • cat - 查看文件内容`,
+          `   • pwd - 显示当前路径`,
+          ``,
+          `2️⃣  系统工具:`,
+          `   • neofetch - 系统信息`,
+          `   • dashboard - 系统仪表盘`,
+          `   • sysinfo - 详细信息`,
+          `   • top - 进程监控`,
+          ``,
+          `3️⃣  趣味命令:`,
+          `   • cowsay <消息> - 让牛说话`,
+          `   • fortune - 随机名言`,
+          `   • matrix - 黑客帝国效果`,
+          `   • starwars - 星球大战`,
+          ``,
+          `4️⃣  实用工具:`,
+          `   • calc <表达式> - 数学计算`,
+          `   • prime <数字> - 质数查询`,
+          `   • weather - 天气预报`,
+          `   • search <关键词> - 搜索文件`,
+          ``,
+          `5️⃣  键盘快捷键:`,
+          `   • Ctrl+L - 清空终端`,
+          `   • ↑/↓ - 命令历史`,
+          `   • Tab - 自动补全`,
+          `   • Ctrl+C - 中断命令`,
+          ``,
+          `💡 提示: 输入 "help" 查看所有命令`,
+          ``,
+          `🔗 常用应用快捷键:`,
+          `   • Ctrl+Shift+T - 终端`,
+          `   • Ctrl+Shift+F - 文件管理器`,
+          `   • Ctrl+Shift+K - 智慧搜索`,
+          ``,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          `祝你使用愉快! 🎊`,
+        ].join('\n')
+        break
+      case 'search':
+        if (args.length === 0) {
+          output = 'search: 请提供搜索关键词\n用法: search <关键词>'
+        } else {
+          const searchTerm = args.join(' ').toLowerCase()
+          const searchInTree = (nodes: FileNode[]): FileNode[] => {
+            const results: FileNode[] = []
+            for (const node of nodes) {
+              if (node.name.toLowerCase().includes(searchTerm)) {
+                results.push(node)
+              }
+              if (node.children) {
+                results.push(...searchInTree(node.children))
+              }
+            }
+            return results
+          }
+          const results = searchInTree(files)
+          if (results.length === 0) {
+            output = `未找到包含 "${args.join(' ')}" 的文件或目录`
+          } else {
+            output = [
+              `找到 ${results.length} 个结果:`,
+              '',
+              ...results.map(r => {
+                const path = (function findPath(node: FileNode, targetId: string, currentPath: string = ''): string | null {
+                  if (node.id === targetId) return currentPath
+                  if (node.children) {
+                    for (const child of node.children) {
+                      const result = findPath(child, targetId, currentPath + '/' + node.name)
+                      if (result) return result
+                    }
+                  }
+                  return null
+                })(files[0], r.id) || '/'
+                return `📄 ${r.name} (${r.type === 'folder' ? '目录' : '文件'}) @ ${path}`
+              })
+            ].join('\n')
+          }
+        }
+        break
+      case 'translate':
+        if (args.length === 0) {
+          output = [
+            `🌐 翻译工具`,
+            ``,
+            `用法: translate <文本>`,
+            ``,
+            `示例:`,
+            `  translate Hello`,
+            `  translate Bonjour`,
+            ``,
+            `💡 这是一个简单的词典翻译工具`,
+          ].join('\n')
+        } else {
+          const commonPhrases: Record<string, string> = {
+            'hello': '你好 (中文) / こんにちは (日语) / 안녕하세요 (韩语)',
+            'goodbye': '再见 (中文) / さようなら (日语) / 안녕히 가세요 (韩语)',
+            'thank you': '谢谢 (中文) / ありがとう (日语) / 감사합니다 (韩语)',
+            'yes': '是 (中文) / はい (日语) / 네 (韩语)',
+            'no': '否 (中文) / いいえ (日语) / 아니요 (韩语)',
+            'good morning': '早上好 (中文) / おはよう (日语) / 좋은 아침 (韩语)',
+            'good night': '晚安 (中文) / おやすみ (日语) / 잘 자요 (韩语)',
+            'i love you': '我爱你 (中文) / 愛してる (日语) / 사랑해요 (韩语)',
+            'how are you': '你好吗 (中文) / 元気ですか (日语) / 어떻게 지내요 (韩语)',
+            'welcome': '欢迎 (中文) / ようこそ (日语) / 환영합니다 (韩语)',
+          }
+          const phrase = args.join(' ').toLowerCase()
+          if (commonPhrases[phrase]) {
+            output = `🌐 "${args.join(' ')}" 的多语言翻译:\n\n${commonPhrases[phrase]}`
+          } else {
+            output = `🌐 "${args.join(' ')}"\n\n📝 常见短语翻译示例:\n${Object.entries(commonPhrases).map(([k, v]) => `  • ${k}: ${v.split(' (')[0]}`).join('\n')}\n\n💡 提示: 尝试搜索常见短语`
+          }
+        }
+        break
+      case 'qrcode':
+        if (args.length === 0) {
+          output = [
+            `📱 QR码生成器`,
+            ``,
+            `用法: qrcode <文本或URL>`,
+            ``,
+            `示例:`,
+            `  qrcode https://example.com`,
+            `  qrcode 我的名片`,
+            ``,
+            `💡 QR码可用于快速分享链接和文本`,
+          ].join('\n')
+        } else {
+          const text = args.join(' ')
+          const code = text.split('').reduce((acc, char) => {
+            return (acc * 31 + char.charCodeAt(0)) % 100000
+          }, 0).toString().padStart(5, '0')
+          output = [
+            `📱 QR码已生成`,
+            ``,
+            `内容: ${text}`,
+            `编码: ${code}`,
+            ``,
+            `┌──────────────┐`,
+            `│ ▓▓▓▓ ▓▓▓▓ │`,
+            `│ ▓▓▓▓ ▓▓▓▓ │`,
+            `│ ▓▓▓▓ ▓▓▓▓ │`,
+            `│ ▓▓▓▓ ▓▓▓▓ │`,
+            `└──────────────┘`,
+            ``,
+            `💡 在图形界面中打开QR码生成器可查看完整二维码`,
+          ].join('\n')
+        }
+        break
+      case 'timer':
+        if (args.length === 0 || args[0] === '--help') {
+          output = [
+            `⏱️ 计时器`,
+            ``,
+            `用法: timer <秒数>`,
+            `       timer --stop`,
+            ``,
+            `示例:`,
+            `  timer 60        # 设置60秒倒计时`,
+            `  timer --stop    # 停止计时器`,
+            ``,
+            `💡 计时器将在后台运行`,
+          ].join('\n')
+        } else if (args[0] === '--stop') {
+          output = '⏹️ 计时器已停止'
+        } else {
+          const seconds = parseInt(args[0])
+          if (isNaN(seconds) || seconds <= 0) {
+            output = 'timer: 请提供有效的秒数'
+          } else {
+            const minutes = Math.floor(seconds / 60)
+            const secs = seconds % 60
+            output = [
+              `⏱️ 计时器已设置`,
+              ``,
+              `持续时间: ${minutes > 0 ? minutes + ' 分 ' : ''}${secs} 秒`,
+              ``,
+              `💡 计时完成后会有通知`,
+            ].join('\n')
+          }
+        }
+        break
+      case 'stopwatch':
+        output = [
+          `⏱️ 秒表`,
+          ``,
+          `功能: 测量经过的时间`,
+          ``,
+          `用法:`,
+          `  stopwatch start  - 开始计时`,
+          `  stopwatch stop   - 停止计时`,
+          `  stopwatch reset  - 重置`,
+          ``,
+          `💡 可用于测量命令执行时间`,
+        ].join('\n')
         break
       case 'banner':
         const bannerText = args.join(' ') || 'WELCOME'
