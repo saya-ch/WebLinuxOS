@@ -299,14 +299,14 @@ export default function Terminal() {
         output = [
           `            .-/+oossssoo+/-.               ${username}@${hostname}`,
           `        \`:+ssssssssssssssssss+:\`           -------------`,
-          `      -+ssssssssssssssssssssssso+-         OS: Web Linux 2.3.0`,
-          `    /osssssssssssssssssssssssssso/        Kernel: 6.10.0-web`,
+          `      -+ssssssssssssssssssssssso+-         OS: WebLinuxOS 2.8.0`,
+          `    /osssssssssssssssssssssssssso/        Kernel: 6.11.0-web`,
           `  /ossssssssssssssssssssssssssssso/       Shell: bash 5.2.21`,
-          ` :sssssssssssssssssssssssssssssssss:      DE: WebDE 2.3`,
+          ` :sssssssssssssssssssssssssssssssss:      DE: WebDE 2.8`,
           ` ossssssssssssssssssssssssssssssssso      Theme: ${theme}`,
           ` ossssssssssssssssssssssssssssssssso      Uptime: ${Math.floor(Math.random() * 24)} hours`,
           ` :sssssssssssssssssssssssssssssssss:      Packages: ${Math.floor(Math.random() * 500 + 100)}`,
-          `  /ossssssssssssssssssssssssssssso/       Memory: ${Math.floor(Math.random() * 4096 + 1024)}MB / 8192MB`,
+          `  /ossssssssssssssssssssssssssssso/       Memory: ${Math.floor(Math.random() * 4096 + 1024)}MB / 16384MB`,
           `    /osssssssssssssssssssssssssso/`,
           `      -+ssssssssssssssssssssssso+-`,
           `        \`:+ssssssssssssssssss+:\``,
@@ -1556,7 +1556,7 @@ Hello from Node.js!`
               setPyodide(pyodideInstance)
               await pyodideInstance.runPythonAsync(code)
             } catch (error) {
-              setHistory((prev) => [...prev.slice(0, -1), { input: trimmed, output: `\u001b[31mPython 运行时加载失败: ${error}\u001b[0m\n> ${code}\n${eval(code)}` }])
+              setHistory((prev) => [...prev.slice(0, -1), { input: trimmed, output: `\u001b[31mPython 运行时加载失败: ${error}\u001b[0m\n> ${code}\n(无法在浏览器中直接执行非 Python 代码)` }])
             }
             return
           }
