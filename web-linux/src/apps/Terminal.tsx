@@ -313,7 +313,7 @@ export default function Terminal() {
           `            .-/+oossssoo+/-.`,
         ].join('\n')
         break
-      case ' cowsay':
+      case 'cowsay':
         output = [
           ` _______________________`,
           `< ${args.join(' ') || 'Hello World!'} >`,
@@ -347,18 +347,6 @@ export default function Terminal() {
         ].join('\n')
         break
       }
-      case 'cowsay':
-        output = [
-          ` _______________________`,
-          `< ${args.join(' ') || 'Hello World!'} >`,
-          ` -----------------------`,
-          `        \\   ^__^`,
-          `         \\  (oo)\\_______`,
-          `            (__)\\       )\\/\\`,
-          `                ||----w |`,
-          `                ||     ||`,
-        ].join('\n')
-        break
       case 'cowthink':
         output = [
           ` _______________`,
@@ -1269,28 +1257,6 @@ export default function Terminal() {
         } else {
           output = '用法: sync [选项]\n  --export   导出数据到本地\n  --import   从文件导入数据\n  --status   查看同步状态'
         }
-        break
-      }
-      case 'clear-cache': {
-        let cleared = 0
-        const keysToCheck = ['weblinux-cmd-history', 'weblinux-aliases']
-        keysToCheck.forEach(key => {
-          if (localStorage.getItem(key)) {
-            cleared++
-          }
-        })
-        localStorage.removeItem('weblinux-cmd-history')
-        localStorage.removeItem('weblinux-aliases')
-        output = [
-          '🧹 缓存清理完成!',
-          `━━━━━━━━━━━━━━━━━━━━━`,
-          `已清理项目: ${cleared + 1} 个`,
-          `  • 命令历史 ✓`,
-          `  • 命令别名 ✓`,
-          `  • 临时数据 ✓`,
-          '━━━━━━━━━━━━━━━━━━━━━',
-          '💡 提示: 定期清理缓存可以提升性能',
-        ].join('\n')
         break
       }
       case 'which': {
