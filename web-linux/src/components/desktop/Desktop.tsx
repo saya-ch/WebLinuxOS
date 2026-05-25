@@ -295,86 +295,144 @@ const Desktop = memo(function Desktop() {
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          background: `
+            radial-gradient(ellipse at 20% 20%, rgba(139, 124, 240, 0.2) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(0, 206, 201, 0.15) 0%, transparent 50%),
+            linear-gradient(135deg, #0a0a18 0%, #161630 40%, #0f0f23 70%, #161630 100%)
+          `,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 99999,
-          animation: 'fadeOut 0.5s ease-out 1.5s forwards',
+          animation: 'fadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) 1.8s forwards',
         }}
       >
+        {/* Background orbs */}
+        <div style={{
+          position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          <div style={{
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(139, 124, 240, 0.15) 0%, transparent 70%)',
+            left: '10%',
+            top: '20%',
+            animation: 'floatOrb 8s ease-in-out infinite',
+            filter: 'blur(40px)'
+          }} />
+          <div style={{
+            position: 'absolute',
+            width: '250px',
+            height: '250px',
+            background: 'radial-gradient(circle, rgba(0, 206, 201, 0.12) 0%, transparent 70%)',
+            right: '15%',
+            bottom: '25%',
+            animation: 'floatOrb 10s ease-in-out infinite reverse',
+            filter: 'blur(35px)'
+          }} />
+        </div>
+        
         <div
           style={{
-            fontSize: '72px',
-            marginBottom: '24px',
-            animation: 'bounceIn 0.6s ease-out',
+            fontSize: '96px',
+            marginBottom: '28px',
+            animation: 'logoFloat 3s ease-in-out infinite',
+            filter: 'drop-shadow(0 0 30px rgba(139, 124, 240, 0.5))',
           }}
         >
           🐧
         </div>
         <div
           style={{
-            fontSize: '32px',
-            fontWeight: '600',
-            color: '#e0e0e8',
-            marginBottom: '8px',
-            animation: 'slideUp 0.6s ease-out 0.2s both',
+            fontSize: '42px',
+            fontWeight: '700',
+            background: 'linear-gradient(135deg, #e0e0e8 0%, #a29bfe 50%, #8b7cf0 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '12px',
+            animation: 'textGlow 2s ease-in-out infinite',
+            textShadow: '0 0 40px rgba(139, 124, 240, 0.3)',
           }}
         >
           WebLinuxOS
         </div>
         <div
           style={{
-            fontSize: '14px',
-            color: '#9090a4',
-            animation: 'fadeIn 0.6s ease-out 0.4s both',
+            fontSize: '16px',
+            color: '#a0a0c8',
+            fontWeight: '500',
+            animation: 'fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both',
           }}
         >
           正在启动桌面环境...
         </div>
         <div
           style={{
-            width: '200px',
-            height: '4px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '2px',
-            marginTop: '24px',
+            width: '240px',
+            height: '6px',
+            background: 'rgba(255, 255, 255, 0.08)',
+            borderRadius: '3px',
+            marginTop: '28px',
             overflow: 'hidden',
-            animation: 'slideUp 0.6s ease-out 0.6s both',
+            animation: 'fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both',
+            boxShadow: '0 0 20px rgba(139, 124, 240, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
           }}
         >
           <div
             style={{
               height: '100%',
-              background: 'linear-gradient(90deg, #6c5ce7, #a29bfe)',
-              borderRadius: '2px',
-              animation: 'loadingBar 1.5s ease-out forwards',
+              background: 'linear-gradient(90deg, transparent, #6c5ce7, #a29bfe, transparent)',
+              backgroundSize: '200% 100%',
+              borderRadius: '3px',
+              animation: 'loadingShimmer 1.8s ease-in-out forwards',
             }}
           />
         </div>
         <style>{`
-          @keyframes bounceIn {
-            0% { opacity: 0; transform: scale(0.3); }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1); }
+          @keyframes logoFloat {
+            0%, 100% { 
+              transform: translateY(0) scale(1); 
+              filter: drop-shadow(0 0 30px rgba(139, 124, 240, 0.5));
+            }
+            50% { 
+              transform: translateY(-8px) scale(1.05); 
+              filter: drop-shadow(0 0 50px rgba(139, 124, 240, 0.7));
+            }
           }
-          @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+          @keyframes textGlow {
+            0%, 100% { 
+              filter: drop-shadow(0 0 40px rgba(139, 124, 240, 0.3)); 
+            }
+            50% { 
+              filter: drop-shadow(0 0 60px rgba(139, 124, 240, 0.5)); 
+            }
           }
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+          @keyframes fadeUp {
+            from { 
+              opacity: 0; 
+              transform: translateY(30px); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0); 
+            }
           }
           @keyframes fadeOut {
             from { opacity: 1; }
             to { opacity: 0; visibility: hidden; }
           }
-          @keyframes loadingBar {
-            from { width: 0%; }
-            to { width: 100%; }
+          @keyframes loadingShimmer {
+            0% { 
+              background-position: -200% 0; 
+              width: 0%;
+            }
+            30% { width: 60%; }
+            100% { 
+              background-position: 200% 0; 
+              width: 100%;
+            }
           }
         `}</style>
       </div>
@@ -390,21 +448,88 @@ const Desktop = memo(function Desktop() {
       style={{
         ...wallpaperStyle,
         background: wallpaper ? (wallpaper.startsWith('linear-gradient') ? wallpaper : undefined) : 
-          'radial-gradient(ellipse at 10% 20%, rgba(139, 124, 240, 0.15) 0%, transparent 50%), ' +
-          'radial-gradient(ellipse at 90% 80%, rgba(0, 206, 201, 0.12) 0%, transparent 50%), ' +
-          'linear-gradient(135deg, #0f0f23 0%, #1a1a35 50%, #0f0f23 100%)'
+          'radial-gradient(ellipse at 10% 20%, rgba(139, 124, 240, 0.3) 0%, transparent 50%), ' +
+          'radial-gradient(ellipse at 90% 80%, rgba(0, 206, 201, 0.25) 0%, transparent 50%), ' +
+          'radial-gradient(ellipse at 50% 50%, rgba(255, 107, 107, 0.12) 0%, transparent 60%), ' +
+          'linear-gradient(135deg, #0a0a18 0%, #161630 30%, #0f0f23 70%, #161630 100%)'
       }}
       role="application"
       aria-label="桌面环境"
       tabIndex={-1}
     >
-      {/* Animated background overlay */}
+      {/* Enhanced animated background layers */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.3) 100%)',
-        pointerEvents: 'none'
+        background: `
+          radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.25) 100%),
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 124, 240, 0.015) 2px,
+            rgba(139, 124, 240, 0.015) 4px
+          )
+        `,
+        pointerEvents: 'none',
+        animation: 'backgroundShift 20s ease-in-out infinite'
       }} />
+      
+      {/* Aurora effect overlay */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: `
+          linear-gradient(120deg, 
+            transparent 30%, 
+            rgba(139, 124, 240, 0.03) 40%, 
+            transparent 50%,
+            rgba(0, 206, 201, 0.02) 60%,
+            transparent 70%
+          )
+        `,
+        pointerEvents: 'none',
+        animation: 'auroraGlow 15s ease-in-out infinite'
+      }} />
+      
+      {/* Floating gradient orbs */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        pointerEvents: 'none'
+      }}>
+        <div style={{
+          position: 'absolute',
+          width: '400px',
+          height: '400px',
+          background: 'radial-gradient(circle, rgba(139, 124, 240, 0.08) 0%, transparent 70%)',
+          left: '10%',
+          top: '20%',
+          animation: 'floatOrb 20s ease-in-out infinite',
+          filter: 'blur(40px)'
+        }} />
+        <div style={{
+          position: 'absolute',
+          width: '300px',
+          height: '300px',
+          background: 'radial-gradient(circle, rgba(0, 206, 201, 0.06) 0%, transparent 70%)',
+          right: '15%',
+          bottom: '30%',
+          animation: 'floatOrb 25s ease-in-out infinite reverse',
+          filter: 'blur(35px)'
+        }} />
+        <div style={{
+          position: 'absolute',
+          width: '350px',
+          height: '350px',
+          background: 'radial-gradient(circle, rgba(255, 107, 107, 0.05) 0%, transparent 70%)',
+          left: '50%',
+          top: '50%',
+          animation: 'floatOrb 18s ease-in-out infinite',
+          filter: 'blur(30px)'
+        }} />
+      </div>
       
       {/* Live wallpaper particles */}
       {liveWallpaperEnabled && (
@@ -420,9 +545,10 @@ const Desktop = memo(function Desktop() {
                 height: p.size,
                 borderRadius: '50%',
                 background: p.color,
-                boxShadow: `0 0 ${p.size * 4}px ${p.color}`,
+                boxShadow: `0 0 ${p.size * 6}px ${p.color}, 0 0 ${p.size * 12}px ${p.color}`,
                 pointerEvents: 'none',
-                transition: 'left 0.02s linear, top 0.02s linear'
+                transition: 'left 0.02s linear, top 0.02s linear',
+                animation: 'particlePulse 2s ease-in-out infinite'
               }}
             />
           ))}
@@ -443,6 +569,7 @@ const Desktop = memo(function Desktop() {
                     y2={`${p2.y}%`}
                     stroke={`rgba(139, 124, 240, ${conn.opacity})`}
                     strokeWidth={1}
+                    style={{ filter: 'blur(0.5px)' }}
                   />
                 )
               })}
