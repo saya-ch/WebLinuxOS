@@ -179,18 +179,32 @@ export default function FileManager() {
     const fileList = e.target.files
     if (!fileList) return
     
-    Array.from(fileList).forEach(file => {
+    Array.from(fileList).forEach((file, index) => {
       const reader = new FileReader()
       reader.onload = (event) => {
         const content = event.target?.result as string
-        const newFileId = `file-${Date.now()}-${Math.random()}`
-        addFile(currentNodeId, file.name, 'file')
-        // 先添加文件，然后更新内容
+        const fileName = file.name
+        
+        // 添加文件
+        addFile(currentNodeId, fileName, 'file')
+        
+        // 等待文件添加后，找到新添加的文件并更新内容
         setTimeout(() => {
-          // 这里我们需要找到新创建的文件ID，这里做简化处理
-          // 实际项目中应该有更好的实现方式
-          updateFileContent(newFileId, content)
-        }, 100)
+          // 获取当前节点的最新子节点列表
+          const currentFiles = useStore.getState().files
+          const updatedCurrentNode = findNodeById(currentFiles, currentNodeId)
+          
+          if (updatedCurrentNode?.children) {
+            // 找到刚添加的文件（通过名称匹配）
+            const newFile = [...updatedCurrentNode.children]
+              .reverse() // 反转，找到最新添加的
+              .find(c => c.name === fileName)
+            
+            if (newFile) {
+              updateFileContent(newFile.id, content)
+            }
+          }
+        }, 50 + index * 10) // 错开执行，避免冲突
       }
       reader.readAsText(file)
     })
@@ -389,26 +403,38 @@ export default function FileManager() {
     const items = e.dataTransfer.items
     if (!items) return
     
-    Array.from(items).forEach(item => {
+    Array.from(items).forEach((item, index) => {
       if (item.kind === 'file') {
         const file = item.getAsFile()
         if (file) {
           const reader = new FileReader()
           reader.onload = (event) => {
             const content = event.target?.result as string
-            addFile(currentNodeId, file.name, 'file')
+            const fileName = file.name
+            
+            addFile(currentNodeId, fileName, 'file')
+            
             setTimeout(() => {
-              const newFile = children.find(c => c.name === file.name)
-              if (newFile) {
-                updateFileContent(newFile.id, content)
+              // 获取最新的文件状态
+              const currentFiles = useStore.getState().files
+              const updatedCurrentNode = findNodeById(currentFiles, currentNodeId)
+              
+              if (updatedCurrentNode?.children) {
+                const newFile = [...updatedCurrentNode.children]
+                  .reverse()
+                  .find(c => c.name === fileName)
+                
+                if (newFile) {
+                  updateFileContent(newFile.id, content)
+                }
               }
-            }, 100)
+            }, 50 + index * 10)
           }
           reader.readAsText(file)
         }
       }
     })
-  }, [currentNodeId, addFile, updateFileContent, children])
+  }, [currentNodeId, addFile, updateFileContent])
 
   function handleRenameStart(fileId: string) {
     const node = findNodeById(files, fileId)
