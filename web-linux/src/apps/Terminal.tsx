@@ -30,7 +30,7 @@ const COMMANDS = [
   'disk-usage', 'process-list', 'network-stats', 'system-info', 'memory-info', 'cpu-info',
   'version', 'credits', 'about', 'todo', 'notes', 'encrypt', 'decrypt',
   'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
-  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat'
+  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -549,7 +549,7 @@ export default function Terminal() {
         } else {
           try {
             output = atob(encoded)
-          } catch (e) {
+          } catch {
             output = `unbase64: 无效的 Base64 编码`
           }
         }
@@ -1089,28 +1089,6 @@ export default function Terminal() {
           `💡 可用于测量命令执行时间`,
         ].join('\n')
         break
-      case 'banner': {
-        const bannerText = args.join(' ') || 'WELCOME'
-        const bannerWidth = bannerText.length * 6 + 4
-        output = [
-          `*${'*'.repeat(bannerWidth - 2)}*`,
-          `*${' '.repeat(bannerWidth - 2)}*`,
-          `*  ${bannerText.toUpperCase().split('').join('  ')}  *`,
-          `*${' '.repeat(bannerWidth - 2)}*`,
-          `*${'*'.repeat(bannerWidth - 2)}*`,
-        ].join('\n')
-        break
-      }
-      case 'lolcat': {
-        const escapeChar = String.fromCharCode(27)
-        const colors = ['31', '33', '32', '36', '34', '35']
-        const lines = (args.join(' ') || 'Rainbow Power!').split('')
-        output = lines.map((char, i) => {
-          const color = colors[i % colors.length]
-          return `${escapeChar}[${color}m${char}${escapeChar}[0m`
-        }).join('')
-        break
-      }
       case 'bacon': {
         const baconText = (args.join(' ') || 'BACON').split('').map(c => {
           const binary = c.charCodeAt(0).toString(2).padStart(8, '0')
@@ -1119,137 +1097,6 @@ export default function Terminal() {
         output = baconText
         break
       }
-      case 'rev':
-        output = (args.join(' ') || 'Hello World').split('').reverse().join('')
-        break
-      case 'base64':
-        if (args.length > 0) {
-          try {
-            output = btoa(args.join(' '))
-          } catch {
-            output = 'base64: encoding error'
-          }
-        } else {
-          output = 'base64: 请提供要编码的文本'
-        }
-        break
-      case 'unbase64':
-        if (args.length > 0) {
-          try {
-            output = atob(args.join(' '))
-          } catch {
-            output = 'base64: decoding error'
-          }
-        } else {
-          output = 'base64: 请提供要解码的文本'
-        }
-        break
-      case 'hash': {
-        if (args.length > 0) {
-          const text = args.join(' ')
-          let hash = 0
-          for (let i = 0; i < text.length; i++) {
-            const char = text.charCodeAt(i)
-            hash = ((hash << 5) - hash) + char
-            hash = hash & hash
-          }
-          output = [
-            `文本: ${text}`,
-            `MD5: ${Math.abs(hash).toString(16).padStart(8, '0')}deadbeef`,
-            `SHA256: ${Math.abs(hash).toString(16).padStart(8, '0')}beefdead${Math.abs(hash * 2).toString(16).padStart(8, '0')}`,
-          ].join('\n')
-        } else {
-          output = 'hash: 请提供要哈希的文本'
-        }
-        break
-      }
-      case 'prime': {
-        const max = parseInt(args[0]) || 100
-        const isPrime = (n: number) => {
-          if (n < 2) return false
-          for (let i = 2; i <= Math.sqrt(n); i++) {
-            if (n % i === 0) return false
-          }
-          return true
-        }
-        const primes = []
-        for (let i = 2; i <= max; i++) {
-          if (isPrime(i)) primes.push(i)
-        }
-        output = `质数 (2-${max}): ${primes.join(', ')}\n共 ${primes.length} 个质数`
-        break
-      }
-      case 'factor': {
-        const num = parseInt(args[0]) || 42
-        const factors: number[] = []
-        let n = num
-        for (let i = 2; i <= n; i++) {
-          while (n % i === 0) {
-            factors.push(i)
-            n /= i
-          }
-        }
-        output = `${num} = ${factors.join(' × ')}`
-        break
-      }
-      case 'calc': {
-        if (args.length > 0) {
-          try {
-            const expr = args.join('')
-            const result = Function('"use strict"; return (' + expr + ')')()
-            output = `${expr} = ${result}`
-          } catch {
-            output = 'calc: 表达式错误'
-          }
-        } else {
-          output = 'calc: 请提供数学表达式'
-        }
-        break
-      }
-      case 'roman': {
-        const toRoman = (num: number): string => {
-          const romanNumerals: [string, number][] = [
-            ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400],
-            ['C', 100], ['XC', 90], ['L', 50], ['XL', 40],
-            ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1]
-          ]
-          let result = ''
-          let remaining = num
-          for (const [roman, value] of romanNumerals) {
-            while (remaining >= value) {
-              result += roman
-              remaining -= value
-            }
-          }
-          return result
-        }
-        const numToConvert = parseInt(args[0]) || 2024
-        output = `${numToConvert} = ${toRoman(numToConvert)}`
-        break
-      }
-      case 'fortune': {
-        const fortunes = [
-          '人生苦短，我用Python。',
-          '代码是写给人读的，顺便让机器运行。',
-          'Talk is cheap. Show me the code.',
-          '程序员的三大谎言：我明天就改，这个bug很简单。',
-          '不要评论你的代码，要让它自己说话。',
-          '最好的代码就是没有代码。',
-        ]
-        output = fortunes[Math.floor(Math.random() * fortunes.length)]
-        break
-      }
-      case 'sl':
-        output = [
-          `     ====        ________                ___________`,
-          `     ||  |      /        \\              /           \\`,
-          `     ||  |     /  /~~\\~~\\  \\            /    ______/`,
-          `   \\\\____/     |  |      |  \\            |   |          `,
-          `    |    |     \\  \\__/  /  /              \\   \\`,
-          `    |    |      \\       /  /                \\   \\`,
-          `    ====         \\______/  /                  \\___\\`,
-        ].join('\n')
-        break
       case 'ls': {
         const target = args[0] ? resolvePath(cwd, args[0]) : cwd
         const showAll = args.includes('-a') || args.includes('-l')
