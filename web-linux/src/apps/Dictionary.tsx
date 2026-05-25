@@ -1,19 +1,33 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 
+interface Phonetic {
+  text?: string
+  audio?: string
+}
+
+interface Meaning {
+  partOfSpeech: string
+  definitions: Array<{
+    definition: string
+    example?: string
+    synonyms?: string[]
+    antonyms?: string[]
+  }>
+}
+
+interface DictEntry {
+  word: string
+  phonetic?: string
+  phonetics?: Phonetic[]
+  meanings: Meaning[]
+}
+
 interface DictResult {
   word: string
   phonetic?: string
   audio?: string
-  meanings: Array<{
-    partOfSpeech: string
-    definitions: Array<{
-      definition: string
-      example?: string
-      synonyms?: string[]
-      antonyms?: string[]
-    }>
-  }>
+  meanings: Meaning[]
 }
 
 export default function Dictionary() {
@@ -59,16 +73,16 @@ export default function Dictionary() {
         throw new Error('查询失败')
       }
 
-      const data = await response.json()
+      const data: DictEntry[] = await response.json()
       const entry = data[0]
 
       const result: DictResult = {
         word: entry.word,
-        phonetic: entry.phonetic || entry.phonetics?.find((p: any) => p.text)?.text,
-        audio: entry.phonetics?.find((p: any) => p.audio)?.audio,
-        meanings: entry.meanings.map((m: any) => ({
+        phonetic: entry.phonetic || entry.phonetics?.find((p) => p.text)?.text,
+        audio: entry.phonetics?.find((p) => p.audio)?.audio,
+        meanings: entry.meanings.map((m) => ({
           partOfSpeech: m.partOfSpeech,
-          definitions: m.definitions.slice(0, 3).map((d: any) => ({
+          definitions: m.definitions.slice(0, 3).map((d) => ({
             definition: d.definition,
             example: d.example,
             synonyms: d.synonyms?.slice(0, 5),
@@ -113,17 +127,17 @@ export default function Dictionary() {
       fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
         .then(res => {
           if (!res.ok) throw new Error('查询失败')
-          return res.json()
+          return res.json() as Promise<DictEntry[]>
         })
         .then(data => {
           const entry = data[0]
           const result: DictResult = {
             word: entry.word,
-            phonetic: entry.phonetic || entry.phonetics?.find((p: any) => p.text)?.text,
-            audio: entry.phonetics?.find((p: any) => p.audio)?.audio,
-            meanings: entry.meanings.map((m: any) => ({
+            phonetic: entry.phonetic || entry.phonetics?.find((p) => p.text)?.text,
+            audio: entry.phonetics?.find((p) => p.audio)?.audio,
+            meanings: entry.meanings.map((m) => ({
               partOfSpeech: m.partOfSpeech,
-              definitions: m.definitions.slice(0, 3).map((d: any) => ({
+              definitions: m.definitions.slice(0, 3).map((d) => ({
                 definition: d.definition,
                 example: d.example,
                 synonyms: d.synonyms?.slice(0, 5),

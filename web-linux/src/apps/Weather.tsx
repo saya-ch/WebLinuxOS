@@ -24,6 +24,10 @@ interface GeocodingResult {
   longitude: number
 }
 
+interface GeocodingResponse {
+  results?: GeocodingResult[]
+}
+
 const weatherIcons: Record<number, { icon: string; desc: string }> = {
   0: { icon: '☀️', desc: '晴' },
   1: { icon: '🌤️', desc: '大部晴朗' },
@@ -135,9 +139,9 @@ export default function Weather() {
       const res = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=zh&format=json`
       )
-      const data = await res.json()
+      const data: GeocodingResponse = await res.json()
       setSearchResults(
-        (data.results || []).map((r: any) => ({
+        (data.results || []).map((r) => ({
           name: r.name,
           country: r.country || '',
           latitude: r.latitude,
