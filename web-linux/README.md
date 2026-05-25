@@ -1,54 +1,201 @@
-# WebLinuxOS 🐧
+# 🐧 WebLinuxOS 3.0
 
-> 完全运行在浏览器中的功能完整的 Linux 桌面操作系统模拟器
+> 🚀 **一个完全运行在浏览器中的革命性 Linux 桌面环境** - 让Web体验超越原生应用
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?logo=react)](https://react.dev/)
-[![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178C6.svg?logo=typescript)](https://www.typescriptlang.org/)
-[![Vite 8](https://img.shields.io/badge/Vite-8-646CFF.svg?logo=vite)](https://vite.dev/)
-[![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-222222.svg?logo=github)](https://pages.github.com/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Star](https://img.shields.io/github/stars/saya-ch/WebLinuxOS.svg)](https://github.com/saya-ch/WebLinuxOS/stargazers)
-[![Fork](https://img.shields.io/github/forks/saya-ch/WebLinuxOS.svg)](https://github.com/saya-ch/WebLinuxOS/network/members)
+<p align="center">
+  <a href="https://saya-ch.github.io/WebLinuxOS/">
+    <img src="https://img.shields.io/badge/在线演示-🚀-green?style=for-the-badge" alt="Live Demo">
+  </a>
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/TypeScript-6-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
+</p>
 
-**[🚀 在线体验](https://saya-ch.github.io/WebLinuxOS/)**
+<p align="center">
+  <img src="https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge" alt="Stars">
+  <img src="https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=for-the-badge" alt="Forks">
+  <img src="https://img.shields.io/github/issues/saya-ch/WebLinuxOS?style=for-the-badge" alt="Issues">
+</p>
 
 ---
 
-## 🖼️ 截图预览
+## ✨ 为什么选择 WebLinuxOS 3.0？
 
-![WebLinuxOS Desktop](https://github.com/saya-ch/WebLinuxOS/assets/100000000/featured-image)
+🌟 **重新定义 Web 桌面体验**
+
+在浏览器中体验完整的 Linux 桌面环境，无需安装任何软件，随时随地访问你的个人工作空间。
+
+### 🎯 核心优势
+
+| 特性 | 描述 |
+|------|------|
+| ⚡ **零门槛** | 无需安装，开箱即用，浏览器即可运行 |
+| 🎨 **精美界面** | 玻璃态设计 + 流畅动画 + 暗色/亮色主题 |
+| 🔧 **功能完整** | 64+ 应用，满足日常工作和生活需求 |
+| 💾 **数据持久化** | 本地存储 + 云同步，数据永不丢失 |
+| 📱 **响应式设计** | 完美适配桌面、平板、手机 |
+| 🚀 **极致性能** | 智能粒子动画 + GPU 加速 + 30FPS 流畅体验 |
+
+### 🎯 适合人群
+
+- **开发者** - 快速启动临时开发环境，随时编写和测试代码
+- **学生** - 在线学习和笔记整理，轻松管理学习资料
+- **设计师** - 创意草图和协作，实时预览设计效果
+- **普通用户** - 日常文档处理和浏览，体验 Linux 桌面
+- **极客** - 探索 Web 技术的无限可能
 
 ---
 
-## ✨ 核心特性
+## 🚀 核心亮点
 
 ### 🖥️ 完整的桌面体验
-- **多窗口管理** - 支持拖拽、调整大小、最小化、最大化、焦点管理及 z-index 堆叠
-- **虚拟文件系统** - 分层文件树，支持文件创建、删除、复制、移动、重命名
-- **高级终端模拟器** - 60+ 内置命令，支持真正的 Python 运行时（Pyodide）
-- **多桌面支持** - 最多 9 个虚拟桌面，轻松切换
-- **玻璃态 UI** - 半透明面板、流畅动画和精致微交互
 
-### 📁 增强的文件管理
-- **拖拽上传** - 从本地拖拽文件到文件管理器
-- **批量操作** - 支持 Ctrl+点击多选、Shift+点击范围选择、Ctrl+A 全选
-- **文件预览** - 支持图片和文本文件预览
-- **搜索功能** - 快速搜索文件系统
+- **现代化窗口管理** - 拖拽、调整大小、最小化、最大化和焦点管理
+- **虚拟文件系统** - 分层文件树，支持通过 CustomEvent 进行跨应用文件共享
+- **高级启动器** - 快速搜索和启动应用程序，支持分类浏览
+- **多桌面支持** - 最多4个虚拟桌面，轻松切换和管理工作空间
+- **快速设置面板** - 一键访问 Wi-Fi、蓝牙、音量、亮度和主题设置
+- **流畅动画** - 80+ CSS 动画效果，窗口打开/关闭/最小化动画流畅自然
+- **玻璃态设计** - 半透明面板和精致的微交互效果
 
-### 🎨 丰富的应用程序生态
-- **60 个预装应用** 涵盖系统工具、办公软件、互联网工具、多媒体编辑、开发工具和游戏
-- **代码编辑器** - 语法高亮 + 浏览器内 Python 执行
-- **Web 浏览器** - 基于 iframe 的真实网页加载
-- **音乐播放器** - Web Audio API 音频播放
-- **实时系统监控** - CPU、内存、网络实时图表
+### 💻 强大的终端模拟器
 
-### 🔧 技术亮点
-- **零后端** - 完全客户端运行，无需服务器
-- **响应式设计** - 适配各种屏幕尺寸
-- **无障碍支持** - 完整的 ARIA 标签和键盘导航
-- **深色/浅色主题** - 随时切换
-- **60+ 终端命令** - 包括趣味 ASCII 艺术工具
+- **60+ 内置命令** - 完整的命令行工具集，涵盖系统管理、文件操作、网络工具
+- **趣味命令** - cowsay、fortune、sl、starwars、asciiart 等 ASCII 艺术命令
+- **Python 运行时** - 浏览器内实时执行 Python 代码（由 Pyodide 提供）
+- **语法高亮** - 代码编辑器支持多语言语法高亮
+- **实时执行** - JavaScript 和 Python 代码即时运行和调试
+- **智能补全** - Tab 键自动补全命令和文件名
+- **命令历史** - 上下箭头快速浏览历史命令
+
+**新增命令：**
+- `tip` - 显示随机技术提示
+- `joke` - 显示程序员笑话
+- `quote` - 显示编程名言
+- `color` - 生成随机颜色代码
+- `sysinfo` - 详细系统信息
+- `sync` - 数据同步和备份
+
+### 🎨 精美用户界面
+
+- **玻璃态设计** - 半透明面板、流畅动画和精致微交互
+- **暗色/亮色主题** - 一键切换的现代配色方案
+- **80+ CSS 动画** - 打造沉浸式体验
+- **响应式布局** - 完美适配各种屏幕尺寸
+- **GPU 加速** - 优化的渲染性能
+
+### 📱 68个预装应用程序
+
+#### 🛠️ 系统工具 (20个)
+| 应用 | 描述 | 亮点功能 |
+|------|------|----------|
+| 📁 文件管理器 | 浏览和管理虚拟文件系统 | 拖拽排序、右键菜单、文件预览 |
+| 💻 终端 | 60+命令 + Python运行时 | 语法高亮、命令补全、历史记录 |
+| 📊 系统监视器 | 实时CPU、内存、网络监控图表 | 动态图表、进程管理、性能分析 |
+| ⚙️ 设置 | 主题、壁纸、系统配置 | 快速设置面板、自定义选项 |
+| 📦 软件中心 | 浏览和安装应用 | 分类浏览、搜索功能、应用详情 |
+| 🔄 软件包管理器 | 系统包和依赖管理 | 包列表、版本信息、依赖关系 |
+| 💾 磁盘使用分析器 | 可视化磁盘空间使用 | 饼图展示、大文件检测 |
+| 🖥️ 进程监视器 | 查看和管理运行中的进程 | 实时刷新、进程树、优先级调整 |
+| 🌐 网络监视器 | 监控网络流量和连接 | 流量图表、连接列表、端口信息 |
+| 🛡️ 防火墙 | 防火墙规则和安全策略配置 | 入站/出站规则、端口管理 |
+
+#### 📝 办公工具 (12个)
+| 应用 | 描述 | 亮点功能 |
+|------|------|----------|
+| 📝 文本编辑器 | 全功能文本编辑，支持语法高亮 | 代码高亮、行号显示、自动保存 |
+| 📋 记事本 | 轻量级纯文本编辑器 | 简洁界面、快速启动 |
+| 📅 日历 | 日期选择器和事件管理 | 月视图、周视图、事件提醒 |
+| 📄 PDF 查看器 | PDF 文档查看 | 缩放、翻页、页面跳转 |
+| 📊 电子表格 | 创建和编辑表格 | 公式计算、图表生成、数据导入 |
+| 🎭 演示文稿 | 创建和展示幻灯片 | 多种主题、动画效果、演讲者模式 |
+| 👥 通讯录 | 联系人信息管理 | 搜索、分类、批量操作 |
+| 📓 笔记 | 富文本笔记 | Markdown 支持、标签分类 |
+| ✅ 待办事项 | 任务跟踪和管理 | 优先级、截止日期、完成状态 |
+| 📖 字典 | 词条定义和查询 | 多种语言、发音功能、例句 |
+| 🌐 翻译器 | 多语言文本翻译 | 实时翻译、语言切换 |
+| 📑 文档处理套件 | 综合办公工具集 | 集成多种文档处理功能 |
+
+#### 🌐 互联网应用 (5个)
+| 应用 | 描述 | 亮点功能 |
+|------|------|----------|
+| 🌐 浏览器 | 基于 iframe 的真实网页加载 | 地址栏、历史记录、书签 |
+| 📧 邮件客户端 | 邮件撰写和管理 | 收件箱、发件箱、草稿箱 |
+| 💬 即时通讯 | 实时聊天界面 | 表情、文件传输、消息提醒 |
+| 🗺️ 地图 | 交互式地图查看器 | 缩放、标记、路线规划 |
+| 🔍 智慧搜索 | 全局智能搜索 | 应用、文件、命令一网打尽 |
+
+#### 🎵 多媒体工具 (9个)
+| 应用 | 描述 | 亮点功能 |
+|------|------|----------|
+| 🖼️ 图片查看器 | 图片浏览和管理 | 缩放、幻灯片、格式转换 |
+| 🎵 音乐播放器 | Web Audio API 音频播放 | 播放列表、均衡器、可视化 |
+| 🎨 音乐可视化器 | 实时音频可视化 | 频谱分析、动态效果 |
+| 🎬 视频播放器 | 视频文件播放 | 进度条、全屏、音量控制 |
+| 🎨 画图 | 绘图和图像编辑画布 | 画笔、形状、颜色选择 |
+| 📷 摄像头 | 实时摄像头访问，支持滤镜 | 滤镜、截图、录像 |
+| 🎥 屏幕录制器 | 通过 getDisplayMedia API 捕获屏幕 | 区域选择、音频录制 |
+| 🎙️ 录音机 | MediaRecorder API 音频录制 | 波形显示、剪辑功能 |
+| 🎨 图像编辑器 | 高级图像处理工具 | 图层、滤镜、蒙版 |
+
+#### 💻 开发工具 (7个)
+| 应用 | 描述 | 亮点功能 |
+|------|------|----------|
+| 💻 代码编辑器 | 语法高亮 + Python 执行 | 多语言支持、主题切换 |
+| 🎮 代码运行器 | 浏览器内运行 HTML/CSS/JavaScript | 实时预览、代码片段 |
+| 📚 命令参考 | 可搜索的命令文档 | 分类浏览、示例代码 |
+| 🔍 正则表达式测试 | 正则表达式测试和调试工具 | 实时匹配、模板库 |
+| 📋 JSON 格式化 | JSON格式化、验证和树状查看 | 语法高亮、错误检测 |
+| 📷 QR码生成器 | 二维码生成和管理工具 | 多种格式、自定义样式 |
+| 🔗 API 测试器 | REST API 测试工具 | 请求构建、响应分析 |
+
+#### 🎮 趣味应用 (15个)
+| 应用 | 描述 | 亮点功能 |
+|------|------|----------|
+| 🧠 思维导图 | 可视化思维整理工具 | 节点编辑、连接线、导出 |
+| 📌 便签墙 | 便利贴式笔记墙 | 拖拽排序、颜色分类 |
+| ⏱️ 番茄工作法 | 时间管理和专注工具 | 计时器、统计图表 |
+| 🔐 密码管理器 | 安全凭证存储 | 加密存储、密码生成 |
+| 🎨 取色器 | 颜色选择和转换 | 色轮、格式转换 |
+| 🔍 放大镜 | 屏幕放大工具 | 实时放大、截图 |
+| 📦 归档管理器 | 压缩和解压文件 | 多种格式、批量处理 |
+| 📋 剪贴板管理 | 智能剪贴板历史 | 历史记录、快速粘贴 |
+| ⚡ 快捷命令 | 常用命令快捷方式 | 自定义脚本、批量执行 |
+| 🤖 AI 助手 | 智能对话助手 | 代码生成、学习指导 |
+| 📋 任务看板 | 看板式任务管理 | 列管理、卡片拖拽 |
+| 🐍 贪吃蛇 | 经典贪吃蛇游戏 | 多种难度、排行榜 |
+| 🧱 俄罗斯方块 | 经典俄罗斯方块游戏 | 挑战模式、道具系统 |
+| 🐾 虚拟宠物 | 互动电子宠物 | 喂食、玩耍、成长 |
+| ☁️ 云同步 | 数据备份与恢复 | 一键备份、选择性恢复 |
+
+---
+
+## 💡 实用功能
+
+### 📤 数据备份与恢复
+
+使用**云同步**应用，您可以：
+- 一键导出所有系统数据到本地文件
+- 选择性备份：文件系统、设置、壁纸等
+- 跨设备恢复数据
+- JSON格式，便于查看和验证
+
+**终端命令支持：**
+```bash
+sync --export     # 导出数据
+sync --import     # 导入数据
+sync --status     # 查看同步状态
+```
+
+### 🔧 终端高级功能
+
+- **60+ 内置命令** - 完整的命令行工具集
+- **系统信息查看** - `sysinfo` 命令显示详细系统状态
+- **数据同步** - `sync --export/import` 命令
+- **缓存清理** - `clear-cache` 命令
+- **Python执行** - `python3 -c "code"` 直接运行Python代码
+- **趣味命令** - cowsay、fortune、sl 等 ASCII 艺术
 
 ---
 
@@ -57,431 +204,275 @@
 ### 环境要求
 
 - Node.js 18+ 和 npm 9+
+- 现代浏览器（Chrome 90+, Firefox 88+, Safari 14+, Edge 90+）
 
 ### 安装
 
 ```bash
+# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
+
+# 进入目录
 cd WebLinuxOS/web-linux
+
+# 安装依赖
 npm install
-```
 
-### 开发模式
-
-```bash
+# 启动开发服务器
 npm run dev
 ```
 
-在浏览器中打开显示的本地开发服务器 URL。
+然后在浏览器中打开终端显示的本地开发服务器地址（通常是 `http://localhost:5173`）。
 
 ### 生产构建
 
 ```bash
+# 构建生产版本
 npm run build
+
+# 预览生产版本
 npm run preview
 ```
 
 ### 部署到 GitHub Pages
 
 ```bash
+# 自动构建并部署
 npm run deploy
 ```
 
 ---
 
-## 🎮 应用程序概览
+## 🏗️ 架构设计
 
-WebLinuxOS 包含 **60 个应用程序**，分为 7 个类别。
+WebLinuxOS 采用现代化的组件驱动架构：
 
-### 🖥️ 系统工具 (20个)
+```
+web-linux/
+├── src/
+│   ├── apps/              # 68个应用程序组件
+│   ├── components/        # 核心UI组件
+│   │   └── desktop/       # 桌面、窗口、任务栏、开始菜单
+│   ├── store.tsx          # Zustand 全局状态管理
+│   ├── apps.tsx           # 应用程序注册表
+│   ├── icons.tsx          # SVG 图标组件
+│   ├── types.ts           # TypeScript 类型定义
+│   ├── index.css          # 全局样式（80+ 动画）
+│   ├── App.tsx            # 根组件
+│   └── main.tsx           # 入口点
+├── public/                # 静态资源
+└── package.json
+```
 
-| 应用程序 | 描述 |
-|---|---|
-| 文件管理器 | 浏览和管理虚拟文件系统，支持拖拽上传和文件预览 |
-| 终端 | 命令行界面，支持 60+ 命令和 Python 运行时 |
-| 系统监视器 | 实时 CPU、内存和网络监控图表 |
-| 系统设置 | 桌面主题、壁纸和系统配置 |
-| 软件中心 | 浏览和安装可用应用程序 |
-| 软件包管理器 | 管理系统包和依赖 |
-| 磁盘使用分析器 | 可视化目录磁盘空间使用情况 |
-| 磁盘工具 | 管理虚拟磁盘分区和存储 |
-| 进程监视器 | 查看和管理运行中的进程 |
-| 网络监视器 | 监控网络流量和连接 |
-| 防火墙 | 配置防火墙规则和安全策略 |
-| 用户管理 | 管理用户账户和权限 |
-| 电源管理 | 监控电源状态和电池设置 |
-| 蓝牙管理器 | 管理蓝牙设备和连接 |
-| Wi-Fi 管理器 | 配置无线网络连接 |
-| 日志查看器 | 浏览和搜索系统日志 |
-| 备份工具 | 创建和恢复系统备份 |
-| 任务管理器 | 管理运行中的任务和应用程序 |
-| 关于系统 | 系统信息和版本详情 |
-| 帮助 | 用户指南和文档 |
+### 核心组件层
 
-### 📝 办公工具 (11个)
+- **桌面 (Desktop)** - 渲染壁纸、桌面图标，处理右键上下文菜单
+- **窗口管理器 (WindowManager)** - 管理窗口生命周期、z-index 堆叠和焦点顺序
+- **窗口 (Window)** - 独立的窗口框架，包含拖拽、调整大小、最小化、最大化和关闭控制
+- **任务栏 (Taskbar)** - 应用程序启动器、运行中的应用程序指示器和系统托盘
+- **开始菜单 (StartMenu)** - 分类应用启动器
 
-| 应用程序 | 描述 |
-|---|---|
-| 文本编辑器 | 功能完整的文本编辑，支持语法高亮 |
-| 记事本 | 轻量级纯文本编辑器 |
-| 日历 | 日期选择器和事件管理 |
-| PDF 查看器 | 查看 PDF 文档 |
-| 电子表格 | 创建和编辑电子表格 |
-| 演示文稿 | 创建和展示幻灯片 |
-| 通讯录 | 管理联系人信息 |
-| 笔记 | 富文本笔记 |
-| 待办事项 | 任务跟踪和管理 |
-| 字典 | 单词释义和查询 |
-| 翻译器 | 文本语言间翻译 |
+### 状态管理
 
-### 🌐 互联网工具 (4个)
-
-| 应用程序 | 描述 |
-|---|---|
-| Web 浏览器 | 基于 iframe 的网页浏览 |
-| 邮件客户端 | 编写和管理电子邮件 |
-| 即时通讯 | 实时聊天界面 |
-| 地图 | 交互式地图查看器 |
-
-### 🎨 多媒体工具 (7个)
-
-| 应用程序 | 描述 |
-|---|---|
-| 图片查看器 | 查看和浏览图片文件 |
-| 音乐播放器 | Web Audio API 音频播放 |
-| 视频播放器 | 播放视频文件 |
-| 画图 | 绘图和图像编辑画布 |
-| 摄像头 | 摄像头访问和实时滤镜 |
-| 屏幕录制器 | 通过 getDisplayMedia 录制屏幕 |
-| 录音机 | 通过 MediaRecorder API 录制音频 |
-
-### 🛠️ 实用工具 (10个)
-
-| 应用程序 | 描述 |
-|---|---|
-| 计算器 | 标准计算和科学计算 |
-| 时钟 | 世界时钟、计时器和秒表 |
-| 天气 | 当前天气状况和预报显示 |
-| 密码管理器 | 安全存储和管理凭据 |
-| 截图工具 | 捕获屏幕区域 |
-| 取色器 | 选择和转换颜色值 |
-| 字符映射表 | 浏览和插入 Unicode 字符 |
-| 字体查看器 | 预览已安装字体 |
-| 放大镜 | 屏幕放大工具 |
-| 归档管理器 | 创建和解压归档文件 |
-
-### 💻 开发工具 (2个)
-
-| 应用程序 | 描述 |
-|---|---|
-| 代码编辑器 | 语法高亮，通过 Pyodide 执行 Python |
-| 命令参考 | 可搜索的终端命令文档 |
-
-### 🎮 游戏 (2个)
-
-| 应用程序 | 描述 |
-|---|---|
-| 贪吃蛇 | 经典贪吃蛇街机游戏 |
-| 俄罗斯方块 | 经典俄罗斯方块益智游戏 |
+使用 Zustand 进行集中式状态管理，支持：
+- 窗口状态管理
+- 文件系统操作
+- 主题和壁纸设置
+- 多桌面管理
+- 通知系统
+- 文件操作历史（撤销/重做）
+- localStorage 防抖优化
 
 ---
 
-## 🎹 键盘快捷键
+## 🎯 技术栈
+
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| ⚛️ React | 19.2.6 | UI 组件框架 |
+| 📘 TypeScript | 6.0.2 | 类型安全开发 |
+| 🐻 Zustand | 5.0.13 | 全局状态管理 |
+| ⚡ Vite | 8.0.12 | 构建工具和开发服务器 |
+| 🐍 Pyodide | 0.26.1 | 浏览器内 Python 运行时 |
+| 🎵 Web Audio API | - | 音频播放和处理 |
+| 🎙️ MediaRecorder API | - | 音频录制 |
+| 🖥️ getDisplayMedia API | - | 屏幕捕获 |
+| 🎨 Canvas API | - | 实时图表渲染 |
+| 🔮 CSS Animations | - | 流畅动画效果 |
+| 🚀 GPU Acceleration | - | 性能优化 |
+
+---
+
+## ⌨️ 快捷键
 
 ### 全局快捷键
 
 | 快捷键 | 功能 |
-|---|---|
-| `Ctrl+Shift+L` | 打开启动器 |
-| `Ctrl+Shift+K` | 打开智慧搜索 |
-| `Ctrl+Shift+S` | 打开设置 |
-| `Ctrl+Shift+F` | 打开文件管理器 |
-| `Ctrl+Shift+T` | 打开终端 |
-| `Ctrl+Shift+M` | 打开音乐播放器 |
-| `Ctrl+Shift+W` | 打开天气 |
-| `Ctrl+Shift+O` | 打开笔记 |
-| `F11` | 全屏/还原窗口 |
-| `PrintScreen` | 打开截图工具 |
+|--------|------|
+| `Super + Shift + K` | 打开智慧搜索 |
+| `Super + Shift + L` | 打开启动器 |
+| `Super + P` | 打开命令面板 |
+| `Alt + Tab` | 切换到下一个窗口 |
+| `Alt + Shift + Tab` | 切换到上一个窗口 |
+| `Super + Q` | 关闭当前窗口 |
+| `Super + M` | 最小化当前窗口 |
+| `Super + Shift + M` | 最大化/还原当前窗口 |
+| `F11` | 全屏切换 |
+| `PrintScreen` | 截图 |
 
-### 窗口管理
+### 应用快捷键
 
-| 快捷键 | 功能 |
-|---|---|
-| `Ctrl+M` | 最小化窗口 |
-| `Ctrl+Shift+M` | 最大化/还原窗口 |
-| `Ctrl+W` | 关闭窗口 |
-| `Ctrl+Q` | 关闭窗口 |
-| `Alt+Tab` | 切换窗口 |
-| `Ctrl+Alt+Tab` | 切换窗口（反向） |
-| `Super+1-9` | 切换到第 n 个桌面 |
+| 快捷键 | 应用 |
+|--------|------|
+| `Super + 1-8` | 快速启动应用（1:终端, 2:文件, 3:浏览器, 4:设置, 5:计算器, 6:编辑器, 7:音乐, 8:系统监视器） |
+| `Super + T` | 终端 |
+| `Super + E` | 文件管理器 |
+| `Super + B` | 浏览器 |
+| `Super + ,` | 设置 |
+| `Super + A` | 计算器 |
+| `Super + Shift + T` | 文本编辑器 |
+| `Super + P` | 画图 |
+| `Super + I` | 图片查看器 |
+| `Super + H` | 帮助 |
+| `Super + Shift + M` | 音乐播放器 |
+| `Super + Shift + C` | 日历 |
+| `Super + G` | 代码编辑器 |
+| `Super + D` | 系统监视器 |
+| `Super + Shift + N` | 笔记 |
 
-### 终端快捷键
-
-| 快捷键 | 功能 |
-|---|---|
-| `Ctrl+L` | 清空终端 |
-| `Ctrl+C` | 中断命令 |
-| `Ctrl+D` | 退出终端 |
-| `↑/↓` | 浏览命令历史 |
-| `Tab` | 自动补全 |
-| `Ctrl+F` | 搜索命令历史 |
-| `Ctrl+A` | 全选 |
-
-### 文件管理器快捷键
+### 虚拟桌面快捷键
 
 | 快捷键 | 功能 |
-|---|---|
-| `Ctrl+F` | 搜索文件 |
-| `Ctrl+C` | 复制文件 |
-| `Ctrl+X` | 剪切文件 |
-| `Ctrl+V` | 粘贴文件 |
-| `Ctrl+A` | 全选文件 |
-| `Delete` | 删除文件 |
-| `Enter` | 打开文件/文件夹 |
-| `Backspace` | 返回上级目录 |
+|--------|------|
+| `Ctrl + Alt + 1-9` | 切换到指定桌面 |
+| `Ctrl + Alt + ←/→` | 切换到上/下一个桌面 |
+| `Ctrl + Shift + Alt + 1-9` | 移动窗口到指定桌面 |
+| `Ctrl + Shift + Alt + ←/→` | 移动窗口并跟随切换 |
 
 ---
 
-## 🏗️ 系统架构
+## 🎨 自定义
 
-WebLinuxOS 采用基于 React 19 的组件驱动架构，通过 Zustand 进行集中式状态管理。桌面环境由四个核心 UI 层组成：
+### 主题
 
-- **Desktop（桌面）** - 渲染壁纸、桌面图标，处理右键上下文菜单
-- **Window Manager（窗口管理器）** - 管理窗口生命周期、z-index 堆叠和焦点顺序
-- **Window（窗口）** - 独立窗口外壳，带有拖拽、调整大小、最小化、最大化和关闭控件
-- **Taskbar（任务栏）** - 应用程序启动器、运行中的应用程序指示器和系统托盘
+支持暗色和浅色主题，通过设置应用或快速设置面板一键切换。
 
-应用程序通过共享虚拟文件系统和基于 CustomEvent 的跨应用程序消息传递进行通信。每个应用程序都在中央应用注册表中注册，定义了其元数据、默认尺寸、调整大小行为以及是否允许多个实例。
+### 壁纸
 
----
+内置 20+ 渐变壁纸，也支持自定义图片壁纸。支持动态壁纸效果：
+- **粒子系统** - 飘浮的粒子动画
+- **交互式** - 粒子跟随鼠标移动
+- **网络效果** - 粒子间连接线
 
-## 🛠️ 技术栈
+### 窗口效果
 
-| 技术 | 版本 | 用途 |
-|---|---|---|
-| React | 19 | UI 组件框架 |
-| TypeScript | 6 | 类型安全开发 |
-| Zustand | 5 | 全局状态管理 |
-| Vite | 8 | 构建工具和开发服务器 |
-| Pyodide | 0.26 | 浏览器内 Python 运行时 |
-| Lucide React | 1.16 | 图标库 |
-| Web Audio API | - | 音频播放和处理 |
-| MediaRecorder API | - | 音频录制 |
-| getDisplayMedia API | - | 屏幕捕获 |
-| Canvas API | - | 实时图表渲染 |
+支持玻璃态、极光、霓虹脉冲等多种视觉效果。
+
+### 快速设置面板
+
+点击任务栏的 ⚡ 图标可以快速访问：
+- Wi-Fi 和蓝牙开关
+- 夜间模式切换
+- 音量调节滑块
+- 电池状态显示
+- 快速跳转到系统设置
 
 ---
 
-## 📁 项目结构
+## 🔧 最近的改进
 
-```
-web-linux/
-  src/
-    apps/           # 56 个应用程序组件
-      Terminal.tsx      # 终端模拟器
-      FileManager.tsx   # 文件管理器
-      CodeEditor.tsx    # 代码编辑器
-      SystemMonitor.tsx # 系统监控
-      Calculator.tsx    # 计算器
-      ...
-    components/      # 核心UI组件
-      Desktop.tsx       # 桌面组件
-      Window.tsx        # 窗口组件
-      Taskbar.tsx       # 任务栏
-      StartMenu.tsx     # 开始菜单
-      Launcher.tsx      # 应用启动器
-    store.tsx       # Zustand 全局状态管理
-    apps.tsx        # 应用程序注册表
-    icons.tsx       # SVG 图标组件
-    types.ts        # TypeScript 类型定义
-    index.css       # 全局样式
-    App.tsx         # 根组件
-    main.tsx        # 入口点
-  public/           # 静态资源
-    favicon.ico
-    assets/         # 应用图标和资源
-  index.html        # HTML 模板
-  package.json      # 项目依赖配置
-  vite.config.ts    # Vite 构建配置
-  tsconfig.json     # TypeScript 配置
-```
+### v3.0.0 (2026-05-25)
 
----
+#### 🚀 性能优化
+- **粒子动画优化** - 使用更高效的批量更新机制，减少 DOM 操作
+- **连接线缓存** - 将粒子间连接线的计算结果缓存，避免重复计算
+- **GPU 加速增强** - 添加 perspective、contain 等 CSS 属性提升渲染性能
+- **动画帧率控制** - 智能限制粒子动画帧率，降低 CPU 占用
 
-## 💡 使用技巧
+#### 🎨 UI/UX 增强
+- **新增动画类** - 添加 shimmer、float、spin、bounce、ripple 等新动画
+- **性能优化类** - 添加 contain-layout、contain-paint、contain-strict 等优化类
+- **指针事件控制** - 添加 pointer-events-none 等辅助类
+- **内容可见性优化** - 使用 content-visibility 提升长列表渲染性能
 
-### 终端命令示例
+#### 🛠️ 终端命令增强
+- **新增 tip 命令** - 显示随机技术提示和快捷键技巧
+- **新增 joke 命令** - 显示程序员笑话和趣事
+- **新增 quote 命令** - 显示编程名言和箴言
+- **新增 color 命令** - 生成随机颜色代码（HEX、RGB、HSL）
 
-```bash
-# 查看系统信息
-neofetch
+#### 🤖 AI 助手增强
+- **新增学习话题** - 添加 Python、React、算法、DevOps 等学习资源
+- **WebLinux 教程** - 添加详细的使用指南和快捷键说明
+- **算法复杂度** - 解释时间复杂度和空间复杂度
+- **项目创意** - 提供项目方向建议和开发计划指导
 
-# 查看当前目录
-ls -la
-
-# 创建新目录
-mkdir myproject
-
-# 进入目录
-cd myproject
-
-# 创建文件
-touch README.md
-
-# 查看文件内容
-cat README.md
-
-# 执行 Python 代码
-python3 -c "print('Hello, WebLinuxOS!')"
-
-# 查看天气
-weather
-
-# 显示日历
-cal
-
-# 查看系统时间
-date
-
-# 查看详细系统信息
-system-info
-disk-usage
-memory-info
-cpu-info
-process-list
-network-stats
-
-# 查看版本和致谢
-version
-credits
-
-# 趣味命令
-cowsay "Hello from WebLinuxOS"
-fortune
-matrix
-```
-
-### Python 运行时
-
-WebLinuxOS 集成了 Pyodide，可以直接在终端中执行 Python 代码：
-
-```python
-# 计算圆周率
-import math
-print(math.pi)
-
-# 列表推导式
-squares = [x**2 for x in range(10)]
-print(squares)
-
-# 文件操作
-with open('/home/user/documents/test.txt', 'w') as f:
-    f.write('Hello from Python!')
-```
+#### 🔧 代码质量
+- **TypeScript 优化** - 添加详细的类型定义
+- **组件优化** - 使用 React.memo 减少不必要的重渲染
+- **状态管理优化** - 使用 useRef 优化状态更新
+- **性能监控** - 添加性能优化标记和注释
 
 ---
 
-## 🤝 贡献指南
+## 🤝 贡献
 
-欢迎贡献！开始之前：
+欢迎贡献代码！请遵循以下步骤：
 
-1. Fork 仓库
-2. 创建功能分支 (`git checkout -b feature/your-feature`)
-3. 提交更改 (`git commit -m "Add your feature"`)
-4. 推送到分支 (`git push origin feature/your-feature`)
+1. Fork 这个仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 打开 Pull Request
 
-请确保在提交之前，您的代码通过 linting（`npm run lint`）并且成功构建（`npm run build`）。
+### 开发规范
 
-### 贡献类型
-
-- ✨ 新功能
-- 🐛 Bug 修复
-- 📝 文档改进
-- 🎨 UI/UX 改进
-- ⚡ 性能优化
-- 🔧 代码重构
-
----
-
-## 📜 更新日志
-
-### v2.9.0 (2026-05-25)
-
-**重大更新：**
-- 🚀 全面性能优化：构建速度提升 40%，页面加载速度提升 25%
-- 🎨 界面升级：全新设计语言，更流畅的动画效果
-- ⚡ 终端增强：新增更多实用命令和快捷键支持
-- 💾 文件系统改进：优化文件操作和存储效率
-- 🔧 系统稳定性：修复多个已知问题，改进错误处理
-- 📱 移动端适配：优化响应式布局
-- 📚 文档完善：更全面的使用指南和开发文档
-
-**技术栈更新：**
-- React 19.2.6
-- TypeScript 6
-- Vite 8
-- Zustand 5
-- Pyodide 0.26
-
-### v2.3.0 (2026-05-25)
-
-**新增功能：**
-- ✅ 新增系统信息命令：`disk-usage`、`process-list`、`network-stats`、`memory-info`、`cpu-info`
-- ✅ 增强终端功能：添加 `version`、`credits`、`about` 等实用命令
-- ✅ 更新 `neofetch` 显示：版本升级到 2.3.0，内核升级到 6.10.0
-- ✅ 统一版本号管理
-
-**改进：**
-- 🚀 代码质量优化，改进错误处理
-- 🎨 优化用户体验，增强视觉效果和交互反馈
-- 📚 更新技术栈文档
-- 👥 添加新贡献者（Trae AI）
-
-### v2.2.0 (2024-12-01)
-
-- 新增 10 个系统工具应用
-- 改进终端模拟器功能
-- 增强文件系统功能
-- 优化动画性能
-
-### v2.1.0 (2024-11-01)
-
-- 新增多桌面支持
-- 改进任务栏设计
-- 新增启动器搜索功能
-- 优化状态管理
-
-### v2.0.0 (2024-10-01)
-
-- 完整的桌面环境
-- 56 个预装应用
-- 玻璃态 UI 设计
-- 深色/浅色主题
+- 确保代码通过 ESLint 检查：`npm run lint`
+- 确保 TypeScript 类型检查通过：`npm run typecheck`
+- 确保构建成功：`npm run build`
+- 使用 Prettier 格式化代码：`npm run format`
 
 ---
 
 ## 📄 许可证
 
-[MIT](https://opensource.org/licenses/MIT)
+本项目基于 [MIT 许可证](https://opensource.org/licenses/MIT) 发布。
 
 ---
 
 ## 🙏 致谢
 
-感谢以下开源项目的灵感和支持：
-
 - [React](https://react.dev/) - UI 框架
-- [Zustand](https://zustand-demo.pmnd.rs/) - 状态管理
-- [Pyodide](https://pyodide.org/) - 浏览器 Python 运行时
-- [Lucide React](https://lucide.dev/) - 图标库
+- [Vite](https://vitejs.dev/) - 构建工具
+- [Zustand](https://github.com/pmndrs/zustand) - 状态管理
+- [Pyodide](https://pyodide.org/) - Python 运行时
+- 所有开源贡献者！
 
 ---
 
-**制作 with ❤️ 和 React**
+## 📊 项目统计
+
+![Alt](https://repobeats.axiom.co/api/embed/placeholder.svg "Project Stats")
+
+- **GitHub Stars**: ⭐ 持续增长中
+- **GitHub Forks**: 🍴 感谢所有 Fork
+- **贡献者**: 🎉 欢迎加入我们
 
 ---
 
-⭐ 如果您喜欢这个项目，请给它一个 Star！
+<p align="center">
+  <strong>Made with ❤️ and ☕</strong>
+  <br>
+  <sub>© 2024-2026 WebLinuxOS. All rights reserved.</sub>
+  <br>
+  <br>
+  <a href="https://github.com/saya-ch/WebLinuxOS">⭐ Star</a>
+  &nbsp;•&nbsp;
+  <a href="https://github.com/saya-ch/WebLinuxOS/fork">🍴 Fork</a>
+  &nbsp;•&nbsp;
+  <a href="https://github.com/saya-ch/WebLinuxOS/issues">🐛 Issues</a>
+</p>
 
-[![Star on GitHub](https://img.shields.io/github/stars/saya-ch/WebLinuxOS.svg?style=social)](https://github.com/saya-ch/WebLinuxOS/stargazers)
+[![Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=social)](https://github.com/saya-ch/WebLinuxOS/stargazers)
+[![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=social)](https://github.com/saya-ch/WebLinuxOS/network/members)
+[![Watchers](https://img.shields.io/github/watchers/saya-ch/WebLinuxOS?style=social)](https://github.com/saya-ch/WebLinuxOS/watchers)

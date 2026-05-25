@@ -1,5 +1,22 @@
-import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
 import { useStore } from '../../store'
+
+interface Particle {
+  id: number
+  x: number
+  y: number
+  size: number
+  speed: number
+  color: string
+  vx: number
+  vy: number
+}
+
+interface Connection {
+  from: number
+  to: number
+  opacity: number
+}
 
 const wallpapers = [
   '',
@@ -52,11 +69,14 @@ const Desktop = memo(function Desktop() {
   const [selectedIconId, setSelectedIconId] = useState<string | null>(null)
   const [showSplash, setShowSplash] = useState(true)
   const lastClickRef = useRef<{ id: string; time: number } | null>(null)
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; speed: number; color: string; vx: number; vy: number }>>([])
+  const [particles, setParticles] = useState<Particle[]>([])
+  const [connections, setConnections] = useState<Connection[]>([])
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  
+  const particleRef = useRef({ x: 0, y: 0 })
 
-  useEffect(() => {
-    const newParticles = Array.from({ length: 50 }, (_, i) => ({
+  const initializeParticles = useCallback(() => {
+    const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -68,6 +88,10 @@ const Desktop = memo(function Desktop() {
     }))
     setParticles(newParticles)
   }, [])
+
+  useEffect(() => {
+    initializeParticles()
+  }, [initializeParticles])
 
   useEffect(() => {
     if (!liveWallpaperEnabled) return
@@ -122,6 +146,30 @@ const Desktop = memo(function Desktop() {
 
             return { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
           })
+          
+          if (liveWallpaper !== 'particles') {
+            const newConnections: Connection[] = []
+            for (let i = 0; i < newParticles.length; i++) {
+              for (let j = i + 1; j < newParticles.length; j++) {
+                const p1 = newParticles[i]
+                const p2 = newParticles[j]
+                const dx = p1.x - p2.x
+                const dy = p1.y - p2.y
+                const dist = Math.sqrt(dx * dx + dy * dy)
+                if (dist < 20) {
+                  newConnections.push({
+                    from: i,
+                    to: j,
+                    opacity: (1 - dist / 20) * 0.3
+                  })
+                }
+              }
+            }
+            setConnections(newConnections)
+          } else {
+            setConnections([])
+          }
+          
           return newParticles
         })
       }
@@ -384,28 +432,22 @@ const Desktop = memo(function Desktop() {
           {/* Connecting lines for particles (waves/network effect) */}
           {liveWallpaper !== 'particles' && (
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-              {particles.map((p1, i) => 
-                particles.slice(i + 1).map((p2, j) => {
-                  const dx = p1.x - p2.x
-                  const dy = p1.y - p2.y
-                  const dist = Math.sqrt(dx * dx + dy * dy)
-                  if (dist < 20) {
-                    const opacity = (1 - dist / 20) * 0.3
-                    return (
-                      <line
-                        key={`${i}-${j}`}
-                        x1={`${p1.x}%`}
-                        y1={`${p1.y}%`}
-                        x2={`${p2.x}%`}
-                        y2={`${p2.y}%`}
-                        stroke={`rgba(139, 124, 240, ${opacity})`}
-                        strokeWidth={1}
-                      />
-                    )
-                  }
-                  return null
-                })
-              )}
+              {connections.map((conn, idx) => {
+                const p1 = particles[conn.from]
+                const p2 = particles[conn.to]
+                if (!p1 || !p2) return null
+                return (
+                  <line
+                    key={idx}
+                    x1={`${p1.x}%`}
+                    y1={`${p1.y}%`}
+                    x2={`${p2.x}%`}
+                    y2={`${p2.y}%`}
+                    stroke={`rgba(139, 124, 240, ${conn.opacity})`}
+                    strokeWidth={1}
+                  />
+                )
+              })}
             </svg>
           )}
         </>

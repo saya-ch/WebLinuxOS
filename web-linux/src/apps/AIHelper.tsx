@@ -18,6 +18,9 @@ const suggestions = [
   '解释什么是递归',
   '如何使用终端命令',
   '帮我写一个 JavaScript 函数',
+  '教我如何使用 WebLinux',
+  '帮我创建一个 API',
+  '解释什么是算法复杂度',
 ];
 
 const quickActions = [
@@ -25,6 +28,35 @@ const quickActions = [
   { icon: '📚', label: '学习', action: '教我编程概念' },
   { icon: '🔍', label: '分析', action: '帮我分析代码问题' },
   { icon: '✨', label: '优化', action: '如何优化我的代码' },
+  { icon: '🎯', label: '项目', action: '帮我想一个项目创意' },
+  { icon: '🐛', label: '调试', action: '帮我找出代码中的bug' },
+];
+
+const topics = [
+  {
+    title: '🐍 Python',
+    icon: '🐍',
+    description: '学习Python编程基础和进阶技巧',
+    examples: ['脚本编写', '数据分析', 'Web开发', '自动化']
+  },
+  {
+    title: '⚛️ React',
+    icon: '⚛️',
+    description: '掌握现代React开发',
+    examples: ['组件设计', 'Hooks', '状态管理', '性能优化']
+  },
+  {
+    title: '📊 算法',
+    icon: '📊',
+    description: '算法和数据结构',
+    examples: ['排序算法', '搜索算法', '图算法', '动态规划']
+  },
+  {
+    title: '🔧 DevOps',
+    icon: '🔧',
+    description: '开发运维工具和实践',
+    examples: ['Docker', 'Git', 'CI/CD', '监控']
+  },
 ];
 
 export default function AIHelper() {
@@ -260,6 +292,46 @@ function example() {
         id: Date.now().toString(),
         role: 'assistant',
         content: '不客气！😊\n\n随时欢迎再来问我问题！\n\n如果遇到任何问题，可以：\n• 📖 查看帮助文档\n• 💬 继续和我聊天\n• 🔧 使用终端命令获取帮助',
+        timestamp: new Date(),
+      };
+    }
+    
+    // WebLinux 使用教程
+    if (lower.includes('weblinux') || lower.includes('使用') || lower.includes('教程')) {
+      return {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '很高兴你想了解 WebLinux！🚀\n\n**快速入门指南：**\n\n**1. 桌面环境**\n• 右键桌面可以打开快捷菜单\n• 双击桌面图标启动应用\n• 使用 Ctrl+Alt+方向键切换桌面\n\n**2. 应用启动器**\n• 点击任务栏的 🦊 图标\n• 或使用快捷键 Ctrl+Shift+L\n\n**3. 窗口管理**\n• 拖拽标题栏移动窗口\n• 拖拽边缘调整大小\n• 最小化/最大化/关闭按钮在左上角\n\n**4. 快捷键**\n• Ctrl+Shift+T - 终端\n• Ctrl+Shift+F - 文件管理器\n• Alt+Tab - 切换窗口\n\n需要我详细介绍某个功能吗？',
+        timestamp: new Date(),
+      };
+    }
+    
+    // 算法复杂度
+    if (lower.includes('算法') || lower.includes('复杂度') || lower.includes('complexity')) {
+      return {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '算法复杂度是评估算法效率的重要概念！📊\n\n**时间复杂度（常用）：**\n\n• **O(1)** - 常数时间，如数组访问\n• **O(log n)** - 对数时间，如二分查找\n• **O(n)** - 线性时间，如遍历数组\n• **O(n log n)** - 线性对数时间，如快速排序\n• **O(n²)** - 平方时间，如冒泡排序\n• **O(2^n)** - 指数时间，如递归斐波那契\n• **O(n!)** - 阶乘时间，如旅行商问题\n\n**空间复杂度：**\n\n衡量算法所需的内存空间。\n\n**优化建议：**\n• 选择合适的数据结构\n• 避免嵌套循环\n• 使用缓存\n• 分治法\n\n需要我详细解释某个算法吗？',
+        timestamp: new Date(),
+      };
+    }
+    
+    // 项目创意
+    if (lower.includes('项目') || lower.includes('创意') || lower.includes('project')) {
+      const projects = [
+        '📝 个人博客系统 - 使用 React + Node.js',
+        '📊 数据可视化仪表盘 - 展示实时数据',
+        '🎮 小游戏开发 - 如贪吃蛇、俄罗斯方块',
+        '🤖 AI 聊天机器人 - 基于机器学习',
+        '📱 待办事项应用 - 带提醒功能',
+        '🛒 电商原型 - 产品展示和购物车',
+        '📊 项目管理工具 - 看板和甘特图',
+        '🎨 图片编辑器 - 滤镜和裁剪',
+      ];
+      return {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '好的项目创意！💡\n\n**推荐项目列表：**\n\n' + projects.join('\n') + '\n\n**选择项目的标准：**\n1. 符合你的技能水平\n2. 有实际应用价值\n3. 能够持续迭代\n4. 有学习新技术的机会\n\n你想做哪个方向的项目？我可以帮你制定开发计划！',
         timestamp: new Date(),
       };
     }
