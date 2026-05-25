@@ -1,4 +1,4 @@
-import { useState, useCallback, memo, useMemo, useEffect } from 'react'
+import { useState, useCallback, memo, useMemo, useEffect, useRef } from 'react'
 import { useStore, findNodeById, validateFileName } from '../store'
 import type { FileNode } from '../types'
 
@@ -8,6 +8,20 @@ function formatSize(size: number | undefined): string {
   if (size < 1048576) return `${(size / 1024).toFixed(1)} KB`
   if (size < 1073741824) return `${(size / 1048576).toFixed(1)} MB`
   return `${(size / 1073741824).toFixed(1)} GB`
+}
+
+function getFileExtension(name: string): string {
+  return name.split('.').pop()?.toLowerCase() || ''
+}
+
+function isImageFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)
+}
+
+function isTextFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ['txt', 'md', 'json', 'js', 'ts', 'tsx', 'jsx', 'html', 'css', 'py', 'java', 'cpp', 'c', 'go', 'rs', 'php', 'rb', 'xml', 'yml', 'yaml', 'sh', 'sql'].includes(ext)
 }
 
 const fileTypeIcons: Record<string, string> = {
@@ -187,7 +201,7 @@ export default function FileManager() {
 
   const [currentPath, setCurrentPath] = useState<string[]>(['root'])
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['root']))
-  const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set())
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({ visible: false, x: 0, y: 0, fileId: '' })
   const [renameTarget, setRenameTarget] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
@@ -199,7 +213,12 @@ export default function FileManager() {
   const [clipboardMode, setClipboardMode] = useState<'copy' | 'cut' | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [sortBy, setSortBy] = useState<'name' | 'type' | 'size' | 'date'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [previewFile, setPreviewFile] = useState<FileNode | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null)
+  
+  const fileListRef = useRef<HTMLDivElement>(null)
 
   const currentNodeId = currentPath[currentPath.length - 1]
   const currentNode = findNodeById(files, currentNodeId)
@@ -219,7 +238,7 @@ export default function FileManager() {
       }
       setCurrentPath(pathStack)
       setExpandedFolders((prev) => new Set([...prev, nodeId]))
-      setSelectedFileId(null)
+      setSelectedFileIds(new Set())
     }
   }, [files])
 
@@ -250,7 +269,46 @@ export default function FileManager() {
       const appId = codeExts.includes(ext || '') ? 'code-editor' : 'text-editor'
       openFileWith(file.id, appId)
     }
+    setSelectedFileIds(new Set([file.id]))
+    setLastSelectedId(file.id)
   }, [openFileWith, navigateTo])
+
+  const handleFileClick = useCallback((fileId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    if (e.shiftKey && lastSelectedId) {
+      const displayNodes = searchResults.length > 0 
+        ? sortNodes(searchResults) 
+        : sortNodes(children)
+      
+      const lastIndex = displayNodes.findIndex(n => n.id === lastSelectedId)
+      const currentIndex = displayNodes.findIndex(n => n.id === fileId)
+      
+      if (lastIndex !== -1 && currentIndex !== -1) {
+        const start = Math.min(lastIndex, currentIndex)
+        const end = Math.max(lastIndex, currentIndex)
+        const rangeIds = displayNodes.slice(start, end + 1).map(n => n.id)
+        setSelectedFileIds(new Set(rangeIds))
+        setLastSelectedId(fileId)
+        return
+      }
+    }
+    
+    if (e.ctrlKey || e.metaKey) {
+      setSelectedFileIds(prev => {
+        const next = new Set(prev)
+        if (next.has(fileId)) {
+          next.delete(fileId)
+        } else {
+          next.add(fileId)
+        }
+        return next
+      })
+    } else {
+      setSelectedFileIds(new Set([fileId]))
+    }
+    setLastSelectedId(fileId)
+  }, [lastSelectedId, searchResults, children])
 
   const handleContextMenu = useCallback((e: React.MouseEvent, fileId: string) => {
     e.preventDefault()
@@ -266,11 +324,91 @@ export default function FileManager() {
     setContextMenu({ visible: false, x: 0, y: 0, fileId: '' })
   }, [])
 
-  const handleDelete = useCallback((fileId: string) => {
-    deleteFile(fileId)
-    if (selectedFileId === fileId) setSelectedFileId(null)
+  const handleDelete = useCallback((fileId?: string) => {
+    const idsToDelete = fileId ? [fileId] : Array.from(selectedFileIds)
+    idsToDelete.forEach(id => deleteFile(id))
+    setSelectedFileIds(prev => {
+      const next = new Set(prev)
+      idsToDelete.forEach(id => next.delete(id))
+      return next
+    })
     closeContextMenu()
-  }, [deleteFile, selectedFileId, closeContextMenu])
+  }, [deleteFile, selectedFileIds, closeContextMenu])
+
+  const handleCopy = useCallback((fileId?: string) => {
+    const idsToCopy = fileId ? [fileId] : Array.from(selectedFileIds)
+    if (idsToCopy.length > 0) {
+      const node = findNodeById(files, idsToCopy[0])
+      if (node) {
+        setClipboard(node)
+        setClipboardMode('copy')
+      }
+    }
+    closeContextMenu()
+  }, [files, selectedFileIds, closeContextMenu])
+
+  const handleCut = useCallback((fileId?: string) => {
+    const idsToCut = fileId ? [fileId] : Array.from(selectedFileIds)
+    if (idsToCut.length > 0) {
+      const node = findNodeById(files, idsToCut[0])
+      if (node) {
+        setClipboard(node)
+        setClipboardMode('cut')
+      }
+    }
+    closeContextMenu()
+  }, [files, selectedFileIds, closeContextMenu])
+
+  const handlePaste = useCallback(() => {
+    if (clipboard) {
+      if (clipboardMode === 'copy') {
+        copyFile(clipboard.id, currentNodeId)
+      } else if (clipboardMode === 'cut') {
+        copyFile(clipboard.id, currentNodeId)
+        deleteFile(clipboard.id)
+      }
+      setClipboard(null)
+      setClipboardMode(null)
+    }
+  }, [clipboard, clipboardMode, copyFile, deleteFile, currentNodeId])
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    
+    const items = e.dataTransfer.items
+    if (!items) return
+    
+    Array.from(items).forEach(item => {
+      if (item.kind === 'file') {
+        const file = item.getAsFile()
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            const content = event.target?.result as string
+            addFile(currentNodeId, file.name, 'file')
+            setTimeout(() => {
+              const newFile = children.find(c => c.name === file.name)
+              if (newFile) {
+                updateFileContent(newFile.id, content)
+              }
+            }, 100)
+          }
+          reader.readAsText(file)
+        }
+      }
+    })
+  }, [currentNodeId, addFile, updateFileContent, children])
 
   function handleRenameStart(fileId: string) {
     const node = findNodeById(files, fileId)
@@ -324,39 +462,8 @@ export default function FileManager() {
   }, [currentPath])
 
   function handleRefresh() {
-    setSelectedFileId(null)
+    setSelectedFileIds(new Set())
     setContextMenu({ visible: false, x: 0, y: 0, fileId: '' })
-  }
-
-  function handleCopy(fileId: string) {
-    const node = findNodeById(files, fileId)
-    if (node) {
-      setClipboard(node)
-      setClipboardMode('copy')
-    }
-    closeContextMenu()
-  }
-
-  function handleCut(fileId: string) {
-    const node = findNodeById(files, fileId)
-    if (node) {
-      setClipboard(node)
-      setClipboardMode('cut')
-    }
-    closeContextMenu()
-  }
-
-  function handlePaste() {
-    if (clipboard) {
-      if (clipboardMode === 'copy') {
-        copyFile(clipboard.id, currentNodeId)
-      } else if (clipboardMode === 'cut') {
-        copyFile(clipboard.id, currentNodeId)
-        deleteFile(clipboard.id)
-      }
-      setClipboard(null)
-      setClipboardMode(null)
-    }
   }
 
   function searchFiles(query: string, nodes: FileNode[]): FileNode[] {
@@ -394,16 +501,16 @@ export default function FileManager() {
 
       if (e.ctrlKey && e.key === 'c') {
         e.preventDefault()
-        if (selectedFileId) {
-          handleCopy(selectedFileId)
+        if (selectedFileIds.size > 0) {
+          handleCopy()
         }
         return
       }
 
       if (e.ctrlKey && e.key === 'x') {
         e.preventDefault()
-        if (selectedFileId) {
-          handleCut(selectedFileId)
+        if (selectedFileIds.size > 0) {
+          handleCut()
         }
         return
       }
@@ -414,39 +521,48 @@ export default function FileManager() {
         return
       }
 
-      if (e.key === 'Backspace' && !searchQuery && selectedFileId && document.activeElement?.tagName !== 'INPUT') {
+      if (e.key === 'Backspace' && !searchQuery && selectedFileIds.size === 0 && document.activeElement?.tagName !== 'INPUT') {
         e.preventDefault()
         goToParent()
         return
       }
 
-      if (e.key === 'Enter' && selectedFileId && document.activeElement?.tagName !== 'INPUT') {
+      if (e.key === 'Enter' && selectedFileIds.size > 0 && document.activeElement?.tagName !== 'INPUT') {
         e.preventDefault()
-        const node = findNodeById(files, selectedFileId)
+        const firstId = Array.from(selectedFileIds)[0]
+        const node = findNodeById(files, firstId)
         if (node) {
           handleFileDoubleClick(node)
         }
         return
       }
 
-      if (e.key === 'Delete' && selectedFileId && document.activeElement?.tagName !== 'INPUT') {
+      if (e.key === 'Delete' && selectedFileIds.size > 0 && document.activeElement?.tagName !== 'INPUT') {
         e.preventDefault()
-        handleDelete(selectedFileId)
+        handleDelete()
         return
       }
 
       if (e.key === 'Escape') {
         setSearchQuery('')
         setSearchResults([])
-        setSelectedFileId(null)
+        setSelectedFileIds(new Set())
         closeContextMenu()
+        setPreviewFile(null)
+        return
+      }
+
+      if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault()
+        const displayNodes = searchResults.length > 0 ? searchResults : children
+        setSelectedFileIds(new Set(displayNodes.map(n => n.id)))
         return
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedFileId, searchQuery, files, goToParent, handleFileDoubleClick, handleDelete, closeContextMenu, clipboard, clipboardMode])
+  }, [selectedFileIds, searchQuery, files, goToParent, handleFileDoubleClick, handleDelete, closeContextMenu, clipboard, clipboardMode, searchResults, children])
 
   const treeContent = useMemo(() => {
     return files.map((node) => (
@@ -455,14 +571,22 @@ export default function FileManager() {
         node={node}
         depth={0}
         isExpanded={expandedFolders.has(node.id)}
-        isSelected={selectedFileId === node.id}
-        onSelect={setSelectedFileId}
+        isSelected={selectedFileIds.has(node.id)}
+        onSelect={(id) => setSelectedFileIds(prev => {
+          const next = new Set(prev)
+          if (next.has(id)) {
+            next.delete(id)
+          } else {
+            next.add(id)
+          }
+          return next
+        })}
         onDoubleClick={handleFileDoubleClick}
         onContextMenu={handleContextMenu}
         onToggle={toggleFolderExpand}
       />
     ))
-  }, [files, expandedFolders, selectedFileId, handleFileDoubleClick, handleContextMenu, toggleFolderExpand])
+  }, [files, expandedFolders, selectedFileIds, handleFileDoubleClick, handleContextMenu, toggleFolderExpand])
 
   function getFileDate(node: FileNode): string {
     const baseTime = new Date('2024-01-01').getTime()
@@ -539,16 +663,30 @@ export default function FileManager() {
             onChange={handleFileUpload}
           />
         </label>
-        {selectedFileId && (
+        {selectedFileIds.size > 0 && (
           <>
-            <button className="app-toolbar-btn" onClick={() => handleCopy(selectedFileId)} title="复制 (Ctrl+C)">📋</button>
-            <button className="app-toolbar-btn" onClick={() => handleCut(selectedFileId)} title="剪切 (Ctrl+X)">✂️</button>
-            <button className="app-toolbar-btn" onClick={() => handleDownload(selectedFileId)} title="下载">⬇️</button>
-            <button className="app-toolbar-btn" onClick={() => handleDelete(selectedFileId)} title="删除">🗑</button>
+            <button className="app-toolbar-btn" onClick={() => handleCopy()} title="复制 (Ctrl+C)">📋</button>
+            <button className="app-toolbar-btn" onClick={() => handleCut()} title="剪切 (Ctrl+X)">✂️</button>
+            <button className="app-toolbar-btn" onClick={() => { const firstId = Array.from(selectedFileIds)[0]; handleDownload(firstId); }} title="下载">⬇️</button>
+            <button className="app-toolbar-btn" onClick={() => handleDelete()} title="删除">🗑</button>
+            {selectedFileIds.size === 1 && (
+              <button 
+                className="app-toolbar-btn" 
+                onClick={() => { 
+                  const firstId = Array.from(selectedFileIds)[0]; 
+                  const node = findNodeById(files, firstId);
+                  if (node && node.type === 'file') setPreviewFile(node);
+                }} 
+                title="预览"
+              >👁️</button>
+            )}
           </>
         )}
         {clipboard && (
           <button className="app-toolbar-btn" onClick={handlePaste} title="粘贴 (Ctrl+V)">📋📥</button>
+        )}
+        {selectedFileIds.size > 0 && (
+          <span className="app-toolbar-info">已选择 {selectedFileIds.size} 个项目</span>
         )}
         <span className="app-toolbar-separator" />
         <button 
@@ -616,7 +754,18 @@ export default function FileManager() {
             {treeContent}
           </div>
         </div>
-        <div className="app-file-list-container">
+        <div 
+            className="app-file-list-container"
+            ref={fileListRef}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {isDragging && (
+              <div className="app-file-drop-zone">
+                📁 拖拽文件到这里上传
+              </div>
+            )}
           {viewMode === 'list' && (
             <div className="app-file-list-header">
               <span 
@@ -663,8 +812,8 @@ export default function FileManager() {
                 return displayNodes.map((file) => (
                   <div
                     key={file.id}
-                    className={`app-file-grid-item${selectedFileId === file.id ? ' selected' : ''}`}
-                    onClick={() => setSelectedFileId(file.id)}
+                    className={`app-file-grid-item${selectedFileIds.has(file.id) ? ' selected' : ''}`}
+                    onClick={(e) => handleFileClick(file.id, e)}
                     onDoubleClick={() => handleFileDoubleClick(file)}
                     onContextMenu={(e) => handleContextMenu(e, file.id)}
                   >
@@ -679,8 +828,8 @@ export default function FileManager() {
               return displayNodes.map((file) => (
                 <div
                   key={file.id}
-                  className={`app-file-row${selectedFileId === file.id ? ' selected' : ''}`}
-                  onClick={() => setSelectedFileId(file.id)}
+                  className={`app-file-row${selectedFileIds.has(file.id) ? ' selected' : ''}`}
+                  onClick={(e) => handleFileClick(file.id, e)}
                   onDoubleClick={() => handleFileDoubleClick(file)}
                   onContextMenu={(e) => handleContextMenu(e, file.id)}
                 >
@@ -744,6 +893,18 @@ export default function FileManager() {
           <div className="app-context-menu-item" onClick={() => handleDownload(contextMenu.fileId)}>
             ⬇️ 下载
           </div>
+          {selectedFileIds.size === 1 && (
+            <>
+              <div className="app-context-menu-separator" />
+              <div className="app-context-menu-item" onClick={() => { 
+                const node = findNodeById(files, contextMenu.fileId);
+                if (node && node.type === 'file') setPreviewFile(node);
+                closeContextMenu(); 
+              }}>
+                👁️ 预览
+              </div>
+            </>
+          )}
           <div className="app-context-menu-separator" />
           <div className="app-context-menu-item" onClick={() => handleCreateNew('folder')}>
             📁 新建文件夹
@@ -759,6 +920,42 @@ export default function FileManager() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {previewFile && (
+        <div className="app-modal-overlay" onClick={() => setPreviewFile(null)}>
+          <div className="app-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="app-modal-header">
+              <span className="app-modal-title">👁️ {previewFile.name}</span>
+              <button className="app-modal-close" onClick={() => setPreviewFile(null)}>✕</button>
+            </div>
+            <div className="app-modal-content">
+              {isImageFile(previewFile.name) ? (
+                <img 
+                  src={`data:image/png;base64,${btoa(previewFile.content || '')}`} 
+                  alt={previewFile.name}
+                  className="app-preview-image"
+                />
+              ) : isTextFile(previewFile.name) ? (
+                <pre className="app-preview-text">{previewFile.content || ''}</pre>
+              ) : (
+                <div className="app-preview-unknown">
+                  <div className="app-preview-icon">📄</div>
+                  <p>无法预览此文件类型</p>
+                  <p style={{ fontSize: '12px', color: '#666' }}>大小: {formatSize((previewFile.content?.length || 0) * 2)}</p>
+                </div>
+              )}
+            </div>
+            <div className="app-modal-footer">
+              <button className="app-modal-btn" onClick={() => handleDownload(previewFile.id)}>⬇️ 下载</button>
+              <button className="app-modal-btn" onClick={() => { 
+                openFileWith(previewFile.id, 'text-editor'); 
+                setPreviewFile(null); 
+              }}>📝 编辑</button>
+              <button className="app-modal-btn app-modal-btn-cancel" onClick={() => setPreviewFile(null)}>关闭</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useStore, findNodeByPath, resolvePath } from '../store'
 import type { FileNode, WindowState } from '../types'
+import type { PyodideInterface } from 'pyodide'
 
 function useLatest<T>(value: T): { current: T } {
   const ref = useRef<T>(value)
@@ -118,6 +119,8 @@ export default function Terminal() {
     }
   })
 
+  const [pyodide, setPyodide] = useState<PyodideInterface | null>(null)
+
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -178,7 +181,7 @@ export default function Terminal() {
     return []
   }, [files, cwd])
 
-  const executeCommand = useCallback((cmd: string) => {
+  const executeCommand = useCallback(async (cmd: string) => {
     let trimmed = cmd.trim()
     
     const aliasMatch = trimmed.match(/^(\S+)/)
@@ -1356,18 +1359,45 @@ Hello from Node.js!`
       case 'python':
       case 'python3':
         if (args[0] === '--version' || args[0] === '-V') {
-          output = 'Python 3.11.4 (tags/v3.11.4:d23a85b, Jun  6 2023, 00:00:00) [MSC v.1928 64 bit (AMD64)] on win32'
+          output = 'Python 3.11.4 (Pyodide)'
         } else if (args[0] === '-c') {
           const code = args.slice(1).join(' ')
+          if (!pyodide) {
+            setHistory((prev) => [...prev, { input: trimmed, output: '⏳ 正在加载 Python 运行时...' }])
+            try {
+              const pyodideModule = await import('pyodide')
+              const pyodideInstance = await pyodideModule.loadPyodide({
+                indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/',
+                stdout: (text: string) => {
+                  setHistory((prev) => {
+                    const lastEntry = prev[prev.length - 1]
+                    if (lastEntry && !lastEntry.input) {
+                      return [...prev.slice(0, -1), { input: '', output: lastEntry.output + text }]
+                    }
+                    return [...prev, { input: '', output: text }]
+                  })
+                },
+                stderr: (text: string) => {
+                  setHistory((prev) => [...prev, { input: '', output: `\u001b[31m${text}\u001b[0m` }])
+                }
+              })
+              setPyodide(pyodideInstance)
+              await pyodideInstance.runPythonAsync(code)
+            } catch (error) {
+              setHistory((prev) => [...prev.slice(0, -1), { input: trimmed, output: `\u001b[31mPython 运行时加载失败: ${error}\u001b[0m\n> ${code}\n${eval(code)}` }])
+            }
+            return
+          }
           try {
-            output = `> ${code}\n${eval(code)}`
+            setHistory((prev) => [...prev, { input: trimmed, output: '' }])
+            await pyodide.runPythonAsync(code)
           } catch (err: unknown) {
-            output = `Traceback (most recent call last):\n  File "<stdin>", line 1, in <module>\n${err instanceof Error ? err.toString() : 'Error'}`
+            output = `\u001b[31mTraceback (most recent call last):\n  File "<stdin>", line 1, in <module>\n${err instanceof Error ? err.toString() : 'Error'}\u001b[0m`
           }
         } else if (args[0] === '-m') {
-          output = `Python 3.11.4\nModule path: ${args[1] || 'not specified'}`
+          output = `Python 3.11.4 (Pyodide)\nModule path: ${args[1] || 'not specified'}`
         } else {
-          output = `Python 3.11.4 (tags/v3.11.4:d23a85b, Jun  6 2023, 00:00:00) [MSC v.1928 64 bit (AMD64)] on win32\nType "help" for more information.`
+          output = `Python 3.11.4 (Pyodide)\nType "help" for more information.\n>>> `
         }
         break
       case 'docker':
@@ -1582,7 +1612,7 @@ usage: rsync [OPTION]... SRC [SRC]... DEST
     }
 
     setHistory((prev) => [...prev, { input: trimmed, output }])
-  }, [cwd, files, addFile, deleteFile, copyFile, moveFile, cmdHistory, theme, username, hostname, searchHistory, closeWindowRef, filesRef, getWindowsRef, renameFileRef, aliases, setAliases])
+  }, [cwd, files, addFile, deleteFile, copyFile, moveFile, cmdHistory, theme, username, hostname, searchHistory, closeWindowRef, filesRef, getWindowsRef, renameFileRef, aliases, setAliases, pyodide])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'c') {
