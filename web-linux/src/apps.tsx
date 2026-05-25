@@ -95,4 +95,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, component: 'QuickCommands', category: 'utilities', defaultWidth: 850, defaultHeight: 550, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
   { id: 'cloud-sync', name: '云同步', icon: '☁️', component: 'CloudSync', category: 'utilities', defaultWidth: 700, defaultHeight: 650, minWidth: 500, minHeight: 450, resizable: true, multiple: false },
   { id: 'code-playground', name: '代码运行器', icon: '🎮', component: 'CodePlayground', category: 'development', defaultWidth: 950, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
+  { id: 'quick-launcher', name: '快速启动器', icon: '🚀', component: 'QuickLauncher', category: 'utilities', defaultWidth: 550, defaultHeight: 650, minWidth: 400, minHeight: 450, resizable: true, multiple: false },
+  { id: 'activity-tracker', name: '活动追踪器', icon: '📊', component: 'ActivityTracker', category: 'utilities', defaultWidth: 500, defaultHeight: 700, minWidth: 400, minHeight: 500, resizable: true, multiple: false },
 ]
