@@ -32,33 +32,6 @@ const quickActions = [
   { icon: '🐛', label: '调试', action: '帮我找出代码中的bug' },
 ];
 
-const topics = [
-  {
-    title: '🐍 Python',
-    icon: '🐍',
-    description: '学习Python编程基础和进阶技巧',
-    examples: ['脚本编写', '数据分析', 'Web开发', '自动化']
-  },
-  {
-    title: '⚛️ React',
-    icon: '⚛️',
-    description: '掌握现代React开发',
-    examples: ['组件设计', 'Hooks', '状态管理', '性能优化']
-  },
-  {
-    title: '📊 算法',
-    icon: '📊',
-    description: '算法和数据结构',
-    examples: ['排序算法', '搜索算法', '图算法', '动态规划']
-  },
-  {
-    title: '🔧 DevOps',
-    icon: '🔧',
-    description: '开发运维工具和实践',
-    examples: ['Docker', 'Git', 'CI/CD', '监控']
-  },
-];
-
 export default function AIHelper() {
   const theme = useStore((s) => s.theme);
   const openApp = useStore((s) => s.openApp);

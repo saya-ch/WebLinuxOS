@@ -30,8 +30,7 @@ const COMMANDS = [
   'disk-usage', 'process-list', 'network-stats', 'system-info', 'memory-info', 'cpu-info',
   'version', 'credits', 'about', 'todo', 'notes', 'encrypt', 'decrypt',
   'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
-  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon',
-  'tip', 'joke', 'quote', 'color', 'sysinfo', 'sync', 'clear-cache',
+  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -603,75 +602,6 @@ export default function Terminal() {
         ]
         output = fortunes[Math.floor(Math.random() * fortunes.length)]
         break
-      case 'tip': {
-        const tips = [
-          `💡 Pro Tip: 使用 Ctrl+L 快速清空终端屏幕`,
-          `💡 Pro Tip: 使用 ↑/↓ 键浏览命令历史`,
-          `💡 Pro Tip: 使用 Tab 键自动补全命令和文件名`,
-          `💡 Pro Tip: 使用 alias 命令创建命令别名，如 alias ll='ls -la'`,
-          `💡 Pro Tip: 使用 python3 命令直接在浏览器中运行 Python 代码`,
-          `💡 Pro Tip: 使用 neofetch 命令查看系统详细信息`,
-          `💡 Pro Tip: 使用 calc 命令进行数学计算，如 calc 2+2*3`,
-          `💡 Pro Tip: 右键桌面可以快速打开应用和更换壁纸`,
-          `💡 Pro Tip: 使用 Ctrl+Alt+方向键切换虚拟桌面`,
-          `💡 Pro Tip: 在文件管理器中双击文件可以直接打开`,
-          `💡 Pro Tip: 使用搜索引擎查找更多信息`,
-          `💡 Pro Tip: 定期使用云同步功能备份重要数据`,
-          `💡 Pro Tip: 使用 Alt+Tab 快速切换窗口`,
-          `💡 Pro Tip: Ctrl+Shift+T 可以快速打开新终端窗口`,
-        ]
-        output = tips[Math.floor(Math.random() * tips.length)]
-        break
-      }
-      case 'joke': {
-        const jokes = [
-          `😄 为什么程序员总是分不清万圣节和圣诞节?\n   因为 Oct 31 = Dec 25`,
-          `😄 程序员最讨厌的两件事：\n   1. 写文档\n   2. 别人不写文档`,
-          `😄 "这个功能很简单。" - 产品经理\n   (三天后...)\n   "为什么这么复杂?"`,
-          `😄 程序员相亲：\n   "你好，我是程序员"\n   "哦，你会修电脑吗?"\n   "..."`,
-          `😄 为什么程序员喜欢使用 Linux?\n   因为 Windows 让他蓝屏(macOS 让他白屏)`,
-          `😄 一个 SQL 查询走进酒吧，\n   看到两张表，问：\n   "可以 JOIN 吗?"`,
-          `😄 程序员的三种境界：\n   1. 看代码是代码\n   2. 看代码不是代码\n   3. 看代码还是代码`,
-          `😄 世界上最远的距离是：\n   你在我面前，却在我 127.0.0.1 的另一边`,
-          `😄 为什么程序员讨厌户外运动?\n   因为户外没有 "sudo"`,
-          `😄 代码写得好，bug 就像捉迷藏，\n   代码写得烂，bug 像打地鼠一样冒出来`,
-        ]
-        output = jokes[Math.floor(Math.random() * jokes.length)]
-        break
-      }
-      case 'quote': {
-        const quotes = [
-          `"Talk is cheap. Show me the code." - Linus Torvalds`,
-          `"First, solve the problem. Then, write the code." - Jon Bentley`,
-          `"Code is like humor. When you have to explain it, it's bad." - Cory House`,
-          `"Simplicity is the soul of efficiency." - Austin Freeman`,
-          `"Make it work, make it right, make it fast." - Kent Beck`,
-          `"Any fool can write code that a computer can understand. Good programmers write code that humans can understand." - Martin Fowler`,
-          `"Programming is not about typing, it's about thinking." - Rich Hickey`,
-          `"The best code is no code at all." - Jeff Atwood`,
-          `"Clean code always looks like it was written by someone who cares." - Robert C. Martin`,
-          `"It's not a bug, it's an undocumented feature."`,
-        ]
-        output = quotes[Math.floor(Math.random() * quotes.length)]
-        break
-      }
-      case 'color': {
-        const r = Math.floor(Math.random() * 256)
-        const g = Math.floor(Math.random() * 256)
-        const b = Math.floor(Math.random() * 256)
-        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
-        const hsl = `hsl(${Math.round(Math.random() * 360)}, ${70 + Math.round(Math.random() * 30)}%, ${40 + Math.round(Math.random() * 20)}%)`
-        output = [
-          `🎨 随机颜色生成器`,
-          ``,
-          `HEX: ${hex.toUpperCase()}`,
-          `RGB: rgb(${r}, ${g}, ${b})`,
-          `HSL: ${hsl}`,
-          ``,
-          `预览: ` + '█'.repeat(20),
-        ].join('\n')
-        break
-      }
       }
       case 'sl': {
         output = [

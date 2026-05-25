@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
 import { useStore } from '../../store'
 
 interface Particle {
@@ -72,8 +72,6 @@ const Desktop = memo(function Desktop() {
   const [particles, setParticles] = useState<Particle[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  
-  const particleRef = useRef({ x: 0, y: 0 })
 
   const initializeParticles = useCallback(() => {
     const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
