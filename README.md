@@ -10,8 +10,16 @@ WebLinuxOS is a feature-rich web-based Linux desktop environment that runs entir
 - Complete desktop experience with multi-window management and virtual desktops
 - Virtual file system with file operations and persistent storage
 - Feature-rich terminal with 80+ commands and Python runtime support
-- 70+ pre-installed applications covering development, office, entertainment, and utilities
+- 80+ pre-installed applications covering development, office, entertainment, and utilities
 - Real API integrations providing practical network tools
+- Activity tracking and productivity insights
+- Dark/Light theme support
+
+## Live Demo
+
+Try WebLinuxOS directly in your browser:
+
+[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
 
 ## Desktop Environment
 
@@ -21,6 +29,7 @@ WebLinuxOS is a feature-rich web-based Linux desktop environment that runs entir
 - **Dynamic Wallpaper**: Support for static and animated wallpapers
 - **Dark/Light Theme**: Theme switching support
 - **Global Shortcuts**: Comprehensive keyboard shortcuts
+- **Activity Tracking**: Monitor application usage patterns
 
 ## Terminal Emulator
 
@@ -29,26 +38,41 @@ WebLinuxOS is a feature-rich web-based Linux desktop environment that runs entir
 - Command history and auto-completion
 - Fun commands (cowsay, fortune, sl, matrix, figlet)
 - Text processing tools (base64, hash, calc, prime)
+- System monitoring commands (top, ps, df, free)
 
 ## Applications
 
 ### System Tools
-- File Manager, Terminal, System Monitor, Settings, Software Center, Disk Analyzer, Task Manager
+- File Manager, Terminal, System Monitor, Settings, Software Center
+- Disk Analyzer, Task Manager, Process Monitor, Network Monitor
+- Firewall, User Manager, Backup Tool, Archive Manager
+- System Dashboard, Performance Monitor, Log Viewer
 
 ### Development Tools
-- Code Editor, Code Playground, API Tester, JSON Formatter, Regex Tester, GitHub Trending, Code Snippets Manager
+- Code Editor, Code Playground, API Tester, JSON Formatter
+- Regex Tester, GitHub Trending, Code Snippets Manager, Code Studio
+- Data Visualization, Quick Commands, Command Reference
 
 ### Office Tools
-- Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Todo List, Notes, Mind Map, Sticky Notes Wall
+- Text Editor, Markdown Editor, Spreadsheet, Presentation
+- Calendar, Todo List, Notes, Mind Map, Sticky Notes Wall
+- Kanban Board, Project Manager, Task Dashboard, Activity Tracker
 
 ### Network Tools
-- Browser, IP & DNS Lookup, Weather, News Reader, Cryptocurrency Tracker
+- Browser, IP & DNS Lookup, Weather, News Reader
+- Cryptocurrency Tracker, Cloud Sync, Email, Chat
 
 ### Multimedia
-- Music Player, Video Player, Paint, Image Viewer, Music Visualizer, Camera, Sound Recorder
+- Music Player, Video Player, Paint, Image Viewer
+- Music Visualizer, Camera, Sound Recorder, Screen Recorder
 
 ### Utilities
-- Calculator, Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Currency Converter, Voice Transcriber
+- Calculator, Password Manager, Pomodoro Timer, Color Picker
+- QR Generator, Unit Converter, Currency Converter, Voice Transcriber
+- Dictionary, Translator, Character Map, Font Viewer, Magnifier
+
+### Games
+- Snake, Tetris, Virtual Pet, Particle System
 
 ## Technology Stack
 
@@ -118,7 +142,7 @@ npm run deploy
 ```
 web-linux/
 ├── src/
-│   ├── apps/              # Application components (70+ apps)
+│   ├── apps/              # Application components (80+ apps)
 │   ├── components/        # Core UI components
 │   │   └── desktop/       # Desktop, Windows, Taskbar, Launcher
 │   ├── store.tsx          # Zustand global state management
@@ -163,6 +187,20 @@ MIT License
 
 ## Changelog
 
+### v3.5.0 (2026-05-26)
+
+**New Features**
+- Activity Tracker application - Tracks application usage patterns and provides productivity insights
+- Learning Platform application - Interactive learning resources and tutorials
+- Enhanced AI Helper with code generation and execution capabilities
+- System Dashboard with comprehensive system metrics visualization
+
+**Code Quality Improvements**
+- Fixed ActivityTracker useEffect setState cascade rendering issue
+- Optimized component rendering performance across the application
+- Improved TypeScript type definitions
+- Enhanced error handling mechanisms
+
 ### v3.4.0 (2026-05-26)
 
 **New Features**
@@ -185,9 +223,7 @@ MIT License
 
 **Code Quality Improvements**
 - Fixed Date.now() impure function call in AIHelper component
-- Fixed useEffect setState cascade rendering issue in ActivityTracker component
 - Removed unused variables and functions in SystemMonitor component
-- Optimized component rendering performance
 
 ### v3.2.0 (2026-05-26)
 
@@ -196,9 +232,7 @@ MIT License
 
 **Code Quality Improvements**
 - Fixed ESLint errors and unnecessary escape characters
-- Fixed React 19 purity warnings and optimized component rendering performance
-- Improved code formatting in code snippets manager
-- Optimized TypeScript type definitions in IPLookup component
+- Fixed React 19 purity warnings
 
 ### v3.1.0 (2026-05-26)
 

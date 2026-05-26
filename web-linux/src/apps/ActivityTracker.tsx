@@ -104,15 +104,13 @@ export default function ActivityTracker() {
     }
   }, [windows, currentSession])
 
-  // 定期更新当前会话
+  // 定期更新当前会话时间
   useEffect(() => {
     const interval = setInterval(() => {
-      if (currentSession) {
-        // 触发重渲染以更新UI
-      }
+      setCurrentSession(prev => prev ? { ...prev, startTime: prev.startTime } : null)
     }, 1000)
     return () => clearInterval(interval)
-  }, [currentSession])
+  }, [])
 
   // 生成统计数据
   const stats = useMemo(() => {
