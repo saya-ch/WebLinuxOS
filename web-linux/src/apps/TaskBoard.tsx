@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { Plus, Trash2, Edit2, CheckCircle2, Clock, Calendar, Tag } from 'lucide-react'
+import { useState, useCallback, useMemo } from 'react'
+import { Plus, Trash2, Edit2, Clock } from 'lucide-react'
 
 interface Task {
   id: string
@@ -69,12 +69,12 @@ export default function TaskBoard() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [showModal, setShowModal] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
-  const [newTask, setNewTask] = useState({
+  const [newTask, setNewTask] = useState<Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'tags'>>({
     title: '',
     description: '',
-    status: 'todo' as const,
-    priority: 'medium' as const,
-    tags: [] as string[],
+    status: 'todo',
+    priority: 'medium',
+    tags: [],
   })
   const [tagInput, setTagInput] = useState('')
   const [draggedTask, setDraggedTask] = useState<string | null>(null)

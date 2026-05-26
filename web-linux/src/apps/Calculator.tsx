@@ -1,7 +1,12 @@
 import { useState, useCallback, useMemo } from 'react'
 
 // 交互式按钮组件
-const InteractiveButton = ({ style, children, onClick, disabled }) => {
+const InteractiveButton = ({ style, children, onClick, disabled = false }: { 
+  style: React.CSSProperties, 
+  children: React.ReactNode, 
+  onClick?: () => void, 
+  disabled?: boolean 
+}) => {
   const [isPressed, setIsPressed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   
@@ -837,10 +842,10 @@ export default function Calculator() {
       {/* 第十行：更多函数 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={handleTanh}>tanh</InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
       </div>
     </div>
   )

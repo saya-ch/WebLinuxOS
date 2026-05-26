@@ -102,6 +102,7 @@ The built-in terminal provides a full-featured command-line interface:
 - QR Generator, Unit Converter, Currency Converter, Voice Transcriber
 - Magnifier, Font Viewer, System Toolbox
 - **NEW** Network Speed Test for measuring connection quality
+- **NEW** Focus Mode - Pomodoro timer with task tracking and ambient sounds
 
 #### Games
 - Snake Game, Tetris, Virtual Pet, Particle System
@@ -485,7 +486,14 @@ SOFTWARE.
 
 ## Version History
 
-### v3.7.0 (Current)
+### v3.8.0 (Current)
+- Added Focus Mode application - Pomodoro timer with task tracking and ambient sounds
+- Fixed Calculator app TypeScript errors
+- Fixed Task Board app unused imports and type issues
+- Improved overall type safety
+- Enhanced build process stability
+
+### v3.7.0
 - Added Code Diff Viewer application
 - Added Image Optimizer with multiple format support
 - Added Network Speed Test tool
