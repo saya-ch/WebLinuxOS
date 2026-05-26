@@ -100,7 +100,7 @@ export default function NewsReader() {
   }
 
   // 获取真实新闻数据
-  const fetchSpaceflightNews = async (category: string, _search?: string) => {
+  const fetchSpaceflightNews = async (category: string) => {
     try {
       const url = `${SPACEFLIGHT_NEWS_API}/articles?limit=12&ordering=-published_at`
       
@@ -134,13 +134,13 @@ export default function NewsReader() {
     return { articles: getMockArticles(category, nowTimestamp) }
   }
 
-  const loadNews = useCallback(async (category: string, search?: string) => {
+  const loadNews = useCallback(async (category: string) => {
     setLoading(true)
     setError(null)
     try {
       let response
       if (category === 'technology' || category === 'science') {
-        response = await fetchSpaceflightNews(category, search)
+        response = await fetchSpaceflightNews(category)
       } else {
         response = await fetchMockNews(category)
       }
@@ -155,7 +155,7 @@ export default function NewsReader() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      loadNews(selectedCategory, searchQuery)
+      loadNews(selectedCategory)
       setSearchMode(true)
     }
   }

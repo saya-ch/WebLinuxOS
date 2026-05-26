@@ -27,16 +27,16 @@ const SystemDashboard = () => {
   const [uptime, setUpTime] = useState(0)
   const [activeTab, setActiveTab] = useState<'overview' | 'performance' | 'apps' | 'storage'>('overview')
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  // Start time for uptime
-  const startTime = useRef(Date.now())
+  const startTime = useRef<number>(0)
 
   useEffect(() => {
+    startTime.current = Date.now()
     // Collect initial stats
     const initialStats: SystemStat[] = []
+    const now = Date.now()
     for (let i = 0; i < 20; i++) {
       initialStats.push({
-        time: Date.now() - (20 - i) * 1000,
+        time: now - (20 - i) * 1000,
         cpu: 30 + Math.random() * 40,
         memory: 40 + Math.random() * 30,
         network: 10 + Math.random() * 50

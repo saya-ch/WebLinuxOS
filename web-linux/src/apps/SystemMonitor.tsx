@@ -128,8 +128,10 @@ export default function SystemMonitor() {
   const [processes, setProcesses] = useState<ProcessInfo[]>([])
   const [cpuHistory, setCpuHistory] = useState<number[]>(Array(20).fill(25))
   const [memHistory, setMemHistory] = useState<number[]>(Array(20).fill(50))
+  const [uptime, setUptime] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 })
 
   useEffect(() => {
+    const startTime = Date.now()
     const generateProcesses = () => {
       const processNames = ['systemd', 'terminal', 'browser', 'file-manager', 'code-editor', 'music-player', 'weather', 'calculator', 'task-manager', 'settings']
       const newProcesses: ProcessInfo[] = processNames.map((name, i) => ({
@@ -162,6 +164,12 @@ export default function SystemMonitor() {
         packetsSent: prev.packetsSent + Math.floor(Math.random() * 10),
         packetsReceived: prev.packetsReceived + Math.floor(Math.random() * 15),
       }))
+
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000)
+      setUptime({
+        hours: Math.floor(elapsedSeconds / 3600),
+        minutes: Math.floor((elapsedSeconds % 3600) / 60)
+      })
 
       setCpuHistory(prev => [...prev.slice(1), newCpuUsage])
       setMemHistory(prev => [...prev.slice(1), newMemUsage])
@@ -326,7 +334,7 @@ export default function SystemMonitor() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: '#888', fontSize: '13px' }}>运行时间</span>
                 <span style={{ color: '#fff', fontSize: '13px' }}>
-                  {Math.floor(Math.random() * 24)}小时 {Math.floor(Math.random() * 60)}分钟
+                  {uptime.hours}小时 {uptime.minutes}分钟
                 </span>
               </div>
             </div>
