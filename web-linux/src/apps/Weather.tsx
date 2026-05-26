@@ -1,4 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
+import {
+  Sun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog,
+  Droplets, Wind, Eye, Thermometer, Sunrise, Sunset,
+  Search, MapPin, AlertCircle
+} from 'lucide-react'
 
 interface CurrentWeather {
   temperature: number
@@ -43,31 +48,31 @@ interface GeocodingResponse {
   results?: GeocodingResult[]
 }
 
-const weatherIcons: Record<number, { icon: string; desc: string }> = {
-  0: { icon: '☀️', desc: '晴' },
-  1: { icon: '🌤️', desc: '大部晴朗' },
-  2: { icon: '⛅', desc: '局部多云' },
-  3: { icon: '☁️', desc: '阴' },
-  45: { icon: '🌫️', desc: '雾' },
-  48: { icon: '🌫️', desc: '雾凇' },
-  51: { icon: '🌦️', desc: '小毛毛雨' },
-  53: { icon: '🌦️', desc: '中毛毛雨' },
-  55: { icon: '🌧️', desc: '大毛毛雨' },
-  61: { icon: '🌧️', desc: '小雨' },
-  63: { icon: '🌧️', desc: '中雨' },
-  65: { icon: '🌧️', desc: '大雨' },
-  71: { icon: '🌨️', desc: '小雪' },
-  73: { icon: '🌨️', desc: '中雪' },
-  75: { icon: '❄️', desc: '大雪' },
-  77: { icon: '🌨️', desc: '雪粒' },
-  80: { icon: '🌦️', desc: '阵雨' },
-  81: { icon: '🌧️', desc: '中阵雨' },
-  82: { icon: '⛈️', desc: '大阵雨' },
-  85: { icon: '🌨️', desc: '阵雪' },
-  86: { icon: '❄️', desc: '大阵雪' },
-  95: { icon: '⛈️', desc: '雷暴' },
-  96: { icon: '⛈️', desc: '雷暴+冰雹' },
-  99: { icon: '⛈️', desc: '雷暴+大冰雹' },
+const weatherIcons: Record<number, { icon: typeof Sun; desc: string }> = {
+  0: { icon: Sun, desc: '晴' },
+  1: { icon: Sun, desc: '大部晴朗' },
+  2: { icon: Cloud, desc: '局部多云' },
+  3: { icon: Cloud, desc: '阴' },
+  45: { icon: CloudFog, desc: '雾' },
+  48: { icon: CloudFog, desc: '雾凇' },
+  51: { icon: Droplets, desc: '小毛毛雨' },
+  53: { icon: Droplets, desc: '中毛毛雨' },
+  55: { icon: CloudRain, desc: '大毛毛雨' },
+  61: { icon: CloudRain, desc: '小雨' },
+  63: { icon: CloudRain, desc: '中雨' },
+  65: { icon: CloudRain, desc: '大雨' },
+  71: { icon: CloudSnow, desc: '小雪' },
+  73: { icon: CloudSnow, desc: '中雪' },
+  75: { icon: CloudSnow, desc: '大雪' },
+  77: { icon: CloudSnow, desc: '雪粒' },
+  80: { icon: CloudRain, desc: '阵雨' },
+  81: { icon: CloudRain, desc: '中阵雨' },
+  82: { icon: CloudLightning, desc: '大阵雨' },
+  85: { icon: CloudSnow, desc: '阵雪' },
+  86: { icon: CloudSnow, desc: '大阵雪' },
+  95: { icon: CloudLightning, desc: '雷暴' },
+  96: { icon: CloudLightning, desc: '雷暴+冰雹' },
+  99: { icon: CloudLightning, desc: '雷暴+大冰雹' },
 }
 
 const uvIndexLevels = [
@@ -117,6 +122,12 @@ function getBackgroundGradient(weatherCode: number, isDay: boolean): string {
   return 'linear-gradient(180deg, #263238 0%, #455a64 50%, #607d8b 100%)'
 }
 
+const WeatherIcon = ({ code, size = 24, className = '' }: { code: number; size?: number; className?: string }) => {
+  const info = weatherIcons[code] || { icon: Sun, desc: '未知' }
+  const Icon = info.icon
+  return <Icon size={size} className={className} />
+}
+
 export default function Weather() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [searchQuery, setSearchQuery] = useState('')
@@ -136,7 +147,7 @@ export default function Weather() {
 
   const weatherInfo = useMemo(() => {
     if (!currentWeather) return null
-    const info = weatherIcons[currentWeather.weatherCode] || { icon: '🌤️', desc: '未知' }
+    const info = weatherIcons[currentWeather.weatherCode] || { icon: Sun, desc: '未知' }
     return { ...info, ...currentWeather }
   }, [currentWeather])
 
@@ -252,11 +263,11 @@ export default function Weather() {
   }, [currentWeather])
 
   return (
-    <div 
-      className="app-container app-weather" 
-      style={{ 
-        background: backgroundGradient, 
-        color: '#fff', 
+    <div
+      className="app-container app-weather"
+      style={{
+        background: backgroundGradient,
+        color: '#fff',
         padding: 0,
         overflow: 'auto',
         minHeight: '100%',
@@ -298,6 +309,8 @@ export default function Weather() {
                   cursor: 'pointer',
                   fontSize: 16,
                   backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
               >
                 ✕
@@ -320,11 +333,15 @@ export default function Weather() {
                       fontSize: 15,
                       borderBottom: i < searchResults.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none',
                       transition: 'background 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    📍 {city.name}, {city.country}
+                    <MapPin size={16} />
+                    {city.name}, {city.country}
                   </button>
                 ))}
               </div>
@@ -351,20 +368,25 @@ export default function Weather() {
               gap: 8,
             }}
           >
-            🔍 搜索城市...
+            <Search size={16} />
+            搜索城市...
           </button>
         )}
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '60px 20' }}>
-            <div style={{ fontSize: 48, animation: 'spin 1s linear infinite' }}>⏳</div>
+            <div style={{ fontSize: 48, animation: 'spin 1s linear infinite' }}>
+              <Sun size={48} />
+            </div>
             <div style={{ marginTop: 12, color: 'rgba(255,255,255,0.7)', fontSize: 15 }}>加载天气数据...</div>
           </div>
         )}
 
         {error && !loading && (
           <div style={{ textAlign: 'center', padding: '60px 20' }}>
-            <div style={{ fontSize: 48 }}>⚠️</div>
+            <div style={{ fontSize: 48 }}>
+              <AlertCircle size={48} />
+            </div>
             <div style={{ marginTop: 12, color: '#ffcccb', fontSize: 15 }}>{error}</div>
             <button
               onClick={() => fetchWeather(39.9042, 116.4074, '北京')}
@@ -395,7 +417,9 @@ export default function Weather() {
             </div>
 
             <div style={{ textAlign: 'center', marginBottom: 28, padding: '24px 20', background: 'rgba(255,255,255,0.1)', borderRadius: 24, backdropFilter: 'blur(10px)' }}>
-              <div style={{ fontSize: 80, marginBottom: 8 }}>{weatherInfo.icon}</div>
+              <div style={{ fontSize: 80, marginBottom: 8 }}>
+                <WeatherIcon code={weatherInfo.weatherCode} size={80} />
+              </div>
               <div style={{ fontSize: 72, fontWeight: 200, lineHeight: 1, letterSpacing: -2 }}>{Math.round(weatherInfo.temperature)}°C</div>
               <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.85)', marginTop: 8, fontWeight: 500 }}>{weatherInfo.desc}</div>
             </div>
@@ -403,14 +427,14 @@ export default function Weather() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
               <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 20 }}>💧</span>
+                  <Droplets size={20} />
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>湿度</span>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 600 }}>{weatherInfo.humidity}%</div>
               </div>
               <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 20 }}>💨</span>
+                  <Wind size={20} />
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>风速</span>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 600 }}>{weatherInfo.windSpeed} km/h</div>
@@ -418,14 +442,14 @@ export default function Weather() {
               </div>
               <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 20 }}>🌡️</span>
+                  <Thermometer size={20} />
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>气压</span>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 600 }}>{Math.round(weatherInfo.pressure || 0)} hPa</div>
               </div>
               <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 20 }}>👁️</span>
+                  <Eye size={20} />
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>能见度</span>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 600 }}>{weatherInfo.visibility?.toFixed(1) || '0'} km</div>
@@ -433,10 +457,9 @@ export default function Weather() {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>📅 24小时预报</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>24小时预报</div>
               <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
                 {hourlyForecast.map((hour, i) => {
-                  const info = weatherIcons[hour.weatherCode] || { icon: '🌤️', desc: '未知' }
                   return (
                     <div
                       key={i}
@@ -451,10 +474,12 @@ export default function Weather() {
                       }}
                     >
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginBottom: 6 }}>{formatHour(hour.time)}</div>
-                      <div style={{ fontSize: 28, marginBottom: 6 }}>{info.icon}</div>
+                      <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'center' }}>
+                        <WeatherIcon code={hour.weatherCode} size={28} />
+                      </div>
                       <div style={{ fontSize: 16, fontWeight: 600 }}>{hour.temperature}°</div>
                       {hour.precipitation > 0 && (
-                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>💧 {hour.precipitation}%</div>
+                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{hour.precipitation}%</div>
                       )}
                     </div>
                   )
@@ -463,10 +488,9 @@ export default function Weather() {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>🗓️ 7天预报</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>7天预报</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {forecast.map((day, i) => {
-                  const info = weatherIcons[day.weatherCode] || { icon: '🌤️', desc: '未知' }
                   return (
                     <div
                       key={i}
@@ -482,12 +506,12 @@ export default function Weather() {
                     >
                       <span style={{ width: 60, fontWeight: 600, fontSize: 14 }}>{getDayName(day.date, i)}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 100 }}>
-                        <span style={{ fontSize: 28 }}>{info.icon}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, width: 45 }}>{info.desc}</span>
+                        <WeatherIcon code={day.weatherCode} size={28} />
+                        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, width: 45 }}>{weatherIcons[day.weatherCode]?.desc}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {day.precipitationSum > 0 && (
-                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>💧{day.precipitationSum}mm</span>
+                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{day.precipitationSum}mm</span>
                         )}
                         <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 500 }}>
                           <span style={{ color: 'rgba(255,255,255,0.6)' }}>{day.minTemp}°</span>
@@ -504,19 +528,19 @@ export default function Weather() {
             {forecast[0] && (
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px', background: 'rgba(255,255,255,0.1)', borderRadius: 20, fontSize: 14, backdropFilter: 'blur(10px)' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 4 }}>🌅</div>
+                  <Sunrise size={24} style={{ marginBottom: 4 }} />
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>日出</div>
                   <div style={{ fontWeight: 600, marginTop: 2 }}>{forecast[0].sunrise}</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 4 }}>🌞</div>
+                  <Sun size={24} style={{ marginBottom: 4 }} />
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>紫外线</div>
                   <div style={{ fontWeight: 600, marginTop: 2, color: getUvLevel(forecast[0].uvIndexMax).color }}>
                     {forecast[0].uvIndexMax.toFixed(1)} {getUvLevel(forecast[0].uvIndexMax).label}
                   </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 4 }}>🌇</div>
+                  <Sunset size={24} style={{ marginBottom: 4 }} />
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>日落</div>
                   <div style={{ fontWeight: 600, marginTop: 2 }}>{forecast[0].sunset}</div>
                 </div>
