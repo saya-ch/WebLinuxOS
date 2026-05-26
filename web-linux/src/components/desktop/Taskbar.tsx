@@ -1,6 +1,65 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
 
+interface DesktopMenuProps {
+  winId: string
+  onClose: () => void
+}
+
+const DesktopMenu = memo(function DesktopMenu({ winId, onClose }: DesktopMenuProps) {
+  const moveWindowToDesktop = useStore((s) => s.moveWindowToDesktop)
+  const currentDesktop = useStore((s) => s.currentDesktop)
+  const totalDesktops = useStore((s) => s.totalDesktops)
+
+  useEffect(() => {
+    const handleClickOutside = () => onClose()
+    setTimeout(() => document.addEventListener('click', handleClickOutside), 0)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [onClose])
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        background: 'var(--context-menu-bg)',
+        border: '1px solid var(--window-border)',
+        borderRadius: '8px',
+        padding: '4px',
+        zIndex: 99999,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        minWidth: '180px',
+        backdropFilter: 'blur(10px)',
+        backgroundColor: 'rgba(30, 30, 50, 0.95)',
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {Array.from({ length: totalDesktops }, (_, i) => i + 1).map((dnum) => (
+        <div
+          key={dnum}
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          onClick={() => {
+            moveWindowToDesktop(winId, dnum)
+            onClose()
+          }}
+        >
+          <span style={{ width: '20px', textAlign: 'center' }}>{dnum}</span>
+          <span>{dnum === currentDesktop ? '当前工作区' : `移动到工作区 ${dnum}`}</span>
+        </div>
+      ))}
+    </div>
+  )
+})
+
 const Taskbar = memo(function Taskbar() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
@@ -17,7 +76,6 @@ const Taskbar = memo(function Taskbar() {
   const switchDesktop = useStore((s) => s.switchDesktop)
   const addDesktop = useStore((s) => s.addDesktop)
   const removeDesktop = useStore((s) => s.removeDesktop)
-  const moveWindowToDesktop = useStore((s) => s.moveWindowToDesktop)
   const setTheme = useStore((s) => s.setTheme)
 
   const [time, setTime] = useState(new Date())
@@ -29,8 +87,11 @@ const Taskbar = memo(function Taskbar() {
   const [wifiEnabled, setWifiEnabled] = useState(true)
   const [bluetoothEnabled, setBluetoothEnabled] = useState(false)
   const [nightMode, setNightMode] = useState(false)
-  
-  // 同步亮度到页面
+  const [contextMenu, setContextMenu] = useState<{ visible: boolean; winId: string }>({
+    visible: false,
+    winId: '',
+  })
+
   useEffect(() => {
     document.documentElement.style.filter = `brightness(${brightness}%)`
   }, [brightness])
@@ -157,42 +218,11 @@ const Taskbar = memo(function Taskbar() {
                 title={`${win.title}${win.minimized ? ' (已最小化)' : ''}`}
                 onContextMenu={(e) => {
                   e.preventDefault()
-                  const menu = document.createElement('div')
-                  menu.style.cssText = `
-                    position: fixed;
-                    background: var(--context-menu-bg);
-                    border: 1px solid var(--window-border);
-                    border-radius: 8px;
-                    padding: 4px;
-                    z-index: 99999;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                    min-width: 180px;
-                  `
-                  menu.innerHTML = desktopNumbers.map((dnum) => `
-                    <div style="padding: 8px 12px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
-                      <span style="width: 20px; text-align: center;">${dnum}</span>
-                      <span>${dnum === currentDesktop ? '当前工作区' : '移动到工作区 ' + dnum}</span>
-                    </div>
-                  `).join('')
-                  menu.style.left = `${e.clientX}px`
-                  menu.style.top = `${e.clientY}px`
-                  
-                  menu.querySelectorAll('div').forEach((el, idx) => {
-                    el.addEventListener('click', () => {
-                      moveWindowToDesktop(win.id, desktopNumbers[idx])
-                      document.body.removeChild(menu)
-                    })
-                    el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,255,255,0.1)')
-                    el.addEventListener('mouseleave', () => el.style.background = 'transparent')
+                  e.stopPropagation()
+                  setContextMenu({
+                    visible: true,
+                    winId: win.id,
                   })
-                  
-                  const closeMenu = () => {
-                    if (document.body.contains(menu)) document.body.removeChild(menu)
-                    document.removeEventListener('click', closeMenu)
-                  }
-                  
-                  document.body.appendChild(menu)
-                  setTimeout(() => document.addEventListener('click', closeMenu), 0)
                 }}
               >
                 <span className="taskbar-button-icon">{app?.icon}</span>
@@ -205,7 +235,7 @@ const Taskbar = memo(function Taskbar() {
       <div className="taskbar-right">
         <div className="taskbar-tray-item" title="快速设置" onClick={(e) => { e.stopPropagation(); setShowQuickSettings(!showQuickSettings) }} style={{ cursor: 'pointer', transition: 'background 0.2s, transform 0.1s' }}>⚡</div>
         <div className="taskbar-tray-item" title="网络已连接" onClick={() => openApp('network-monitor')} style={{ cursor: 'pointer', transition: 'background 0.2s, transform 0.1s' }}>📶</div>
-        <div className="taskbar-tray-item" title={`音量: ${volume}%`} onClick={() => setVolume(v => v === 0 ? 80 : v - 20)} style={{ cursor: 'pointer', transition: 'background 0.2s' }}>{getVolumeIcon()}</div>
+        <div className="taskbar-tray-item" title={`音量: ${volume}%`} onClick={() => setVolume( v => v === 0 ? 80 : v - 20)} style={{ cursor: 'pointer', transition: 'background 0.2s' }}>{getVolumeIcon()}</div>
         <div className="taskbar-tray-item" title={`电池: ${Math.round(battery)}% ${isCharging ? '(充电中)' : ''}`} onClick={() => openApp('power-manager')} style={{ cursor: 'pointer', transition: 'background 0.2s' }}>{getBatteryIcon()}</div>
         <div
           className="taskbar-tray-item"
@@ -220,6 +250,13 @@ const Taskbar = memo(function Taskbar() {
           <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.1 }}>{formatDate(time)}</div>
         </div>
       </div>
+
+      {contextMenu.visible && (
+        <DesktopMenu
+          winId={contextMenu.winId}
+          onClose={() => setContextMenu({ ...contextMenu, visible: false })}
+        />
+      )}
 
       {showQuickSettings && (
         <div className="quick-settings-panel" onClick={(e) => e.stopPropagation()}>

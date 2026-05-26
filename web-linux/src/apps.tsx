@@ -167,6 +167,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'ai-helper', name: 'AI 助手', icon: <ChatIcon />, component: 'AIHelper', category: 'utilities', defaultWidth: 500, defaultHeight: 600, minWidth: 350, minHeight: 400, resizable: true, multiple: false },
   { id: 'kanban-board', name: '任务看板', icon: <BoardIcon />, component: 'KanbanBoard', category: 'office', defaultWidth: 900, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
   { id: 'clipboard-manager', name: '剪贴板管理', icon: <ClipboardIcon />, component: 'ClipboardManager', category: 'utilities', defaultWidth: 800, defaultHeight: 500, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
+  { id: 'clipboard-history', name: '剪贴板历史', icon: '📋', component: 'ClipboardHistory', category: 'utilities', defaultWidth: 600, defaultHeight: 700, minWidth: 400, minHeight: 500, resizable: true, multiple: false },
   { id: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, component: 'QuickCommands', category: 'utilities', defaultWidth: 850, defaultHeight: 550, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
   { id: 'cloud-sync', name: '云同步', icon: '☁️', component: 'CloudSync', category: 'utilities', defaultWidth: 700, defaultHeight: 650, minWidth: 500, minHeight: 450, resizable: true, multiple: false },
   { id: 'code-playground', name: '代码运行器', icon: '🎮', component: 'CodePlayground', category: 'development', defaultWidth: 950, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
@@ -179,4 +180,5 @@ export const appRegistry: AppDefinition[] = [
   { id: 'random-tools', name: '随机工具', icon: <DiceIcon />, component: 'RandomTools', category: 'utilities', defaultWidth: 700, defaultHeight: 700, minWidth: 500, minHeight: 500, resizable: true, multiple: false },
   { id: 'ip-lookup', name: 'IP & DNS 查询', icon: '🌐', component: 'IPLookup', category: 'utilities', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'system-health', name: '系统健康检查', icon: '🩺', component: 'SystemHealthCheck', category: 'system', defaultWidth: 650, defaultHeight: 800, minWidth: 500, minHeight: 600, resizable: true, multiple: false },
+  { id: 'system-toolbox', name: '系统工具箱', icon: '🔧', component: 'SystemToolbox', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
 ]
