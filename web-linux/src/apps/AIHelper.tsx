@@ -172,14 +172,14 @@ function example() {
     };
   };
 
-  const generateResponse = (userInput: string): Message => {
+  const generateResponse = (userInput: string, messageId: string): Message => {
     const lower = userInput.toLowerCase();
     
     // 代码相关
     if (lower.includes('python') || lower.includes('代码') || lower.includes('script')) {
       const snippet = generateCodeSnippet(userInput);
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: `好的，我来帮你写一个代码示例：\n\n你可以复制下面的代码到终端或代码编辑器中运行：`,
         timestamp: new Date(),
@@ -191,9 +191,9 @@ function example() {
     // React 相关
     if (lower.includes('react') || lower.includes('hook')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
-        content: 'React Hooks 是 React 16.8 引入的新特性，让你可以在函数组件中使用状态和其他 React 特性。\n\n**常用的 Hooks：**\n\n• **useState** - 管理组件状态\n• **useEffect** - 处理副作用（数据获取、订阅等）\n• **useContext** - 访问 React Context\n• **useRef** - 引用 DOM 元素或存储可变值\n• **useMemo** - 缓存计算结果\n• **useCallback** - 缓存函数定义\n\n**示例：**\n```javascript\nimport { useState, useEffect } from "react";\n\nfunction MyComponent() {\n  const [count, setCount] = useState(0);\n  \n  useEffect(() => {\n    document.title = \`计数: \${count}\`;\n  }, [count]);\n  \n  return (\n    <button onClick={() => setCount(c => c + 1)}>\n      点击次数: {count}\n    </button>\n  );\n}\n```',
+        content: 'React Hooks 是 React 16.8 引入的新特性，让你可以在函数组件中使用状态和其他 React 特性。\n\n**常用的 Hooks：**\n\n• **useState** - 管理组件状态\n• **useEffect** - 处理副作用（数据获取、订阅等）\n• **useContext** - 访问 React Context\n• **useRef** - 引用 DOM 元素或存储可变值\n• **useMemo** - 缓存计算结果\n• **useCallback** - 缓存函数定义\n\n**示例：**\n```javascript\nimport { useState, useEffect } from "react";\n\nfunction MyComponent() {\n  const [count, setCount] = useState(0);\n  \n  useEffect(() => {\n    document.title = "计数: " + count;\n  }, [count]);\n  \n  return (\n    <button onClick={() => setCount(c => c + 1)}>\n      点击次数: {count}\n    </button>\n  );\n}\n```',
         timestamp: new Date(),
       };
     }
@@ -201,7 +201,7 @@ function example() {
     // 待办事项
     if (lower.includes('待办') || lower.includes('todo')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '创建待办事项是个好主意！🎯\n\n**WebLinux 有多种方式管理待办：**\n\n1. **待办事项应用** - 点击任务栏启动器 → 搜索"待办事项"\n2. **番茄工作法** - 专注工作，使用番茄钟\n3. **任务看板** - 可视化管理多个项目\n\n**你也可以直接在这里创建任务：**\n\n```\n☐ 完成项目报告\n☐ 学习 React Hooks\n☐ 优化代码性能\n☐ 写测试用例\n```',
         timestamp: new Date(),
@@ -211,9 +211,9 @@ function example() {
     // 终端相关
     if (lower.includes('终端') || lower.includes('命令') || lower.includes('terminal')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
-        content: '终端是 WebLinux 的强大工具！💻\n\n**常用命令：**\n\n• \`ls\` - 列出文件\n• \`cd\` - 切换目录\n• \`cat\` - 查看文件内容\n• \`mkdir\` - 创建目录\n• \`rm\` - 删除文件\n• \`python3\` - 运行 Python 代码\n\n**示例：**\n```bash\n# 查看当前目录\nls -la\n\n# 创建文件夹\nmkdir myproject\n\n# 运行 Python\npython3 -c "print(\'Hello!\')"\n\n# 系统信息\nsysinfo\n```\n\n输入 \`help\` 查看所有可用命令！',
+        content: '终端是 WebLinux 的强大工具！💻\n\n**常用命令：**\n\n• `ls` - 列出文件\n• `cd` - 切换目录\n• `cat` - 查看文件内容\n• `mkdir` - 创建目录\n• `rm` - 删除文件\n• `python3` - 运行 Python 代码\n\n**示例：**\n```bash\n# 查看当前目录\nls -la\n\n# 创建文件夹\nmkdir myproject\n\n# 运行 Python\npython3 -c "print(\'Hello!\')"\n\n# 系统信息\nsysinfo\n```\n\n输入 `help` 查看所有可用命令！',
         timestamp: new Date(),
       };
     }
@@ -222,7 +222,7 @@ function example() {
     if (lower.includes('递归') || lower.includes('recursive')) {
       const snippet = generateCodeSnippet('递归');
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '递归是一种强大的编程技巧！🔄\n\n**递归的核心要素：**\n1. **基本情况** - 递归终止条件\n2. **递归情况** - 函数调用自己\n\n让我给你一个示例：',
         timestamp: new Date(),
@@ -234,7 +234,7 @@ function example() {
     // 优化相关
     if (lower.includes('优化') || lower.includes('性能')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '代码优化是个好话题！⚡\n\n**常见优化技巧：**\n\n**1. 避免不必要的重渲染**\n```jsx\n// 使用 React.memo 包装组件\nconst MyComponent = React.memo(({ data }) => {\n  return <div>{data}</div>;\n});\n```\n\n**2. 使用 useMemo 和 useCallback**\n```jsx\nconst memoizedValue = useMemo(() => computeExpensive(a, b), [a, b]);\nconst memoizedCallback = useCallback(() => doSomething(a, b), [a, b]);\n```\n\n**3. 懒加载**\n```jsx\nconst HeavyComponent = React.lazy(() => import("./Heavy"));\n```\n\n**4. 避免在渲染中创建新对象**\n\n需要我详细解释某个优化点吗？',
         timestamp: new Date(),
@@ -244,7 +244,7 @@ function example() {
     // 文件管理
     if (lower.includes('文件') || lower.includes('file')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: 'WebLinux 有强大的文件管理系统！📁\n\n**文件操作：**\n• 双击打开文件\n• 右键查看快捷菜单\n• 拖拽移动文件\n• 支持复制粘贴\n\n**快速访问：**\n• 📄 文档目录\n• 📥 下载目录\n• 🖼️ 图片目录\n• 🎵 音乐目录\n\n你可以直接打开文件管理器体验！',
         timestamp: new Date(),
@@ -254,7 +254,7 @@ function example() {
     // 问候
     if (lower.includes('你好') || lower.includes('hi') || lower.includes('hello')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '你好！很高兴见到你！👋\n\n我是 WebLinux 的 AI 助手，随时为你效劳！\n\n**我可以帮你：**\n• 💻 编写和优化代码\n• 📚 解释技术概念\n• 🎯 提供实用建议\n• 🔧 解决问题\n\n有什么我可以帮你的吗？',
         timestamp: new Date(),
@@ -264,7 +264,7 @@ function example() {
     // 感谢
     if (lower.includes('谢谢') || lower.includes('感谢') || lower.includes('thx')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '不客气！😊\n\n随时欢迎再来问我问题！\n\n如果遇到任何问题，可以：\n• 📖 查看帮助文档\n• 💬 继续和我聊天\n• 🔧 使用终端命令获取帮助',
         timestamp: new Date(),
@@ -274,7 +274,7 @@ function example() {
     // 学习资源推荐
     if (lower.includes('学习') || lower.includes('资源') || lower.includes('教程') && lower.includes('推荐')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '好的学习资源推荐！📚\n\n**编程学习平台：**\n\n• **免费教程**\n  - MDN Web Docs (https://developer.mozilla.org)\n  - freeCodeCamp (https://www.freecodecamp.org)\n  - 阮一峰的网络日志\n\n• **交互式学习**\n  - LeetCode (算法练习)\n  - HackerRank (编程挑战)\n  - Codecademy\n\n• **视频教程**\n  - B站编程教学视频\n  - YouTube 技术频道\n  - Udemy 付费课程(经常打折)\n\n• **中文资源**\n  - 掘金 (https://juejin.cn)\n  - 思否 (https://segmentfault.com)\n  - GitHub 中文精选\n\n**推荐学习路径：**\n1. HTML/CSS/JavaScript 基础\n2. React 或 Vue 框架\n3. Node.js 后端开发\n4. 数据库和 API 设计\n\n想学习哪个方向？我可以给你更具体的建议！',
         timestamp: new Date(),
@@ -284,7 +284,7 @@ function example() {
     // 代码调试
     if (lower.includes('调试') || lower.includes('debug') || lower.includes('bug')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '代码调试技巧！🔧\n\n**通用调试方法：**\n\n**1. 使用 console.log**\n```javascript\nconsole.log("变量值:", variable);\nconsole.log("数据类型:", typeof variable);\n```\n\n**2. 使用断点**\n- 浏览器开发者工具 F12\n- 在 Sources 面板设置断点\n- 观察变量值和调用栈\n\n**3. 检查常见错误**\n• 拼写错误\n• 缺少分号或括号\n• 变量未定义\n• 类型不匹配\n• 异步操作未处理\n\n**4. Python 调试**\n```python\n# 使用 print 调试\nprint(f"变量值: {variable}")\n\n# 使用 pdb\nimport pdb; pdb.set_trace()\n\n# 使用 IDE 断点\n```\n\n**5. 调试心态**\n• 冷静分析错误信息\n• 逐行检查代码\n• 注释掉可疑代码\n• 简化问题到最小复现\n\n有具体的代码问题吗？可以粘贴给我看看！',
         timestamp: new Date(),
@@ -295,7 +295,7 @@ function example() {
     if (lower.includes('weblinux') || (lower.includes('使用') && !lower.includes('教程')) || (lower.includes('教程') && lower.includes('weblinux'))) {
       const isTutorial = lower.includes('教程');
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: isTutorial 
           ? 'WebLinux 完整使用教程！🚀\n\n**第一章：桌面基础**\n\n**1.1 桌面图标**\n• 双击图标启动应用\n• 单击选中图标\n• 右键打开快捷菜单\n\n**1.2 窗口操作**\n• 拖拽标题栏移动窗口\n• 拖拽边缘调整大小\n• 右上角按钮：最小化、最大化、关闭\n\n**1.3 任务栏**\n• 显示运行中的应用\n• 点击切换应用\n• 右下角快速设置\n\n**第二章：应用使用**\n\n**2.1 终端 (Ctrl+Shift+T)**\n• 输入命令操作\n• 支持 Python 编程\n• Tab 键自动补全\n\n**2.2 文件管理器**\n• 浏览器虚拟文件系统\n• 创建、删除、重命名文件\n• 支持拖拽操作\n\n**2.3 代码编辑器**\n• 语法高亮\n• 代码补全\n• 支持多种语言\n\n**第三章：高级功能**\n\n**3.1 多桌面**\n• Ctrl+Alt+1-4 切换桌面\n• 拖拽窗口到其他桌面\n\n**3.2 快捷键**\n• Ctrl+L 打开启动器\n• Alt+Tab 切换窗口\n• Ctrl+Shift+K 智慧搜索\n\n**3.3 自定义**\n• 更换壁纸\n• 切换主题\n• 添加桌面图标\n\n需要我详细解释某个功能吗？'
@@ -307,7 +307,7 @@ function example() {
     // 算法复杂度
     if (lower.includes('算法') || lower.includes('复杂度') || lower.includes('complexity')) {
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '算法复杂度是评估算法效率的重要概念！📊\n\n**时间复杂度（常用）：**\n\n• **O(1)** - 常数时间，如数组访问\n• **O(log n)** - 对数时间，如二分查找\n• **O(n)** - 线性时间，如遍历数组\n• **O(n log n)** - 线性对数时间，如快速排序\n• **O(n²)** - 平方时间，如冒泡排序\n• **O(2^n)** - 指数时间，如递归斐波那契\n• **O(n!)** - 阶乘时间，如旅行商问题\n\n**空间复杂度：**\n\n衡量算法所需的内存空间。\n\n**优化建议：**\n• 选择合适的数据结构\n• 避免嵌套循环\n• 使用缓存\n• 分治法\n\n需要我详细解释某个算法吗？',
         timestamp: new Date(),
@@ -327,7 +327,7 @@ function example() {
         '🎨 图片编辑器 - 滤镜和裁剪',
       ];
       return {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'assistant',
         content: '好的项目创意！💡\n\n**推荐项目列表：**\n\n' + projects.join('\n') + '\n\n**选择项目的标准：**\n1. 符合你的技能水平\n2. 有实际应用价值\n3. 能够持续迭代\n4. 有学习新技术的机会\n\n你想做哪个方向的项目？我可以帮你制定开发计划！',
         timestamp: new Date(),
@@ -341,33 +341,40 @@ function example() {
       '很高兴你提问！🎯\n\n我可以帮你：\n• 解答技术问题\n• 提供代码示例\n• 解释概念\n• 给出建议\n\n请告诉我你需要什么帮助？',
     ];
     
+    // 使用 messageId 的哈希值来选择响应，确保纯函数
+    const responseIndex = parseInt(messageId.slice(-4), 16) % responses.length;
+    
     return {
-      id: Date.now().toString(),
+      id: messageId,
       role: 'assistant',
-      content: responses[Math.floor(Math.random() * responses.length)],
+      content: responses[responseIndex],
       timestamp: new Date(),
     };
   };
 
   const handleSend = () => {
     if (!input.trim()) return;
-    
+
+    const now = Date.now();
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: now.toString(),
       role: 'user',
       content: input,
       timestamp: new Date(),
     };
-    
+
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsTyping(true);
-    
+
+    // 使用固定的延迟范围，避免在渲染期间调用 Math.random
+    const delay = 800 + (now % 1200);
     setTimeout(() => {
-      const aiResponse = generateResponse(input);
+      const messageId = Date.now().toString();
+      const aiResponse = generateResponse(input, messageId);
       setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);
-    }, 800 + Math.random() * 1200);
+    }, delay);
   };
 
   const handleSuggestionClick = (suggestion: string) => {

@@ -55,7 +55,7 @@ const DEFAULT_SNIPPETS: Snippet[] = [
     id: 'snippet-3',
     title: 'React Hooks 示例',
     description: '常用 React Hooks 使用模板',
-    code: 'import { useState, useEffect, useCallback } from \'react\';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  \n  const increment = useCallback(() => {\n    setCount(prev => prev + 1);\n  }, []);\n  \n  useEffect(() => {\n    document.title = `Count: ${count}`;\n  }, [count]);\n  \n  return (\n    <div>\n      <p>{count}</p>\n      <button onClick={increment}>+</button>\n    </div>\n  );\n}',
+    code: "import { useState, useEffect, useCallback } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  \n  const increment = useCallback(() => {\n    setCount(prev => prev + 1);\n  }, []);\n  \n  useEffect(() => {\n    document.title = 'Count: ' + count;\n  }, [count]);\n  \n  return (\n    <div>\n      <p>{count}</p>\n      <button onClick={increment}>+</button>\n    </div>\n  );\n}",
     language: 'javascript',
     tags: ['react', 'hooks'],
     createdAt: Date.now() - 259200000,
