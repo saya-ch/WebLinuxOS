@@ -1,5 +1,44 @@
 import { useState, useCallback, useMemo } from 'react'
 
+// 交互式按钮组件
+const InteractiveButton = ({ style, children, onClick, disabled }) => {
+  const [isPressed, setIsPressed] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  
+  const getButtonStyle = () => {
+    let baseStyle = { ...style }
+    
+    if (isHovered && !disabled) {
+      baseStyle.transform = 'translateY(-2px)'
+      baseStyle.boxShadow = '0 4px 12px rgba(0,0,0,0.3)'
+    }
+    
+    if (isPressed && !disabled) {
+      baseStyle.transform = 'translateY(1px)'
+      baseStyle.boxShadow = '0 1px 4px rgba(0,0,0,0.2)'
+    }
+    
+    return baseStyle
+  }
+  
+  return (
+    <button
+      style={getButtonStyle()}
+      onClick={onClick}
+      disabled={disabled}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => {
+        setIsPressed(false)
+        setIsHovered(false)
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+    >
+      {children}
+    </button>
+  )
+}
+
 type Token = { type: 'number' | 'operator' | 'paren', value: string }
 
 // 历史记录类型
@@ -505,92 +544,145 @@ export default function Calculator() {
     setHistory([])
   }, [])
 
-  // 使用 useMemo 优化按钮样式
+  // 使用 useMemo 优化按钮样式 - 现代化设计
   const buttonStyles = useMemo(() => ({
     btn: {
-      padding: '10px 0',
-      fontSize: 16,
-      border: '1px solid #555',
-      background: '#3c3c3c',
+      padding: '12px 0',
+      fontSize: 18,
+      border: 'none',
+      background: 'linear-gradient(145deg, #2a2a2a, #252525)',
       color: '#fff',
       cursor: 'pointer',
-      borderRadius: 4,
+      borderRadius: 12,
+      transition: 'all 0.2s ease',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
     },
     op: {
-      padding: '10px 0',
-      fontSize: 16,
-      border: '1px solid #555',
-      background: '#555',
+      padding: '12px 0',
+      fontSize: 18,
+      border: 'none',
+      background: 'linear-gradient(145deg, #ff6b35, #f55e24)',
       color: '#fff',
       cursor: 'pointer',
-      borderRadius: 4,
+      borderRadius: 12,
+      transition: 'all 0.2s ease',
+      boxShadow: '0 2px 8px rgba(255, 107, 53, 0.3)',
     },
     func: {
-      padding: '10px 0',
-      fontSize: 16,
-      border: '1px solid #555',
-      background: '#2d2d2d',
-      color: '#aaa',
+      padding: '12px 0',
+      fontSize: 14,
+      border: 'none',
+      background: 'linear-gradient(145deg, #3a3a4a, #333342)',
+      color: '#a0a0c0',
       cursor: 'pointer',
-      borderRadius: 4,
+      borderRadius: 12,
+      transition: 'all 0.2s ease',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
     },
     eq: {
-      padding: '10px 0',
-      fontSize: 16,
-      border: '1px solid #555',
-      background: '#0078d4',
+      padding: '12px 0',
+      fontSize: 18,
+      border: 'none',
+      background: 'linear-gradient(145deg, #4ade80, #22c55e)',
       color: '#fff',
       cursor: 'pointer',
-      borderRadius: 4,
-      fontWeight: 'bold'
+      borderRadius: 12,
+      fontWeight: 'bold',
+      transition: 'all 0.2s ease',
+      boxShadow: '0 2px 8px rgba(74, 222, 128, 0.4)',
     },
     modeToggle: {
-      padding: '5px 10px',
+      padding: '6px 12px',
       fontSize: 12,
-      border: '1px solid #555',
-      background: '#2d2d2d',
+      border: 'none',
+      background: 'linear-gradient(145deg, #3a3a4a, #333342)',
       color: '#fff',
       cursor: 'pointer',
-      borderRadius: 4,
+      borderRadius: 8,
+      transition: 'all 0.2s ease',
     }
   }), [])
 
-  // 如果显示历史记录，渲染历史记录界面
+  // 如果显示历史记录，渲染历史记录界面 - 现代化设计
   if (showHistory) {
     return (
-      <div className="app-container app-calculator" style={{ background: '#1e1e1e', padding: 8, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <h3 style={{ color: '#fff', margin: 0 }}>计算历史</h3>
+      <div className="app-container app-calculator" style={{ 
+        background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)', 
+        padding: 16, 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column' 
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ color: '#fff', margin: 0, fontSize: 20, fontWeight: 600 }}>📋 计算历史</h3>
           <div style={{ display: 'flex', gap: 8 }}>
             <button 
-              style={{ padding: '5px 10px', background: '#555', border: '1px solid #666', borderRadius: 4, color: '#fff', cursor: 'pointer' }}
+              style={{ 
+                padding: '8px 16px', 
+                background: 'linear-gradient(145deg, #3a3a4a, #333342)', 
+                border: 'none', 
+                borderRadius: 8, 
+                color: '#fff', 
+                cursor: 'pointer',
+                fontSize: 13,
+                transition: 'all 0.2s ease',
+              }}
               onClick={() => setShowHistory(false)}
             >返回</button>
             <button 
-              style={{ padding: '5px 10px', background: '#d32f2f', border: '1px solid #666', borderRadius: 4, color: '#fff', cursor: 'pointer' }}
+              style={{ 
+                padding: '8px 16px', 
+                background: 'linear-gradient(145deg, #ef4444, #dc2626)', 
+                border: 'none', 
+                borderRadius: 8, 
+                color: '#fff', 
+                cursor: 'pointer',
+                fontSize: 13,
+                transition: 'all 0.2s ease',
+              }}
               onClick={clearHistory}
             >清空</button>
           </div>
         </div>
         <div style={{ flex: 1, overflow: 'auto' }}>
           {history.length === 0 ? (
-            <div style={{ color: '#888', textAlign: 'center', padding: 20 }}>暂无历史记录</div>
+            <div style={{ 
+              color: '#888', 
+              textAlign: 'center', 
+              padding: 40,
+              fontSize: 14,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <span style={{ fontSize: 48 }}>📝</span>
+              暂无历史记录
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {history.map((item, index) => (
                 <div 
                   key={index}
                   onClick={() => handleFromHistory(item)}
                   style={{
-                    background: '#2d2d2d',
-                    padding: 12,
-                    borderRadius: 4,
+                    background: 'linear-gradient(145deg, #2a2a3a, #252535)',
+                    padding: 16,
+                    borderRadius: 12,
                     cursor: 'pointer',
-                    border: '1px solid #3c3c3c'
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  <div style={{ color: '#aaa', fontSize: 12 }}>{item.expression}</div>
-                  <div style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>= {item.result}</div>
+                  <div style={{ color: '#999', fontSize: 13, marginBottom: 4 }}>{item.expression}</div>
+                  <div style={{ 
+                    color: '#fff', 
+                    fontSize: 20, 
+                    fontWeight: 600,
+                    background: 'linear-gradient(90deg, #4ade80, #60a5fa)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}>= {item.result}</div>
                 </div>
               ))}
             </div>
@@ -601,10 +693,24 @@ export default function Calculator() {
   }
 
   return (
-    <div className="app-container app-calculator" style={{ background: '#1e1e1e', padding: 8, height: '100%', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+    <div className="app-container app-calculator" style={{ 
+      background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)', 
+      padding: 16, 
+      height: '100%', 
+      overflowY: 'auto' 
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <button 
-          style={{ padding: '4px 8px', fontSize: 11, background: '#2d2d2d', border: '1px solid #3c3c3c', borderRadius: 3, color: '#aaa', cursor: 'pointer' }}
+          style={{ 
+            padding: '8px 16px', 
+            fontSize: 13, 
+            background: 'linear-gradient(145deg, #3a3a4a, #333342)', 
+            border: 'none', 
+            borderRadius: 8, 
+            color: '#fff', 
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
           onClick={() => setShowHistory(true)}
         >
           📋 历史 ({history.length})
@@ -613,7 +719,9 @@ export default function Calculator() {
           <button 
             style={{ 
               ...buttonStyles.modeToggle,
-              background: angleMode === 'rad' ? '#0078d4' : '#2d2d2d'
+              background: angleMode === 'rad' 
+                ? 'linear-gradient(145deg, #60a5fa, #3b82f6)' 
+                : 'linear-gradient(145deg, #3a3a4a, #333342)'
             }}
             onClick={() => setAngleMode(angleMode === 'rad' ? 'deg' : 'rad')}
           >
@@ -623,108 +731,116 @@ export default function Calculator() {
       </div>
 
       <div className="app-calc-display" style={{ 
-        background: '#2d2d2d', 
-        borderRadius: 8, 
-        padding: '16px 12px', 
-        marginBottom: 8, 
+        background: 'linear-gradient(145deg, #0f0f1a, #0a0a12)', 
+        borderRadius: 16, 
+        padding: '20px 16px', 
+        marginBottom: 16, 
         textAlign: 'right', 
-        minHeight: 80, 
+        minHeight: 100, 
         display: 'flex', 
         flexDirection: 'column', 
-        justifyContent: 'flex-end' 
+        justifyContent: 'flex-end',
+        boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.05)',
       }}>
-        <div style={{ color: '#888', fontSize: 13, minHeight: 20, wordBreak: 'break-all' }}>{expression}</div>
-        <div style={{ color: '#fff', fontSize: 32, fontWeight: 300, wordBreak: 'break-all' }}>{display}</div>
+        <div style={{ color: '#666', fontSize: 14, minHeight: 22, wordBreak: 'break-all' }}>{expression}</div>
+        <div style={{ 
+          color: '#fff', 
+          fontSize: 40, 
+          fontWeight: 300, 
+          wordBreak: 'break-all',
+          letterSpacing: '-1px',
+        }}>{display}</div>
       </div>
 
       {/* 第一行：基本功能 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 }}>
-        <button style={buttonStyles.func} onClick={handleClear}>C</button>
-        <button style={buttonStyles.func} onClick={handleClearEntry}>CE</button>
-        <button style={buttonStyles.func} onClick={handleBackspace}>⌫</button>
-        <button style={buttonStyles.func} onClick={handlePercent}>%</button>
-        <button style={buttonStyles.op} onClick={() => handleOperator('÷')}>÷</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleClear}>C</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleClearEntry}>CE</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace}>⌫</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handlePercent}>%</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')}>÷</InteractiveButton>
       </div>
 
       {/* 第二行：平方、立方等 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.func} onClick={() => handleUnary((x) => x * x)}>x²</button>
-        <button style={buttonStyles.func} onClick={() => handleUnary((x) => x * x * x)}>x³</button>
-        <button style={buttonStyles.func} onClick={() => handleOperator('**')}>xⁿ</button>
-        <button style={buttonStyles.func} onClick={() => handleUnary(Math.sqrt)}>√</button>
-        <button style={buttonStyles.func} onClick={handleCubeRoot}>∛</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => x * x)}>x²</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => x * x * x)}>x³</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleOperator('**')}>xⁿ</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.sqrt)}>√</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleCubeRoot}>∛</InteractiveButton>
       </div>
 
       {/* 第三行：三角函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.func} onClick={() => handleUnary((x) => Math.sin(toRad(x)))}>sin</button>
-        <button style={buttonStyles.func} onClick={() => handleUnary((x) => Math.cos(toRad(x)))}>cos</button>
-        <button style={buttonStyles.func} onClick={handleTan}>tan</button>
-        <button style={buttonStyles.func} onClick={handleAsin}>sin⁻¹</button>
-        <button style={buttonStyles.func} onClick={handleAcos}>cos⁻¹</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => Math.sin(toRad(x)))}>sin</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => Math.cos(toRad(x)))}>cos</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleTan}>tan</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAsin}>sin⁻¹</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAcos}>cos⁻¹</InteractiveButton>
       </div>
 
       {/* 第四行：数字7-9和更多函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('7')}>7</button>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('8')}>8</button>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('9')}>9</button>
-        <button style={buttonStyles.func} onClick={handleAtan}>tan⁻¹</button>
-        <button style={buttonStyles.op} onClick={() => handleOperator('×')}>×</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')}>7</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')}>8</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')}>9</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAtan}>tan⁻¹</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')}>×</InteractiveButton>
       </div>
 
       {/* 第五行：数字4-6和更多函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('4')}>4</button>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('5')}>5</button>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('6')}>6</button>
-        <button style={buttonStyles.func} onClick={handleFactorial}>x!</button>
-        <button style={buttonStyles.op} onClick={() => handleOperator('-')}>−</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')}>4</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')}>5</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')}>6</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleFactorial}>x!</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')}>−</InteractiveButton>
       </div>
 
       {/* 第六行：数字1-3和更多函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.btn} onClick={handleSign}>±</button>
-        <button style={buttonStyles.btn} onClick={() => handleNumber('0')}>0</button>
-        <button style={buttonStyles.btn} onClick={handleDecimal}>.</button>
-        <button style={buttonStyles.func} onClick={handleAbs}>|x|</button>
-        <button style={buttonStyles.op} onClick={() => handleOperator('+')}>+</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.btn} onClick={handleSign}>±</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')}>0</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal}>.</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAbs}>|x|</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')}>+</InteractiveButton>
       </div>
 
       {/* 第七行：函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.func} onClick={handleOpenParen}>(</button>
-        <button style={buttonStyles.func} onClick={handleCloseParen}>)</button>
-        <button style={buttonStyles.func} onClick={() => handleConstant(String(Math.PI))}>π</button>
-        <button style={buttonStyles.func} onClick={() => handleConstant(String(Math.E))}>e</button>
-        <button style={buttonStyles.eq} onClick={handleEqual}>=</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleOpenParen}>(</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleCloseParen}>)</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleConstant(String(Math.PI))}>π</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleConstant(String(Math.E))}>e</InteractiveButton>
+        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual}>=</InteractiveButton>
       </div>
 
       {/* 第八行：高级函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.func} onClick={() => handleUnary(Math.log)}>ln</button>
-        <button style={buttonStyles.func} onClick={() => handleUnary(Math.log10)}>log</button>
-        <button style={buttonStyles.func} onClick={handleExp}>eˣ</button>
-        <button style={buttonStyles.func} onClick={handle10x}>10ˣ</button>
-        <button style={buttonStyles.func} onClick={handleReciprocal}>1/x</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.log)}>ln</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.log10)}>log</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleExp}>eˣ</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handle10x}>10ˣ</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleReciprocal}>1/x</InteractiveButton>
       </div>
 
       {/* 第九行：更多函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.func} onClick={handleFloor}>⌊x⌋</button>
-        <button style={buttonStyles.func} onClick={handleCeil}>⌈x⌉</button>
-        <button style={buttonStyles.func} onClick={handleRound}>round</button>
-        <button style={buttonStyles.func} onClick={handleSinh}>sinh</button>
-        <button style={buttonStyles.func} onClick={handleCosh}>cosh</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleFloor}>⌊x⌋</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleCeil}>⌈x⌉</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleRound}>round</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleSinh}>sinh</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleCosh}>cosh</InteractiveButton>
       </div>
       
       {/* 第十行：更多函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 4 }}>
-        <button style={buttonStyles.func} onClick={handleTanh}>tanh</button>
-        <button style={{...buttonStyles.func, opacity: 0.5, cursor: 'not-allowed'}} disabled></button>
-        <button style={{...buttonStyles.func, opacity: 0.5, cursor: 'not-allowed'}} disabled></button>
-        <button style={{...buttonStyles.func, opacity: 0.5, cursor: 'not-allowed'}} disabled></button>
-        <button style={{...buttonStyles.func, opacity: 0.5, cursor: 'not-allowed'}} disabled></button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleTanh}>tanh</InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
+        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled></InteractiveButton>
       </div>
     </div>
   )
