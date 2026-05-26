@@ -104,10 +104,12 @@ export default function ActivityTracker() {
     }
   }, [windows, currentSession])
 
-  // 定期更新当前会话时间
+  // 定期更新当前会话时间以触发重渲染
+  const [, forceUpdate] = useState(0)
+  
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSession(prev => prev ? { ...prev, startTime: prev.startTime } : null)
+      forceUpdate(n => n + 1)
     }, 1000)
     return () => clearInterval(interval)
   }, [])

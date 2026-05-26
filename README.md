@@ -187,6 +187,18 @@ MIT License
 
 ## Changelog
 
+### v3.6.0 (2026-05-26)
+
+**New Features**
+- System Health Check application - Comprehensive system health monitoring with real-time metrics and automated diagnostics
+- Enhanced weather app improvements with better UI and more detailed forecasts
+- Comprehensive health score visualization with animated conical progress indicator
+
+**Code Quality Improvements**
+- Fixed ActivityTracker component pure function issue (no more unnecessary re-renders
+- Added forceUpdate hook implementation
+- Added new system health application with monitoring tool
+
 ### v3.5.0 (2026-05-26)
 
 **New Features**
