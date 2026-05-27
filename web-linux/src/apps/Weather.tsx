@@ -133,21 +133,24 @@ const HourlyForecastCard = memo(({ hour }: { hour: HourlyForecast }) => {
     <div
       style={{
         flexShrink: 0,
-        padding: '12px 14px',
-        background: 'rgba(255,255,255,0.1)',
-        borderRadius: 16,
+        padding: '14px 16px',
+        background: 'rgba(255,255,255,0.08)',
+        borderRadius: 18,
         textAlign: 'center',
-        minWidth: 70,
-        backdropFilter: 'blur(10px)',
+        minWidth: 74,
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+        scrollSnapAlign: 'start',
+        transition: 'transform 0.2s ease',
       }}
     >
-      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginBottom: 6 }}>{formatHour(hour.time)}</div>
-      <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'center' }}>
-        <WeatherIcon code={hour.weatherCode} size={28} />
+      <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.72)', marginBottom: 8, fontWeight: 500 }}>{formatHour(hour.time)}</div>
+      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+        <WeatherIcon code={hour.weatherCode} size={30} />
       </div>
-      <div style={{ fontSize: 16, fontWeight: 600 }}>{hour.temperature}°</div>
+      <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.02em' }}>{hour.temperature}°</div>
       {hour.precipitation > 0 && (
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{hour.precipitation}%</div>
+        <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.58)', marginTop: 3 }}>{hour.precipitation}%</div>
       )}
     </div>
   )
@@ -168,23 +171,25 @@ const DailyForecastRow = memo(({ day, index }: { day: DailyForecast; index: numb
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '14px 16px',
-        background: 'rgba(255,255,255,0.08)',
-        borderRadius: 16,
-        backdropFilter: 'blur(10px)',
+        padding: '16px 18px',
+        background: 'rgba(255,255,255,0.06)',
+        borderRadius: 18,
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+        transition: 'transform 0.2s ease',
       }}
     >
-      <span style={{ width: 60, fontWeight: 600, fontSize: 14 }}>{getDayName(day.date, index)}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 100 }}>
-        <WeatherIcon code={day.weatherCode} size={28} />
-        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, width: 45 }}>{weatherIcons[day.weatherCode]?.desc}</span>
+      <span style={{ width: 62, fontWeight: 600, fontSize: 14.5, letterSpacing: '-0.01em' }}>{getDayName(day.date, index)}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: 100 }}>
+        <WeatherIcon code={day.weatherCode} size={30} />
+        <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 12.5, width: 48 }}>{weatherIcons[day.weatherCode]?.desc}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         {day.precipitationSum > 0 && (
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{day.precipitationSum}mm</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.68)' }}>{day.precipitationSum}mm</span>
         )}
-        <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 500 }}>
-          <span style={{ color: 'rgba(255,255,255,0.6)' }}>{day.minTemp}°</span>
+        <span style={{ fontFamily: 'monospace', fontSize: 14.5, fontWeight: 500 }}>
+          <span style={{ color: 'rgba(255,255,255,0.58)' }}>{day.minTemp}°</span>
           {' / '}
           <span style={{ fontWeight: 700 }}>{day.maxTemp}°</span>
         </span>
@@ -467,64 +472,64 @@ export default function Weather() {
         {!loading && !error && weatherInfo && (
           <>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 26, fontWeight: 700 }}>{cityName}</div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>
+              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em' }}>{cityName}</div>
+              <div style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.68)', marginTop: 5 }}>
                 {currentTime.toLocaleDateString('zh-CN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', marginBottom: 28, padding: '24px 20', background: 'rgba(255,255,255,0.1)', borderRadius: 24, backdropFilter: 'blur(10px)' }}>
-              <div style={{ fontSize: 80, marginBottom: 8 }}>
-                <WeatherIcon code={weatherInfo.weatherCode} size={80} />
+            <div style={{ textAlign: 'center', marginBottom: 32, padding: '32px 24px', background: 'rgba(255,255,255,0.08)', borderRadius: 28, backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: 96, marginBottom: 12 }}>
+                <WeatherIcon code={weatherInfo.weatherCode} size={96} />
               </div>
-              <div style={{ fontSize: 72, fontWeight: 200, lineHeight: 1, letterSpacing: -2 }}>{Math.round(weatherInfo.temperature)}°C</div>
-              <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.85)', marginTop: 8, fontWeight: 500 }}>{weatherInfo.desc}</div>
+              <div style={{ fontSize: 78, fontWeight: 200, lineHeight: 1, letterSpacing: '-3px', textShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>{Math.round(weatherInfo.temperature)}°C</div>
+              <div style={{ fontSize: 21, color: 'rgba(255,255,255,0.88)', marginTop: 10, fontWeight: 500, letterSpacing: '0.02em' }}>{weatherInfo.desc}</div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
-              <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <Droplets size={20} />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>湿度</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, marginBottom: 28 }}>
+              <div style={{ padding: '18px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: 20, backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', transition: 'transform 0.2s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <Droplets size={22} />
+                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>湿度</span>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 600 }}>{weatherInfo.humidity}%</div>
+                <div style={{ fontSize: 24, fontWeight: 600 }}>{weatherInfo.humidity}%</div>
               </div>
-              <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <Wind size={20} />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>风速</span>
+              <div style={{ padding: '18px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: 20, backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <Wind size={22} />
+                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>风速</span>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 600 }}>{weatherInfo.windSpeed} km/h</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{getWindDirection(weatherInfo.windDirection)}风</div>
+                <div style={{ fontSize: 24, fontWeight: 600 }}>{weatherInfo.windSpeed} km/h</div>
+                <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.58)', marginTop: 3 }}>{getWindDirection(weatherInfo.windDirection)}风</div>
               </div>
-              <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <Thermometer size={20} />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>气压</span>
+              <div style={{ padding: '18px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: 20, backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <Thermometer size={22} />
+                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>气压</span>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 600 }}>{Math.round(weatherInfo.pressure || 0)} hPa</div>
+                <div style={{ fontSize: 24, fontWeight: 600 }}>{Math.round(weatherInfo.pressure || 0)} hPa</div>
               </div>
-              <div className="app-weather-detail" style={{ padding: '16px 14px', background: 'rgba(255,255,255,0.12)', borderRadius: 16, backdropFilter: 'blur(10px)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <Eye size={20} />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>能见度</span>
+              <div style={{ padding: '18px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: 20, backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <Eye size={22} />
+                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>能见度</span>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 600 }}>{weatherInfo.visibility?.toFixed(1) || '0'} km</div>
+                <div style={{ fontSize: 24, fontWeight: 600 }}>{weatherInfo.visibility?.toFixed(1) || '0'} km</div>
               </div>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>24小时预报</div>
-              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 16, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.01em' }}>24小时预报</div>
+              <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 6, scrollSnapType: 'x mandatory' }}>
                 {hourlyForecast.map((hour, i) => (
                   <HourlyForecastCard key={i} hour={hour} />
                 ))}
               </div>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>7天预报</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 16, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.01em' }}>7天预报</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {forecast.map((day, i) => (
                   <DailyForecastRow key={i} day={day} index={i} />
                 ))}
@@ -532,23 +537,23 @@ export default function Weather() {
             </div>
 
             {forecast[0] && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px', background: 'rgba(255,255,255,0.1)', borderRadius: 20, fontSize: 14, backdropFilter: 'blur(10px)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 24px', background: 'rgba(255,255,255,0.08)', borderRadius: 22, fontSize: 14, backdropFilter: 'blur(12px)', boxShadow: '0 6px 24px rgba(0,0,0,0.12)' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <Sunrise size={24} style={{ marginBottom: 4 }} />
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>日出</div>
-                  <div style={{ fontWeight: 600, marginTop: 2 }}>{forecast[0].sunrise}</div>
+                  <Sunrise size={26} style={{ marginBottom: 6, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+                  <div style={{ color: 'rgba(255,255,255,0.68)', fontSize: 12.5, fontWeight: 500 }}>日出</div>
+                  <div style={{ fontWeight: 600, marginTop: 4, letterSpacing: '-0.02em' }}>{forecast[0].sunrise}</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <Sun size={24} style={{ marginBottom: 4 }} />
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>紫外线</div>
-                  <div style={{ fontWeight: 600, marginTop: 2, color: getUvLevel(forecast[0].uvIndexMax).color }}>
+                  <Sun size={26} style={{ marginBottom: 6, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+                  <div style={{ color: 'rgba(255,255,255,0.68)', fontSize: 12.5, fontWeight: 500 }}>紫外线</div>
+                  <div style={{ fontWeight: 600, marginTop: 4, color: getUvLevel(forecast[0].uvIndexMax).color, letterSpacing: '-0.02em' }}>
                     {forecast[0].uvIndexMax.toFixed(1)} {getUvLevel(forecast[0].uvIndexMax).label}
                   </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <Sunset size={24} style={{ marginBottom: 4 }} />
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>日落</div>
-                  <div style={{ fontWeight: 600, marginTop: 2 }}>{forecast[0].sunset}</div>
+                  <Sunset size={26} style={{ marginBottom: 6, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+                  <div style={{ color: 'rgba(255,255,255,0.68)', fontSize: 12.5, fontWeight: 500 }}>日落</div>
+                  <div style={{ fontWeight: 600, marginTop: 4, letterSpacing: '-0.02em' }}>{forecast[0].sunset}</div>
                 </div>
               </div>
             )}

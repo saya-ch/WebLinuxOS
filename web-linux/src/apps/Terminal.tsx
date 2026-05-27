@@ -1988,7 +1988,15 @@ usage: rsync [OPTION]... SRC [SRC]... DEST
         ref={containerRef}
         className="app-terminal-output"
         onContextMenu={handleContextMenu}
-        style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+        style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          padding: '12px 16px', 
+          whiteSpace: 'pre-wrap', 
+          wordBreak: 'break-all',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(108, 92, 231, 0.4) transparent'
+        }}
       >
         {history.map((entry, i) => (
           <div key={i} style={{ marginBottom: 2 }}>
