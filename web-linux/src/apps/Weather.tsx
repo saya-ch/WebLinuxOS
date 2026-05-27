@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import {
   Sun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog,
   Droplets, Wind, Eye, Thermometer, Sunrise, Sunset,
@@ -83,27 +83,27 @@ const uvIndexLevels = [
   { max: 100, label: '极高', color: '#8b5cf6' },
 ]
 
-function formatTime(isoString: string): string {
+const formatTime = (isoString: string): string => {
   const date = new Date(isoString)
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
-function formatHour(isoString: string): string {
+const formatHour = (isoString: string): string => {
   const date = new Date(isoString)
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', hour12: false })
 }
 
-function getWindDirection(degrees: number): string {
+const getWindDirection = (degrees: number): string => {
   const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北']
   const index = Math.round(degrees / 45) % 8
   return directions[index]
 }
 
-function getUvLevel(uv: number): { label: string; color: string } {
+const getUvLevel = (uv: number): { label: string; color: string } => {
   return uvIndexLevels.find(level => uv <= level.max) || uvIndexLevels[uvIndexLevels.length - 1]
 }
 
-function getBackgroundGradient(weatherCode: number, isDay: boolean): string {
+const getBackgroundGradient = (weatherCode: number, isDay: boolean): string => {
   if (!isDay) {
     return 'linear-gradient(180deg, #0c0c1e 0%, #1a1a3e 50%, #2d1b4e 100%)'
   }
@@ -122,11 +122,76 @@ function getBackgroundGradient(weatherCode: number, isDay: boolean): string {
   return 'linear-gradient(180deg, #263238 0%, #455a64 50%, #607d8b 100%)'
 }
 
-const WeatherIcon = ({ code, size = 24, className = '' }: { code: number; size?: number; className?: string }) => {
+const WeatherIcon = memo(({ code, size = 24, className = '' }: { code: number; size?: number; className?: string }) => {
   const info = weatherIcons[code] || { icon: Sun, desc: '未知' }
   const Icon = info.icon
   return <Icon size={size} className={className} />
-}
+})
+
+const HourlyForecastCard = memo(({ hour }: { hour: HourlyForecast }) => {
+  return (
+    <div
+      style={{
+        flexShrink: 0,
+        padding: '12px 14px',
+        background: 'rgba(255,255,255,0.1)',
+        borderRadius: 16,
+        textAlign: 'center',
+        minWidth: 70,
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginBottom: 6 }}>{formatHour(hour.time)}</div>
+      <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'center' }}>
+        <WeatherIcon code={hour.weatherCode} size={28} />
+      </div>
+      <div style={{ fontSize: 16, fontWeight: 600 }}>{hour.temperature}°</div>
+      {hour.precipitation > 0 && (
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{hour.precipitation}%</div>
+      )}
+    </div>
+  )
+})
+
+const DailyForecastRow = memo(({ day, index }: { day: DailyForecast; index: number }) => {
+  const getDayName = (dateStr: string, idx: number) => {
+    if (idx === 0) return '今天'
+    if (idx === 1) return '明天'
+    const date = new Date(dateStr)
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    return weekdays[date.getDay()]
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 16px',
+        background: 'rgba(255,255,255,0.08)',
+        borderRadius: 16,
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <span style={{ width: 60, fontWeight: 600, fontSize: 14 }}>{getDayName(day.date, index)}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 100 }}>
+        <WeatherIcon code={day.weatherCode} size={28} />
+        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, width: 45 }}>{weatherIcons[day.weatherCode]?.desc}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {day.precipitationSum > 0 && (
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{day.precipitationSum}mm</span>
+        )}
+        <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 500 }}>
+          <span style={{ color: 'rgba(255,255,255,0.6)' }}>{day.minTemp}°</span>
+          {' / '}
+          <span style={{ fontWeight: 700 }}>{day.maxTemp}°</span>
+        </span>
+      </div>
+    </div>
+  )
+})
 
 export default function Weather() {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -247,14 +312,6 @@ export default function Weather() {
     fetchWeather(city.latitude, city.longitude, `${city.name}, ${city.country}`)
     setSearchQuery('')
     setSearchResults([])
-  }
-
-  const getDayName = (dateStr: string, index: number) => {
-    if (index === 0) return '今天'
-    if (index === 1) return '明天'
-    const date = new Date(dateStr)
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-    return weekdays[date.getDay()]
   }
 
   const backgroundGradient = useMemo(() => {
@@ -459,69 +516,18 @@ export default function Weather() {
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>24小时预报</div>
               <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
-                {hourlyForecast.map((hour, i) => {
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        flexShrink: 0,
-                        padding: '12px 14px',
-                        background: 'rgba(255,255,255,0.1)',
-                        borderRadius: 16,
-                        textAlign: 'center',
-                        minWidth: 70,
-                        backdropFilter: 'blur(10px)',
-                      }}
-                    >
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginBottom: 6 }}>{formatHour(hour.time)}</div>
-                      <div style={{ marginBottom: 6, display: 'flex', justifyContent: 'center' }}>
-                        <WeatherIcon code={hour.weatherCode} size={28} />
-                      </div>
-                      <div style={{ fontSize: 16, fontWeight: 600 }}>{hour.temperature}°</div>
-                      {hour.precipitation > 0 && (
-                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{hour.precipitation}%</div>
-                      )}
-                    </div>
-                  )
-                })}
+                {hourlyForecast.map((hour, i) => (
+                  <HourlyForecastCard key={i} hour={hour} />
+                ))}
               </div>
             </div>
 
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'rgba(255,255,255,0.9)' }}>7天预报</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {forecast.map((day, i) => {
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '14px 16px',
-                        background: 'rgba(255,255,255,0.08)',
-                        borderRadius: 16,
-                        backdropFilter: 'blur(10px)',
-                      }}
-                    >
-                      <span style={{ width: 60, fontWeight: 600, fontSize: 14 }}>{getDayName(day.date, i)}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 100 }}>
-                        <WeatherIcon code={day.weatherCode} size={28} />
-                        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, width: 45 }}>{weatherIcons[day.weatherCode]?.desc}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {day.precipitationSum > 0 && (
-                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{day.precipitationSum}mm</span>
-                        )}
-                        <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 500 }}>
-                          <span style={{ color: 'rgba(255,255,255,0.6)' }}>{day.minTemp}°</span>
-                          {' / '}
-                          <span style={{ fontWeight: 700 }}>{day.maxTemp}°</span>
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
+                {forecast.map((day, i) => (
+                  <DailyForecastRow key={i} day={day} index={i} />
+                ))}
               </div>
             </div>
 

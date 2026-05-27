@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
 import { useStore } from '../../store'
 
 interface Particle {
@@ -40,6 +40,93 @@ const wallpapers = [
   'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
   'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
 ]
+
+const DesktopIcon = memo(function DesktopIcon({ 
+  icon, 
+  selectedIconId, 
+  onClick, 
+  onDoubleClick 
+}: { 
+  icon: any
+  selectedIconId: string | null
+  onClick: (e: React.MouseEvent) => void
+  onDoubleClick: (e: React.MouseEvent) => void
+}) {
+  return (
+    <div
+      className={`desktop-icon ${selectedIconId === icon.id ? 'selected' : ''}`}
+      style={{ left: icon.x, top: icon.y }}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          if (selectedIconId === icon.id) {
+            onDoubleClick(e as any)
+          } else {
+            onClick(e as any)
+          }
+        }
+        if (e.key === 'Delete' && selectedIconId === icon.id) {
+          e.preventDefault()
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${icon.name} - 双击打开`}
+      aria-pressed={selectedIconId === icon.id}
+    >
+      <span className="desktop-icon-icon" aria-hidden="true">{icon.icon}</span>
+      <span className="desktop-icon-name">{icon.name}</span>
+    </div>
+  )
+})
+
+const ContextMenu = memo(function ContextMenu({ 
+  menuItems, 
+  position, 
+  onClose 
+}: { 
+  menuItems: any[]
+  position: { x: number; y: number }
+  onClose: () => void
+}) {
+  return (
+    <div
+      className="context-menu"
+      style={{ left: position.x, top: position.y }}
+      onClick={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {menuItems.map((item, i) =>
+        'type' in item ? (
+          <div key={i} className="context-menu-separator" />
+        ) : (
+          <div
+            key={i}
+            className="context-menu-item"
+            role="menuitem"
+            tabIndex={0}
+            onClick={() => {
+              item.action()
+              onClose()
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                item.action()
+                onClose()
+              }
+            }}
+          >
+            <span aria-hidden="true">{item.icon}</span>
+            <span>{item.label}</span>
+          </div>
+        ),
+      )}
+    </div>
+  )
+})
 
 interface MenuItem {
   label: string
@@ -87,6 +174,8 @@ const Desktop = memo(function Desktop() {
     setParticles(newParticles)
   }, [])
 
+  const particlesRef = useRef<Particle[]>([])
+  
   useEffect(() => {
     initializeParticles()
   }, [initializeParticles])
@@ -144,6 +233,8 @@ const Desktop = memo(function Desktop() {
 
             return { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
           })
+          
+          particlesRef.current = newParticles
           
           if (liveWallpaper !== 'particles') {
             const newConnections: Connection[] = []
@@ -266,22 +357,22 @@ const Desktop = memo(function Desktop() {
     setLiveWallpaper(next)
   }, [liveWallpaper, setLiveWallpaper])
 
-  const menuItems: MenuEntry[] = [
+  const menuItems: MenuEntry[] = useMemo(() => [
     { label: '打开终端', icon: '💻', action: () => openApp('terminal') },
     { label: '打开文件管理器', icon: '📁', action: () => openApp('files') },
     { label: '打开浏览器', icon: '🌐', action: () => openApp('browser') },
-    { type: 'separator' },
+    { type: 'separator' as const },
     { label: '更换壁纸', icon: '🖼️', action: handleWallpaperChange },
     { label: liveWallpaperEnabled ? '关闭动态壁纸' : '开启动态壁纸', icon: '✨', action: toggleLiveWallpaper },
     { label: '切换动态壁纸', icon: '🎨', action: cycleLiveWallpaper },
     { label: '显示设置', icon: '⚙️', action: () => openApp('settings') },
-    { type: 'separator' },
+    { type: 'separator' as const },
     { label: '打开计算器', icon: '🔢', action: () => openApp('calculator') },
     { label: '打开记事本', icon: '📝', action: () => openApp('notepad') },
-    { type: 'separator' },
+    { type: 'separator' as const },
     { label: '系统信息', icon: 'ℹ️', action: () => openApp('about') },
     { label: '帮助', icon: '❓', action: () => openApp('help') },
-  ]
+  ], [openApp, handleWallpaperChange, liveWallpaperEnabled, toggleLiveWallpaper, cycleLiveWallpaper])
 
   const wallpaperStyle = wallpaper
     ? wallpaper.startsWith('linear-gradient')
@@ -582,10 +673,10 @@ const Desktop = memo(function Desktop() {
         Web Linux 桌面环境 - 右键可打开上下文菜单
       </div>
       {desktopIcons.map((icon) => (
-        <div
+        <DesktopIcon
           key={icon.id}
-          className={`desktop-icon ${selectedIconId === icon.id ? 'selected' : ''}`}
-          style={{ left: icon.x, top: icon.y }}
+          icon={icon}
+          selectedIconId={selectedIconId}
           onClick={(e) => {
             e.stopPropagation()
             handleIconClick(icon.appId, icon.id)
@@ -594,64 +685,15 @@ const Desktop = memo(function Desktop() {
             e.stopPropagation()
             handleIconDoubleClick(icon.appId)
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              if (selectedIconId === icon.id) {
-                openApp(icon.appId)
-                setSelectedIconId(null)
-              } else {
-                setSelectedIconId(icon.id)
-              }
-            }
-            if (e.key === 'Delete' && selectedIconId === icon.id) {
-              e.preventDefault()
-            }
-          }}
-          tabIndex={0}
-          role="button"
-          aria-label={`${icon.name} - 双击打开`}
-          aria-pressed={selectedIconId === icon.id}
-        >
-          <span className="desktop-icon-icon" aria-hidden="true">{icon.icon}</span>
-          <span className="desktop-icon-name">{icon.name}</span>
-        </div>
+        />
       ))}
 
       {contextMenu.visible && (
-        <div
-          className="context-menu"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          {menuItems.map((item, i) =>
-            'type' in item ? (
-              <div key={i} className="context-menu-separator" />
-            ) : (
-              <div
-                key={i}
-                className="context-menu-item"
-                role="menuitem"
-                tabIndex={0}
-                onClick={() => {
-                  item.action()
-                  hideContextMenu()
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    item.action()
-                    hideContextMenu()
-                  }
-                }}
-              >
-                <span aria-hidden="true">{item.icon}</span>
-                <span>{item.label}</span>
-              </div>
-            ),
-          )}
-        </div>
+        <ContextMenu
+          menuItems={menuItems}
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          onClose={hideContextMenu}
+        />
       )}
     </div>
   )
