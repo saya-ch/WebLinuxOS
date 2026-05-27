@@ -1210,22 +1210,27 @@ export default function Terminal() {
             copyFile(sourceNode.id, targetNode.id)
             output = ''
           } else if (sourceNode.type === 'file' && !targetNode) {
-              const parts = target.split('/').filter(Boolean)
-              const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-              const fileName = parts[parts.length - 1]
-              const parentNode = findNodeByPath(files, parentPath)
-              if (parentNode) {
-                copyFile(sourceNode.id, parentNode.id)
-                const updatedFiles = filesRef.current
-                const newFile = findNodeByPath(updatedFiles, target)
-                if (newFile) {
-                  renameFileRef.current(newFile.id, fileName)
+            const parts = target.split('/').filter(Boolean)
+            const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
+            const fileName = parts[parts.length - 1]
+            const parentNode = findNodeByPath(files, parentPath)
+            if (parentNode) {
+              copyFile(sourceNode.id, parentNode.id)
+              setTimeout(() => {
+                const updatedFiles = useStore.getState().files
+                const parent = findNodeByPath(updatedFiles, parentPath)
+                if (parent?.children) {
+                  const newFile = parent.children.find(c => c.name === sourceNode.name)
+                  if (newFile) {
+                    renameFile(newFile.id, fileName)
+                  }
                 }
-                output = ''
-              } else {
-                output = `cp: 无法创建'${args[1]}': 没有那个文件或目录`
-              }
+              }, 100)
+              output = ''
             } else {
+              output = `cp: 无法创建'${args[1]}': 没有那个文件或目录`
+            }
+          } else {
             output = `cp: 无法复制'${args[0]}': 无效的目标`
           }
         }
@@ -1249,22 +1254,27 @@ export default function Terminal() {
             moveFile(sourceNode.id, targetNode.id)
             output = ''
           } else if (sourceNode.type === 'file' && !targetNode) {
-              const parts = target.split('/').filter(Boolean)
-              const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-              const fileName = parts[parts.length - 1]
-              const parentNode = findNodeByPath(files, parentPath)
-              if (parentNode) {
-                moveFile(sourceNode.id, parentNode.id)
-                const updatedFiles = filesRef.current
-                const movedFile = findNodeByPath(updatedFiles, target)
-                if (movedFile) {
-                  renameFileRef.current(movedFile.id, fileName)
+            const parts = target.split('/').filter(Boolean)
+            const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
+            const fileName = parts[parts.length - 1]
+            const parentNode = findNodeByPath(files, parentPath)
+            if (parentNode) {
+              moveFile(sourceNode.id, parentNode.id)
+              setTimeout(() => {
+                const updatedFiles = useStore.getState().files
+                const parent = findNodeByPath(updatedFiles, parentPath)
+                if (parent?.children) {
+                  const movedFile = parent.children.find(c => c.name === sourceNode.name)
+                  if (movedFile) {
+                    renameFile(movedFile.id, fileName)
+                  }
                 }
-                output = ''
-              } else {
-                output = `mv: 无法移动'${args[1]}': 没有那个文件或目录`
-              }
+              }, 100)
+              output = ''
             } else {
+              output = `mv: 无法移动'${args[1]}': 没有那个文件或目录`
+            }
+          } else {
             output = `mv: 无法移动'${args[0]}': 无效的目标`
           }
         }

@@ -82,6 +82,20 @@ function traverseTree(nodes: FileNode[], callback: (node: FileNode, parent?: Fil
   }).filter((node): node is FileNode => node !== null)
 }
 
+function copyNodeWithNewParent(node: FileNode, newParentId: string, newId?: string): FileNode {
+  const id = newId || `file-${Date.now()}-copy`
+  const newNode: FileNode = {
+    ...node,
+    id,
+    parentId: newParentId,
+    children: undefined,
+  }
+  if (node.children) {
+    newNode.children = node.children.map(child => copyNodeWithNewParent(child, id))
+  }
+  return newNode
+}
+
 function removeFromTree(nodes: FileNode[], id: string): FileNode[] {
   return nodes
     .filter(node => node.id !== id)
@@ -817,15 +831,7 @@ export const useStore = create<Store>((set, get) => ({
       return
     }
     
-    const id = `file-${Date.now()}-copy`
-    const newNode: FileNode = {
-      id,
-      name: sourceNode.name,
-      type: sourceNode.type,
-      parentId: targetParentId,
-      content: sourceNode.content,
-      children: sourceNode.children ? sourceNode.children.map(child => ({ ...child })) : undefined,
-    }
+    const newNode = copyNodeWithNewParent(sourceNode, targetParentId)
     
     set((s) => {
       const newFiles = traverseTree(s.files, (node) => {
@@ -836,7 +842,7 @@ export const useStore = create<Store>((set, get) => ({
       })
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { type: 'copy' as const, fileId: id, newState: newNode, parentId: targetParentId }
+        { type: 'copy' as const, fileId: newNode.id, newState: newNode, parentId: targetParentId }
       ]
       
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 300)
