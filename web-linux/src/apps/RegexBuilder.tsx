@@ -115,13 +115,13 @@ export default function RegexBuilder() {
     setSavedPatterns(prev => prev.filter(p => p.id !== id))
   }, [])
 
-  const highlightedText = useMemo(() => {
+  const matchPositions = useMemo(() => {
     if (!pattern || !testString || matches.length === 0) {
-      return testString
+      return null
     }
 
     try {
-      const parts: React.ReactNode[] = []
+      const positions: { start: number; end: number; text: string }[] = []
       let lastIndex = 0
       let match
 
@@ -129,36 +129,57 @@ export default function RegexBuilder() {
       const testRegex = new RegExp(pattern, flags.includes('g') ? flags.join('') : flags.join('') + 'g')
       
       while ((match = testRegex.exec(tempString)) !== null) {
-        if (match.index > lastIndex) {
-          parts.push(<span key={`text-${lastIndex}`}>{tempString.slice(lastIndex, match.index)}</span>)
-        }
-        parts.push(
-          <mark 
-            key={`match-${match.index}`}
-            style={{ 
-              backgroundColor: '#fbbf24', 
-              color: '#1f2937', 
-              padding: '2px 4px', 
-              borderRadius: '4px',
-              fontWeight: 500
-            }}
-          >
-            {match[0]}
-          </mark>
-        )
+        positions.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          text: match[0]
+        })
         lastIndex = match.index + match[0].length
         if (match[0].length === 0) testRegex.lastIndex++
       }
 
-      if (lastIndex < tempString.length) {
-        parts.push(<span key={`text-end`}>{tempString.slice(lastIndex)}</span>)
-      }
-
-      return parts
+      return { tempString, positions, lastIndex }
     } catch {
-      return testString
+      return null
     }
   }, [pattern, testString, matches, flags])
+
+  const highlightedText = useMemo(() => {
+    if (!matchPositions) {
+      return testString
+    }
+
+    const { tempString, positions } = matchPositions
+    const parts: React.ReactNode[] = []
+    let currentIndex = 0
+
+    for (const pos of positions) {
+      if (pos.start > currentIndex) {
+        parts.push(<span key={`text-${currentIndex}`}>{tempString.slice(currentIndex, pos.start)}</span>)
+      }
+      parts.push(
+        <mark 
+          key={`match-${pos.start}`}
+          style={{ 
+            backgroundColor: '#fbbf24', 
+            color: '#1f2937', 
+            padding: '2px 4px', 
+            borderRadius: '4px',
+            fontWeight: 500
+          }}
+        >
+          {pos.text}
+        </mark>
+      )
+      currentIndex = pos.end
+    }
+
+    if (currentIndex < tempString.length) {
+      parts.push(<span key={`text-end`}>{tempString.slice(currentIndex)}</span>)
+    }
+
+    return parts
+  }, [matchPositions, testString])
 
   const categories = [...new Set([...commonPatterns, ...savedPatterns].map(p => p.category))]
 

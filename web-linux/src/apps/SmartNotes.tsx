@@ -100,6 +100,237 @@ function saveNotes(notes: Note[]) {
   }
 }
 
+interface NoteEditorProps {
+  note: Note
+  onClose: () => void
+  updateNote: (id: string, updates: Partial<Note>) => void
+}
+
+function NoteEditor({ note, onClose, updateNote }: NoteEditorProps) {
+  const [localNote, setLocalNote] = useState(note)
+  const [newTag, setNewTag] = useState('')
+
+  const addTag = useCallback(() => {
+    if (newTag && !localNote.tags.includes(newTag)) {
+      setLocalNote(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag],
+        updatedAt: Date.now(),
+      }))
+      setNewTag('')
+    }
+  }, [newTag, localNote.tags])
+
+  const removeTag = useCallback((tag: string) => {
+    setLocalNote(prev => ({
+      ...prev,
+      tags: prev.tags.filter(t => t !== tag),
+      updatedAt: Date.now(),
+    }))
+  }, [])
+
+  const save = useCallback(() => {
+    updateNote(note.id, localNote)
+    onClose()
+  }, [note.id, localNote, updateNote, onClose])
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.7)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+      zIndex: 1000,
+    }} onClick={(e) => {
+      if (e.target === e.currentTarget) save()
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 700,
+        background: 'var(--window-bg)',
+        borderRadius: 16,
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--window-border)',
+        }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
+            {note.isTodo ? '编辑待办事项' : '编辑笔记'}
+          </h2>
+          <button
+            onClick={save}
+            style={{
+              padding: '8px 16px',
+              background: 'var(--accent)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            保存
+          </button>
+        </div>
+
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <input
+            type="text"
+            value={localNote.title}
+            onChange={(e) => setLocalNote(prev => ({ ...prev, title: e.target.value }))}
+            placeholder="标题"
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              fontSize: 18,
+              fontWeight: 600,
+              background: 'var(--input-bg)',
+              border: '1px solid var(--window-border)',
+              borderRadius: 10,
+              color: 'var(--text-primary)',
+            }}
+          />
+
+          <textarea
+            value={localNote.content}
+            onChange={(e) => setLocalNote(prev => ({ ...prev, content: e.target.value }))}
+            placeholder="输入内容..."
+            style={{
+              width: '100%',
+              minHeight: 200,
+              padding: '12px 16px',
+              fontSize: 14,
+              background: 'var(--input-bg)',
+              border: '1px solid var(--window-border)',
+              borderRadius: 10,
+              color: 'var(--text-primary)',
+              resize: 'vertical',
+              fontFamily: 'inherit',
+              lineHeight: 1.6,
+            }}
+          />
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+            {localNote.tags.map(tag => (
+              <span
+                key={tag}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 12px',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  borderRadius: 20,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                {tag}
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', gap: 8 }}>
+              <input
+                type="text"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') addTag() }}
+                placeholder="添加标签..."
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--window-border)',
+                  borderRadius: 8,
+                  color: 'var(--text-primary)',
+                  fontSize: 13,
+                }}
+              />
+              <button
+                onClick={addTag}
+                style={{
+                  padding: '10px 16px',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--window-border)',
+                  color: 'var(--text-primary)',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                }}
+              >
+                添加
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 8 }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>颜色：</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {COLORS.map(c => (
+                <button
+                  key={c.color}
+                  onClick={() => setLocalNote(prev => ({ ...prev, color: c.color }))}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    background: c.color,
+                    border: localNote.color === c.color ? '2px solid var(--accent)' : '2px solid transparent',
+                    cursor: 'pointer',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={localNote.isTodo}
+                onChange={(e) => setLocalNote(prev => ({ ...prev, isTodo: e.target.checked }))}
+              />
+              <span style={{ fontSize: 13 }}>待办事项</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={localNote.isPinned}
+                onChange={(e) => setLocalNote(prev => ({ ...prev, isPinned: e.target.checked }))}
+              />
+              <span style={{ fontSize: 13 }}>置顶</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function SmartNotes() {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
   const [searchQuery, setSearchQuery] = useState('')
@@ -181,231 +412,6 @@ export default function SmartNotes() {
       note.id === id ? { ...note, ...updates, updatedAt: Date.now() } : note
     ))
   }, [notes])
-
-  const NoteEditor = ({ note, onClose }: { note: Note; onClose: () => void }) => {
-    const [localNote, setLocalNote] = useState(note)
-    const [newTag, setNewTag] = useState('')
-
-    const addTag = () => {
-      if (newTag && !localNote.tags.includes(newTag)) {
-        setLocalNote({
-          ...localNote,
-          tags: [...localNote.tags, newTag],
-          updatedAt: Date.now(),
-        })
-        setNewTag('')
-      }
-    }
-
-    const removeTag = (tag: string) => {
-      setLocalNote({
-        ...localNote,
-        tags: localNote.tags.filter(t => t !== tag),
-        updatedAt: Date.now(),
-      })
-    }
-
-    const save = () => {
-      updateNote(note.id, localNote)
-      onClose()
-    }
-
-    return (
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.7)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        zIndex: 1000,
-      }} onClick={(e) => {
-        if (e.target === e.currentTarget) save()
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: 700,
-          background: 'var(--window-bg)',
-          borderRadius: 16,
-          overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--window-border)',
-          }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-              {note.isTodo ? '编辑待办事项' : '编辑笔记'}
-            </h2>
-            <button
-              onClick={save}
-              style={{
-                padding: '8px 16px',
-                background: 'var(--accent)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                fontWeight: 500,
-              }}
-            >
-              保存
-            </button>
-          </div>
-
-          <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <input
-              type="text"
-              value={localNote.title}
-              onChange={(e) => setLocalNote({ ...localNote, title: e.target.value })}
-              placeholder="标题"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                fontSize: 18,
-                fontWeight: 600,
-                background: 'var(--input-bg)',
-                border: '1px solid var(--window-border)',
-                borderRadius: 10,
-                color: 'var(--text-primary)',
-              }}
-            />
-
-            <textarea
-              value={localNote.content}
-              onChange={(e) => setLocalNote({ ...localNote, content: e.target.value })}
-              placeholder="输入内容..."
-              style={{
-                width: '100%',
-                minHeight: 200,
-                padding: '12px 16px',
-                fontSize: 14,
-                background: 'var(--input-bg)',
-                border: '1px solid var(--window-border)',
-                borderRadius: 10,
-                color: 'var(--text-primary)',
-                resize: 'vertical',
-                fontFamily: 'inherit',
-                lineHeight: 1.6,
-              }}
-            />
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-              {localNote.tags.map(tag => (
-                <span
-                  key={tag}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '6px 12px',
-                    background: 'var(--accent)',
-                    color: '#fff',
-                    borderRadius: 20,
-                    fontSize: 12,
-                    fontWeight: 500,
-                  }}
-                >
-                  {tag}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <X size={12} />
-                  </button>
-                </span>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <div style={{ flex: 1, display: 'flex', gap: 8 }}>
-                <input
-                  type="text"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') addTag() }}
-                  placeholder="添加标签..."
-                  style={{
-                    flex: 1,
-                    padding: '10px 14px',
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--window-border)',
-                    borderRadius: 8,
-                    color: 'var(--text-primary)',
-                    fontSize: 13,
-                  }}
-                />
-                <button
-                  onClick={addTag}
-                  style={{
-                    padding: '10px 16px',
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--window-border)',
-                    color: 'var(--text-primary)',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                  }}
-                >
-                  添加
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 8 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>颜色：</span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {COLORS.map(c => (
-                  <button
-                    key={c.color}
-                    onClick={() => setLocalNote({ ...localNote, color: c.color })}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: c.color,
-                      border: localNote.color === c.color ? '2px solid var(--accent)' : '2px solid transparent',
-                      cursor: 'pointer',
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={localNote.isTodo}
-                  onChange={(e) => setLocalNote({ ...localNote, isTodo: e.target.checked })}
-                />
-                <span style={{ fontSize: 13 }}>待办事项</span>
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={localNote.isPinned}
-                  onChange={(e) => setLocalNote({ ...localNote, isPinned: e.target.checked })}
-                />
-                <span style={{ fontSize: 13 }}>置顶</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div style={{
@@ -788,7 +794,7 @@ export default function SmartNotes() {
         </div>
       )}
 
-      {editingNote && <NoteEditor note={editingNote} onClose={() => setEditingNote(null)} />}
+      {editingNote && <NoteEditor note={editingNote} onClose={() => setEditingNote(null)} updateNote={updateNote} />}
     </div>
   )
 }

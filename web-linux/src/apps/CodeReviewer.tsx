@@ -123,15 +123,16 @@ export default function CodeReviewer() {
       score = Math.max(0, Math.min(100, score))
       
       // 生成摘要
-      let summary = ''
-      if (score >= 90) {
-        summary = '优秀！代码质量很好，只有一些小的改进建议。'
-      } else if (score >= 70) {
-        summary = '良好！代码整体不错，但有一些可以优化的地方。'
-      } else if (score >= 50) {
-        summary = '一般。建议修复发现的问题以提高代码质量。'
-      } else {
-        summary = '需要改进。请重点关注高优先级的问题。'
+      const generateSummary = (s: number): string => {
+        if (s >= 90) {
+          return '优秀！代码质量很好，只有一些小的改进建议。'
+        } else if (s >= 70) {
+          return '良好！代码整体不错，但有一些可以优化的地方。'
+        } else if (s >= 50) {
+          return '一般。建议修复发现的问题以提高代码质量。'
+        } else {
+          return '需要改进。请重点关注高优先级的问题。'
+        }
       }
       
       if (issues.length === 0) {
@@ -146,7 +147,7 @@ export default function CodeReviewer() {
       setResult({
         score,
         issues,
-        summary,
+        summary: generateSummary(score),
         suggestions
       })
       
@@ -333,7 +334,7 @@ service.addUser({
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value as any)}
+            onChange={(e) => setLanguage(e.target.value as 'javascript' | 'python' | 'typescript' | 'html' | 'css')}
             style={{
               padding: '8px 12px',
               borderRadius: '6px',
