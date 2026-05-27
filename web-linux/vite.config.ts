@@ -49,9 +49,8 @@ export default defineConfig(({ mode }) => {
       include: ['react', 'react-dom', 'zustand'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
-      esbuildOptions: {
-        target: 'esnext',
-        supported: { 'top-level-await': true }
+      rolldownOptions: {
+        external: ['pyodide'],
       }
     },
     server: {

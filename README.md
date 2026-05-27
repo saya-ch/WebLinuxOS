@@ -4,6 +4,10 @@ A complete Linux desktop environment running entirely in the browser.
 
 ![WebLinuxOS Screenshot](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/assets/screenshot.png)
 
+## Overview
+
+WebLinuxOS is a feature-rich web-based Linux desktop environment that brings the power of a full operating system experience directly to your browser. No installation required - simply visit the live demo and start using it immediately.
+
 ## Features
 
 ### Desktop Environment
@@ -34,7 +38,7 @@ A complete Linux desktop environment running entirely in the browser.
 
 **System Tools**: File Manager, Terminal, System Monitor, Settings, Software Center, Disk Analyzer, Task Manager, Process Monitor, Network Monitor, Firewall, User Manager, Backup Tool, Archive Manager, System Dashboard, Performance Monitor, Log Viewer, System Health Check
 
-**Development**: Code Editor, Code Playground, Code Studio, API Tester, JSON Formatter, Regex Tester, GitHub Trending, Code Snippets Manager, Data Visualization, Quick Commands, Command Reference, Task Automation, Developer Toolkit
+**Development**: Code Editor, Code Playground, Code Studio, API Tester, JSON Formatter, Regex Builder, GitHub Trending, Code Snippets Manager, Data Visualization, Quick Commands, Command Reference, Task Automation, Developer Toolkit
 
 **Office**: Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Todo List, Notes, Mind Map, Sticky Notes Wall, Kanban Board, Project Manager, Task Dashboard, Activity Tracker, Dictionary, Translator, Character Map
 
