@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, memo } from 'react'
 import {
   Sun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog,
-  Droplets, Wind, Eye, Thermometer, Sunrise, Sunset,
-  Search, MapPin, AlertCircle
+  Droplets, Wind, Eye, Thermometer, Sunrise, Sunset, MapPin,
+  Search, AlertCircle
 } from 'lucide-react'
 
 interface CurrentWeather {
@@ -16,6 +16,7 @@ interface CurrentWeather {
   precipitation?: number
   pressure?: number
   visibility?: number
+  apparentTemperature?: number
 }
 
 interface HourlyForecast {
@@ -42,10 +43,13 @@ interface GeocodingResult {
   country: string
   latitude: number
   longitude: number
+  admin1?: string
 }
 
 interface GeocodingResponse {
   results?: GeocodingResult[]
+  generationtime_ms?: number
+  utc_offset_seconds?: number
 }
 
 const weatherIcons: Record<number, { icon: typeof Sun; desc: string }> = {

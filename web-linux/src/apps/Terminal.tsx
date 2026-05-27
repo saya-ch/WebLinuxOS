@@ -30,7 +30,8 @@ const COMMANDS = [
   'disk-usage', 'process-list', 'network-stats', 'system-info', 'memory-info', 'cpu-info',
   'version', 'credits', 'about', 'todo', 'notes', 'encrypt', 'decrypt',
   'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
-  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon'
+  'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon',
+  'json', 'urlencode', 'urldecode', 'uuid', 'password', 'color', 'currency', 'units', 'timeconv'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -1088,6 +1089,268 @@ export default function Terminal() {
           ``,
           `💡 可用于测量命令执行时间`,
         ].join('\n')
+        break
+      case 'json':
+        if (args.length === 0) {
+          output = [
+            `📋 JSON 格式化工具`,
+            ``,
+            `用法: json <JSON字符串>`,
+            ``,
+            `示例:`,
+            `  json {"name":"test","value":123}`,
+            `  echo '{"a":1}' | json`,
+            ``,
+            `💡 用于格式化和验证JSON数据`,
+          ].join('\n')
+        } else {
+          try {
+            const parsed = JSON.parse(args.join(' '))
+            output = JSON.stringify(parsed, null, 2)
+          } catch (e) {
+            output = `json: JSON格式错误 - ${(e as Error).message}`
+          }
+        }
+        break
+      case 'urlencode':
+        if (args.length === 0) {
+          output = [
+            `🔗 URL 编码工具`,
+            ``,
+            `用法: urlencode <文本>`,
+            ``,
+            `示例:`,
+            `  urlencode Hello World`,
+            `  urlencode https://example.com?q=测试`,
+            ``,
+          ].join('\n')
+        } else {
+          output = encodeURIComponent(args.join(' '))
+        }
+        break
+      case 'urldecode':
+        if (args.length === 0) {
+          output = [
+            `🔓 URL 解码工具`,
+            ``,
+            `用法: urldecode <编码文本>`,
+            ``,
+            `示例:`,
+            `  urldecode Hello%20World`,
+            `  urldecode https%3A%2F%2Fexample.com`,
+            ``,
+          ].join('\n')
+        } else {
+          try {
+            output = decodeURIComponent(args.join(' '))
+          } catch {
+            output = `urldecode: 解码错误`
+          }
+        }
+        break
+      case 'uuid':
+        const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = Math.random() * 16 | 0
+          const v = c === 'x' ? r : (r & 0x3 | 0x8)
+          return v.toString(16)
+        })
+        output = [
+          `🆔 UUID生成器`,
+          ``,
+          `生成的UUID:`,
+          `${uuid}`,
+          ``,
+          `类型: UUID v4 (随机生成)`,
+        ].join('\n')
+        break
+      case 'password':
+        if (args.length === 0 || args[0] === '--help') {
+          output = [
+            `🔐 密码生成器`,
+            ``,
+            `用法: password [长度]`,
+            ``,
+            `示例:`,
+            `  password          # 生成16位密码`,
+            `  password 32      # 生成32位密码`,
+            ``,
+          ].join('\n')
+        } else {
+          const length = parseInt(args[0]) || 16
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-='
+          let password = ''
+          for (let i = 0; i < Math.min(length, 64); i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length))
+          }
+          output = [
+            `🔐 生成的密码:`,
+            ``,
+            `${password}`,
+            ``,
+            `长度: ${password.length} 字符`,
+            `强度: ${length >= 16 ? '强' : length >= 8 ? '中等' : '弱'}`,
+          ].join('\n')
+        }
+        break
+      case 'color':
+        if (args.length === 0 || args[0] === '--help') {
+          output = [
+            `🎨 颜色转换工具`,
+            ``,
+            `用法: color <HEX颜色>`,
+            ``,
+            `示例:`,
+            `  color #FF5733`,
+            `  color FFFFFF`,
+            ``,
+            `支持的格式: HEX, RGB`,
+          ].join('\n')
+        } else {
+          const hex = args[0].replace('#', '')
+          if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+            const r = parseInt(hex.substring(0, 2), 16)
+            const g = parseInt(hex.substring(2, 4), 16)
+            const b = parseInt(hex.substring(4, 6), 16)
+            output = [
+              `🎨 颜色信息`,
+              ``,
+              `HEX:  #${hex.toUpperCase()}`,
+              `RGB:  rgb(${r}, ${g}, ${b})`,
+              `RGBA: rgba(${r}, ${g}, ${b}, 1.0)`,
+              ``,
+              `饱和度: ${Math.max(r,g,b)}`,
+              `亮度: ${((r*299+g*587+b*114)/1000).toFixed(0)}`,
+            ].join('\n')
+          } else {
+            output = `color: 无效的HEX颜色值`
+          }
+        }
+        break
+      case 'units':
+        if (args.length === 0 || args[0] === '--help') {
+          output = [
+            `📏 单位转换工具`,
+            ``,
+            `用法: units <值> <单位>`,
+            ``,
+            `支持的转换:`,
+            `  km -> mi (千米转英里)`,
+            `  mi -> km (英里转千米)`,
+            `  c -> f (摄氏度转华氏度)`,
+            `  f -> c (华氏度转摄氏度)`,
+            `  kg -> lb (千克转磅)`,
+            `  lb -> kg (磅转千克)`,
+            ``,
+            `示例:`,
+            `  units 100 km`,
+            `  units 32 c`,
+          ].join('\n')
+        } else {
+          const value = parseFloat(args[0])
+          const unit = args[1]?.toLowerCase()
+          if (isNaN(value)) {
+            output = `units: 无效的数值`
+          } else if (unit === 'km') {
+            output = `${value} km = ${(value * 0.621371).toFixed(2)} mi`
+          } else if (unit === 'mi') {
+            output = `${value} mi = ${(value * 1.60934).toFixed(2)} km`
+          } else if (unit === 'c') {
+            output = `${value}°C = ${((value * 9/5) + 32).toFixed(2)}°F`
+          } else if (unit === 'f') {
+            output = `${value}°F = ${((value - 32) * 5/9).toFixed(2)}°C`
+          } else if (unit === 'kg') {
+            output = `${value} kg = ${(value * 2.20462).toFixed(2)} lb`
+          } else if (unit === 'lb') {
+            output = `${value} lb = ${(value * 0.453592).toFixed(2)} kg`
+          } else {
+            output = `units: 不支持的单位。请使用 --help 查看支持的单位。`
+          }
+        }
+        break
+      case 'timeconv':
+        if (args.length === 0 || args[0] === '--help') {
+          output = [
+            `🕐 时区转换工具`,
+            ``,
+            `用法: timeconv <时间> <时区1> <时区2>`,
+            ``,
+            `支持的时区 (示例):`,
+            `  beijing   - 北京时间`,
+            `  tokyo     - 东京时间`,
+            `  london    - 伦敦时间`,
+            `  newyork  - 纽约时间`,
+            `  losangeles - 洛杉矶时间`,
+            ``,
+            `示例:`,
+            `  timeconv 12:00 beijing tokyo`,
+            `  timeconv now beijing london`,
+          ].join('\n')
+        } else {
+          const now = new Date()
+          const offsets: Record<string, number> = {
+            beijing: 8, tokyo: 9, london: 0, newyork: -5, losangeles: -8,
+            paris: 1, sydney: 10, dubai: 4, moscow: 3
+          }
+          if (args[0].toLowerCase() === 'now') {
+            const fromTz = args[1]?.toLowerCase()
+            const toTz = args[2]?.toLowerCase()
+            if (offsets[fromTz] !== undefined && offsets[toTz] !== undefined) {
+              const diff = offsets[toTz] - offsets[fromTz]
+              const resultHour = (now.getHours() + diff + 24) % 24
+              output = `🕐 当前时间转换:\n\n北京时间 ${now.toLocaleTimeString('zh-CN')} = ${toTz} ${resultHour.toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+            } else {
+              output = `timeconv: 无效的时区`
+            }
+          } else {
+            const timeStr = args[0]
+            const fromTz = args[1]?.toLowerCase()
+            const toTz = args[2]?.toLowerCase()
+            if (offsets[fromTz] !== undefined && offsets[toTz] !== undefined) {
+              const diff = offsets[toTz] - offsets[fromTz]
+              const [hours, minutes] = timeStr.split(':').map(Number)
+              const resultHour = (hours + diff + 24) % 24
+              output = `🕐 时区转换:\n\n${timeStr} (${fromTz}) = ${resultHour.toString().padStart(2, '0')}:${(minutes || 0).toString().padStart(2, '0')} (${toTz})\n\n时差: ${diff >= 0 ? '+' : ''}${diff} 小时`
+            } else {
+              output = `timeconv: 无效的时区。请使用 --help 查看支持的时区。`
+            }
+          }
+        }
+        break
+      case 'currency':
+        if (args.length === 0 || args[0] === '--help') {
+          output = [
+            `💱 货币转换 (模拟)`,
+            ``,
+            `用法: currency <金额> <货币1> <货币2>`,
+            ``,
+            `支持的货币:`,
+            `  cny - 人民币`,
+            `  usd - 美元`,
+            `  eur - 欧元`,
+            `  jpy - 日元`,
+            `  gbp - 英镑`,
+            `  krw - 韩元`,
+            ``,
+            `示例:`,
+            `  currency 100 cny usd`,
+            `  currency 50 usd jpy`,
+          ].join('\n')
+        } else {
+          const amount = parseFloat(args[0])
+          const fromCurr = args[1]?.toLowerCase()
+          const toCurr = args[2]?.toLowerCase()
+          const rates: Record<string, number> = {
+            cny: 1, usd: 7.2, eur: 7.8, jpy: 0.048, gbp: 9.1, krw: 0.0053
+          }
+          if (isNaN(amount)) {
+            output = `currency: 无效的金额`
+          } else if (rates[fromCurr] && rates[toCurr]) {
+            const result = (amount / rates[fromCurr]) * rates[toCurr]
+            output = `💱 货币转换:\n\n${amount} ${fromCurr.toUpperCase()} = ${result.toFixed(2)} ${toCurr.toUpperCase()}\n\n汇率: 1 ${fromCurr.toUpperCase()} = ${(rates[toCurr]/rates[fromCurr]).toFixed(4)} ${toCurr.toUpperCase()}\n\n注意: 这是模拟数据，实际汇率请参考实时数据`
+          } else {
+            output = `currency: 无效的货币代码。请使用 --help 查看支持的货币。`
+          }
+        }
         break
       case 'bacon': {
         const baconText = (args.join(' ') || 'BACON').split('').map(c => {

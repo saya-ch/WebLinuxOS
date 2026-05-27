@@ -523,7 +523,109 @@ export default function Calculator() {
     }
   }, [display])
 
-  const handleTanh = useCallback(() => {
+  // 增强功能：编程计算器
+  const handleBinary = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = parseInt(display)
+      if (val < 0) throw new Error()
+      setDisplay(val.toString(2))
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleOctal = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = parseInt(display)
+      if (val < 0) throw new Error()
+      setDisplay(val.toString(8))
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleHex = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = parseInt(display)
+      if (val < 0) throw new Error()
+      setDisplay(val.toString(16).toUpperCase())
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  // 从任意进制转换回十进制
+  const handleFromBase = useCallback((base: number) => {
+    if (display === 'Error') return
+    try {
+      const val = parseInt(display, base)
+      if (isNaN(val)) throw new Error()
+      setDisplay(String(val))
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+  
+  // 记忆功能
+  const [memory, setMemory] = useState<number>(0)
+
+  const handleMemoryAdd = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = parseFloat(display)
+      if (!isNaN(val)) {
+        setMemory(prev => prev + val)
+      }
+    } catch {}
+  }, [display])
+
+  const handleMemorySubtract = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = parseFloat(display)
+      if (!isNaN(val)) {
+        setMemory(prev => prev - val)
+      }
+    } catch {}
+  }, [display])
+
+  const handleMemoryRecall = useCallback(() => {
+    setDisplay(String(memory))
+    setResetFlag(true)
+  }, [memory])
+
+  const handleMemoryClear = useCallback(() => {
+    setMemory(0)
+  }, [])
+
+  const handleYx = useCallback(() => {
+    setExpression((prev) => prev + (display !== 'Error' ? display : '') + '^(1/')
+    setResetFlag(true)
+  }, [display])
+
+  const handle10pow = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const result = Math.pow(10, parseFloat(display))
+      let formatted = String(result)
+      if (formatted.includes('.')) {
+        formatted = formatted.replace(/\.?0+$/, '')
+      }
+      setDisplay(formatted)
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleTanH = useCallback(() => {
     if (display === 'Error') return
     try {
       const val = Math.tanh(parseFloat(display))
@@ -538,15 +640,89 @@ export default function Calculator() {
     }
   }, [display])
 
+  const handleMod = useCallback(() => {
+    setExpression((prev) => prev + (display !== 'Error' ? display : '') + '%')
+    setResetFlag(true)
+  }, [display])
+
+  // 科学计算器辅助函数
+  const handleNthRoot = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = parseFloat(display)
+      const result = Math.pow(val, 1/2) // 默认平方根
+      let formatted = String(result)
+      if (formatted.includes('.')) {
+        formatted = formatted.replace(/\.?0+$/, '')
+      }
+      setDisplay(formatted)
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleLog2 = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = Math.log2(parseFloat(display))
+      let formatted = String(val)
+      if (formatted.includes('.')) {
+        formatted = formatted.replace(/\.?0+$/, '')
+      }
+      setDisplay(formatted)
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleLog1p = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = Math.log1p(parseFloat(display))
+      let formatted = String(val)
+      if (formatted.includes('.')) {
+        formatted = formatted.replace(/\.?0+$/, '')
+      }
+      setDisplay(formatted)
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleExpm1 = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const val = Math.expm1(parseFloat(display))
+      let formatted = String(val)
+      if (formatted.includes('.')) {
+        formatted = formatted.replace(/\.?0+$/, '')
+      }
+      setDisplay(formatted)
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleSignMemory = useCallback(() => {
+    if (memory !== 0) {
+      setDisplay(String(memory))
+      setResetFlag(true)
+    }
+  }, [memory])
+
+  const clearHistory = useCallback(() => {
+    setHistory([])
+  }, [])
+
   const handleFromHistory = useCallback((item: HistoryItem) => {
     setDisplay(item.result)
     setExpression(item.expression)
     setShowHistory(false)
     setResetFlag(true)
-  }, [])
-
-  const clearHistory = useCallback(() => {
-    setHistory([])
   }, [])
 
   // 使用 useMemo 优化按钮样式 - 现代化设计
@@ -821,31 +997,58 @@ export default function Calculator() {
         <InteractiveButton style={buttonStyles.eq} onClick={handleEqual}>=</InteractiveButton>
       </div>
 
-      {/* 第八行：高级函数 */}
+      {/* 第八行：三角和幂函数 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.log)}>ln</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.log10)}>log</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleExp}>eˣ</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handle10x}>10ˣ</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleExp}>e^x</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handle10x}>10^x</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleReciprocal}>1/x</InteractiveButton>
       </div>
 
-      {/* 第九行：更多函数 */}
+      {/* 第九行：记忆功能 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.func} onClick={handleFloor}>⌊x⌋</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleCeil}>⌈x⌉</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleMemoryClear}>MC</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleMemoryRecall}>MR</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleMemoryAdd}>M+</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleMemorySubtract}>M-</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleSignMemory}>MS</InteractiveButton>
+      </div>
+
+      {/* 第十行：进制转换 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleBinary}>BIN</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleOctal}>OCT</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleHex}>HEX</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleFromBase(16)}>FROM</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleMod}>MOD</InteractiveButton>
+      </div>
+
+      {/* 第十一行：高级数学函数 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleLog2}>LOG2</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleLog1p}>LOG1P</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleExpm1}>EXPM1</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handle10pow}>10^X</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleYx}>Y^X</InteractiveButton>
+      </div>
+      
+      {/* 第十二行：更多函数 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleFloor}>floor</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleCeil}>ceil</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleRound}>round</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleSinh}>sinh</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleCosh}>cosh</InteractiveButton>
       </div>
       
-      {/* 第十行：更多函数 */}
+      {/* 第十三行：更多双曲函数 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-        <InteractiveButton style={buttonStyles.func} onClick={handleTanh}>tanh</InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
-        <InteractiveButton style={{...buttonStyles.func, opacity: 0.3, cursor: 'not-allowed'}} disabled children="" onClick={() => {}}></InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleTanH}>tanh</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleNthRoot}>NTH</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAsin}>asin</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAcos}>acos</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleAtan}>atan</InteractiveButton>
       </div>
     </div>
   )
