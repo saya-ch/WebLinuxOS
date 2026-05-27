@@ -213,6 +213,14 @@ export default function Weather() {
   const [error, setError] = useState<string | null>(null)
   const [searchResults, setSearchResults] = useState<GeocodingResult[]>([])
   const [showSearch, setShowSearch] = useState(false)
+  const [savedCities, setSavedCities] = useState<GeocodingResult[]>(() => {
+    try {
+      const saved = localStorage.getItem('weblinux-saved-cities')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 60000)
@@ -321,6 +329,27 @@ export default function Weather() {
     fetchWeather(city.latitude, city.longitude, `${city.name}, ${city.country}`)
     setSearchQuery('')
     setSearchResults([])
+    setShowSearch(false)
+  }
+
+  const toggleSaveCity = () => {
+    if (!currentWeather) return
+    const cityToSave: GeocodingResult = {
+      name: cityName.split(',')[0],
+      country: cityName.split(',')[1]?.trim() || '',
+      latitude: 0,
+      longitude: 0
+    }
+    setSavedCities(prev => {
+      const exists = prev.some(c => c.name === cityToSave.name)
+      const newCities = exists 
+        ? prev.filter(c => c.name !== cityToSave.name)
+        : [...prev, cityToSave]
+      try {
+        localStorage.setItem('weblinux-saved-cities', JSON.stringify(newCities))
+      } catch {}
+      return newCities
+    })
   }
 
   const backgroundGradient = useMemo(() => {
@@ -416,27 +445,74 @@ export default function Weather() {
         )}
 
         {!showSearch && (
-          <button
-            onClick={() => setShowSearch(true)}
-            style={{
-              width: '100%',
-              marginBottom: 16,
-              padding: '12px 16px',
-              borderRadius: 16,
-              border: 'none',
-              background: 'rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.85)',
-              cursor: 'pointer',
-              fontSize: 14,
-              backdropFilter: 'blur(10px)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <Search size={16} />
-            搜索城市...
-          </button>
+          <>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <button
+                onClick={() => setShowSearch(true)}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  borderRadius: 16,
+                  border: 'none',
+                  background: 'rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.85)',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <Search size={16} />
+                搜索城市...
+              </button>
+              {currentWeather && (
+                <button
+                  onClick={toggleSaveCity}
+                  style={{
+                    padding: '12px 16px',
+                    borderRadius: 16,
+                    border: 'none',
+                    background: 'rgba(255,255,255,0.12)',
+                    color: savedCities.some(c => c.name === cityName.split(',')[0]) ? '#ffd700' : '#fff',
+                    cursor: 'pointer',
+                    fontSize: 16,
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  ⭐
+                </button>
+              )}
+            </div>
+            
+            {savedCities.length > 0 && (
+              <div style={{ marginBottom: 16, display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+                {savedCities.map((city, i) => (
+                  <button
+                    key={i}
+                    onClick={() => selectCity(city)}
+                    style={{
+                      flexShrink: 0,
+                      padding: '8px 16px',
+                      borderRadius: 20,
+                      border: 'none',
+                      background: 'rgba(255,255,255,0.15)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontSize: 13,
+                      backdropFilter: 'blur(10px)',
+                    }}
+                  >
+                    {city.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {loading && (

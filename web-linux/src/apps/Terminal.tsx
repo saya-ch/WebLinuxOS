@@ -31,7 +31,8 @@ const COMMANDS = [
   'version', 'credits', 'about', 'todo', 'notes', 'encrypt', 'decrypt',
   'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
   'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon',
-  'json', 'urlencode', 'urldecode', 'uuid', 'password', 'color', 'currency', 'units', 'timeconv'
+  'json', 'urlencode', 'urldecode', 'uuid', 'password', 'color', 'currency', 'units', 'timeconv',
+  'joke', 'advice', 'flip', 'rps'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -211,10 +212,11 @@ export default function Terminal() {
   网络工具: ping, ifconfig, curl
   系统工具: clear, help, history, alias, type, man, exit, cls, reset
   工具命令: echo, find, grep, env, export
-  趣味命令: cowsay, fortune, sl, starwars, asciiart, dog - 试试这些有趣的小命令!
+  趣味命令: cowsay, fortune, sl, starwars, asciiart, dog, joke, advice, flip, rps - 试试这些有趣的小命令!
   加密工具: base64, unbase64, hash, rev - 文本编码解码工具
   数学工具: calc, prime, factor, roman - 计算器和数学工具
   视觉效果: matrix, figlet, lolcat, cowthink, banner - ASCII艺术
+  实用工具: password, uuid, color, currency, units, timeconv, json, urlencode, urldecode
 
 快捷键:
   Ctrl+Shift+L - 切换启动器
@@ -259,7 +261,11 @@ export default function Terminal() {
   starwars - 星球大战ASCII艺术
   asciiart - 随机ASCII艺术
   banner - 横幅文字
-  dog - 让狗狗说话!`
+  dog - 让狗狗说话!
+  joke - 程序员笑话
+  advice - 编程建议
+  flip - 抛硬币
+  rps - 石头剪刀布`
         break
       case 'clear':
       case 'cls':
@@ -1353,6 +1359,129 @@ export default function Terminal() {
           }
         }
         break
+      case 'joke': {
+        const jokes = [
+          { q: '为什么程序员不喜欢户外野餐？', a: '因为有太多bug！🐛' },
+          { q: '什么东西有8个脑袋和8条腿？', a: '八进制！' },
+          { q: '为什么程序员总是分不清万圣节和圣诞节？', a: '因为 Oct 31 = Dec 25！' },
+          { q: 'HTML是什么意思？', a: 'How To Meet Ladies！' },
+          { q: '程序员的终极浪漫是什么？', a: 'while(true) { love(you); }' },
+          { q: '为什么程序员喜欢黑暗模式？', a: '因为Light吸引bugs！' },
+          { q: '一个SQL查询走进一家酒吧，看见两张桌子...', a: '他问："我能JOIN你们吗？"' },
+          { q: '什么是程序员最喜欢的动物？', a: 'Yak，因为他们总是在剃Yak！' },
+          { q: '为什么Java开发者戴眼镜？', a: '因为他们看不到C#！' },
+          { q: '一个优秀的程序员应该具备什么？', a: '把coffee转化成code的能力！☕' }
+        ]
+        const joke = jokes[Math.floor(Math.random() * jokes.length)]
+        output = `🤣 程序员笑话\n\nQ: ${joke.q}\n\nA: ${joke.a}`
+        break
+      }
+      case 'advice': {
+        const advices = [
+          '代码是写给人看的，只是顺便给机器执行',
+          '先让它工作，再让它正确，最后让它快速',
+          '注释你的代码，就好像维护它的人是知道你住址的精神病患者',
+          '好的代码本身就是最好的文档',
+          '不要重复自己 - DRY原则',
+          '保持简单，傻瓜 - KISS原则',
+          '过早优化是万恶之源',
+          '代码审查不是找茬，是共同成长',
+          '学习新技术最好的方式是用它做项目',
+          '每天写代码，哪怕只有一点',
+          '出错了不要怕，debug是编程的一部分',
+          '使用有意义的变量名',
+          '函数应该只做一件事，并且把它做好',
+          '测试是为了证明功能，不是为了寻找bug',
+          '优秀的代码是自解释的',
+          '不要试图重新发明轮子',
+          '学会使用版本控制',
+          '写代码前先思考',
+          '代码质量很重要，但交付也很重要',
+          '持续学习，技术变化很快'
+        ]
+        output = `💡 编程建议\n\n${advices[Math.floor(Math.random() * advices.length)]}`
+        break
+      }
+      case 'flip': {
+        const coins = ['正面', '反面']
+        const result = coins[Math.floor(Math.random() * coins.length)]
+        output = `🪙 抛硬币\n\n结果: ${result}！`
+        break
+      }
+      case 'rps': {
+        if (args.length === 0) {
+          output = [
+            '✊✋✌️ 石头剪刀布',
+            '',
+            '用法: rps [石头|剪刀|布]',
+            '',
+            '示例:',
+            '  rps 石头',
+            '  rps scissors',
+            '  rps paper',
+          ].join('\n')
+        } else {
+          const choices = ['石头', '剪刀', '布']
+          const player = args[0].toLowerCase()
+          let playerChoice = -1
+          
+          if (player.includes('石') || player.includes('rock')) playerChoice = 0
+          else if (player.includes('剪') || player.includes('scissor')) playerChoice = 1
+          else if (player.includes('布') || player.includes('paper')) playerChoice = 2
+          
+          if (playerChoice === -1) {
+            output = 'rps: 请选择 石头、剪刀 或 布'
+          } else {
+            const computerChoice = Math.floor(Math.random() * 3)
+            let result = ''
+            
+            if (playerChoice === computerChoice) {
+              result = '平局！'
+            } else if (
+              (playerChoice === 0 && computerChoice === 1) ||
+              (playerChoice === 1 && computerChoice === 2) ||
+              (playerChoice === 2 && computerChoice === 0)
+            ) {
+              result = '你赢了！🎉'
+            } else {
+              result = '电脑赢了！💻'
+            }
+            
+            const icons = ['✊', '✌️', '✋']
+            output = `✊✋✌️ 石头剪刀布\n\n你: ${icons[playerChoice]} ${choices[playerChoice]}\n电脑: ${icons[computerChoice]} ${choices[computerChoice]}\n\n${result}`
+          }
+        }
+        break
+      }
+      case 'password': {
+        if (args.length > 0 && (args[0] === '--help' || args[0] === '-h')) {
+          output = [
+            '🔐 密码生成器',
+            '',
+            '用法: password [长度] [--no-symbols]',
+            '',
+            '示例:',
+            '  password',
+            '  password 16',
+            '  password 32 --no-symbols',
+          ].join('\n')
+        } else {
+          const length = parseInt(args[0]) || 16
+          const noSymbols = args.includes('--no-symbols')
+          
+          const chars = noSymbols 
+            ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+            : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?'
+          
+          let password = ''
+          for (let i = 0; i < Math.min(length, 128); i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length))
+          }
+          
+          output = `🔐 生成的密码\n\n${password}\n\n长度: ${password.length} 字符`
+        }
+        break
+      }
       case 'bacon': {
         const baconText = (args.join(' ') || 'BACON').split('').map(c => {
           const binary = c.charCodeAt(0).toString(2).padStart(8, '0')
