@@ -9,11 +9,12 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   user-select: none;
+  line-height: 1.6;
 }
 
 button, input, textarea {
@@ -2985,4 +2986,198 @@ a:hover {
 .app-preview-icon {
   font-size: 48px;
   margin-bottom: 12px;
+}
+
+.app-file-manager-enhanced {
+  background: linear-gradient(180deg, var(--window-bg) 0%, rgba(18, 18, 28, 0.98) 100%);
+}
+
+.app-file-sidebar-enhanced {
+  background: linear-gradient(90deg, rgba(34, 34, 53, 0.9) 0%, transparent 100%);
+}
+
+@keyframes enhancedPulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes smoothBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  75% {
+    transform: translateY(-6px);
+  }
+}
+
+.desktop-icon-enhanced {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.desktop-icon-enhanced:hover {
+  background: rgba(139, 124, 240, 0.12);
+  transform: scale(1.08) translateY(-8px);
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.4),
+    0 0 32px rgba(139, 124, 240, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.desktop-icon-enhanced:active {
+  transform: scale(0.96) translateY(-4px);
+}
+
+.window-enhanced {
+  background: linear-gradient(180deg, rgba(32, 32, 50, 0.95) 0%, rgba(24, 24, 42, 0.98) 100%);
+  border: 1px solid rgba(139, 124, 240, 0.5);
+  backdrop-filter: blur(50px) saturate(200%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.window-enhanced:focus-within {
+  border-color: rgba(139, 124, 240, 0.8);
+  box-shadow: 
+    0 28px 80px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(139, 124, 240, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.taskbar-enhanced {
+  background: linear-gradient(180deg, rgba(16, 16, 30, 0.96) 0%, rgba(12, 12, 24, 0.98) 100%);
+  backdrop-filter: blur(30px) saturate(180%);
+  transition: all 0.2s ease;
+}
+
+.taskbar-enhanced:hover {
+  background: linear-gradient(180deg, rgba(18, 18, 34, 0.98) 0%, rgba(14, 14, 28, 1) 100%);
+}
+
+.launcher-enhanced {
+  background: linear-gradient(180deg, rgba(28, 28, 52, 0.97) 0%, rgba(22, 22, 44, 0.99) 100%);
+  border: 1px solid rgba(139, 124, 240, 0.45);
+  backdrop-filter: blur(50px) saturate(200%);
+}
+
+.launcher-app-item-enhanced {
+  background: rgba(139, 124, 240, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.launcher-app-item-enhanced:hover {
+  background: rgba(139, 124, 240, 0.15);
+  transform: scale(1.08) translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.context-menu-enhanced {
+  background: linear-gradient(180deg, rgba(40, 40, 68, 0.97) 0%, rgba(32, 32, 56, 0.99) 100%);
+  border: 1px solid rgba(139, 124, 240, 0.35);
+  backdrop-filter: blur(30px) saturate(180%);
+}
+
+.context-menu-item-enhanced {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  margin: 2px 4px;
+}
+
+.context-menu-item-enhanced:hover {
+  background: rgba(139, 124, 240, 0.2);
+  padding-left: 18px;
+}
+
+.btn-enhanced {
+  background: linear-gradient(135deg, var(--accent) 0%, #7c6ed6 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(139, 124, 240, 0.3);
+}
+
+.btn-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 124, 240, 0.4);
+}
+
+.btn-enhanced:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(139, 124, 240, 0.3);
+}
+
+.input-enhanced {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(139, 124, 240, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.input-enhanced:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139, 124, 240, 0.2), 0 0 20px rgba(139, 124, 240, 0.15);
+  background: rgba(30, 30, 54, 0.9);
+}
+
+@keyframes morphGlow {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    box-shadow: 0 0 20px rgba(139, 124, 240, 0.3);
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    box-shadow: 0 0 30px rgba(139, 124, 240, 0.4);
+  }
+  50% {
+    border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%;
+    box-shadow: 0 0 25px rgba(139, 124, 240, 0.35);
+  }
+  75% {
+    border-radius: 60% 40% 60% 30% / 70% 30% 50% 60%;
+    box-shadow: 0 0 28px rgba(139, 124, 240, 0.38);
+  }
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.neumorphism-light {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  box-shadow: 
+    8px 8px 16px rgba(0, 0, 0, 0.3),
+    -8px -8px 16px rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.neumorphism-dark {
+  background: linear-gradient(145deg, rgba(30, 30, 50, 0.9), rgba(20, 20, 36, 0.95));
+  box-shadow: 
+    8px 8px 16px rgba(0, 0, 0, 0.4),
+    -4px -4px 12px rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
 }

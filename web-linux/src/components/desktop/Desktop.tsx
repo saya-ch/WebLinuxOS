@@ -388,8 +388,8 @@ const Desktop = memo(function Desktop() {
           position: 'fixed',
           inset: 0,
           background: `
-            radial-gradient(ellipse at 20% 20%, rgba(139, 124, 240, 0.2) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 80%, rgba(0, 206, 201, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 20%, rgba(139, 124, 240, 0.25) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(0, 206, 201, 0.2) 0%, transparent 50%),
             linear-gradient(135deg, #0a0a18 0%, #161630 40%, #0f0f23 70%, #161630 100%)
           `,
           display: 'flex',
@@ -397,17 +397,17 @@ const Desktop = memo(function Desktop() {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 99999,
-          animation: 'fadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) 1.8s forwards',
+          animation: 'fadeOut 0.8s cubic-bezier(0.4, 0, 0.2, 1) 2s forwards',
         }}
       >
-        {/* Background orbs */}
+        {/* Enhanced background orbs with glow */}
         <div style={{
           position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
           <div style={{
             position: 'absolute',
-            width: '300px',
-            height: '300px',
-            background: 'radial-gradient(circle, rgba(139, 124, 240, 0.15) 0%, transparent 70%)',
+            width: '400px',
+            height: '400px',
+            background: 'radial-gradient(circle, rgba(139, 124, 240, 0.2) 0%, transparent 70%)',
             left: '10%',
             top: '20%',
             animation: 'floatOrb 8s ease-in-out infinite',
@@ -415,13 +415,23 @@ const Desktop = memo(function Desktop() {
           }} />
           <div style={{
             position: 'absolute',
-            width: '250px',
-            height: '250px',
-            background: 'radial-gradient(circle, rgba(0, 206, 201, 0.12) 0%, transparent 70%)',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(0, 206, 201, 0.15) 0%, transparent 70%)',
             right: '15%',
             bottom: '25%',
             animation: 'floatOrb 10s ease-in-out infinite reverse',
             filter: 'blur(35px)'
+          }} />
+          <div style={{
+            position: 'absolute',
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, rgba(255, 107, 107, 0.12) 0%, transparent 70%)',
+            left: '60%',
+            top: '10%',
+            animation: 'floatOrb 12s ease-in-out infinite',
+            filter: 'blur(30px)'
           }} />
         </div>
         
@@ -429,8 +439,9 @@ const Desktop = memo(function Desktop() {
           style={{
             fontSize: '96px',
             marginBottom: '28px',
-            animation: 'logoFloat 3s ease-in-out infinite',
+            animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite',
             filter: 'drop-shadow(0 0 30px rgba(139, 124, 240, 0.5))',
+            transform: 'scale(1)',
           }}
         >
           🐧
@@ -446,6 +457,7 @@ const Desktop = memo(function Desktop() {
             marginBottom: '12px',
             animation: 'textGlow 2s ease-in-out infinite',
             textShadow: '0 0 40px rgba(139, 124, 240, 0.3)',
+            letterSpacing: '-0.5px',
           }}
         >
           WebLinuxOS
@@ -456,13 +468,14 @@ const Desktop = memo(function Desktop() {
             color: '#a0a0c8',
             fontWeight: '500',
             animation: 'fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both',
+            letterSpacing: '0.5px',
           }}
         >
           正在启动桌面环境...
         </div>
         <div
           style={{
-            width: '240px',
+            width: '280px',
             height: '6px',
             background: 'rgba(255, 255, 255, 0.08)',
             borderRadius: '3px',
@@ -475,10 +488,10 @@ const Desktop = memo(function Desktop() {
           <div
             style={{
               height: '100%',
-              background: 'linear-gradient(90deg, transparent, #6c5ce7, #a29bfe, transparent)',
+              background: 'linear-gradient(90deg, transparent, #6c5ce7, #a29bfe, #8b7cf0, transparent)',
               backgroundSize: '200% 100%',
               borderRadius: '3px',
-              animation: 'loadingShimmer 1.8s ease-in-out forwards',
+              animation: 'loadingShimmer 2s ease-in-out forwards',
             }}
           />
         </div>
@@ -491,6 +504,14 @@ const Desktop = memo(function Desktop() {
             50% { 
               transform: translateY(-8px) scale(1.05); 
               filter: drop-shadow(0 0 50px rgba(139, 124, 240, 0.7));
+            }
+          }
+          @keyframes logoGlow {
+            0%, 100% { 
+              filter: drop-shadow(0 0 30px rgba(139, 124, 240, 0.5));
+            }
+            50% { 
+              filter: drop-shadow(0 0 60px rgba(139, 124, 240, 0.8));
             }
           }
           @keyframes textGlow {
@@ -520,7 +541,7 @@ const Desktop = memo(function Desktop() {
               background-position: -200% 0; 
               width: 0%;
             }
-            30% { width: 60%; }
+            30% { width: 70%; }
             100% { 
               background-position: 200% 0; 
               width: 100%;
