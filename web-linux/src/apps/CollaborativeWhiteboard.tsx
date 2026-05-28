@@ -36,7 +36,6 @@ export default function CollaborativeWhiteboard() {
   const [color, setColor] = useState<Color>('#ffffff')
   const [lineWidth, setLineWidth] = useState(4)
   const [isDrawing, setIsDrawing] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
   const [showTextInput, setShowTextInput] = useState(false)
   const [textInput, setTextInput] = useState('')
   const [textPosition, setTextPosition] = useState<Point>({ x: 0, y: 0 })
@@ -44,7 +43,7 @@ export default function CollaborativeWhiteboard() {
   const [canRedo, setCanRedo] = useState(false)
   const [history, setHistory] = useState<Stroke[][]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const [users, setUsers] = useState([
+  const [users] = useState([
     { id: 'me', name: '你', color: '#8b7cf0', active: true },
     { id: 'user1', name: '用户1', color: '#06b6d4', active: false },
     { id: 'user2', name: '用户2', color: '#22c55e', active: false }
@@ -722,7 +721,7 @@ export default function CollaborativeWhiteboard() {
           </h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {strokes.slice().reverse().slice(0, 15).map((stroke, i) => (
+            {strokes.slice().reverse().slice(0, 15).map((stroke) => (
               <div
                 key={stroke.id}
                 style={{
