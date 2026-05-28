@@ -286,7 +286,18 @@ function OnlineToolkitIcon() {
   );
 }
 
+function RecipeBookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V2.5A2.5 2.5 0 0 1 6.5 2z" />
+      <path d="M8 7h8M8 11h8M8 15h6" />
+    </svg>
+  );
+}
+
 export const appRegistry: AppDefinition[] = [
+  { id: 'recipe-book', name: '食谱大全', icon: <RecipeBookIcon />, component: 'RecipeBook', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'online-toolkit', name: '在线工具中心', icon: <OnlineToolkitIcon />, component: 'OnlineToolkit', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'realtime-translator', name: '实时翻译助手', icon: <RealTimeTranslatorIcon />, component: 'RealTimeTranslator', category: 'utilities', defaultWidth: 900, defaultHeight: 800, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'stock-tracker', name: '股票市场追踪器', icon: <StockTrackerIcon />, component: 'StockTracker', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },

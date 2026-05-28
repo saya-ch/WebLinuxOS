@@ -31,7 +31,7 @@ Browser, Email Client, Chat Application, News Reader, Cloud Sync
 Music Player, Video Player, Paint, Image Viewer, Camera, Sound Recorder, Screen Recorder
 
 **Utilities**
-Calculator, Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Currency Converter, Voice Transcriber
+Calculator, Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Currency Converter, Voice Transcriber, Recipe Book
 
 **Entertainment**
 Weather, World Clock, Snake Game, Tetris, Virtual Pet
