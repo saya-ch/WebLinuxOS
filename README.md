@@ -67,6 +67,20 @@ WebLinuxOS is a comprehensive web-based Linux desktop environment that brings th
 - **Pyodide 0.26** - In-browser Python runtime
 - **Lucide React** - Beautiful icon library
 
+## New Features
+
+### Recently Added Applications
+
+- **Quick Markdown Preview** - Fast markdown preview with live rendering
+- **Notes App** - Full-featured note-taking with tags and search
+- **Clipboard Manager** - Automatic clipboard history with search and organization
+
+### Productivity Enhancements
+
+- **Advanced Terminal** - 90+ commands including Python 3 runtime support
+- **Smart Search** - Global search across all applications and files
+- **Cloud Integration** - Real-time data synchronization
+
 ## Quick Start
 
 ```bash
@@ -88,6 +102,14 @@ npm run build
 # Deploy to GitHub Pages
 npm run deploy
 ```
+
+## What's New in Latest Update
+
+- Added markdown preview functionality with `marked` library integration
+- Enhanced notes application with tags and search
+- Improved clipboard manager with auto-tracking
+- Performance optimizations for faster application loading
+- Bug fixes and stability improvements
 
 ## Keyboard Shortcuts
 

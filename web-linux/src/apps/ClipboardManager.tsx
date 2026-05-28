@@ -1,413 +1,410 @@
-import { useState, useEffect, useCallback, memo } from 'react'
-import { useStore } from '../store'
-import type { Notification } from '../types'
+import { useState, useEffect } from 'react'
+import { Copy, Trash2, Plus, Search, Clock, Star, Tag } from 'lucide-react'
 
 interface ClipboardItem {
   id: string
   content: string
-  type: 'text' | 'image' | 'link'
-  timestamp: Date
   preview: string
+  timestamp: number
+  starred: boolean
+  tags: string[]
 }
 
-interface StoredClipboardItem {
-  id: string
-  content: string
-  type: 'text' | 'image' | 'link'
-  timestamp: string
-  preview: string
-}
-
-const ClipboardManager = memo(function ClipboardManager() {
-  const [clipboardHistory, setClipboardHistory] = useState<ClipboardItem[]>([])
+export default function ClipboardManager() {
+  const [items, setItems] = useState<ClipboardItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('weblinux-clipboard')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [isMonitoring, setIsMonitoring] = useState(true)
-  const addNotification = useStore((s) => s.addNotification as ((notification: Omit<Notification, 'id' | 'timestamp'>) => void))
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newContent, setNewContent] = useState('')
+  const [newTags, setNewTags] = useState('')
 
   useEffect(() => {
-    const stored = localStorage.getItem('clipboard-history')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as StoredClipboardItem[]
-        setClipboardHistory(parsed.map((item) => ({
-          ...item,
-          timestamp: new Date(item.timestamp)
-        })))
-      } catch {
-        // Ignore parse errors for clipboard history
+    try {
+      localStorage.setItem('weblinux-clipboard', JSON.stringify(items))
+    } catch (error) {
+      console.error('Failed to save clipboard items:', error)
+    }
+  }, [items])
+
+  useEffect(() => {
+    const handlePaste = async () => {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const text = await navigator.clipboard.readText()
+          if (text && text.trim()) {
+            const newItem: ClipboardItem = {
+              id: Date.now().toString(),
+              content: text,
+              preview: text.slice(0, 100) + (text.length > 100 ? '...' : ''),
+              timestamp: Date.now(),
+              starred: false,
+              tags: []
+            }
+            setItems(prev => [newItem, ...prev.filter(i => i.content !== text)])
+          }
+        } catch (error) {
+          console.error('Failed to read clipboard:', error)
+        }
       }
     }
+
+    const interval = setInterval(handlePaste, 2000)
+    return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    localStorage.setItem('clipboard-history', JSON.stringify(clipboardHistory))
-  }, [clipboardHistory])
+  const filteredItems = items.filter(item => {
+    const query = searchQuery.toLowerCase()
+    return (
+      item.content.toLowerCase().includes(query) ||
+      item.tags.some(tag => tag.toLowerCase().includes(query))
+    )
+  })
 
-  const addToHistory = useCallback((content: string) => {
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (a.starred && !b.starred) return -1
+    if (!a.starred && b.starred) return 1
+    return b.timestamp - a.timestamp
+  })
+
+  const copyToClipboard = async (content: string) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(content)
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error)
+      }
+    }
+  }
+
+  const deleteItem = (id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id))
+    if (selectedId === id) setSelectedId(null)
+  }
+
+  const toggleStar = (id: string) => {
+    setItems(prev => prev.map(item => 
+      item.id === id ? { ...item, starred: !item.starred } : item
+    ))
+  }
+
+  const addManualItem = () => {
+    if (!newContent.trim()) return
+    
     const newItem: ClipboardItem = {
       id: Date.now().toString(),
-      content,
-      type: detectType(content),
-      timestamp: new Date(),
-      preview: getPreview(content, detectType(content))
+      content: newContent,
+      preview: newContent.slice(0, 100) + (newContent.length > 100 ? '...' : ''),
+      timestamp: Date.now(),
+      starred: false,
+      tags: newTags.split(',').map(t => t.trim()).filter(Boolean)
     }
-    setClipboardHistory(prev => {
-      // 避免重复
-      const filtered = prev.filter(item => item.content !== content)
-      return [newItem, ...filtered].slice(0, 100) // 限制最多100条
-    })
-  }, [])
-
-  // 监听剪贴板变化
-  useEffect(() => {
-    if (!isMonitoring) return
-
-    let lastContent = ''
     
-    const checkClipboard = async () => {
-      try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-          const content = await navigator.clipboard.readText()
-          if (content && content !== lastContent && content.trim()) {
-            lastContent = content
-            addToHistory(content)
-          }
-        }
-      } catch {
-        // 忽略剪贴板访问错误
-      }
-    }
-
-    const interval = setInterval(checkClipboard, 1000)
-
-    // 监听复制事件
-    const handleCopy = () => {
-      const selection = window.getSelection()?.toString()
-      if (selection && selection.trim()) {
-        setTimeout(() => checkClipboard(), 100)
-      }
-    }
-
-    document.addEventListener('copy', handleCopy)
-    document.addEventListener('cut', handleCopy)
-
-    return () => {
-      clearInterval(interval)
-      document.removeEventListener('copy', handleCopy)
-      document.removeEventListener('cut', handleCopy)
-    }
-  }, [isMonitoring, addToHistory])
-
-  const copyToClipboard = useCallback((content: string) => {
-    navigator.clipboard.writeText(content).then(() => {
-      addNotification?.({
-        title: '已复制到剪贴板',
-        message: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-        type: 'success',
-        duration: 2000,
-      })
-    })
-  }, [addNotification])
-
-  const deleteItem = useCallback((id: string) => {
-    setClipboardHistory((prev) => prev.filter((item) => item.id !== id))
-    if (selectedId === id) setSelectedId(null)
-  }, [selectedId])
-
-  const clearAll = useCallback(() => {
-    setClipboardHistory([])
-    setSelectedId(null)
-  }, [])
-
-  const detectType = (content: string): 'text' | 'image' | 'link' => {
-    if (content.match(/^https?:\/\//)) return 'link'
-    if (content.match(/^data:image\//)) return 'image'
-    return 'text'
+    setItems(prev => [newItem, ...prev])
+    setNewContent('')
+    setNewTags('')
+    setShowAddModal(false)
   }
 
-  const getPreview = (content: string, type: 'text' | 'image' | 'link'): string => {
-    if (type === 'image') return '[图片]'
-    if (type === 'link') return new URL(content).hostname
-    return content.substring(0, 100) + (content.length > 100 ? '...' : '')
+  const clearAll = () => {
+    if (confirm('确定要清空所有剪贴板记录吗？')) {
+      setItems([])
+    }
   }
 
-  const formatTime = (date: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const minutes = Math.floor(diff / 60000)
-    const hours = Math.floor(diff / 3600000)
-    const days = Math.floor(diff / 86400000)
-
-    if (minutes < 1) return '刚刚'
-    if (minutes < 60) return `${minutes}分钟前`
-    if (hours < 24) return `${hours}小时前`
-    return `${days}天前`
+  const formatTime = (timestamp: number): string => {
+    const now = Date.now()
+    const diff = now - timestamp
+    
+    if (diff < 60000) return '刚刚'
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`
+    return new Date(timestamp).toLocaleString('zh-CN')
   }
-
-  const filteredHistory = clipboardHistory.filter((item) =>
-    item.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const selectedItem = clipboardHistory.find((item) => item.id === selectedId)
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: '100%',
-        background: 'var(--bg-secondary)',
-        borderRadius: '8px',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          width: '320px',
-          borderRight: '1px solid var(--border)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div style={{ padding: '12px', borderBottom: '1px solid var(--border)' }}>
+    <div className="app-container app-clipboard-manager" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ 
+        padding: '16px', 
+        borderBottom: '1px solid var(--border-color, #333)',
+        background: 'var(--bg-secondary, #252525)'
+      }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          <button
+            onClick={() => setShowAddModal(true)}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              background: '#4c6ef5',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              justifyContent: 'center',
+            }}
+          >
+            <Plus size={16} /> 添加
+          </button>
+          <button
+            onClick={clearAll}
+            style={{
+              padding: '10px 16px',
+              background: 'transparent',
+              color: '#dc2626',
+              border: '1px solid #dc2626',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
           <input
             type="text"
-            placeholder="🔍 搜索剪贴板历史..."
+            placeholder="搜索剪贴板..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '8px 12px',
+              padding: '8px 12px 8px 36px',
+              border: '1px solid var(--border-color, #444)',
               borderRadius: '6px',
-              border: '1px solid var(--border)',
-              background: 'var(--bg-primary)',
-              color: 'var(--text-primary)',
+              background: 'var(--bg-input, #1e1e1e)',
+              color: 'var(--text-color, #e0e0e0)',
               fontSize: '13px',
-              outline: 'none',
-              marginBottom: '8px',
+              boxSizing: 'border-box',
             }}
           />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                color: 'var(--text-secondary)',
-                transition: 'background 0.2s',
-              }}
-              onClick={() => setIsMonitoring(!isMonitoring)}
-            >
-              <div
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: isMonitoring ? '#4ade80' : '#94a3b8',
-                  boxShadow: isMonitoring ? '0 0 8px rgba(74, 222, 128, 0.5)' : 'none',
-                }}
-              />
-              {isMonitoring ? '监控中' : '已暂停'}
-            </div>
-            <div style={{ flex: 1 }} />
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {clipboardHistory.length} 条记录
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+        {sortedItems.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary, #888)' }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>📋</div>
+            <div style={{ fontSize: '14px' }}>
+              {searchQuery ? '没有找到匹配的记录' : '剪贴板为空'}
             </div>
           </div>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-          {filteredHistory.length === 0 ? (
+        ) : (
+          sortedItems.map(item => (
             <div
+              key={item.id}
+              onClick={() => setSelectedId(item.id === selectedId ? null : item.id)}
               style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <div style={{ fontSize: '48px', marginBottom: '12px' }}>📋</div>
-              <div>暂无剪贴板记录</div>
-              <div style={{ fontSize: '12px', marginTop: '8px' }}>
-                复制内容后将自动记录
-              </div>
-            </div>
-          ) : (
-            filteredHistory.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setSelectedId(item.id)}
-                style={{
-                  padding: '10px',
-                  marginBottom: '4px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  background:
-                    selectedId === item.id
-                      ? 'var(--accent)'
-                      : 'var(--bg-primary)',
-                  color:
-                    selectedId === item.id
-                      ? '#fff'
-                      : 'var(--text-primary)',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: selectedId === item.id ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  {item.type === 'link' ? '🔗' : item.type === 'image' ? '🖼️' : '📝'} {formatTime(item.timestamp)}
-                </div>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    lineHeight: 1.4,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {item.preview}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        {clipboardHistory.length > 0 && (
-          <div style={{ padding: '12px', borderTop: '1px solid var(--border)' }}>
-            <button
-              onClick={clearAll}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '6px',
-                border: '1px solid rgba(231, 76, 60, 0.3)',
-                background: 'rgba(231, 76, 60, 0.1)',
-                color: '#e74c3c',
+                padding: '14px',
+                marginBottom: '8px',
+                borderRadius: '10px',
+                background: selectedId === item.id ? 'var(--accent-bg, rgba(76, 110, 245, 0.1))' : 'var(--bg-secondary, #252525)',
+                border: selectedId === item.id ? '1px solid var(--accent, #4c6ef5)' : '1px solid var(--border-color, #333)',
                 cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 500,
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(231, 76, 60, 0.2)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(231, 76, 60, 0.1)'
-              }}
             >
-              🗑️ 清空全部
-            </button>
-          </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ flex: 1, fontSize: '14px', color: 'var(--text-color, #e0e0e0)', lineHeight: 1.5 }}>
+                  {item.preview}
+                </div>
+                <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleStar(item.id); }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {item.starred ? '⭐' : '☆'}
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); copyToClipboard(item.content); }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    📋
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--text-secondary, #888)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Clock size={12} />
+                  {formatTime(item.timestamp)}
+                </span>
+                {item.tags.length > 0 && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Tag size={12} />
+                    {item.tags.join(', ')}
+                  </span>
+                )}
+              </div>
+              {selectedId === item.id && (
+                <div 
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: 'var(--bg-input, #1e1e1e)',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: 'var(--text-color, #e0e0e0)',
+                    fontFamily: 'monospace',
+                    lineHeight: 1.6,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {item.content}
+                </div>
+              )}
+            </div>
+          ))
         )}
       </div>
 
-      <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-        {selectedItem ? (
-          <>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '12px',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '18px', fontWeight: 600 }}>
-                  {selectedItem.type === 'link' ? '🔗 链接' : selectedItem.type === 'image' ? '🖼️ 图片' : '📝 文本'}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  {formatTime(selectedItem.timestamp)}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => copyToClipboard(selectedItem.content)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: 'var(--accent)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = '0.9'
-                    e.currentTarget.style.transform = 'scale(1.02)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = '1'
-                    e.currentTarget.style.transform = 'scale(1)'
-                  }}
-                >
-                  📋 复制
-                </button>
-                <button
-                  onClick={() => deleteItem(selectedItem.id)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(231, 76, 60, 0.3)',
-                    background: 'transparent',
-                    color: '#e74c3c',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(231, 76, 60, 0.1)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent'
-                  }}
-                >
-                  🗑️ 删除
-                </button>
-              </div>
-            </div>
-            <div
-              style={{
-                padding: '16px',
-                borderRadius: '8px',
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--border)',
-                fontSize: '14px',
-                lineHeight: 1.6,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all',
-              }}
-            >
-              {selectedItem.content}
-            </div>
-          </>
-        ) : (
-          <div
+      {showAddModal && (
+        <div 
+          className="app-modal-overlay"
+          onClick={() => setShowAddModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
             style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              color: 'var(--text-secondary)',
+              background: 'var(--bg-secondary, #2a2a2a)',
+              borderRadius: '12px',
+              padding: '24px',
+              width: '500px',
+              maxWidth: '90vw',
+              maxHeight: '80vh',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
             }}
           >
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>👈</div>
-            <div style={{ fontSize: '16px' }}>选择一条记录查看详情</div>
+            <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text-color, #e0e0e0)' }}>添加剪贴板记录</h3>
+            <textarea
+              placeholder="输入内容..."
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+              style={{
+                padding: '12px',
+                border: '1px solid var(--border-color, #444)',
+                borderRadius: '8px',
+                background: 'var(--bg-input, #1e1e1e)',
+                color: 'var(--text-color, #e0e0e0)',
+                fontSize: '14px',
+                lineHeight: 1.6,
+                resize: 'vertical',
+                minHeight: '150px',
+                fontFamily: 'inherit',
+              }}
+            />
+            <input
+              type="text"
+              placeholder="标签（用逗号分隔）"
+              value={newTags}
+              onChange={(e) => setNewTags(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                border: '1px solid var(--border-color, #444)',
+                borderRadius: '6px',
+                background: 'var(--bg-input, #1e1e1e)',
+                color: 'var(--text-color, #e0e0e0)',
+                fontSize: '13px',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowAddModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid var(--border-color, #444)',
+                  borderRadius: '6px',
+                  background: 'transparent',
+                  color: 'var(--text-color, #e0e0e0)',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={addManualItem}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#4c6ef5',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                添加
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
+
+      <div style={{ 
+        padding: '12px', 
+        borderTop: '1px solid var(--border-color, #333)',
+        fontSize: '12px',
+        color: 'var(--text-secondary, #888)',
+        textAlign: 'center'
+      }}>
+        {items.length} 条记录 {items.filter(i => i.starred).length > 0 && `(${items.filter(i => i.starred).length} 收藏)`}
       </div>
     </div>
   )
-})
-
-export default ClipboardManager
+}

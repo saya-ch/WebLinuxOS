@@ -1,137 +1,454 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../store'
+import { Search, Plus, Trash2, Tag, Star } from 'lucide-react'
 
 interface Note {
   id: string
   title: string
   content: string
-  updatedAt: string
+  tags: string[]
+  starred: boolean
+  createdAt: number
+  updatedAt: number
 }
 
 export default function Notes() {
-  const { theme } = useStore()
-  const isDark = theme === 'dark'
-  const [notes, setNotes] = useState<Note[]>([
-    { id: '1', title: '会议记录', content: '项目周会纪要：\n1. 完成前端重构\n2. API 接口联调\n3. 部署测试环境', updatedAt: '2025-01-15' },
-    { id: '2', title: '学习笔记', content: 'React 核心概念：\n- 组件化开发\n- 状态管理（useState, useReducer）\n- 副作用处理（useEffect）\n- 性能优化（useMemo, useCallback）', updatedAt: '2025-01-14' },
-    { id: '3', title: '购物清单', content: '1. 牛奶\n2. 面包\n3. 鸡蛋\n4. 水果（苹果、香蕉）\n5. 蔬菜（菠菜、西兰花）', updatedAt: '2025-01-13' },
-    { id: '4', title: '灵感记录', content: '一个有趣的创业想法：\n基于 AI 的智能日程管理工具，能够自动学习用户习惯，优化时间分配。', updatedAt: '2025-01-12' },
-  ])
-  const [activeId, setActiveId] = useState<string | null>(notes.length > 0 ? notes[0].id : null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [editingTitle, setEditingTitle] = useState('')
-  const [editingContent, setEditingContent] = useState('')
-
-  const bg = isDark ? '#1a1a2e' : '#f5f5f5'
-  const sidebarBg = isDark ? '#16213e' : '#e8e8e8'
-  const textColor = isDark ? '#e0e0e0' : '#333'
-  const inputBg = isDark ? '#0f3460' : '#fff'
-  const borderColor = isDark ? '#2a2a4a' : '#ddd'
-  const selectedBg = isDark ? '#0f3460' : '#c8e6c9'
-  const editorBg = isDark ? '#0d1b2a' : '#fff'
-
-  const filtered = notes.filter((n) =>
-    n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    n.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const active = notes.find((n) => n.id === activeId)
-
-  const selectNote = (note: Note) => {
-    setActiveId(note.id)
-    setEditingTitle(note.title)
-    setEditingContent(note.content)
-  }
-
-  const createNote = () => {
-    const newNote: Note = {
-      id: `n${Date.now()}`,
-      title: '新建笔记',
-      content: '',
-      updatedAt: new Date().toISOString().split('T')[0],
+  const [notes, setNotes] = useState<Note[]>(() => {
+    try {
+      const saved = localStorage.getItem('weblinux-notes')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
     }
-    setNotes([newNote, ...notes])
-    setActiveId(newNote.id)
-    setEditingTitle(newNote.title)
-    setEditingContent(newNote.content)
+  })
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [editTags, setEditTags] = useState('')
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('weblinux-notes', JSON.stringify(notes))
+    } catch (error) {
+      console.error('Failed to save notes:', error)
+    }
+  }, [notes])
+
+  const filteredNotes = notes.filter(note => {
+    const query = searchQuery.toLowerCase()
+    return (
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query) ||
+      note.tags.some(tag => tag.toLowerCase().includes(query))
+    )
+  })
+
+  const sortedNotes = [...filteredNotes].sort((a, b) => {
+    if (a.starred && !b.starred) return -1
+    if (!a.starred && b.starred) return 1
+    return b.updatedAt - a.updatedAt
+  })
+
+  const createNewNote = () => {
+    const newNote: Note = {
+      id: Date.now().toString(),
+      title: '新笔记',
+      content: '',
+      tags: [],
+      starred: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+    setNotes(prev => [newNote, ...prev])
+    setSelectedNote(newNote)
+    setEditTitle(newNote.title)
+    setEditContent(newNote.content)
+    setEditTags('')
+    setIsEditing(true)
   }
 
-  const saveNote = () => {
-    if (!activeId) return
-    const date = new Date().toISOString().split('T')[0]
-    setNotes(notes.map((n) =>
-      n.id === activeId ? { ...n, title: editingTitle || '无标题', content: editingContent, updatedAt: date } : n
+  const deleteNote = (id: string) => {
+    setNotes(prev => prev.filter(n => n.id !== id))
+    if (selectedNote?.id === id) {
+      setSelectedNote(null)
+      setIsEditing(false)
+    }
+  }
+
+  const toggleStar = (id: string) => {
+    setNotes(prev => prev.map(n => 
+      n.id === id ? { ...n, starred: !n.starred } : n
     ))
   }
 
-  const deleteNote = () => {
-    if (!activeId) return
-    const newNotes = notes.filter((n) => n.id !== activeId)
-    setNotes(newNotes)
-    if (newNotes.length > 0) {
-      selectNote(newNotes[0])
-    } else {
-      setActiveId(null)
-      setEditingTitle('')
-      setEditingContent('')
-    }
+  const saveNote = () => {
+    if (!selectedNote) return
+    
+    const tags = editTags.split(',').map(t => t.trim()).filter(Boolean)
+    
+    setNotes(prev => prev.map(n => 
+      n.id === selectedNote.id 
+        ? { ...n, title: editTitle, content: editContent, tags, updatedAt: Date.now() }
+        : n
+    ))
+    
+    setSelectedNote(prev => prev ? {
+      ...prev,
+      title: editTitle,
+      content: editContent,
+      tags,
+      updatedAt: Date.now()
+    } : null)
+    
+    setIsEditing(false)
+  }
+
+  const openNote = (note: Note) => {
+    setSelectedNote(note)
+    setEditTitle(note.title)
+    setEditContent(note.content)
+    setEditTags(note.tags.join(', '))
+    setIsEditing(false)
   }
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: bg, color: textColor, fontFamily: 'system-ui, sans-serif', fontSize: 13 }}>
-      <div style={{ width: 220, background: sidebarBg, borderRight: `1px solid ${borderColor}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ padding: 10 }}>
+    <div className="app-container app-notes" style={{ display: 'flex', height: '100%', padding: 0 }}>
+      <div style={{ 
+        width: '280px', 
+        borderRight: '1px solid var(--border-color, #333)', 
+        display: 'flex', 
+        flexDirection: 'column',
+        background: 'var(--bg-secondary, #252525)'
+      }}>
+        <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color, #333)' }}>
+          <button
+            onClick={createNewNote}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              background: '#4c6ef5',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              justifyContent: 'center',
+            }}
+          >
+            <Plus size={16} /> 新建笔记
+          </button>
+        </div>
+        
+        <div style={{ padding: '12px', position: 'relative' }}>
+          <Search size={16} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
           <input
-            type="text" placeholder="搜索笔记..." value={searchQuery}
+            type="text"
+            placeholder="搜索笔记..."
+            value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${borderColor}`, background: inputBg, color: textColor, fontSize: 12, boxSizing: 'border-box', outline: 'none' }}
+            style={{
+              width: '100%',
+              padding: '8px 12px 8px 36px',
+              border: '1px solid var(--border-color, #444)',
+              borderRadius: '6px',
+              background: 'var(--bg-input, #1e1e1e)',
+              color: 'var(--text-color, #e0e0e0)',
+              fontSize: '13px',
+            }}
           />
         </div>
-        <button onClick={createNote} style={{
-          margin: '0 10px 8px', padding: '6px 12px', borderRadius: 6, border: 'none',
-          background: isDark ? '#0f3460' : '#1976d2', color: '#fff', cursor: 'pointer', fontSize: 12,
-        }}>+ 新建笔记</button>
-        <div style={{ flex: 1, overflow: 'auto' }}>
-          {filtered.map((n) => (
-            <div key={n.id} onClick={() => selectNote(n)} style={{
-              padding: '10px 12px', cursor: 'pointer', borderBottom: `1px solid ${borderColor}`,
-              background: activeId === n.id ? selectedBg : 'transparent',
-              borderLeft: activeId === n.id ? `3px solid ${isDark ? '#4fc3f7' : '#1976d2'}` : '3px solid transparent',
-            }}>
-              <div style={{ fontWeight: 500, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</div>
-              <div style={{ fontSize: 11, color: isDark ? '#9ca3af' : '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {n.content ? n.content.split('\n')[0].substring(0, 40) : '空笔记'}
+        
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+          {sortedNotes.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', opacity: 0.6 }}>
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>📝</div>
+              <div style={{ fontSize: '14px', color: 'var(--text-secondary, #888)' }}>
+                {searchQuery ? '没有找到匹配的笔记' : '还没有笔记'}
               </div>
-              <div style={{ fontSize: 10, color: isDark ? '#6b7280' : '#aaa', marginTop: 2 }}>{n.updatedAt}</div>
             </div>
-          ))}
+          ) : (
+            sortedNotes.map(note => (
+              <div
+                key={note.id}
+                onClick={() => openNote(note)}
+                style={{
+                  padding: '12px',
+                  marginBottom: '4px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  background: selectedNote?.id === note.id ? 'var(--accent-bg, rgba(76, 110, 245, 0.1))' : 'transparent',
+                  border: selectedNote?.id === note.id ? '1px solid var(--accent, #4c6ef5)' : '1px solid transparent',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ 
+                    fontSize: '14px', 
+                    fontWeight: 500, 
+                    color: 'var(--text-color, #e0e0e0)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flex: 1
+                  }}>
+                    {note.title}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleStar(note.id) }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {note.starred ? '⭐' : '☆'}
+                  </button>
+                </div>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: 'var(--text-secondary, #888)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  marginBottom: '6px'
+                }}>
+                  {note.content || '无内容'}
+                </div>
+                {note.tags.length > 0 && (
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {note.tags.slice(0, 3).map((tag, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          fontSize: '10px',
+                          padding: '2px 6px',
+                          background: 'var(--accent-bg, rgba(76, 110, 245, 0.1))',
+                          borderRadius: '4px',
+                          color: 'var(--accent, #4c6ef5)',
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        
+        <div style={{ 
+          padding: '12px', 
+          borderTop: '1px solid var(--border-color, #333)',
+          fontSize: '12px',
+          color: 'var(--text-secondary, #888)',
+          textAlign: 'center'
+        }}>
+          {notes.length} 篇笔记
         </div>
       </div>
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {active ? (
+      
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {selectedNote ? (
           <>
-            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${borderColor}`, display: 'flex', gap: 8, background: sidebarBg }}>
-              <input
-                type="text" value={editingTitle} onChange={(e) => setEditingTitle(e.target.value)} onBlur={saveNote}
-                placeholder="笔记标题"
-                style={{ flex: 1, padding: '6px 10px', borderRadius: 4, border: `1px solid ${borderColor}`, background: inputBg, color: textColor, fontSize: 14, fontWeight: 600, outline: 'none' }}
-              />
-              <button onClick={saveNote} style={{ padding: '6px 14px', borderRadius: 4, border: 'none', background: isDark ? '#0f3460' : '#1976d2', color: '#fff', cursor: 'pointer', fontSize: 12 }}>保存</button>
-              <button onClick={deleteNote} style={{ padding: '6px 14px', borderRadius: 4, border: `1px solid ${isDark ? '#e53935' : '#d32f2f'}`, background: 'transparent', color: isDark ? '#e53935' : '#d32f2f', cursor: 'pointer', fontSize: 12 }}>删除</button>
+            <div style={{ 
+              padding: '16px 20px', 
+              borderBottom: '1px solid var(--border-color, #333)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'var(--bg-secondary, #252525)'
+            }}>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-color, #e0e0e0)' }}>
+                {isEditing ? '编辑笔记' : '查看笔记'}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      style={{
+                        padding: '6px 12px',
+                        border: '1px solid var(--border-color, #444)',
+                        borderRadius: '6px',
+                        background: 'transparent',
+                        color: 'var(--text-color, #e0e0e0)',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={saveNote}
+                      style={{
+                        padding: '6px 12px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        background: '#4c6ef5',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      保存
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      style={{
+                        padding: '6px 12px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        background: '#4c6ef5',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      编辑
+                    </button>
+                    <button
+                      onClick={() => deleteNote(selectedNote.id)}
+                      style={{
+                        padding: '6px 12px',
+                        border: '1px solid #dc2626',
+                        borderRadius: '6px',
+                        background: 'transparent',
+                        color: '#dc2626',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-            <textarea
-              value={editingContent} onChange={(e) => setEditingContent(e.target.value)} onBlur={saveNote}
-              placeholder="开始写笔记..."
-              style={{
-                flex: 1, padding: 16, border: 'none', background: editorBg, color: textColor,
-                fontSize: 13, lineHeight: 1.8, resize: 'none', outline: 'none', fontFamily: 'system-ui, sans-serif',
-              }}
-            />
+            
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+              {isEditing ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+                  <input
+                    type="text"
+                    placeholder="笔记标题"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    style={{
+                      padding: '10px 14px',
+                      border: '1px solid var(--border-color, #444)',
+                      borderRadius: '8px',
+                      background: 'var(--bg-input, #1e1e1e)',
+                      color: 'var(--text-color, #e0e0e0)',
+                      fontSize: '16px',
+                      fontWeight: 500,
+                    }}
+                  />
+                  <textarea
+                    placeholder="笔记内容..."
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '14px',
+                      border: '1px solid var(--border-color, #444)',
+                      borderRadius: '8px',
+                      background: 'var(--bg-input, #1e1e1e)',
+                      color: 'var(--text-color, #e0e0e0)',
+                      fontSize: '14px',
+                      lineHeight: 1.6,
+                      resize: 'none',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Tag size={14} style={{ opacity: 0.6 }} />
+                    <input
+                      type="text"
+                      placeholder="标签（用逗号分隔）"
+                      value={editTags}
+                      onChange={(e) => setEditTags(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        border: '1px solid var(--border-color, #444)',
+                        borderRadius: '6px',
+                        background: 'var(--bg-input, #1e1e1e)',
+                        color: 'var(--text-color, #e0e0e0)',
+                        fontSize: '13px',
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h1 style={{ 
+                    fontSize: '24px', 
+                    fontWeight: 700, 
+                    marginBottom: '16px',
+                    color: 'var(--text-color, #e0e0e0)'
+                  }}>
+                    {selectedNote.title}
+                  </h1>
+                  {selectedNote.tags.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                      {selectedNote.tags.map((tag, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            fontSize: '12px',
+                            padding: '4px 10px',
+                            background: 'var(--accent-bg, rgba(76, 110, 245, 0.1))',
+                            borderRadius: '12px',
+                            color: 'var(--accent, #4c6ef5)',
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ 
+                    fontSize: '13px', 
+                    color: 'var(--text-secondary, #888)',
+                    marginBottom: '20px'
+                  }}>
+                    最后更新: {new Date(selectedNote.updatedAt).toLocaleString('zh-CN')}
+                  </div>
+                  <div style={{ 
+                    lineHeight: 1.8, 
+                    color: 'var(--text-color, #e0e0e0)',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {selectedNote.content || '无内容'}
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         ) : (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#9ca3af' : '#999', fontSize: 14 }}>
-            点击「新建笔记」开始记录
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '16px',
+            color: 'var(--text-secondary, #888)'
+          }}>
+            <div style={{ fontSize: '64px' }}>📝</div>
+            <div style={{ fontSize: '16px' }}>选择一个笔记或创建新笔记</div>
           </div>
         )}
       </div>
