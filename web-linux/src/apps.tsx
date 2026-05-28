@@ -242,6 +242,17 @@ function SmartProjectHubIcon() {
   );
 }
 
+function StockTrackerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M16 8l-4-4-4 4" />
+      <path d="M12 4v16" />
+      <path d="M4 14l4 4 4-4" />
+      <path d="M20 10l-4 4-4-4" />
+    </svg>
+  );
+}
+
 function MarkdownSlidesIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -256,6 +267,7 @@ function MarkdownSlidesIcon() {
 }
 
 export const appRegistry: AppDefinition[] = [
+  { id: 'stock-tracker', name: '股票市场追踪器', icon: <StockTrackerIcon />, component: 'StockTracker', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'markdown-slides', name: 'Markdown 幻灯片', icon: <MarkdownSlidesIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-project-hub', name: '智能项目管理', icon: <SmartProjectHubIcon />, component: 'SmartProjectHub', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'flashcards', name: '学习卡片', icon: <FlashcardsIcon />, component: 'Flashcards', category: 'utilities', defaultWidth: 1000, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
