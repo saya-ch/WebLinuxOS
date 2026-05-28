@@ -212,7 +212,21 @@ function ProjectPlannerIcon() {
   );
 }
 
+function FlashcardsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <path d="M9 8H8" />
+      <path d="M13 8H8" />
+      <path d="M9 16H8" />
+      <path d="M13 16H8" />
+    </svg>
+  );
+}
+
 export const appRegistry: AppDefinition[] = [
+  { id: 'flashcards', name: '学习卡片', icon: <FlashcardsIcon />, component: 'Flashcards', category: 'utilities', defaultWidth: 1000, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'daily-inspo', name: '每日灵感', icon: <SparklesIcon />, component: 'DailyInspo', category: 'utilities', defaultWidth: 700, defaultHeight: 850, minWidth: 500, minHeight: 600, resizable: true, multiple: false },
   { id: 'ai-code-assistant', name: 'AI代码助手', icon: <CpuIcon />, component: 'AICodeAssistant', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 500, resizable: true, multiple: false },
   { id: 'smart-password-manager', name: '智能密码管理器', icon: <LockIcon />, component: 'SmartPasswordManager', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },

@@ -1405,7 +1405,7 @@ export default function Terminal() {
             output = 'rps: 请选择 石头、剪刀 或 布'
           } else {
             const computerChoice = Math.floor(Math.random() * 3)
-            let result = ''
+            let result: string
             
             if (playerChoice === computerChoice) {
               result = '平局！'

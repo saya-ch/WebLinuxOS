@@ -92,7 +92,8 @@ export default function DailyInspo() {
         const data = await response.json()
         return { content: data.content, author: data.author }
       }
-    } catch (e) {
+    } catch {
+      // Handle fetch error silently
     }
     const fallbackQuotes = [
       { content: '生活不是等待风暴过去，而是学会在雨中跳舞。', author: '维维安·格林' },
@@ -132,7 +133,7 @@ export default function DailyInspo() {
         fact: getRandomFact(),
         color: colors[Math.floor(Math.random() * colors.length)],
       })
-    } catch (e) {
+    } catch {
       setContent({
         quote: { content: '保持好奇心，每一天都是新的开始！', author: 'WebLinuxOS' },
         image: { url: `https://picsum.photos/800/600?random=${Date.now()}`, photographer: 'Lorem Picsum', alt: 'Inspiration' },
@@ -146,12 +147,14 @@ export default function DailyInspo() {
 
   useEffect(() => {
     getInspired()
-  }, [getInspired])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
-    } catch (e) {
+    } catch {
+      // Handle clipboard error silently
     }
   }
 
@@ -204,7 +207,7 @@ export default function DailyInspo() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'all' | 'quotes' | 'images' | 'facts')}
               style={{
                 flex: 1,
                 padding: '12px 16px',
