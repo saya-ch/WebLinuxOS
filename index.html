@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="description" content="WebLinuxOS - 一个完全运行在浏览器中的功能性Linux桌面环境，包含56个应用程序、完整的窗口管理系统、虚拟文件系统和终端仿真器" />
-    <meta name="keywords" content="Linux, Web OS, 桌面环境, 虚拟系统, 浏览器, React, TypeScript, 终端, 文件管理器" />
+    <meta name="description" content="WebLinuxOS - 一个完全运行在浏览器中的完整Linux桌面环境，包含70+应用程序、完整的窗口管理系统、虚拟文件系统、终端仿真器，支持Python运行时" />
+    <meta name="keywords" content="Linux, Web OS, 桌面环境, 虚拟系统, 浏览器, React, TypeScript, 终端, 文件管理器, Web应用, 在线系统, 编程, 开发者工具" />
     <meta name="author" content="Saya Ch" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#1a1a2e" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta property="og:title" content="WebLinuxOS - Web Linux 桌面环境" />
-    <meta property="og:description" content="一个完全运行在浏览器中的功能性Linux桌面环境" />
+    <meta property="og:description" content="一个完全运行在浏览器中的完整Linux桌面环境，70+应用，支持Python运行时" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://saya-ch.github.io/WebLinuxOS/" />
     <meta property="og:image" content="https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png" />
@@ -20,8 +20,8 @@
     <meta property="og:site_name" content="WebLinuxOS" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="WebLinuxOS - Web Linux 桌面环境" />
-    <meta name="twitter:description" content="一个完全运行在浏览器中的功能性Linux桌面环境" />
-    <link rel="manifest" href="/WebLinuxOS/manifest.json" />
+    <meta name="twitter:description" content="一个完全运行在浏览器中的完整Linux桌面环境，70+应用，支持Python运行时" />
+    <link rel="manifest" href="./manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>WebLinuxOS - Web Linux 桌面环境</title>
@@ -33,17 +33,58 @@
         }
       } catch (e) {}
     </script>
-    <script type="module" crossorigin src="/WebLinuxOS/assets/index-CvgRexph.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; overflow: hidden; }
+      #preload {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #0a0a18 0%, #161630 40%, #0f0f23 70%, #161630 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+      }
+      #preload .logo {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: logoFloat 3s ease-in-out infinite;
+      }
+      #preload .text {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #e0e0e8 0%, #a29bfe 50%, #8b7cf0 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 12px;
+      }
+      #preload .sub {
+        font-size: 14px;
+        color: #a0a0c8;
+      }
+      @keyframes logoFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+    </style>
+    <script type="module" crossorigin src="/WebLinuxOS/assets/index-Hv3cSTC6.js"></script>
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/rolldown-runtime-BgQAZz4g.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AICodeAssistant-BnH8WqAl.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIHelper-BDKHLjS_.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-Terminal-MLPKJ5E3.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-react-B-5oSFAv.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-ActivityTracker-hbyOWJZ0.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-GlobalSearch-CW7dFbBG.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AICodeAssistant-BPCNiXK9.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIHelper-D7CqA7NU.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-Terminal-oseI9LBT.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-react-B5ks_QVu.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-ActivityTracker-VHmXMbTy.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-GlobalSearch-CEdPm9NK.js">
     <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-DR0IveJ5.css">
   </head>
   <body>
+    <div id="preload">
+      <div class="logo">🐧</div>
+      <div class="text">WebLinuxOS</div>
+      <div class="sub">正在加载桌面环境...</div>
+    </div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1a1a2e;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
         <div>

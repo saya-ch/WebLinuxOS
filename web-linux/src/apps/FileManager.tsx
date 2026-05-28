@@ -231,6 +231,9 @@ export default function FileManager() {
   const [previewFile, setPreviewFile] = useState<FileNode | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null)
+  const [propertiesFile, setPropertiesFile] = useState<FileNode | null>(null)
+  const [batchRenameOpen, setBatchRenameOpen] = useState(false)
+  const [batchRenamePattern, setBatchRenamePattern] = useState('')
   
   const fileListRef = useRef<HTMLDivElement>(null)
 
@@ -456,6 +459,71 @@ export default function FileManager() {
     }
     setRenameTarget(null)
     setRenameValue('')
+  }
+
+  function handleShowProperties(fileId: string) {
+    const node = findNodeById(files, fileId)
+    if (node) {
+      setPropertiesFile(node)
+    }
+    closeContextMenu()
+  }
+
+  function handleBatchRename() {
+    if (selectedFileIds.size < 2) {
+      alert('请至少选择两个文件进行批量重命名')
+      return
+    }
+    setBatchRenamePattern('')
+    setBatchRenameOpen(true)
+    closeContextMenu()
+  }
+
+  function executeBatchRename() {
+    if (!batchRenamePattern.trim()) {
+      alert('请输入重命名模式')
+      return
+    }
+    
+    const selectedNodes = Array.from(selectedFileIds)
+      .map(id => findNodeById(files, id))
+      .filter((n): n is FileNode => n !== null)
+    
+    selectedNodes.forEach((node, index) => {
+      const ext = node.name.split('.').pop()
+      const newName = batchRenamePattern
+        .replace('{index}', String(index + 1))
+        .replace('{name}', node.name.replace(/\.[^/.]+$/, ''))
+        .replace('{ext}', ext || '')
+      
+      if (newName) {
+        renameFile(node.id, newName)
+      }
+    })
+    
+    setBatchRenameOpen(false)
+    setBatchRenamePattern('')
+    setSelectedFileIds(new Set())
+  }
+
+  function handleCreateShortcut(fileId: string) {
+    const node = findNodeById(files, fileId)
+    if (node) {
+      const shortcutName = node.name + '.lnk'
+      const shortcutContent = `[Shortcut]\nTarget=${node.id}\nType=${node.type}`
+      addFile(currentNodeId, shortcutName, 'file')
+      setTimeout(() => {
+        const currentFiles = useStore.getState().files
+        const updatedCurrentNode = findNodeById(currentFiles, currentNodeId)
+        if (updatedCurrentNode?.children) {
+          const shortcutFile = updatedCurrentNode.children.find(c => c.name === shortcutName)
+          if (shortcutFile) {
+            updateFileContent(shortcutFile.id, shortcutContent)
+          }
+        }
+      }, 50)
+    }
+    closeContextMenu()
   }
 
   function handleCreateNew(type: 'file' | 'folder') {
@@ -929,6 +997,20 @@ export default function FileManager() {
               }}>
                 👁️ 预览
               </div>
+              <div className="app-context-menu-item" onClick={() => handleShowProperties(contextMenu.fileId)}>
+                📋 属性
+              </div>
+              <div className="app-context-menu-item" onClick={() => handleCreateShortcut(contextMenu.fileId)}>
+                🔗 创建快捷方式
+              </div>
+            </>
+          )}
+          {selectedFileIds.size > 1 && (
+            <>
+              <div className="app-context-menu-separator" />
+              <div className="app-context-menu-item" onClick={() => handleBatchRename()}>
+                ✏️ 批量重命名 ({selectedFileIds.size}个文件)
+              </div>
             </>
           )}
           <div className="app-context-menu-separator" />
@@ -980,6 +1062,102 @@ export default function FileManager() {
                 setPreviewFile(null); 
               }}>📝 编辑</button>
               <button className="app-modal-btn app-modal-btn-cancel" onClick={() => setPreviewFile(null)}>关闭</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {propertiesFile && (
+        <div className="app-modal-overlay" onClick={() => setPropertiesFile(null)}>
+          <div className="app-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="app-modal-header">
+              <span className="app-modal-title">📋 文件属性</span>
+              <button className="app-modal-close" onClick={() => setPropertiesFile(null)}>✕</button>
+            </div>
+            <div className="app-modal-content" style={{ padding: '20px' }}>
+              <div className="app-properties-grid">
+                <div className="app-properties-row">
+                  <span className="app-properties-label">名称:</span>
+                  <span className="app-properties-value">{propertiesFile.name}</span>
+                </div>
+                <div className="app-properties-row">
+                  <span className="app-properties-label">类型:</span>
+                  <span className="app-properties-value">{propertiesFile.type === 'folder' ? '文件夹' : '文件'}</span>
+                </div>
+                <div className="app-properties-row">
+                  <span className="app-properties-label">大小:</span>
+                  <span className="app-properties-value">
+                    {propertiesFile.type === 'folder' 
+                      ? '--' 
+                      : formatSize((propertiesFile.content?.length || 0) * 2)}
+                  </span>
+                </div>
+                <div className="app-properties-row">
+                  <span className="app-properties-label">项目ID:</span>
+                  <span className="app-properties-value" style={{ fontFamily: 'monospace', fontSize: '12px' }}>{propertiesFile.id}</span>
+                </div>
+                <div className="app-properties-row">
+                  <span className="app-properties-label">父目录:</span>
+                  <span className="app-properties-value">
+                    {propertiesFile.parentId ? '有' : '根目录'}
+                  </span>
+                </div>
+                <div className="app-properties-row">
+                  <span className="app-properties-label">子项数:</span>
+                  <span className="app-properties-value">
+                    {propertiesFile.children?.length || 0}
+                  </span>
+                </div>
+                <div className="app-properties-row">
+                  <span className="app-properties-label">修改日期:</span>
+                  <span className="app-properties-value">{getFileDate(propertiesFile)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="app-modal-footer">
+              <button className="app-modal-btn app-modal-btn-cancel" onClick={() => setPropertiesFile(null)}>关闭</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {batchRenameOpen && (
+        <div className="app-modal-overlay" onClick={() => setBatchRenameOpen(false)}>
+          <div className="app-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="app-modal-header">
+              <span className="app-modal-title">✏️ 批量重命名</span>
+              <button className="app-modal-close" onClick={() => setBatchRenameOpen(false)}>✕</button>
+            </div>
+            <div className="app-modal-content" style={{ padding: '20px' }}>
+              <p style={{ marginBottom: '12px', fontSize: '13px', color: '#9898c4' }}>
+                使用以下占位符来创建重命名模式:
+              </p>
+              <ul style={{ marginBottom: '16px', fontSize: '12px', color: '#e8e8ff', paddingLeft: '20px' }}>
+                <li><code>{'{index}'}</code> - 序号 (1, 2, 3...)</li>
+                <li><code>{'{name}'}</code> - 原文件名（不含扩展名）</li>
+                <li><code>{'{ext}'}</code> - 原文件扩展名</li>
+              </ul>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', color: '#9898c4', display: 'block', marginBottom: '6px' }}>
+                  重命名模式:
+                </label>
+                <input
+                  type="text"
+                  className="app-input"
+                  value={batchRenamePattern}
+                  onChange={(e) => setBatchRenamePattern(e.target.value)}
+                  placeholder="例如: 照片_{index}.{ext}"
+                  style={{ width: '100%' }}
+                  autoFocus
+                />
+              </div>
+              <p style={{ fontSize: '12px', color: '#9898c4' }}>
+                将重命名 {selectedFileIds.size} 个文件
+              </p>
+            </div>
+            <div className="app-modal-footer">
+              <button className="app-modal-btn app-modal-btn-cancel" onClick={() => setBatchRenameOpen(false)}>取消</button>
+              <button className="app-modal-btn" onClick={executeBatchRename}>确认重命名</button>
             </div>
           </div>
         </div>

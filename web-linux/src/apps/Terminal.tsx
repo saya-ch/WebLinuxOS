@@ -103,6 +103,7 @@ export default function Terminal() {
   const theme = useStore((s) => s.theme)
 
   const [cwd, setCwd] = useState('/home/user')
+  const [prevCwd, setPrevCwd] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([
     { input: '', output: 'Web Linux 终端 v2.3\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南' },
@@ -1521,9 +1522,25 @@ export default function Terminal() {
         if (args.length === 0) {
           setCwd('/home/user')
         } else {
-          const resolved = resolvePath(cwd, args[0])
+          const target = args[0]
+          let resolved: string
+          
+          if (target === '~') {
+            resolved = '/home/user'
+          } else if (target === '-') {
+            if (prevCwd) {
+              resolved = prevCwd
+            } else {
+              output = `cd: OLDPWD not set`
+              break
+            }
+          } else {
+            resolved = resolvePath(cwd, target)
+          }
+          
           const node = findNodeByPath(files, resolved)
           if (node && node.type === 'folder') {
+            setPrevCwd(cwd)
             setCwd(resolved)
           } else {
             output = `cd: ${args[0]}: 没有那个文件或目录`
