@@ -15,8 +15,9 @@ const LiveWallpaper = memo(function LiveWallpaper() {
   const liveWallpaperEnabled = useStore((s) => s.liveWallpaperEnabled)
   const liveWallpaper = useStore((s) => s.liveWallpaper)
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
+  const [time, setTime] = useState(Date.now())
   const particlesRef = useRef<Particle[]>([])
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const initParticles = useCallback((count: number = 60): Particle[] => {
@@ -31,7 +32,7 @@ const LiveWallpaper = memo(function LiveWallpaper() {
     }))
   }, [])
 
-  const [particles, setParticles] = useState<Particle[]>(() => initParticles())
+  const [particles, setParticles] = useState<Particle[]>(initParticles(60))
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!containerRef.current) return
@@ -44,7 +45,7 @@ const LiveWallpaper = memo(function LiveWallpaper() {
 
   useEffect(() => {
     if (!liveWallpaperEnabled) {
-      if (animationRef.current) {
+      if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current)
       }
       return
@@ -68,6 +69,7 @@ const LiveWallpaper = memo(function LiveWallpaper() {
 
       if (deltaTime >= frameInterval) {
         lastTime = currentTime - (deltaTime % frameInterval)
+        setTime(currentTime)
 
         setParticles(prev => {
           const newParticles = prev.map(p => {
@@ -125,7 +127,7 @@ const LiveWallpaper = memo(function LiveWallpaper() {
     animationRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (animationRef.current) {
+      if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current)
       }
     }
@@ -196,7 +198,7 @@ const LiveWallpaper = memo(function LiveWallpaper() {
             </linearGradient>
           </defs>
           <path
-            d={`M 0 ${50 + Math.sin(Date.now() / 1000) * 10} Q 25 ${30 + Math.sin(Date.now() / 800) * 15} 50 ${50 + Math.sin(Date.now() / 1200) * 10} T 100 ${50 + Math.sin(Date.now() / 1000) * 10}`}
+            d={`M 0 ${50 + Math.sin(time / 1000) * 10} Q 25 ${30 + Math.sin(time / 800) * 15} 50 ${50 + Math.sin(time / 1200) * 10} T 100 ${50 + Math.sin(time / 1000) * 10}`}
             fill="none"
             stroke="url(#waveGradient)"
             strokeWidth="2"

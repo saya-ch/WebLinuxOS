@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { marked } from 'marked'
 
 interface MarkdownPreviewProps {
@@ -6,7 +6,7 @@ interface MarkdownPreviewProps {
   onClose?: () => void
 }
 
-export default function MarkdownPreview({ content, onClose }: MarkdownPreviewProps) {
+export default function MarkdownPreview({ content }: MarkdownPreviewProps) {
   const [html, setHtml] = useState('')
   
   useEffect(() => {

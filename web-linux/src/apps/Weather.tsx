@@ -99,7 +99,6 @@ const EnhancedWeather = memo(function EnhancedWeather() {
   const [error, setError] = useState<string | null>(null)
   const [location, setLocation] = useState({ lat: 39.9042, lon: 116.4074, city: '北京' })
   const [aqi, setAqi] = useState<number | null>(null)
-  const [aqiLoading, setAqiLoading] = useState(false)
 
   const fetchWeather = useCallback(async (lat: number, lon: number, cityName: string) => {
     setLoading(true)
@@ -120,7 +119,6 @@ const EnhancedWeather = memo(function EnhancedWeather() {
   }, [])
 
   const fetchAQI = useCallback(async (lat: number, lon: number) => {
-    setAqiLoading(true)
     try {
       const response = await fetch(
         `https://air-quality-api.com/api/v1/nearest_city?lat=${lat}&lon=${lon}`
@@ -131,8 +129,6 @@ const EnhancedWeather = memo(function EnhancedWeather() {
       }
     } catch {
       setAqi(null)
-    } finally {
-      setAqiLoading(false)
     }
   }, [])
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useStore } from '../store'
-import { Search, Plus, Trash2, Tag, Star } from 'lucide-react'
+import { Search, Plus, Trash2, Tag } from 'lucide-react'
 
 interface Note {
   id: string

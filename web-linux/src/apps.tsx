@@ -15,11 +15,7 @@ import {
   GlobeIcon
 } from './icons'
 
-import Calculator from './apps/Calculator'
-import TodoApp from './apps/TodoApp'
-import Notes from './apps/Notes'
-import ClipboardManager from './apps/ClipboardManager'
-import MarkdownPreview from './apps/MarkdownPreview'
+
 import type { AppDefinition } from './types'
 
 function SmartNotesIcon() {
@@ -246,7 +242,21 @@ function SmartProjectHubIcon() {
   );
 }
 
+function MarkdownSlidesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <line x1="6" y1="7" x2="18" y2="7" />
+      <line x1="6" y1="11" x2="14" y2="11" />
+      <polyline points="16 11 18 9 20 11" />
+    </svg>
+  );
+}
+
 export const appRegistry: AppDefinition[] = [
+  { id: 'markdown-slides', name: 'Markdown 幻灯片', icon: <MarkdownSlidesIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-project-hub', name: '智能项目管理', icon: <SmartProjectHubIcon />, component: 'SmartProjectHub', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'flashcards', name: '学习卡片', icon: <FlashcardsIcon />, component: 'Flashcards', category: 'utilities', defaultWidth: 1000, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'daily-inspo', name: '每日灵感', icon: <SparklesIcon />, component: 'DailyInspo', category: 'utilities', defaultWidth: 700, defaultHeight: 850, minWidth: 500, minHeight: 600, resizable: true, multiple: false },

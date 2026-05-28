@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Copy, Trash2, Plus, Search, Clock, Star, Tag } from 'lucide-react'
+import { Trash2, Plus, Search, Clock, Tag } from 'lucide-react'
 
 interface ClipboardItem {
   id: string
