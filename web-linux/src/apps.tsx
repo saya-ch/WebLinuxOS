@@ -435,4 +435,5 @@ export const appRegistry: AppDefinition[] = [
   { id: 'regex-builder', name: '正则表达式构建器', icon: <RegexIcon />, component: 'RegexBuilder', category: 'development', defaultWidth: 900, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'ai-generator', name: 'AI文本生成器', icon: '🤖', component: 'AIGenerator', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'collaborative-whiteboard', name: '实时协作白板', icon: '🎨', component: 'CollaborativeWhiteboard', category: 'office', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'password-checker', name: '密码安全中心', icon: <ShieldIcon />, component: 'PasswordChecker', category: 'utilities', defaultWidth: 600, defaultHeight: 800, minWidth: 450, minHeight: 600, resizable: true, multiple: false },
 ]
