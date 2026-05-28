@@ -13,6 +13,7 @@ export const FolderIcon = Folder
 export const TerminalIcon = Terminal
 export const FileTextIcon = FileText
 export const BrowserIcon = Globe
+export const GlobeIcon = Globe
 export const CalculatorIcon = Calculator
 export const CalendarIcon = Calendar
 export const ClockIcon = Clock

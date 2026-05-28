@@ -84,6 +84,7 @@ export default function DailyInspo() {
     }
   })
   const [activeTab, setActiveTab] = useState<'all' | 'quotes' | 'images' | 'facts'>('all')
+  const [isMounted, setIsMounted] = useState(false)
 
   const fetchRandomQuote = useCallback(async (): Promise<Quote> => {
     try {
@@ -93,7 +94,7 @@ export default function DailyInspo() {
         return { content: data.content, author: data.author }
       }
     } catch {
-      // Handle fetch error silently
+      // API调用失败，使用fallback
     }
     const fallbackQuotes = [
       { content: '生活不是等待风暴过去，而是学会在雨中跳舞。', author: '维维安·格林' },
@@ -146,16 +147,18 @@ export default function DailyInspo() {
   }, [fetchRandomQuote, fetchRandomImage, getRandomFact])
 
   useEffect(() => {
-    getInspired()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIsMounted(true)
+    return () => setIsMounted(false)
   }, [])
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-    } catch {
-      // Handle clipboard error silently
+  useEffect(() => {
+    if (isMounted) {
+      getInspired()
     }
+  }, [isMounted, getInspired])
+
+  const copyToClipboard = async (text: string) => {
+    await navigator.clipboard.writeText(text).catch(() => {})
   }
 
   const toggleFavorite = (quote: Quote) => {
@@ -196,18 +199,18 @@ export default function DailyInspo() {
         borderBottom: '1px solid var(--window-border)',
         background: 'var(--window-header)',
       }}>
-        {[
-          { id: 'all', label: '全部', icon: Sparkles },
-          { id: 'quotes', label: '名言', icon: Quote },
-          { id: 'images', label: '图片', icon: Image },
-          { id: 'facts', label: '趣事', icon: Coffee },
-        ].map((tab) => {
+        {([
+          { id: 'all' as const, label: '全部', icon: Sparkles },
+          { id: 'quotes' as const, label: '名言', icon: Quote },
+          { id: 'images' as const, label: '图片', icon: Image },
+          { id: 'facts' as const, label: '趣事', icon: Coffee },
+        ]).map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'all' | 'quotes' | 'images' | 'facts')}
+              onClick={() => setActiveTab(tab.id)}
               style={{
                 flex: 1,
                 padding: '12px 16px',

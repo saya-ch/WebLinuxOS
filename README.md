@@ -1,64 +1,69 @@
 # WebLinuxOS
 
-A complete Linux desktop environment running entirely in the browser. Experience the power of a full operating system without any installation required.
+A feature-rich Linux desktop environment running entirely in the browser. Experience a complete operating system without any installation.
 
 ![WebLinuxOS Screenshot](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/assets/screenshot.png)
 
-## Overview
+## Introduction
 
-WebLinuxOS is a feature-rich web-based Linux desktop environment that brings the power of a full operating system experience directly to your browser. Built with modern web technologies, it provides a comprehensive desktop experience with window management, file system, terminal emulator, and over 90 applications.
+WebLinuxOS is a comprehensive web-based Linux desktop environment that brings the full power of a desktop operating system to your browser. Built with modern web technologies, it delivers a native-like desktop experience with window management, file system, terminal emulator, and over 90 applications.
 
-## Features
+## Core Features
 
 ### Desktop Environment
-
-- **Multi Virtual Desktops** - Support for up to 9 virtual desktops with window management across desktops
-- **Advanced Window Management** - Drag, resize, minimize, maximize, close with smooth animations
-- **Dynamic Wallpapers** - Multiple live wallpaper effects including particles, interactive mode, and waves
-- **Start Menu** - Quick access to all applications via Super key or click
+- **Multi Virtual Desktops** - Up to 9 virtual desktops with seamless window management across workspaces
+- **Advanced Window Management** - Drag, resize, minimize, maximize, and close with smooth animations
+- **Dynamic Wallpapers** - Live wallpaper effects including particles, interactive mode, and waves
+- **Start Menu** - Quick access to all applications via Super key or mouse click
 - **Taskbar** - Window switching, desktop indicators, system tray with quick settings
-- **Context Menus** - Right-click menus on desktop and windows
+- **Context Menus** - Right-click menus on desktop and application windows
 - **Global Keyboard Shortcuts** - Comprehensive shortcut support for power users
 
 ### Terminal Emulator
-
-- **80+ Built-in Commands** - Comprehensive Linux command coverage
+- **90+ Built-in Commands** - Comprehensive Linux command coverage
 - **Python 3 Runtime** - Full Python support via Pyodide
 - **Command History** - Persistent history with arrow key navigation
 - **Auto-completion** - Smart tab completion for commands and files
 - **Advanced Commands** - dig, nc, file, stat, chmod, chown, hostnamectl, timedatectl, ip, cheat sheets
-- **Fun Commands** - cowsay, fortune, sl, matrix for entertainment
+- **Fun Commands** - cowsay, fortune, sl, matrix, figlet, banner for entertainment
+- **System Monitoring** - vmstat, iostat, df, free, ps, top for system insights
 
 ### Virtual File System
-
-- **Persistent Storage** - Data saved to localStorage automatically
+- **Persistent Storage** - Automatic data persistence using localStorage
 - **Complete File Operations** - Create, read, write, rename, copy, move, delete with full support
-- **Undo/Redo** - Full operation history with Ctrl+Z and Ctrl+Y
+- **Undo/Redo** - Full operation history with Ctrl+Z and Ctrl+Y support
 - **File Search** - Global file search functionality
-- **File Associations** - Open files with appropriate applications automatically
+- **File Associations** - Automatic file opening with appropriate applications
 
-### Applications (90+)
+### Web Services Integration
+- **IP Geolocation** - Real-time IP information retrieval
+- **Weather Forecast** - Global weather data with detailed metrics
+- **World Clock** - Multi-timezone clock display
+- **Currency Conversion** - Real-time exchange rates
+- **Cryptocurrency Tracking** - Live crypto price monitoring
+
+## Applications (90+)
 
 **System Tools**: File Manager, Terminal, System Monitor, Settings, Software Center, Disk Analyzer, Task Manager, Process Monitor, Network Monitor, Firewall, User Manager, Backup Tool, Archive Manager, System Dashboard, Performance Monitor, Log Viewer, System Health Check
 
-**Development**: Code Editor, Code Playground, Code Studio, API Tester, JSON Formatter, Regex Builder, GitHub Trending, Code Snippets Manager, Data Visualization, Quick Commands, Command Reference, Task Automation, Developer Toolkit
+**Development**: Code Editor, Code Playground, Code Studio, API Tester, JSON Formatter, Regex Builder, GitHub Trending, Code Snippets Manager, Data Visualization, Quick Commands, Command Reference, Task Automation, Developer Toolkit, AI Code Assistant, Code Generator, Code Reviewer
 
-**Office**: Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Todo List, Notes, Mind Map, Sticky Notes Wall, Kanban Board, Project Manager, Task Dashboard, Activity Tracker, Dictionary, Translator, Character Map
+**Office**: Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Todo List, Notes, Smart Notes, Mind Map, Sticky Notes Wall, Kanban Board, Project Planner, Task Dashboard, Activity Tracker, Dictionary, Translator, Character Map, Font Viewer
 
-**Network**: Browser, IP & DNS Lookup, Weather, News Reader, Cryptocurrency Tracker, Cloud Sync, Email Client, Chat, AI Helper, Learning Platform
+**Network**: Browser, IP & DNS Lookup, Weather, News Reader, Cryptocurrency Tracker, Cloud Sync, Email Client, Chat, AI Helper, ChatAI, Learning Platform
 
-**Multimedia**: Music Player, Video Player, Paint, Image Viewer, Music Visualizer, Camera, Sound Recorder, Screen Recorder, PDF Viewer, Whiteboard
+**Multimedia**: Music Player, Video Player, Paint, Image Viewer, Music Visualizer, Camera, Sound Recorder, Screen Recorder, PDF Viewer, Whiteboard, Creative Toolkit
 
-**Utilities**: Calculator, Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Currency Converter, Voice Transcriber, Magnifier, Font Viewer, System Toolbox, Focus Mode
+**Utilities**: Calculator, Password Manager, Smart Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Currency Converter, Voice Transcriber, Magnifier, System Toolbox, Focus Mode, Quick Launcher, Timer App, Clipboard Manager, Clipboard History, Random Tools, Text Formatter, Web Services Toolbox
 
 **Games**: Snake, Tetris, Virtual Pet, Particle System
 
 ## Technology Stack
 
-- **React 19** - UI component framework with latest features
-- **TypeScript 6** - Type-safe development
-- **Zustand 5** - State management
-- **Vite 8** - Build tool for fast development
+- **React 19** - UI component framework with Concurrent Features
+- **TypeScript 6** - Type-safe development with latest features
+- **Zustand 5** - Lightweight state management
+- **Vite 8** - Fast build tool with HMR
 - **Pyodide 0.26** - In-browser Python runtime
 - **Lucide React** - Beautiful icon library
 
@@ -102,6 +107,11 @@ npm run deploy
 | `Super + M` | Minimize window |
 | `F11` | Toggle fullscreen |
 | `PrintScreen` | Screenshot |
+| `Super + A` | Open calculator |
+| `Super + Shift + T` | Open text editor |
+| `Super + Shift + M` | Open music player |
+| `Super + D` | Open system monitor |
+| `Super + W` | Open weather |
 
 ## API Integrations
 
@@ -112,6 +122,7 @@ WebLinuxOS integrates several public APIs for enhanced functionality:
 - **Cloudflare DNS** - DNS query resolution
 - **GitHub API** - GitHub trending repositories
 - **ExchangeRate-API** - Currency exchange rates
+- **CoinGecko** - Cryptocurrency prices
 
 ## Browser Compatibility
 
@@ -151,6 +162,7 @@ WebLinuxOS includes several performance optimizations:
 - Lazy loading for application components
 - Virtualized lists for improved rendering performance
 - Optimized CSS with hardware acceleration
+- Tree-shaking for unused code elimination
 
 ## Accessibility
 
@@ -159,6 +171,7 @@ WebLinuxOS includes several performance optimizations:
 - High contrast mode support
 - Reduced motion preference respected
 - Focus indicators for all interactive elements
+- Semantic HTML structure
 
 ## Development
 
@@ -186,6 +199,7 @@ The project uses Vite for building and includes special configuration for GitHub
 - Vendor chunking for React, Zustand, and Pyodide
 - CSS minification and optimization
 - Source maps disabled for production
+- Environment-specific configuration
 
 ## Contributing
 
@@ -208,6 +222,7 @@ Special thanks to the following projects and communities:
 - [Lucide Icons](https://lucide.dev/) - Beautiful open-source icons
 - [Pyodide](https://pyodide.org/) - Python in the browser
 - [Open-Meteo](https://open-meteo.com/) - Free weather API
+- [CoinGecko](https://coingecko.com/) - Cryptocurrency API
 - All open source contributors
 
 ## Live Demo
@@ -216,4 +231,4 @@ Visit the live demo at: [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.
 
 ---
 
-**Status**: Production Ready | **Version**: 4.0.0 | **License**: MIT
+**Status**: Production Ready | **Version**: 4.1.0 | **License**: MIT

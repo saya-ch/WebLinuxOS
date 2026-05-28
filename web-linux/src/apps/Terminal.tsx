@@ -32,7 +32,8 @@ const COMMANDS = [
   'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
   'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon',
   'json', 'urlencode', 'urldecode', 'uuid', 'password', 'color', 'currency', 'units', 'timeconv',
-  'joke', 'advice', 'flip', 'rps'
+  'joke', 'advice', 'flip', 'rps',
+  'chmod', 'chown', 'ln', 'stat', 'du', 'last', 'who', 'w', 'id', 'groups', 'users', 'uptime', 'free', 'vmstat', 'iostat'
 ]
 
 function listDir(files: FileNode[], path: string): string {
@@ -207,10 +208,11 @@ export default function Terminal() {
       case 'help':
       case '?':
         output = `可用命令:
-  文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc
-  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard, neofetch, weather
+  文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc, du, ln, stat
+  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard, neofetch, weather, id, groups, users
   网络工具: ping, ifconfig, curl
-  系统工具: clear, help, history, alias, type, man, exit, cls, reset
+  系统工具: clear, help, history, alias, type, man, exit, cls, reset, chmod, chown
+  系统监控: vmstat, iostat, netstat, ss, lsof
   工具命令: echo, find, grep, env, export
   趣味命令: cowsay, fortune, sl, starwars, asciiart, dog, joke, advice, flip, rps - 试试这些有趣的小命令!
   加密工具: base64, unbase64, hash, rev - 文本编码解码工具
@@ -1405,24 +1407,67 @@ export default function Terminal() {
             output = 'rps: 请选择 石头、剪刀 或 布'
           } else {
             const computerChoice = Math.floor(Math.random() * 3)
-            let result: string
-            
-            if (playerChoice === computerChoice) {
-              result = '平局！'
-            } else if (
-              (playerChoice === 0 && computerChoice === 1) ||
-              (playerChoice === 1 && computerChoice === 2) ||
-              (playerChoice === 2 && computerChoice === 0)
-            ) {
-              result = '你赢了！🎉'
-            } else {
-              result = '电脑赢了！💻'
-            }
+            const result = playerChoice === computerChoice
+              ? '平局！'
+              : (playerChoice === 0 && computerChoice === 1) ||
+                (playerChoice === 1 && computerChoice === 2) ||
+                (playerChoice === 2 && computerChoice === 0)
+                ? '你赢了！🎉'
+                : '电脑赢了！💻'
             
             const icons = ['✊', '✌️', '✋']
             output = `✊✋✌️ 石头剪刀布\n\n你: ${icons[playerChoice]} ${choices[playerChoice]}\n电脑: ${icons[computerChoice]} ${choices[computerChoice]}\n\n${result}`
           }
         }
+        break
+      }
+      case 'du': {
+        if (args.length === 0) {
+          output = `4.0K    .\n12K     ./documents\n8.0K    ./downloads\n24K     total`
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          output = `8.0K    ${resolved}`
+        }
+        break
+      }
+      case 'ln': {
+        if (args.length < 2) {
+          output = 'ln: 缺少操作数\n用法: ln 源文件 目标文件'
+        } else {
+          output = ''
+        }
+        break
+      }
+      case 'id': {
+        output = `uid=1000(${username}) gid=1000(${username}) groups=1000(${username}),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev)`
+        break
+      }
+      case 'groups': {
+        output = `${username} : ${username} adm cdrom sudo dip plugdev`
+        break
+      }
+      case 'users': {
+        output = username
+        break
+      }
+      case 'vmstat': {
+        output = [
+          'procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----',
+          ' r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa',
+          ` 1  0      0 ${Math.floor(Math.random() * 2000 + 4000)} ${Math.floor(Math.random() * 100 + 50)} ${Math.floor(Math.random() * 4000 + 2000)}    0    0    12    25   89   45  12  03  85   0`,
+        ].join('\n')
+        break
+      }
+      case 'iostat': {
+        output = [
+          `Linux ${hostname} ${new Date().toLocaleDateString()} _x86_64_ (4 CPU)`,
+          '',
+          'avg-cpu:  %user   %nice %system %iowait  %steal   %idle',
+          `           ${(Math.random() * 15 + 5).toFixed(1)}    0.00    ${(Math.random() * 5 + 2).toFixed(1)}    0.10    0.00   ${(Math.random() * 20 + 70).toFixed(1)}`,
+          '',
+          'Device             tps    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn',
+          'vda               2.34        45.23        12.89     123456      45678',
+        ].join('\n')
         break
       }
       case 'password': {
@@ -1587,7 +1632,7 @@ export default function Terminal() {
                 if (parent?.children) {
                   const newFile = parent.children.find(c => c.name === sourceNode.name)
                   if (newFile) {
-                    renameFile(newFile.id, fileName)
+                    renameFileRef.current(newFile.id, fileName)
                   }
                 }
               }, 100)
@@ -1631,7 +1676,7 @@ export default function Terminal() {
                 if (parent?.children) {
                   const movedFile = parent.children.find(c => c.name === sourceNode.name)
                   if (movedFile) {
-                    renameFile(movedFile.id, fileName)
+                    renameFileRef.current(movedFile.id, fileName)
                   }
                 }
               }, 100)
