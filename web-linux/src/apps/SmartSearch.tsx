@@ -1,308 +1,464 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef, memo, useCallback } from 'react'
 import { useStore } from '../store'
-import { appRegistry } from '../apps'
+import { SearchIcon, CalculatorIcon, TerminalIcon, FileIcon, FolderIcon, AppIcon } from '../icons'
 
 interface SearchResult {
   id: string
-  type: 'app' | 'file' | 'command' | 'setting'
+  type: 'app' | 'file' | 'command' | 'web' | 'calculation'
   title: string
-  subtitle?: string
-  icon: string
-  priority: number
+  description?: string
+  icon?: React.ReactNode
   action: () => void
+  relevance: number
 }
 
-const SmartSearch = () => {
-  const [query, setQuery] = useState('')
+const QuickActions = memo(function QuickActions() {
+  const openApp = useStore((s) => s.openApp)
+  const files = useStore((s) => s.files)
+
+  const [input, setInput] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  const { openApp, files } = useStore(s => ({
-    openApp: s.openApp,
-    files: s.files
-  }))
+  const resultsRef = useRef<HTMLDivElement>(null)
 
-  const searchApps = useCallback((q: string): SearchResult[] => {
-    if (!q) return []
-    const lowerQ = q.toLowerCase()
-    return appRegistry
-      .filter(app => 
-        app.name.toLowerCase().includes(lowerQ) || 
-        app.id.toLowerCase().includes(lowerQ) ||
-        app.category.toLowerCase().includes(lowerQ)
-      )
-      .map(app => ({
-        id: `app-${app.id}`,
-        type: 'app' as const,
-        title: app.name,
-        subtitle: app.category,
-        icon: '📱',
-        priority: 100,
-        action: () => openApp(app.id)
-      }))
-  }, [openApp])
+  const apps = useStore((s) => s.apps)
 
-  const searchFiles = useCallback((q: string): SearchResult[] => {
-    if (!q) return []
-    const lowerQ = q.toLowerCase()
+  const performCalculation = useCallback((expr: string): string | null => {
+    try {
+      const sanitized = expr.replace(/[^0-9+\-*/().%^\s]/g, '')
+      if (!sanitized.trim()) return null
+
+      const result = Function('"use strict"; return (' + sanitized + ')')()
+      if (typeof result === 'number' && isFinite(result)) {
+        return Number.isInteger(result) ? result.toString() : result.toFixed(6).replace(/\.?0+$/, '')
+      }
+      return null
+    } catch {
+      return null
+    }
+  }, [])
+
+  const searchFiles = useCallback((query: string): SearchResult[] => {
     const results: SearchResult[] = []
-    
-    const traverse = (nodes: typeof files, path: string = '') => {
-      for (const node of nodes) {
-        if (node.name.toLowerCase().includes(lowerQ)) {
-          results.push({
-            id: `file-${node.id}`,
-            type: 'file' as const,
-            title: node.name,
-            subtitle: path || '/',
-            icon: node.type === 'folder' ? '📁' : '📄',
-            priority: 80,
-            action: () => openApp('files')
-          })
-        }
-        if (node.children) {
-          traverse(node.children, `${path}/${node.name}`)
-        }
+    const lowerQuery = query.toLowerCase()
+
+    const searchNode = (node: any) => {
+      if (node.name.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          id: node.id,
+          type: node.type === 'folder' ? 'file' : 'file',
+          title: node.name,
+          description: node.type === 'folder' ? '文件夹' : '文件',
+          icon: node.type === 'folder' ? <FolderIcon /> : <FileIcon />,
+          action: () => {
+            if (node.type === 'folder') {
+              openApp('files')
+            }
+          },
+          relevance: node.name.toLowerCase() === lowerQuery ? 2 : 1
+        })
+      }
+      if (node.children) {
+        node.children.forEach(searchNode)
       }
     }
-    
-    traverse(files)
-    return results.slice(0, 10)
+
+    files.forEach(searchNode)
+    return results.slice(0, 5)
   }, [files, openApp])
 
-  const searchCommands = useCallback((q: string): SearchResult[] => {
-    if (!q) return []
-    const lowerQ = q.toLowerCase()
+  const searchApps = useCallback((query: string): SearchResult[] => {
+    const lowerQuery = query.toLowerCase()
+    return apps
+      .filter(app => app.name.toLowerCase().includes(lowerQuery) || app.id.toLowerCase().includes(lowerQuery))
+      .slice(0, 5)
+      .map(app => ({
+        id: app.id,
+        type: 'app' as const,
+        title: app.name,
+        description: '应用程序',
+        icon: <AppIcon />,
+        action: () => openApp(app.id),
+        relevance: app.name.toLowerCase().startsWith(lowerQuery) ? 2 : 1
+      }))
+  }, [apps, openApp])
+
+  const searchCommands = useCallback((query: string): SearchResult[] => {
     const commands = [
-      { name: '打开终端', cmd: 'terminal', icon: '💻' },
-      { name: '打开文件管理器', cmd: 'files', icon: '📁' },
-      { name: '打开设置', cmd: 'settings', icon: '⚙️' },
-      { name: '打开计算器', cmd: 'calculator', icon: '🧮' },
-      { name: '打开浏览器', cmd: 'browser', icon: '🌐' },
-      { name: '打开代码编辑器', cmd: 'code-editor', icon: '💻' },
-      { name: '打开AI助手', cmd: 'ai-helper', icon: '🤖' },
-      { name: '打开音乐播放器', cmd: 'music-player', icon: '🎵' },
-      { name: '打开图片查看器', cmd: 'image-viewer', icon: '🖼️' },
-      { name: '打开日历', cmd: 'calendar', icon: '📅' },
-      { name: '打开系统监视器', cmd: 'system-monitor', icon: '📊' },
-      { name: '打开剪贴板管理器', cmd: 'clipboard-manager', icon: '📋' },
+      { name: 'ls', desc: '列出目录内容' },
+      { name: 'cd', desc: '切换目录' },
+      { name: 'pwd', desc: '显示当前目录' },
+      { name: 'mkdir', desc: '创建目录' },
+      { name: 'touch', desc: '创建文件' },
+      { name: 'cat', desc: '查看文件内容' },
+      { name: 'rm', desc: '删除文件' },
+      { name: 'cp', desc: '复制文件' },
+      { name: 'mv', desc: '移动文件' },
+      { name: 'clear', desc: '清屏' },
+      { name: 'help', desc: '显示帮助' },
+      { name: 'weather', desc: '查看天气' },
+      { name: 'calc', desc: '计算器' },
+      { name: 'neofetch', desc: '系统信息' },
+      { name: 'date', desc: '显示日期时间' }
     ]
-    
+
+    const lowerQuery = query.toLowerCase()
     return commands
-      .filter(c => c.name.toLowerCase().includes(lowerQ) || c.cmd.includes(lowerQ))
-      .map(c => ({
-        id: `cmd-${c.cmd}`,
+      .filter(cmd => cmd.name.includes(lowerQuery))
+      .slice(0, 5)
+      .map(cmd => ({
+        id: cmd.name,
         type: 'command' as const,
-        title: c.name,
-        subtitle: '快捷命令',
-        icon: c.icon,
-        priority: 90,
-        action: () => openApp(c.cmd)
+        title: cmd.name,
+        description: cmd.desc,
+        icon: <TerminalIcon />,
+        action: () => openApp('terminal'),
+        relevance: cmd.name.startsWith(lowerQuery) ? 2 : 1
       }))
   }, [openApp])
 
-  const searchSettings = useCallback((q: string): SearchResult[] => {
-    if (!q) return []
-    const lowerQ = q.toLowerCase()
-    const settings = [
-      { name: '切换主题', icon: '🎨', action: () => useStore.getState().setTheme(useStore.getState().theme === 'dark' ? 'light' : 'dark') },
-      { name: '清空剪贴板', icon: '📋', action: () => localStorage.removeItem('clipboard-history') },
-      { name: '查看系统信息', icon: 'ℹ️', action: () => openApp('about') },
-    ]
-    
-    return settings
-      .filter(s => s.name.toLowerCase().includes(lowerQ))
-      .map(s => ({
-        id: `setting-${s.name}`,
-        type: 'setting' as const,
-        title: s.name,
-        subtitle: '系统设置',
-        icon: s.icon,
-        priority: 70,
-        action: s.action
-      }))
-  }, [openApp])
-
-  // 使用 useRef 存储当前结果，避免直接在 effect 中 setState 的警告
-  const resultsRef = useRef<SearchResult[]>([])
-
-  // 搜索逻辑
-  const performSearch = useCallback((q: string) => {
-    const trimmed = q.trim()
-    if (!trimmed) {
-      resultsRef.current = []
-      setResults([])
-      setSelectedIndex(0)
-      return
-    }
-
-    const appResults = searchApps(trimmed)
-    const cmdResults = searchCommands(trimmed)
-    const fileResults = searchFiles(trimmed)
-    const settingResults = searchSettings(trimmed)
-
-    const allResults = [...appResults, ...cmdResults, ...fileResults, ...settingResults]
-      .sort((a, b) => b.priority - a.priority)
-      .slice(0, 20)
-
-    resultsRef.current = allResults
-    setResults(allResults)
-    setSelectedIndex(0)
-  }, [searchApps, searchCommands, searchFiles, searchSettings])
-
-  // 监听 query 变化，调用 performSearch
-  useEffect(() => {
-    performSearch(query)
-  }, [query, performSearch])
+  const webSearch = useCallback((query: string): SearchResult => ({
+    id: 'web-search',
+    type: 'web' as const,
+    title: `搜索 "${query}"`,
+    description: '在网络上搜索',
+    icon: <SearchIcon />,
+    action: () => {
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank')
+    },
+    relevance: 1
+  }), [])
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  useEffect(() => {
+    if (!input.trim()) {
+      const quickApps = apps.slice(0, 8).map(app => ({
+        id: app.id,
+        type: 'app' as const,
+        title: app.name,
+        description: '应用程序',
+        icon: <AppIcon />,
+        action: () => openApp(app.id),
+        relevance: 1
+      }))
+      setResults(quickApps)
+      return
+    }
+
+    const calculation = performCalculation(input)
+    const fileResults = searchFiles(input)
+    const appResults = searchApps(input)
+    const commandResults = searchCommands(input)
+
+    let allResults: SearchResult[] = [
+      ...appResults,
+      ...fileResults,
+      ...commandResults,
+      ...fileResults
+    ]
+
+    if (calculation) {
+      allResults.unshift({
+        id: 'calc-result',
+        type: 'calculation',
+        title: `= ${calculation}`,
+        description: `计算结果: ${input} = ${calculation}`,
+        icon: <CalculatorIcon />,
+        action: () => {},
+        relevance: 3
+      })
+    }
+
+    if (input.includes(' ') && !calculation) {
+      allResults.push(webSearch(input))
+    }
+
+    allResults.sort((a, b) => b.relevance - a.relevance)
+    setResults(allResults.slice(0, 10))
+    setSelectedIndex(0)
+  }, [input, apps, openApp, performCalculation, searchApps, searchCommands, searchFiles, webSearch])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setSelectedIndex(prev => (prev + 1) % results.length)
+      setSelectedIndex(i => Math.min(i + 1, results.length - 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setSelectedIndex(prev => (prev - 1 + results.length) % results.length)
-    } else if (e.key === 'Enter' && results.length > 0) {
+      setSelectedIndex(i => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
       e.preventDefault()
-      results[selectedIndex].action()
+      if (results[selectedIndex]) {
+        results[selectedIndex].action()
+      }
     } else if (e.key === 'Escape') {
-      setQuery('')
-      setResults([])
+      e.preventDefault()
+      setInput('')
+    }
+  }, [results, selectedIndex])
+
+  useEffect(() => {
+    if (resultsRef.current && selectedIndex >= 0) {
+      const selected = resultsRef.current.children[selectedIndex] as HTMLElement
+      if (selected) {
+        selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }
+    }
+  }, [selectedIndex])
+
+  const getResultIcon = (result: SearchResult) => {
+    switch (result.type) {
+      case 'calculation':
+        return (
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: 'white'
+          }}>
+            =
+          </div>
+        )
+      case 'web':
+        return (
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white'
+          }}>
+            <SearchIcon />
+          </div>
+        )
+      default:
+        return (
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: 'rgba(139, 92, 246, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#8b5cf6'
+          }}>
+            {result.icon}
+          </div>
+        )
     }
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'app': return 'var(--accent)'
-      case 'file': return '#22c55e'
-      case 'command': return '#eab308'
-      case 'setting': return '#a855f7'
-      default: return 'var(--text-secondary)'
+  const getTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      app: '应用',
+      file: '文件',
+      command: '命令',
+      web: '搜索',
+      calculation: '计算'
     }
+    return labels[type] || type
   }
 
   return (
-    <div 
-      className="app-container"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        background: 'var(--bg-secondary)',
-        color: 'var(--text-primary)',
-      }}
-    >
-      <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '24px' }}>🔍</span>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: '16px' }}>智慧搜索</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>搜索应用、文件、命令和设置</div>
-          </div>
+    <div style={{
+      position: 'fixed',
+      top: '20%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%',
+      maxWidth: '640px',
+      background: 'rgba(18, 18, 28, 0.95)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: '16px',
+      border: '1px solid rgba(139, 92, 246, 0.3)',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.1)',
+      overflow: 'hidden',
+      zIndex: 99999,
+      animation: 'slideDown 0.2s ease-out'
+    }}>
+      <div style={{
+        padding: '20px',
+        borderBottom: '1px solid rgba(139, 92, 246, 0.2)'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px 16px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '12px',
+          border: '1px solid rgba(139, 92, 246, 0.2)'
+        }}>
+          <SearchIcon style={{ color: '#8b5cf6', flexShrink: 0 }} />
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="搜索应用、文件、命令，或输入数学表达式..."
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#e8e8f4',
+              fontSize: '16px',
+              fontFamily: 'inherit'
+            }}
+          />
+          {input && (
+            <button
+              onClick={() => setInput('')}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                color: '#a0a0c8',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              ESC
+            </button>
+          )}
         </div>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="输入关键词搜索..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            background: 'var(--bg-primary)',
-            color: 'var(--text-primary)',
-            fontSize: '14px',
-            outline: 'none',
-            transition: 'border-color 0.2s',
-          }}
-        />
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-        {results.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '48px 16px',
-            color: 'var(--text-secondary)',
+      <div
+        ref={resultsRef}
+        style={{
+          maxHeight: '400px',
+          overflowY: 'auto',
+          padding: '8px'
+        }}
+      >
+        {results.length === 0 && input && (
+          <div style={{
+            padding: '40px 20px',
+            textAlign: 'center',
+            color: '#a0a0c8'
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-            <div style={{ fontSize: '14px', marginBottom: '8px' }}>开始输入以搜索</div>
-            <div style={{ fontSize: '12px' }}>支持搜索应用、文件、命令和设置</div>
+            <SearchIcon style={{ width: '48px', height: '48px', marginBottom: '12px', opacity: 0.5 }} />
+            <div style={{ fontSize: '14px' }}>未找到结果</div>
           </div>
-        ) : (
-          results.map((result, index) => (
-            <div
-              key={result.id}
-              onClick={result.action}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                background: index === selectedIndex ? 'var(--accent)' : 'transparent',
-                color: index === selectedIndex ? '#fff' : 'var(--text-primary)',
-                transition: 'background 0.15s',
-                marginBottom: '4px',
-              }}
-              onMouseEnter={() => setSelectedIndex(index)}
-            >
-              <div style={{ fontSize: '24px' }}>{result.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 500, fontSize: '14px' }}>{result.title}</div>
-                {result.subtitle && (
-                  <div style={{ fontSize: '12px', color: index === selectedIndex ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>
-                    {result.subtitle}
-                  </div>
-                )}
-              </div>
-              <div style={{
-                fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                background: index === selectedIndex ? 'rgba(255,255,255,0.2)' : 'var(--border)',
-                color: index === selectedIndex ? '#fff' : getTypeColor(result.type),
-              }}>
-                {result.type === 'app' ? '应用' : 
-                 result.type === 'file' ? '文件' : 
-                 result.type === 'command' ? '命令' : '设置'}
-              </div>
-            </div>
-          ))
         )}
+
+        {results.map((result, index) => (
+          <div
+            key={result.id}
+            onClick={() => result.action()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              background: selectedIndex === index ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+              border: selectedIndex === index ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid transparent',
+              transition: 'all 0.15s ease',
+              marginBottom: '4px'
+            }}
+          >
+            {getResultIcon(result)}
+            <div style={{ flex: 1 }}>
+              <div style={{
+                color: '#e8e8f4',
+                fontSize: '14px',
+                fontWeight: 500,
+                marginBottom: '2px'
+              }}>
+                {result.title}
+              </div>
+              {result.description && (
+                <div style={{
+                  color: '#a0a0c8',
+                  fontSize: '12px'
+                }}>
+                  {result.description}
+                </div>
+              )}
+            </div>
+            <div style={{
+              padding: '4px 8px',
+              background: 'rgba(139, 92, 246, 0.1)',
+              borderRadius: '4px',
+              fontSize: '11px',
+              color: '#8b5cf6',
+              fontWeight: 500
+            }}>
+              {getTypeLabel(result.type)}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div style={{
-        padding: '12px 16px',
-        borderTop: '1px solid var(--border)',
+        padding: '12px 20px',
+        borderTop: '1px solid rgba(139, 92, 246, 0.2)',
         display: 'flex',
-        justifyContent: 'space-between',
-        fontSize: '11px',
-        color: 'var(--text-secondary)',
+        gap: '16px',
+        fontSize: '12px',
+        color: '#a0a0c8'
       }}>
-        <div>
-          <span style={{ padding: '2px 6px', background: 'var(--border)', borderRadius: '3px', marginRight: '4px' }}>↑↓</span>
-          选择
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <kbd style={{
+            padding: '2px 6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '4px',
+            fontSize: '11px'
+          }}>↑↓</kbd>
+          <span>选择</span>
         </div>
-        <div>
-          <span style={{ padding: '2px 6px', background: 'var(--border)', borderRadius: '3px', marginRight: '4px' }}>Enter</span>
-          打开
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <kbd style={{
+            padding: '2px 6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '4px',
+            fontSize: '11px'
+          }}>Enter</kbd>
+          <span>打开</span>
         </div>
-        <div>
-          <span style={{ padding: '2px 6px', background: 'var(--border)', borderRadius: '3px', marginRight: '4px' }}>Esc</span>
-          清空
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <kbd style={{
+            padding: '2px 6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '4px',
+            fontSize: '11px'
+          }}>Esc</kbd>
+          <span>关闭</span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
-}
+})
 
-export default SmartSearch
+export default QuickActions
