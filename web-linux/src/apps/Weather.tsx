@@ -316,9 +316,15 @@ const EnhancedWeather = memo(function EnhancedWeather() {
           fontWeight: '600',
           color: '#e8e8f4',
           marginBottom: '12px',
-          padding: '0 4px'
+          padding: '0 4px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
           未来24小时
+          <div style={{ fontSize: '12px', color: '#a0a0c8', fontWeight: 'normal' }}>
+            实时更新
+          </div>
         </div>
         <div style={{
           display: 'flex',
@@ -333,12 +339,14 @@ const EnhancedWeather = memo(function EnhancedWeather() {
               <div
                 key={time}
                 style={{
-                  minWidth: '60px',
+                  minWidth: '70px',
                   background: 'rgba(255, 255, 255, 0.05)',
                   padding: '12px 8px',
                   borderRadius: '12px',
                   textAlign: 'center',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
                 }}
               >
                 <div style={{ fontSize: '11px', color: '#a0a0c8', marginBottom: '8px' }}>
@@ -349,6 +357,9 @@ const EnhancedWeather = memo(function EnhancedWeather() {
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: '600', color: '#e8e8f4' }}>
                   {Math.round(weather.hourly.temperature[index])}°
+                </div>
+                <div style={{ fontSize: '10px', color: '#a0a0c8', marginTop: '4px' }}>
+                  💧{weather.hourly.humidity[index]}%
                 </div>
               </div>
             )
