@@ -483,7 +483,7 @@ export default function SmartProjectHub() {
                           {columns.map(c => (
                             <button
                               key={c.id}
-                              onClick={() => updateTask(task.id, { status: c.id as any })}
+                              onClick={() => updateTask(task.id, { status: c.id as 'todo' | 'inprogress' | 'review' | 'done' })}
                               className={`text-[10px] px-2 py-1 rounded-full ${task.status === c.id ? 'bg-white/20 text-white' : 'bg-transparent hover:bg-white/10 text-gray-400'}`}
                             >
                               {c.title}
@@ -624,7 +624,7 @@ export default function SmartProjectHub() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveView(tab.id as any)}
+                onClick={() => setActiveView(tab.id as 'board' | 'timeline')}
                 className={`flex items-center gap-2 px-4 py-2.5 -mb-px text-sm font-medium transition-colors ${
                   activeView === tab.id
                     ? 'text-white border-b-2 border-blue-500 bg-white/5'
@@ -728,20 +728,40 @@ function ProjectForm({ onSubmit, onCancel }: { onSubmit: (title: string, desc: s
   )
 }
 
+interface TaskFormData {
+  title: string
+  description: string
+  status: 'todo' | 'inprogress' | 'review' | 'done'
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  assigneeId?: string
+  tags: string
+  dueDate: string
+}
+
+interface TaskFormSubmitData {
+  title: string
+  description: string
+  status: 'todo' | 'inprogress' | 'review' | 'done'
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  assigneeId?: string
+  tags: string[]
+  dueDate: string
+}
+
 function TaskForm({ 
   members, 
   onSubmit, 
   onCancel 
 }: { 
   members: Member[], 
-  onSubmit: (data: any) => void, 
+  onSubmit: (data: TaskFormSubmitData) => void, 
   onCancel: () => void 
 }) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<TaskFormData>({
     title: '',
     description: '',
-    status: 'todo' as const,
-    priority: 'medium' as const,
+    status: 'todo',
+    priority: 'medium',
     assigneeId: members[0]?.id,
     tags: '',
     dueDate: ''
@@ -773,7 +793,7 @@ function TaskForm({
       <div className="grid grid-cols-2 gap-4">
         <select 
           value={form.priority}
-          onChange={e => setForm({ ...form, priority: e.target.value as any })}
+          onChange={e => setForm({ ...form, priority: e.target.value as 'low' | 'medium' | 'high' | 'urgent' })}
           className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
         >
           <option value="low">低优先级</option>

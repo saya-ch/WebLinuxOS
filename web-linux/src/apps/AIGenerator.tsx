@@ -59,7 +59,7 @@ interface App {
 const createApp = (app: App): App => {
   return {
     ...app,
-    id: app.id.toLowerCase().replace(/\s+/g, '-')
+    id: app.id.toLowerCase().replace(/[ \t\n\r\f\v]+/g, '-')
   };
 };
 
@@ -112,10 +112,13 @@ export default function AIGenerator() {
   const handleGenerate = useCallback(() => {
     if (!state.prompt.trim() || state.isGenerating) return
     
+    const promptValue = state.prompt
+    const modelValue = state.selectedModel
+    
     setState(s => ({ ...s, isGenerating: true, response: '' }))
     
     let currentResponse = ''
-    const fullResponse = generateResponse(state.prompt, state.selectedModel)
+    const fullResponse = generateResponse(promptValue, modelValue)
     const chars = fullResponse.split('')
     let index = 0
     

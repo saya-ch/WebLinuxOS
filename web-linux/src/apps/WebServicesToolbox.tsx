@@ -45,17 +45,6 @@ export default function WebServicesToolbox() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchIPInfo()
-  }, [])
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
   const fetchIPInfo = async () => {
     setLoading(true)
     try {
@@ -79,6 +68,17 @@ export default function WebServicesToolbox() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchIPInfo()
+  }, [])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const fetchWeather = async (city: string) => {
     setLoading(true)

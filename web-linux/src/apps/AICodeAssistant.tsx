@@ -123,7 +123,7 @@ export default function AICodeAssistant() {
     const saved = localStorage.getItem('weblinux_snippets')
     return saved ? JSON.parse(saved) : []
   })
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: '1',
       role: 'assistant',
@@ -224,7 +224,7 @@ export default function AICodeAssistant() {
       } else {
         setCode(code.split('\\n').map(line => line.trim()).join('\\n'))
       }
-    } catch (e) {
+    } catch {
       alert('代码格式化失败，请检查语法')
     }
   }, [code, language])

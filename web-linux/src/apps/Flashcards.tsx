@@ -890,7 +890,7 @@ function Flashcards() {
                   <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500 }}>难度</label>
                   <select 
                     value={newDifficulty}
-                    onChange={(e) => setNewDifficulty(e.target.value as any)}
+                    onChange={(e) => setNewDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
                     style={{
                       width: '100%',
                       padding: '10px 14px',

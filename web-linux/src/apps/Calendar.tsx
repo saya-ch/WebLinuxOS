@@ -21,12 +21,15 @@ const EVENT_COLORS = [
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    { id: '1', date: new Date().toISOString().split('T')[0], title: '团队会议', description: '每周例会', time: '10:00', color: '#3b82f6' },
-    { id: '2', date: new Date().toISOString().split('T')[0], title: '项目评审', time: '14:00', color: '#f97316' },
-    { id: '3', date: new Date(Date.now() + 86400000).toISOString().split('T')[0], title: '代码审查', color: '#22c55e' },
-    { id: '4', date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0], title: '发布新版本', description: 'WebLinuxOS v3.4', time: '15:00', color: '#a855f7' },
-  ])
+  const [events, setEvents] = useState<CalendarEvent[]>(() => {
+    const now = Date.now()
+    return [
+      { id: '1', date: new Date().toISOString().split('T')[0], title: '团队会议', description: '每周例会', time: '10:00', color: '#3b82f6' },
+      { id: '2', date: new Date().toISOString().split('T')[0], title: '项目评审', time: '14:00', color: '#f97316' },
+      { id: '3', date: new Date(now + 86400000).toISOString().split('T')[0], title: '代码审查', color: '#22c55e' },
+      { id: '4', date: new Date(now + 86400000 * 2).toISOString().split('T')[0], title: '发布新版本', description: 'WebLinuxOS v3.4', time: '15:00', color: '#a855f7' },
+    ]
+  })
   const [showAddEvent, setShowAddEvent] = useState(false)
   const [eventTitle, setEventTitle] = useState('')
   const [eventDescription, setEventDescription] = useState('')
