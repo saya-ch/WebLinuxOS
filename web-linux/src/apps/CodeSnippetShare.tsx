@@ -105,11 +105,7 @@ const CodeSnippetShare = function () {
     }).sort((a, b) => b.createdAt - a.createdAt)
   }, [snippets, selectedLanguage, searchQuery])
 
-  const allTags = useMemo(() => {
-    const tagSet = new Set<string>()
-    snippets.forEach(s => s.tags.forEach(t => tagSet.add(t)))
-    return Array.from(tagSet)
-  }, [snippets])
+
 
   const handleSaveSnippet = useCallback(() => {
     if (!newSnippet.title || !newSnippet.code) {
