@@ -328,7 +328,35 @@ function JSONYAMLConverterIcon() {
   )
 }
 
+function AIChatAssistantIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="10" cy="10" r="1" fill="currentColor" />
+      <circle cx="14" cy="10" r="1" fill="currentColor" />
+      <path d="M8 14c1 1.5 3 2.5 4 2.5s3-1 4-2.5" />
+    </svg>
+  )
+}
+
+function TaskManagerProIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="9" y1="3" x2="9" y2="21" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <circle cx="6" cy="6" r="1" fill="currentColor" />
+      <circle cx="12" cy="6" r="1" fill="currentColor" />
+      <circle cx="18" cy="6" r="1" fill="currentColor" />
+      <circle cx="6" cy="12" r="1" fill="currentColor" />
+      <circle cx="6" cy="18" r="1" fill="currentColor" />
+    </svg>
+  )
+}
+
 export const appRegistry: AppDefinition[] = [
+  { id: 'ai-chat-assistant', name: 'AI 聊天助手', icon: <AIChatAssistantIcon />, component: 'AIChatAssistant', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+  { id: 'task-manager-pro', name: '专业任务管理', icon: <TaskManagerProIcon />, component: 'TaskManagerPro', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'api-docs-viewer', name: 'API 文档中心', icon: <ApiIcon />, component: 'ApiDocsViewer', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'url-tools', name: 'URL 工具箱', icon: <URLToolsIcon />, component: 'URLTools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'base64-tools', name: 'Base64 工具箱', icon: <Base64ToolsIcon />, component: 'Base64Tools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
