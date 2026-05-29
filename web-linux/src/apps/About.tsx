@@ -92,15 +92,15 @@ export default function About() {
   const deviceMemory = (navigator as unknown as Record<string, unknown>).deviceMemory as number | undefined
 
   const specs = [
-    { label: '系统名称', value: 'Web Linux' },
-    { label: '版本号', value: '4.3.0' },
-    { label: '内核版本', value: 'Web Linux 6.15.0' },
+    { label: '系统名称', value: 'WebLinuxOS' },
+    { label: '版本号', value: '4.5.0' },
+    { label: '内核版本', value: 'WebLinuxOS 6.15.0' },
     { label: '架构', value: 'x86_64 (Browser)' },
-    { label: '桌面环境', value: 'Web DE 4.3' },
+    { label: '桌面环境', value: 'Web DE 4.5' },
     { label: '窗口系统', value: 'Web Window Manager' },
     { label: '浏览器', value: `${ua.browser} ${ua.version}` },
     { label: '操作系统', value: ua.os },
-    { label: '应用数量', value: '80+' },
+    { label: '应用数量', value: '120+' },
     { label: '许可证', value: 'MIT' },
   ]
 
@@ -121,6 +121,7 @@ export default function About() {
   ]
 
   const changelog = [
+    { version: '4.5.0', date: '2026-05-29', changes: ['🔧 全面代码优化 - 提升性能和加载速度', '📱 响应式设计改进 - 更好的移动端体验', '🎨 UI/UX优化 - 更流畅的动画和交互', '📊 新增数据可视化组件 - 实时数据展示', '🔒 安全性增强 - 改进输入验证和错误处理', '🌐 国际化支持 - 改善多语言支持'] },
     { version: '3.7.0', date: '2026-05-26', changes: ['📝 代码差异查看器 - 支持对比代码差异，高亮显示变更', '🖼️ 图片优化器 - 压缩和优化图片，支持多种格式', '🚀 网络速度测试 - 测试网络连接速度和延迟', '✨ 界面优化 - 改进应用体验和视觉效果', '⚡ 性能优化 - 提升整体系统响应速度', '🔧 修复问题 - 解决已知bug，提升稳定性'] },
     { version: '3.6.0', date: '2026-05-26', changes: ['🩺 系统健康检查应用 - 实时系统监控和自动化诊断', '🌤️ 天气应用优化 - 改进UI和更详细的预报', '📊 健康评分可视化 - 动态圆锥形进度指示器', '🐛 修复ActivityTracker纯函数问题', '⚡ 性能优化和bug修复'] },
     { version: '3.5.0', date: '2026-05-26', changes: ['📈 活动追踪器应用 - 追踪应用使用模式并提供生产力洞察', '📚 学习平台应用 - 交互式学习资源和教程', '🤖 AI助手增强 - 代码生成和执行能力', '📊 系统仪表盘 - 综合系统指标可视化'] },
@@ -163,9 +164,9 @@ export default function About() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e2e', color: '#cdd6f4', overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid #313244', textAlign: 'center', background: 'linear-gradient(135deg, #313244 0%, #1e1e2e 100%)' }}>
         <div style={{ fontSize: '48px', marginBottom: '8px', filter: 'drop-shadow(0 0 10px rgba(137, 180, 250, 0.3))' }}>🐧</div>
-        <h1 style={{ margin: '0 0 4px', fontSize: '26px', fontWeight: 700, background: 'linear-gradient(135deg, #89b4fa 0%, #cba6f7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Web Linux</h1>
-        <div style={{ fontSize: '13px', color: '#a6adc8' }}>浏览器中的 Linux 桌面环境 · v4.3.0</div>
-        <div style={{ fontSize: '11px', color: '#6c7086', marginTop: '4px' }}>80+ 预装应用程序 · 完整窗口管理 · Python 运行时</div>
+        <h1 style={{ margin: '0 0 4px', fontSize: '26px', fontWeight: 700, background: 'linear-gradient(135deg, #89b4fa 0%, #cba6f7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>WebLinuxOS</h1>
+        <div style={{ fontSize: '13px', color: '#a6adc8' }}>浏览器中的 Linux 桌面环境 · v4.5.0</div>
+        <div style={{ fontSize: '11px', color: '#6c7086', marginTop: '4px' }}>120+ 预装应用程序 · 完整窗口管理 · Python 运行时</div>
       </div>
 
       <div style={{ display: 'flex', borderBottom: '1px solid #313244', background: '#181825' }}>

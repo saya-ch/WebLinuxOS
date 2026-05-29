@@ -21,10 +21,12 @@ WebLinuxOS brings the power of a Linux desktop to your browser. It features a mo
 - **Global Search**: Fast app launcher and file search powered by fuzzy matching
 - **Command Palette**: Keyboard-driven command execution for power users
 - **Context Menus**: Right-click menus with file operations and quick actions
+- **Live Wallpapers**: Interactive particle effects and dynamic backgrounds
+- **Boot Splash**: Elegant animated loading screen
 
 ### Applications
 
-The system includes 120+ pre-installed applications:
+The system includes 120+ pre-installed applications across multiple categories:
 
 **System Tools**
 - File Manager with tree navigation and file operations
@@ -33,6 +35,7 @@ The system includes 120+ pre-installed applications:
 - Task Manager and Process Monitor
 - Network Monitor and Disk Analyzer
 - Backup Tool and Archive Manager
+- System Settings with theme customization
 
 **Development Tools**
 - Code Editor with syntax highlighting
@@ -42,6 +45,7 @@ The system includes 120+ pre-installed applications:
 - GitHub Trending repository viewer
 - Command Reference documentation
 - Task Automation workflow builder
+- Python REPL via Pyodide
 
 **Office & Productivity**
 - Text Editor with formatting options
@@ -52,6 +56,7 @@ The system includes 120+ pre-installed applications:
 - Project Planner with timeline views
 - Notes and Mind Map tools
 - Presentation creator
+- Flashcards for learning
 
 **Utilities**
 - Calculator with scientific functions
@@ -61,6 +66,7 @@ The system includes 120+ pre-installed applications:
 - QR Code Generator
 - Unit and Currency Converter
 - Online Toolkit (JSON, Base64, URL encoding/decoding, hash calculation)
+- Real-time Translator
 
 **Multimedia**
 - Music Player with playlist support
@@ -69,14 +75,18 @@ The system includes 120+ pre-installed applications:
 - Image Viewer with zoom
 - Camera and Screen Recorder
 - Sound Recorder
+- Image Optimizer
 
 **Entertainment**
 - Weather application with forecasts
 - World Clock with multiple time zones
 - Classic games (Snake, Tetris)
 - Virtual Pet companion
+- Particle System visualizer
 
 ### Terminal Features
+
+The built-in terminal emulator provides:
 
 - 90+ built-in shell commands
 - Python 3 runtime via Pyodide
@@ -84,6 +94,28 @@ The system includes 120+ pre-installed applications:
 - File system navigation and operations
 - System information commands
 - Calculator and utility functions
+- Fun commands (cowsay, fortune, ASCII art)
+
+**Common Commands:**
+```bash
+# Navigation
+ls, cd, pwd, tree
+
+# File Operations
+cat, echo, mkdir, touch, rm, cp, mv, find
+
+# System Info
+neofetch, uptime, df, free, ps, top
+
+# Development
+git, npm, node, python, python3
+
+# Utilities
+calc, weather, translate, qrcode, password
+
+# Fun
+fortune, sl, banner, cowsay
+```
 
 ### Web Services Integration
 
@@ -115,15 +147,6 @@ npm run build
 npm run deploy
 ```
 
-## Technology Stack
-
-- **React 19** - UI component framework
-- **TypeScript 6** - Type-safe development
-- **Zustand 5** - Lightweight state management
-- **Vite 8** - Fast build tool
-- **Pyodide** - Python runtime in browser
-- **Lucide React** - Icon library
-
 ## Keyboard Shortcuts
 
 ### System
@@ -146,20 +169,35 @@ npm run deploy
 | Super+, | Settings |
 | Super+B | Browser |
 | Super+A | Calculator |
+| Super+G | Code Editor |
+| Super+H | Help |
+| Super+D | System Monitor |
 
 ### Virtual Desktops
 | Shortcut | Action |
 |----------|--------|
 | Ctrl+Alt+[1-9] | Switch to desktop |
 | Ctrl+Alt+Arrow Left/Right | Switch workspace |
+| Ctrl+Shift+Alt+[1-9] | Move window to desktop |
+
+## Technology Stack
+
+- **React 19** - UI component framework
+- **TypeScript 6** - Type-safe development
+- **Zustand 5** - Lightweight state management
+- **Vite 8** - Fast build tool
+- **Pyodide** - Python runtime in browser
+- **Lucide React** - Icon library
+- **Marked** - Markdown parsing
 
 ## Project Structure
 
 ```
 web-linux/
 ├── src/
-│   ├── apps/           # Application components
+│   ├── apps/           # Application components (120+ apps)
 │   ├── components/     # Desktop UI components
+│   │   └── desktop/    # Desktop, Taskbar, Window management
 │   ├── store.tsx       # Zustand state management
 │   ├── apps.tsx        # Application registry
 │   ├── icons.tsx       # Icon definitions
@@ -181,6 +219,7 @@ WebLinuxOS includes several performance optimizations:
 - **Memoization**: React memo prevents unnecessary re-renders
 - **Content Visibility**: Optimized rendering for long lists
 - **Tree Shaking**: Unused code is eliminated during build
+- **Debounced Storage**: LocalStorage operations are optimized
 
 ## Browser Compatibility
 
@@ -195,20 +234,48 @@ WebLinuxOS includes several performance optimizations:
 - Safe expression evaluation in terminal calculator
 - Local storage encryption for sensitive data
 - No external API keys exposed in client code
-- CSP headers for XSS protection
+- Content Security Policy headers for XSS protection
+
+## Architecture Highlights
+
+### Window Management
+The window management system supports:
+- Z-index based window layering
+- Window minimize/maximize/restore
+- Window drag and resize
+- Multi-monitor awareness
+- Window state persistence
+
+### File System
+Virtual file system with:
+- Hierarchical folder structure
+- File operations (create, delete, rename, move)
+- Undo/redo support
+- LocalStorage persistence
+- File type icons
+
+### State Management
+Zustand-powered state management:
+- Centralized app registry
+- Window state tracking
+- Desktop icons management
+- Theme and wallpaper settings
+- User preferences
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## License
 
 MIT License - see LICENSE file for details
 
-## Contributing
-
-Contributions are welcome. Please see CONTRIBUTING.md for guidelines.
-
 ## Acknowledgments
 
 - Pyodide for enabling Python in the browser
 - Lucide for beautiful icons
+- React team for the component framework
+- Vite team for the build tool
 - All open source libraries used in this project
 
 ---
