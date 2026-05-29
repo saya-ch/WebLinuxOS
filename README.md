@@ -15,6 +15,7 @@ WebLinuxOS brings the power of a Linux desktop to your browser. Built with moder
 - Start menu with Super key support
 - Taskbar with window switching and system tray
 - Context menus and global keyboard shortcuts
+- Optimized 60 FPS particle animations for smooth performance
 
 ### Terminal Emulator
 - 90+ built-in Linux commands
@@ -40,19 +41,26 @@ WebLinuxOS brings the power of a Linux desktop to your browser. Built with moder
 
 ## Applications
 
-**System Tools**: File Manager, Terminal, System Monitor, Settings, Software Center, Disk Analyzer, Task Manager, Network Monitor, Firewall, Backup Tool, Archive Manager, Performance Monitor, Log Viewer, System Health Check
+### System Tools
+File Manager, Terminal, System Monitor, Settings, Software Center, Disk Analyzer, Task Manager, Network Monitor, Firewall, Backup Tool, Archive Manager, Performance Monitor, Log Viewer, System Health Check, **API 文档中心**
 
-**Development**: Code Editor, Code Playground, API Tester, JSON Formatter, Regex Builder, GitHub Trending, Code Snippets Manager, Data Visualization, AI Code Assistant, Code Generator
+### Development
+Code Editor, Code Playground, API Tester, JSON Formatter, Regex Builder, GitHub Trending, Code Snippets Manager, Data Visualization, AI Code Assistant, Code Generator, **API 文档中心**, Web Services Toolbox, Command Reference
 
-**Office**: Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Todo List, Notes, Mind Map, Kanban Board, Project Planner, Translator, Dictionary
+### Office
+Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Todo List, Notes, Mind Map, Kanban Board, Project Planner, Translator, Dictionary, **Markdown 幻灯片**, **智能项目管理**, **项目规划器**
 
-**Network**: Browser, Weather, News Reader, Cryptocurrency Tracker, Email Client, Chat, AI Helper, Learning Platform
+### Network
+Browser, Weather, News Reader, Cryptocurrency Tracker, Email Client, Chat, AI Helper, Learning Platform, **GitHub 热门**, **股票市场追踪器**
 
-**Multimedia**: Music Player, Video Player, Paint, Image Viewer, Camera, Sound Recorder, Screen Recorder, PDF Viewer, Whiteboard
+### Multimedia
+Music Player, Video Player, Paint, Image Viewer, Camera, Sound Recorder, Screen Recorder, PDF Viewer, Whiteboard, **音乐可视化**
 
-**Utilities**: Calculator, Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Voice Transcriber, Clipboard Manager, Quick Launcher
+### Utilities
+Calculator, Password Manager, Pomodoro Timer, Color Picker, QR Generator, Unit Converter, Voice Transcriber, Clipboard Manager, Quick Launcher, **番茄工作法**, **专注模式**, **任务自动化**, **智能仪表盘**, **便签墙**, **灵感速记**
 
-**Games**: Snake, Tetris, Virtual Pet, Particle System
+### Games
+Snake, Tetris, Virtual Pet, Particle System
 
 ## Technology Stack
 
@@ -95,6 +103,8 @@ npm run deploy
 | `Super + B` | Open browser |
 | `Super + K` | Global search |
 | `Super + P` | Command palette |
+| `Ctrl + K` | Quick search |
+| `Ctrl + P` | Command palette |
 | `Alt + Tab` | Window switcher |
 | `Ctrl + Alt + Arrow` | Switch desktop |
 | `Ctrl + Alt + [1-9]` | Go to desktop |
@@ -127,15 +137,15 @@ WebLinuxOS integrates several public APIs:
 web-linux/
 ├── public/              # Static assets
 ├── src/
-│   ├── apps/            # Application components
+│   ├── apps/            # Application components (100+ apps)
 │   ├── components/      # UI components
-│   │   └── desktop/     # Desktop environment components
-│   ├── icons/           # Custom icons
-│   ├── App.tsx          # Main application component
-│   ├── main.tsx         # Entry point
-│   ├── store.tsx        # Zustand state management
-│   ├── apps.tsx         # Application registry
-│   └── index.css        # Global styles
+│   │   └── desktop/    # Desktop environment components
+│   ├── icons/          # Custom icons
+│   ├── App.tsx         # Main application component
+│   ├── main.tsx        # Entry point
+│   ├── store.tsx       # Zustand state management
+│   ├── apps.tsx        # Application registry
+│   └── index.css       # Global styles
 ├── index.html
 ├── package.json
 ├── tsconfig.json
@@ -154,6 +164,26 @@ npm run typecheck        # Run TypeScript type checking
 npm run format           # Format code with Prettier
 npm run deploy           # Deploy to GitHub Pages
 ```
+
+## Performance Optimizations
+
+- 60 FPS smooth particle animations
+- Lazy loading for application components
+- Optimized localStorage operations with debouncing
+- Component memoization for better rendering performance
+- Efficient state management with Zustand
+
+## New Features (v4.4.0)
+
+- **API 文档中心**: Comprehensive API documentation viewer with examples for Open-Meteo, GitHub API, CoinGecko, and more
+- **智能项目管理**: Advanced project management with task tracking
+- **Markdown 幻灯片**: Create presentations from Markdown files
+- **项目规划器**: Visual project planning tools
+- **专注模式**: Distraction-free work environment
+- **股票市场追踪器**: Real-time stock market monitoring
+- **音乐可视化**: Audio visualization with animations
+- Enhanced keyboard shortcuts for better productivity
+- Improved 60 FPS desktop animations
 
 ## Contributing
 
@@ -183,4 +213,4 @@ Visit the live demo at: [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.
 
 ---
 
-Version: 4.3.0 | License: MIT
+Version: 4.4.0 | License: MIT

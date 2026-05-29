@@ -55,6 +55,10 @@ const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }
   'close-window': { config: { mod: true, key: 'q' }, action: 'close-window' },
   'minimize-window': { config: { mod: true, key: 'm' }, action: 'minimize-window' },
   'new-terminal': { config: { mod: true, shift: true, key: 'n' }, action: 'new-terminal' },
+  'global-search': { config: { mod: true, key: 'k' }, action: 'global-search' },
+  'command-palette': { config: { mod: true, key: 'p' }, action: 'command-palette' },
+  'lock-screen': { config: { mod: true, key: 'l' }, action: 'lock-screen' },
+  'notification-center': { config: { mod: true, key: 'n' }, action: 'notification-center' },
 }
 
 const App = memo(function App() {
@@ -99,6 +103,9 @@ const App = memo(function App() {
 
   const handleSystemShortcut = useCallback((action: string) => {
     const focusedWindow = getFocusedWindow()
+    const toggleNotificationCenter = useStore.getState().toggleNotificationCenter
+    const addNotification = useStore.getState().addNotification
+    
     switch (action) {
       case 'launcher':
         toggleLauncher()
@@ -123,6 +130,23 @@ const App = memo(function App() {
         break
       case 'new-terminal':
         openApp('terminal')
+        break
+      case 'global-search':
+        setSearchOpen(true)
+        break
+      case 'command-palette':
+        setCommandPaletteOpen(true)
+        break
+      case 'lock-screen':
+        addNotification({
+          title: '屏幕已锁定',
+          message: '按任意键或点击解锁',
+          type: 'info',
+          duration: 3000
+        })
+        break
+      case 'notification-center':
+        toggleNotificationCenter()
         break
     }
   }, [getFocusedWindow, toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp])

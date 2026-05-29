@@ -185,7 +185,7 @@ const Desktop = memo(function Desktop() {
     
     let animationId: number
     let lastTime = 0
-    const targetFPS = 30
+    const targetFPS = 60
     const frameInterval = 1000 / targetFPS
     
     const animate = (currentTime: number) => {
@@ -236,7 +236,6 @@ const Desktop = memo(function Desktop() {
           
           particlesRef.current = newParticles
           
-          // Simplified connection logic for better performance
           if (liveWallpaper !== 'particles' && liveWallpaperEnabled && newParticles.length <= 50) {
             const newConnections: Connection[] = []
             for (let i = 0; i < newParticles.length; i += 2) {
