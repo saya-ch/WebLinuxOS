@@ -75,30 +75,11 @@ const weatherDescriptions: Record<number, string> = {
   99: '雷暴伴大冰雹'
 }
 
-function getAQIColor(aqi: number): string {
-  if (aqi <= 50) return '#4CAF50'
-  if (aqi <= 100) return '#FFEB3B'
-  if (aqi <= 150) return '#FF9800'
-  if (aqi <= 200) return '#F44336'
-  if (aqi <= 300) return '#9C27B0'
-  return '#7B1FA2'
-}
-
-function getAQIDescription(aqi: number): string {
-  if (aqi <= 50) return '优'
-  if (aqi <= 100) return '良'
-  if (aqi <= 150) return '轻度污染'
-  if (aqi <= 200) return '中度污染'
-  if (aqi <= 300) return '重度污染'
-  return '严重污染'
-}
-
-const EnhancedWeather = memo(function EnhancedWeather() {
+const Weather = memo(function Weather() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [location, setLocation] = useState({ lat: 39.9042, lon: 116.4074, city: '北京' })
-  const [aqi, setAqi] = useState<number | null>(null)
 
   const fetchWeather = useCallback(async (lat: number, lon: number, cityName: string) => {
     setLoading(true)
@@ -118,29 +99,13 @@ const EnhancedWeather = memo(function EnhancedWeather() {
     }
   }, [])
 
-  const fetchAQI = useCallback(async (lat: number, lon: number) => {
-    try {
-      const response = await fetch(
-        `https://air-quality-api.com/api/v1/nearest_city?lat=${lat}&lon=${lon}`
-      )
-      if (response.ok) {
-        const data = await response.json()
-        setAqi(data.data?.current?.pollution?.aqius || null)
-      }
-    } catch {
-      setAqi(null)
-    }
-  }, [])
-
   useEffect(() => {
     fetchWeather(location.lat, location.lon, location.city)
-    fetchAQI(location.lat, location.lon)
-  }, [location.lat, location.lon, location.city, fetchWeather, fetchAQI])
+  }, [location.lat, location.lon, location.city, fetchWeather])
 
   const changeLocation = useCallback((city: string, lat: number, lon: number) => {
     fetchWeather(lat, lon, city)
-    fetchAQI(lat, lon)
-  }, [fetchWeather, fetchAQI])
+  }, [fetchWeather])
 
   if (loading) {
     return (
@@ -276,38 +241,6 @@ const EnhancedWeather = memo(function EnhancedWeather() {
             <div style={{ fontSize: '12px', color: '#a0a0c8' }}>最高/最低</div>
           </div>
         </div>
-
-        {aqi !== null && (
-          <div style={{
-            marginTop: '16px',
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '12px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ fontSize: '24px' }}>🌿</div>
-              <div>
-                <div style={{ fontSize: '14px', color: '#a0a0c8' }}>空气质量指数 (AQI)</div>
-                <div style={{ fontSize: '20px', fontWeight: '600', color: '#e8e8f4' }}>
-                  {aqi}
-                </div>
-              </div>
-            </div>
-            <div style={{
-              padding: '8px 16px',
-              background: getAQIColor(aqi),
-              borderRadius: '20px',
-              color: '#fff',
-              fontWeight: '600',
-              fontSize: '14px'
-            }}>
-              {getAQIDescription(aqi)}
-            </div>
-          </div>
-        )}
       </div>
 
       <div style={{ marginBottom: '20px' }}>
@@ -481,4 +414,4 @@ const EnhancedWeather = memo(function EnhancedWeather() {
   )
 })
 
-export default EnhancedWeather
+export default Weather
