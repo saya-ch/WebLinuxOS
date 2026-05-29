@@ -1,35 +1,44 @@
 # WebLinuxOS
 
-A fully functional Linux desktop environment running entirely in the browser. Experience a complete operating system interface without any installation required.
+A fully functional web-based Linux desktop environment that runs entirely in the browser. Built with React, TypeScript, and modern web technologies, it provides a complete desktop experience without any installation required.
+
+## Live Demo
+
+Visit the live demo at: [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
 
 ## Overview
 
 WebLinuxOS brings the power of a Linux desktop to your browser. It features a modern, responsive interface with multi-window management, virtual desktops, and over 120 applications - all running client-side with no backend dependencies.
 
-## Features
+## Key Features
 
 ### Desktop Environment
-- Multi virtual desktops with smooth workspace switching
-- Advanced window management (drag, resize, minimize, maximize, close)
-- Dynamic wallpapers with live particle effects
-- Smart launcher with fuzzy search and categorized application listing
-- Context menus with file operations
-- Global keyboard shortcuts for efficient navigation
+
+- **Multi Virtual Desktops**: Create and switch between multiple workspaces with customizable wallpapers
+- **Advanced Window Management**: Drag, resize, minimize, maximize, and close windows with smooth animations
+- **Smart Launcher**: Application launcher with fuzzy search and categorized app listing
+- **System Tray**: Quick access to network, volume, battery, and notification indicators
+- **Global Search**: Fast app launcher and file search powered by fuzzy matching
+- **Command Palette**: Keyboard-driven command execution for power users
+- **Context Menus**: Right-click menus with file operations and quick actions
+- **Dynamic Wallpapers**: Animated particle effects and interactive backgrounds
 
 ### Applications
 
+The system includes 120+ pre-installed applications across multiple categories:
+
 **System Tools**
-- File Manager with tree navigation and file operations
 - Terminal emulator with 90+ built-in commands
-- System Monitor displaying resource usage
-- Settings panel for customization
+- File Manager with tree navigation and file operations
+- System Monitor displaying resource usage in real-time
 - Task Manager and Process Monitor
 - Network Monitor and Disk Analyzer
 - Backup Tool and Archive Manager
 
 **Development Tools**
+- **API Tester**: Full-featured REST API testing with request builder, headers editor, and response viewer
+- **Smart Notes**: Note-taking app with Markdown support, categories, tags, and export functionality
 - Code Editor with syntax highlighting
-- API Tester with request builder
 - JSON Formatter and Validator
 - Regex Builder with real-time testing
 - GitHub Trending repository viewer
@@ -42,8 +51,9 @@ WebLinuxOS brings the power of a Linux desktop to your browser. It features a mo
 - Spreadsheet application
 - Calendar with event management
 - Todo List and Kanban Board
-- Project Planner with timeline
+- Project Planner with timeline views
 - Notes and Mind Map tools
+- Presentation creator
 
 **Utilities**
 - Calculator with scientific functions
@@ -69,19 +79,26 @@ WebLinuxOS brings the power of a Linux desktop to your browser. It features a mo
 - Virtual Pet companion
 
 ### Terminal Features
+
 - 90+ built-in shell commands
 - Python 3 runtime via Pyodide
 - Command history and auto-completion
 - File system navigation and operations
 - System information commands
 - Calculator and utility functions
+- API integration commands (weather, crypto, etc.)
 
 ### Web Services Integration
-- Real-time weather data from Open-Meteo
-- IP geolocation from ipapi.co
-- Cryptocurrency prices from CoinGecko
-- Currency conversion rates
-- Air quality index data
+
+The application integrates with multiple public APIs:
+
+- **Open-Meteo**: Real-time weather data
+- **CoinGecko**: Cryptocurrency prices
+- **GitHub API**: Repository information
+- **HTTPBin**: API testing endpoints
+- **JSONPlaceholder**: Mock REST API
+- **Dog CEO API**: Random dog images
+- **ipapi.co**: IP geolocation
 
 ## Quick Start
 
@@ -113,6 +130,7 @@ npm run deploy
 - **Vite 8** - Fast build tool
 - **Pyodide** - Python runtime in browser
 - **Lucide React** - Icon library
+- **Marked** - Markdown parsing
 
 ## Keyboard Shortcuts
 
@@ -148,8 +166,21 @@ npm run deploy
 ```
 web-linux/
 ├── src/
-│   ├── apps/           # Application components
+│   ├── apps/           # Application components (120+ apps)
+│   │   ├── Terminal.tsx
+│   │   ├── FileManager.tsx
+│   │   ├── ApiTester.tsx      # Enhanced API testing tool
+│   │   ├── SmartNotes.tsx     # Markdown notes with categories
+│   │   └── ... (120+ more)
 │   ├── components/     # Desktop UI components
+│   │   ├── desktop/
+│   │   │   ├── Desktop.tsx
+│   │   │   ├── WindowManager.tsx
+│   │   │   ├── Taskbar.tsx
+│   │   │   └── StartMenu.tsx
+│   │   ├── CommandPalette.tsx
+│   │   ├── ErrorBoundary.tsx
+│   │   └── NotificationSystem.tsx
 │   ├── store.tsx       # Zustand state management
 │   ├── apps.tsx        # Application registry
 │   ├── icons.tsx       # Icon definitions
@@ -187,23 +218,58 @@ WebLinuxOS includes several performance optimizations:
 - No external API keys exposed in client code
 - CSP headers for XSS protection
 
-## License
+## Notable Applications
 
-MIT License - see LICENSE file for details
+### API Tester
+A powerful REST API testing tool featuring:
+- Support for GET, POST, PUT, PATCH, DELETE methods
+- Custom headers editor with enable/disable toggles
+- Query parameters builder
+- Request body editor with JSON formatting
+- Response viewer with syntax highlighting
+- Request history tracking
+- Pre-built API templates for common services
 
-## Live Demo
+### Smart Notes
+A feature-rich note-taking application:
+- Markdown editing with live preview
+- Category-based organization
+- Tag system for quick filtering
+- Full-text search across all notes
+- Pin important notes
+- Export notes as Markdown files
+- Local storage persistence
 
-Visit the live demo at: https://saya-ch.github.io/WebLinuxOS/
+### Terminal
+A fully-featured terminal emulator:
+- 90+ built-in commands
+- Python 3 runtime via Pyodide
+- Command history with persistence
+- Alias system
+- Auto-completion for commands and files
+- ANSI color support
+- Real-time API integration
 
 ## Contributing
 
-Contributions are welcome. Please see CONTRIBUTING.md for guidelines.
+Contributions are welcome. Please ensure:
+
+1. Code follows the existing style conventions
+2. All TypeScript types are properly defined
+3. Components use React.memo for performance
+4. State management follows Zustand patterns
+5. UI follows the design system variables
+
+## License
+
+MIT License - see LICENSE file for details.
 
 ## Acknowledgments
 
 - Pyodide for enabling Python in the browser
 - Lucide for beautiful icons
 - All open source libraries used in this project
+- The React, TypeScript, and Vite teams
 
 ---
 
