@@ -1,467 +1,207 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useStore } from '../store';
+import { useState } from 'react'
 
-interface CodeSnippet {
-  id: string;
-  title: string;
-  description: string;
-  code: string;
-  language: string;
-}
+const templates: Record<string, string> = {
+  'react-component': `import React, { useState } from 'react'
 
-const TEMPLATES: CodeSnippet[] = [
-  {
-    id: 'react-component',
-    title: 'React组件',
-    description: '创建一个基础的React函数组件',
-    language: 'typescript',
-    code: `import { useState, useEffect } from 'react';
-
-interface Props {
-  title: string;
-  onAction?: () => void;
-}
-
-const MyComponent: React.FC<Props> = ({ title, onAction }) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    console.log('组件已挂载');
-    return () => console.log('组件已卸载');
-  }, []);
+export default function MyComponent() {
+  const [count, setCount] = useState(0)
 
   return (
-    <div className="component">
-      <h2>{title}</h2>
-      <p>计数器: {count}</p>
-      <button onClick={() => setCount(c => c + 1)}>
-        增加
+    <div>
+      <h1>Hello World</h1>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
       </button>
-      {onAction && (
-        <button onClick={onAction}>执行操作</button>
-      )}
     </div>
-  );
-};
-
-export default MyComponent;`
-  },
-  {
-    id: 'api-call',
-    title: 'API调用',
-    description: '一个完整的异步API调用函数',
-    language: 'typescript',
-    code: `interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message?: string;
-}
-
-async function fetchData<T>(
-  url: string,
-  options?: RequestInit
-): Promise<ApiResponse<T>> {
+  )
+}`,
+  'api-fetch': `async function fetchData(url) {
   try {
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(\`HTTP错误: \${response.status}\`);
-    }
-
-    const data = await response.json();
-    return {
-      data,
-      status: response.status,
-    };
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('Network error')
+    const data = await response.json()
+    return data
   } catch (error) {
-    console.error('API请求失败:', error);
-    throw error;
+    console.error('Error:', error)
+    throw error
   }
 }
 
 // 使用示例
-// const result = await fetchData<User>('/api/users');
-// console.log(result.data);`
-  },
-  {
-    id: 'debounce',
-    title: '防抖函数',
-    description: '一个实用的防抖工具函数',
-    language: 'typescript',
-    code: `function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+fetchData('https://api.example.com/data')
+  .then(data => console.log(data))`,
+  'express-server': `const express = require('express')
+const app = express()
+const PORT = 3000
 
-  return (...args: Parameters<T>) => {
-    if (timeout) {
-      clearTimeout(timeout);
+app.use(express.json())
+
+app.get('/', (req, res) => {
+  res.json({ message: 'Hello World!' })
+})
+
+app.listen(PORT, () => {
+  console.log(\`Server running on port \${PORT}\`)
+})`,
+  'css-flexbox': `.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.item {
+  flex: 1;
+  padding: 1rem;
+  background: #f0f0f0;
+  border-radius: 8px;
+}`,
+  'debounce': `function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
     }
-
-    timeout = setTimeout(() => {
-      func(...args);
-    }, wait);
-  };
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
 }
 
 // 使用示例
-// const handleSearch = debounce((query) => {
-//   console.log('搜索:', query);
-// }, 300);`
-  },
-  {
-    id: 'local-storage',
-    title: 'LocalStorage工具',
-    description: '类型安全的LocalStorage操作',
-    language: 'typescript',
-    code: `const Storage = {
-  get: <T>(key: string, defaultValue?: T): T | null => {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue ?? null;
-    } catch {
-      return defaultValue ?? null;
-    }
-  },
-
-  set: (key: string, value: any): void => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.error('存储失败:', error);
-    }
-  },
-
-  remove: (key: string): void => {
-    localStorage.removeItem(key);
-  },
-
-  clear: (): void => {
-    localStorage.clear();
-  },
-};
-
-// 使用示例
-// Storage.set('theme', 'dark');
-// const theme = Storage.get<string>('theme', 'light');`
-  },
-  {
-    id: 'form-validation',
-    title: '表单验证',
-    description: '简单的表单验证工具',
-    language: 'typescript',
-    code: `interface ValidationRule {
-  required?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
-  message?: string;
+const handleSearch = debounce((query) => {
+  console.log('Searching:', query)
+}, 300)`,
+  'async-await': `async function processItems(items) {
+  const results = []
+  for (const item of items) {
+    const result = await processItem(item)
+    results.push(result)
+  }
+  return results
 }
 
-interface ValidationErrors {
-  [field: string]: string[];
+async function processItem(item) {
+  // 处理单个项目
+  return item
+}`
 }
 
-function validateForm(
-  data: Record<string, any>,
-  rules: Record<string, ValidationRule>
-): { valid: boolean; errors: ValidationErrors } {
-  const errors: ValidationErrors = {};
+export default function CodeGenerator() {
+  const [template, setTemplate] = useState('react-component')
+  const [customCode, setCustomCode] = useState('')
 
-  for (const [field, rule] of Object.entries(rules)) {
-    const value = data[field];
-    const fieldErrors: string[] = [];
-
-    if (rule.required && !value) {
-      fieldErrors.push(rule.message || \`\${field}是必填项\`);
-    }
-
-    if (rule.minLength && value && value.length < rule.minLength) {
-      fieldErrors.push(\`最小长度为\${rule.minLength}\`);
-    }
-
-    if (rule.maxLength && value && value.length > rule.maxLength) {
-      fieldErrors.push(\`最大长度为\${rule.maxLength}\`);
-    }
-
-    if (rule.pattern && value && !rule.pattern.test(value)) {
-      fieldErrors.push('格式不正确');
-    }
-
-    if (fieldErrors.length > 0) {
-      errors[field] = fieldErrors;
-    }
+  const copyToClipboard = () => {
+    const code = template === 'custom' ? customCode : templates[template]
+    navigator.clipboard.writeText(code)
   }
 
-  return {
-    valid: Object.keys(errors).length === 0,
-    errors,
-  };
-}
-
-// 使用示例
-// const { valid, errors } = validateForm(
-//   { email: '', password: '123' },
-//   {
-//     email: { required: true, pattern: /^[^@]+@[^@]+$/ },
-//     password: { required: true, minLength: 6 },
-//   }
-// );`
+  const downloadCode = () => {
+    const code = template === 'custom' ? customCode : templates[template]
+    const blob = new Blob([code], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = template === 'custom' ? 'code.txt' : `${template}.txt`
+    a.click()
   }
-];
-
-const CodeGenerator: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<CodeSnippet>(TEMPLATES[0]);
-  const [customCode, setCustomCode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [activeTab, setActiveTab] = useState<'template' | 'custom'>('template');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const addNotification = useStore(s => s.addNotification);
-
-  const copyToClipboard = useCallback((code: string) => {
-    navigator.clipboard.writeText(code).then(() => {
-      addNotification({
-        title: '已复制',
-        message: '代码已复制到剪贴板',
-        type: 'success',
-      });
-    }).catch(() => {
-      addNotification({
-        title: '复制失败',
-        message: '请手动复制',
-        type: 'error',
-      });
-    });
-  }, [addNotification]);
-
-  const generateCode = useCallback(() => {
-    if (activeTab === 'template') {
-      setGeneratedCode(selectedTemplate.code);
-    } else {
-      setGeneratedCode(customCode);
-    }
-  }, [activeTab, selectedTemplate, customCode]);
-
-  const selectTemplate = useCallback((template: CodeSnippet) => {
-    setSelectedTemplate(template);
-  }, []);
-
-  useEffect(() => {
-    generateCode();
-  }, [selectedTemplate, generateCode]);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      padding: '16px',
-      background: 'var(--window-bg)',
-      color: 'var(--text-primary)',
-    }}>
-      <style>{`
-        .code-generator-container {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          height: 100%;
-        }
-        .tabs {
-          display: flex;
-          gap: 8px;
-          border-bottom: 1px solid var(--window-border);
-          padding-bottom: 8px;
-        }
-        .tab-btn {
-          padding: 8px 16px;
-          border: none;
-          background: transparent;
-          color: var(--text-secondary);
-          cursor: pointer;
-          border-radius: 4px;
-        }
-        .tab-btn.active {
-          background: var(--accent);
-          color: white;
-        }
-        .tab-btn:hover:not(.active) {
-          background: var(--hover-bg);
-        }
-        .templates-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 12px;
-          overflow-y: auto;
-        }
-        .template-card {
-          padding: 16px;
-          border: 1px solid var(--window-border);
-          border-radius: 8px;
-          cursor: pointer;
-          background: var(--secondary-bg);
-          transition: all 0.2s ease;
-        }
-        .template-card:hover {
-          border-color: var(--accent);
-          transform: translateY(-2px);
-        }
-        .template-card.selected {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-        }
-        .template-title {
-          font-weight: 600;
-          font-size: 14px;
-          margin-bottom: 4px;
-        }
-        .template-desc {
-          font-size: 12px;
-          color: var(--text-secondary);
-        }
-        .template-lang {
-          display: inline-block;
-          margin-top: 8px;
-          padding: 2px 8px;
-          background: var(--hover-bg);
-          border-radius: 4px;
-          font-size: 11px;
-          color: var(--text-secondary);
-        }
-        .code-output-section {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .code-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .code-title {
-          font-weight: 600;
-          font-size: 14px;
-        }
-        .copy-btn {
-          padding: 8px 16px;
-          background: var(--accent);
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .copy-btn:hover {
-          opacity: 0.9;
-        }
-        .code-display {
-          flex: 1;
-          background: #1e1e1e;
-          border: 1px solid var(--window-border);
-          border-radius: 8px;
-          overflow: auto;
-        }
-        .code-textarea {
-          width: 100%;
-          height: 100%;
-          min-height: 300px;
-          padding: 16px;
-          font-family: 'Monaco', 'Menlo', monospace;
-          font-size: 13px;
-          line-height: 1.5;
-          background: transparent;
-          color: #d4d4d4;
-          border: none;
-          outline: none;
-          resize: none;
-        }
-        .custom-section {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          height: 100%;
-        }
-        .custom-input {
-          flex: 1;
-        }
-      `}</style>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e2e', color: '#cdd6f4' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #313244', background: '#181825' }}>
+        <h1 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 700 }}>⚡ 代码生成器</h1>
+        <p style={{ margin: 0, fontSize: '12px', color: '#a6adc8' }}>快速生成常用代码模板</p>
+      </div>
 
-      <div className="code-generator-container">
-        <div className="tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'template' ? 'active' : ''}`}
-            onClick={() => setActiveTab('template')}
-          >
-            📦 模板
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'custom' ? 'active' : ''}`}
-            onClick={() => setActiveTab('custom')}
-          >
-            ✏️ 自定义
-          </button>
-        </div>
-
-        {activeTab === 'template' && (
-          <div className="templates-grid">
-            {TEMPLATES.map(template => (
-              <div 
-                key={template.id}
-                className={`template-card ${selectedTemplate.id === template.id ? 'selected' : ''}`}
-                onClick={() => selectTemplate(template)}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ width: '250px', background: '#181825', borderRight: '1px solid #313244', padding: '16px', overflowY: 'auto' }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: '14px', fontWeight: 600, color: '#a6adc8' }}>模板</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {Object.keys(templates).map((key) => (
+              <button
+                key={key}
+                onClick={() => setTemplate(key)}
+                style={{
+                  padding: '12px',
+                  background: template === key ? 'linear-gradient(135deg, #313244 0%, #45475a 100%)' : '#313244',
+                  border: template === key ? '1px solid #89b4fa' : '1px solid #45475a',
+                  borderRadius: '10px',
+                  color: '#cdd6f4',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
               >
-                <div className="template-title">{template.title}</div>
-                <div className="template-desc">{template.description}</div>
-                <span className="template-lang">{template.language}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'custom' && (
-          <div className="custom-section">
-            <textarea
-              ref={textareaRef}
-              className="code-textarea custom-input"
-              placeholder="输入你的自定义代码需求..."
-              value={customCode}
-              onChange={(e) => setCustomCode(e.target.value)}
-            />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="copy-btn" onClick={generateCode}>
-                🚀 生成代码
+                {key.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')}
               </button>
-            </div>
-          </div>
-        )}
-
-        <div className="code-output-section">
-          <div className="code-header">
-            <span className="code-title">
-              生成的代码 {activeTab === 'template' && `- ${selectedTemplate.title}`}
-            </span>
-            <button 
-              className="copy-btn"
-              onClick={() => copyToClipboard(generatedCode || selectedTemplate.code)}
+            ))}
+            <button
+              onClick={() => setTemplate('custom')}
+              style={{
+                padding: '12px',
+                background: template === 'custom' ? 'linear-gradient(135deg, #313244 0%, #45475a 100%)' : '#313244',
+                border: template === 'custom' ? '1px solid #89b4fa' : '1px solid #45475a',
+                borderRadius: '10px',
+                color: '#cdd6f4',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '13px',
+              }}
             >
-              📋 复制代码
+              自定义
             </button>
           </div>
-          <div className="code-display">
-            <pre style={{ margin: 0, padding: '16px', fontFamily: 'Monaco, Menlo, monospace', fontSize: '13px' }}>
-              <code>{activeTab === 'template' ? selectedTemplate.code : generatedCode}</code>
-            </pre>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid #313244', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <button onClick={copyToClipboard} style={{ padding: '8px 16px', background: '#45475a', border: 'none', borderRadius: '8px', color: '#cdd6f4', cursor: 'pointer', fontSize: '13px' }}>
+              📋 复制
+            </button>
+            <button onClick={downloadCode} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%)', border: 'none', borderRadius: '8px', color: '#1e1e2e', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}>
+              💾 下载
+            </button>
+          </div>
+
+          <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+            {template === 'custom' ? (
+              <textarea
+                value={customCode}
+                onChange={(e) => setCustomCode(e.target.value)}
+                placeholder="在此输入您的自定义代码..."
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  background: '#181825',
+                  border: '1px solid #313244',
+                  borderRadius: '10px',
+                  padding: '16px',
+                  color: '#cdd6f4',
+                  fontFamily: 'monospace',
+                  fontSize: '14px',
+                  resize: 'none',
+                }}
+              />
+            ) : (
+              <pre style={{
+                background: '#181825',
+                borderRadius: '10px',
+                padding: '20px',
+                margin: 0,
+                overflow: 'auto',
+                fontSize: '14px',
+                lineHeight: 1.6,
+                color: '#a6e3a1'
+              }}>
+                <code>{templates[template]}</code>
+              </pre>
+            )}
           </div>
         </div>
       </div>
     </div>
-  );
-};
-
-export default CodeGenerator;
+  )
+}

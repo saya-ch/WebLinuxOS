@@ -1,166 +1,158 @@
-import React, { useState } from 'react'
-import { Copy, FileText, Image, CheckCircle2, Upload } from 'lucide-react'
+import { useState } from 'react'
 
-const Base64Tools: React.FC = () => {
+export default function Base64Tools() {
   const [inputText, setInputText] = useState('')
   const [outputText, setOutputText] = useState('')
-  const [copied, setCopied] = useState(false)
   const [mode, setMode] = useState<'encode' | 'decode'>('encode')
+  const [fileInput, setFileInput] = useState<File | null>(null)
 
-  const encode = () => {
+  const encodeText = () => {
     try {
       const encoded = btoa(unescape(encodeURIComponent(inputText)))
       setOutputText(encoded)
-    } catch {
+    } catch (e) {
       setOutputText('编码错误')
     }
   }
 
-  const decode = () => {
+  const decodeText = () => {
     try {
       const decoded = decodeURIComponent(escape(atob(inputText)))
       setOutputText(decoded)
-    } catch {
+    } catch (e) {
       setOutputText('解码错误: 无效的 Base64 字符串')
     }
   }
 
-  const encodeFile = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = reader.result as string
-      setOutputText(result)
-      setInputText(file.name)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setFileInput(file)
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const result = ev.target?.result as string
+        setOutputText(result.split(',')[1])
+        setInputText(file.name)
+      }
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
   }
 
-  const copyOutput = async () => {
-    try {
-      await navigator.clipboard.writeText(outputText)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (e) {
-      console.error('复制失败:', e)
-    }
+  const downloadOutput = () => {
+    const blob = new Blob([outputText], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = mode === 'encode' ? 'encoded.txt' : 'decoded.txt'
+    a.click()
+  }
+
+  const copyOutput = () => {
+    navigator.clipboard.writeText(outputText)
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 text-gray-100 p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2 text-blue-300">Base64 工具箱</h2>
-        <p className="text-gray-400 text-sm">文本和文件的 Base64 编码/解码</p>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e2e', color: '#cdd6f4' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #313244', background: '#181825' }}>
+        <h1 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 700 }}>🔐 Base64 工具箱</h1>
+        <p style={{ margin: 0, fontSize: '12px', color: '#a6adc8' }}>Base64 编码/解码，支持文本和文件</p>
       </div>
 
-      <div className="flex space-x-2 mb-4 border-b border-gray-700 pb-2">
+      <div style={{ display: 'flex', gap: '8px', padding: '16px 20px', borderBottom: '1px solid #313244' }}>
         <button
           onClick={() => setMode('encode')}
-          className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-            mode === 'encode'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-          }`}
+          style={{
+            flex: 1,
+            padding: '10px',
+            border: 'none',
+            borderRadius: '8px',
+            background: mode === 'encode' ? 'linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%)' : '#313244',
+            color: mode === 'encode' ? '#1e1e2e' : '#cdd6f4',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: '13px',
+          }}
         >
-          编码
+          编码 (Encode)
         </button>
         <button
           onClick={() => setMode('decode')}
-          className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-            mode === 'decode'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-          }`}
+          style={{
+            flex: 1,
+            padding: '10px',
+            border: 'none',
+            borderRadius: '8px',
+            background: mode === 'decode' ? 'linear-gradient(135deg, #a6e3a1 0%, #8bd5ca 100%)' : '#313244',
+            color: mode === 'decode' ? '#1e1e2e' : '#cdd6f4',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: '13px',
+          }}
         >
-          解码
+          解码 (Decode)
         </button>
       </div>
 
-      <div className="space-y-4 flex-1">
+      <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflow: 'auto' }}>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            <FileText className="inline w-4 h-4 mr-2" />
-            {mode === 'encode' ? '输入文本' : '输入 Base64'}
-          </label>
+          <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: '#a6adc8' }}>输入</div>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={mode === 'encode' ? '输入要编码的文本...' : '输入要解码的 Base64 字符串...'}
-            className="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg p-3 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            style={{
+              width: '100%',
+              minHeight: '140px',
+              background: '#313244',
+              border: '1px solid #45475a',
+              borderRadius: '10px',
+              padding: '14px',
+              color: '#cdd6f4',
+              fontSize: '13px',
+              resize: 'vertical',
+            }}
           />
+          <div style={{ marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <label style={{ padding: '8px 16px', background: '#45475a', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>
+              📁 选择文件
+              <input type="file" onChange={handleFileChange} style={{ display: 'none' }} />
+            </label>
+            {fileInput && <span style={{ fontSize: '12px', color: '#a6adc8' }}>{fileInput.name}</span>}
+          </div>
         </div>
 
-        {mode === 'encode' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Upload className="inline w-4 h-4 mr-2" />
-              或上传文件进行编码
-            </label>
-            <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer">
-              <input
-                type="file"
-                className="hidden"
-                id="file-upload"
-                onChange={(e) => e.target.files?.[0] && encodeFile(e.target.files[0])}
-              />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer text-gray-400 hover:text-blue-300"
-              >
-                点击或拖放文件到此处
-              </label>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={mode === 'encode' ? encodeText : decodeText} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%)', border: 'none', borderRadius: '10px', color: '#1e1e2e', fontWeight: 700, cursor: 'pointer', fontSize: '14px' }}>
+            {mode === 'encode' ? '➡️ 编码' : '⬅️ 解码'}
+          </button>
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#a6adc8' }}>输出</div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button onClick={copyOutput} style={{ padding: '6px 10px', background: '#313244', border: 'none', borderRadius: '6px', color: '#cdd6f4', cursor: 'pointer', fontSize: '11px' }}>复制</button>
+              <button onClick={downloadOutput} style={{ padding: '6px 10px', background: '#313244', border: 'none', borderRadius: '6px', color: '#cdd6f4', cursor: 'pointer', fontSize: '11px' }}>下载</button>
             </div>
           </div>
-        )}
-
-        <button
-          onClick={mode === 'encode' ? encode : decode}
-          disabled={!inputText.trim() && !outputText}
-          className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-all shadow-lg hover:shadow-blue-500/25"
-        >
-          {mode === 'encode' ? '编码为 Base64' : '解码 Base64'}
-        </button>
-
-        {outputText && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-300">
-                <Image className="inline w-4 h-4 mr-2" />
-                结果
-              </label>
-              <button
-                onClick={copyOutput}
-                className="flex items-center space-x-1 text-xs text-gray-400 hover:text-blue-300 transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
-                    <span>已复制!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>复制</span>
-                  </>
-                )}
-              </button>
-            </div>
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 overflow-auto max-h-40">
-              <pre className="text-sm text-gray-200 whitespace-pre-wrap break-all">{outputText}</pre>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 pt-4 border-t border-gray-700">
-        <h3 className="text-sm font-medium text-gray-400 mb-2">使用说明</h3>
-        <ul className="text-xs text-gray-500 space-y-1">
-          <li>• 编码: 将文本转换为 Base64 字符串</li>
-          <li>• 解码: 将 Base64 字符串转换为原始文本</li>
-          <li>• 文件: 可上传任意文件获取其 Base64 编码</li>
-        </ul>
+          <textarea
+            value={outputText}
+            readOnly
+            placeholder="结果将显示在这里..."
+            style={{
+              width: '100%',
+              minHeight: '140px',
+              background: '#313244',
+              border: '1px solid #45475a',
+              borderRadius: '10px',
+              padding: '14px',
+              color: '#a6e3a1',
+              fontSize: '13px',
+              resize: 'vertical',
+            }}
+          />
+        </div>
       </div>
     </div>
   )
 }
-
-export default Base64Tools

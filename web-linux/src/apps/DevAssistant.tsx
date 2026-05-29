@@ -1,402 +1,157 @@
-import { useState, useCallback, memo } from 'react'
+import { useState } from 'react'
 
-const DevAssistant = memo(function DevAssistant() {
-  const [activeTab, setActiveTab] = useState('generator')
+export default function DevAssistant() {
+  const [activeTab, setActiveTab] = useState('welcome')
   const [input, setInput] = useState('')
-  const [output, setOutput] = useState('')
+  const [output, setOutput] = useState<string[]>([])
 
-  const generateLoremIpsum = useCallback(() => {
-    const paragraphs = ['Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 
-      'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      'Ut enim ad minim veniam, quis nostrud exercitation ullamco.',
-      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
-      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.']
-    setOutput(paragraphs.join('\n\n'))
-  }, [])
+  const tools = [
+    { id: 'code-gen', name: '代码生成', icon: '💻', desc: '快速生成常用代码片段' },
+    { id: 'regex-test', name: '正则测试', icon: '🔍', desc: '测试和调试正则表达式' },
+    { id: 'color-pick', name: '颜色选择', icon: '🎨', desc: '选择和转换颜色格式' },
+    { id: 'json-format', name: 'JSON 格式化', icon: '📋', desc: '格式化和验证 JSON 数据' },
+  ]
 
-  const generateUUID = useCallback(() => {
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = Math.random() * 16 | 0
-      const v = c === 'x' ? r : (r & 0x3 | 0x8)
-      return v.toString(16)
-    })
-    setOutput(uuid)
-  }, [])
+  const addOutput = (text: string) => {
+    setOutput(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${text}`])
+  }
 
-  const base64Encode = useCallback(() => {
-    try {
-      setOutput(btoa(unescape(encodeURIComponent(input))))
-    } catch (e) {
-      setOutput('编码失败')
-    }
-  }, [input])
-
-  const base64Decode = useCallback(() => {
-    try {
-      setOutput(decodeURIComponent(escape(atob(input))))
-    } catch (e) {
-      setOutput('解码失败')
-    }
-  }, [input])
-
-  const formatJSON = useCallback(() => {
-    try {
-      setOutput(JSON.stringify(JSON.parse(input), null, 2))
-    } catch (e) {
-      setOutput('JSON 格式错误')
-    }
-  }, [input])
-
-  const minifyJSON = useCallback(() => {
-    try {
-      setOutput(JSON.stringify(JSON.parse(input)))
-    } catch (e) {
-      setOutput('JSON 格式错误')
-    }
-  }, [input])
-
-  const calculateHash = useCallback(() => {
-    let hash = 0
-    if (input.length === 0) {
-      setOutput('0')
-      return
-    }
-    for (let i = 0; i < input.length; i++) {
-      const char = input.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
-      hash = hash & hash
-    }
-    setOutput(hash.toString())
-  }, [input])
-
-  const copyOutput = useCallback(() => {
-    navigator.clipboard.writeText(output).then(() => {})
-  }, [output])
-
-  const clearAll = useCallback(() => {
+  const handleCommand = (cmd: string) => {
     setInput('')
-    setOutput('')
-  }, [])
+    addOutput(`> ${cmd}`)
+    switch (cmd.trim()) {
+      case 'help':
+        addOutput('可用命令: help, clear, about, tips')
+        break
+      case 'clear':
+        setOutput([])
+        break
+      case 'about':
+        addOutput('开发助手 v1.0 - 提升您的开发效率')
+        break
+      case 'tips':
+        addOutput('提示: 使用 Ctrl+P 打开命令面板')
+        break
+      default:
+        addOutput('未知命令，输入 help 查看帮助')
+    }
+  }
+
+  const tabs = [
+    { id: 'welcome', name: '欢迎' },
+    { id: 'tools', name: '工具集' },
+    { id: 'console', name: '控制台' },
+    { id: 'snippets', name: '代码片段' },
+  ]
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'linear-gradient(180deg, rgba(15, 15, 25, 0.95) 0%, rgba(10, 10, 20, 0.98) 100%)',
-      color: '#e8e8f4'
-    }}>
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid rgba(139, 92, 246, 0.2)',
-        background: 'rgba(139, 92, 246, 0.05)'
-      }}>
-        {[
-          { id: 'generator', name: '生成器', icon: '⚡' },
-          { id: 'converter', name: '转换器', icon: '🔄' },
-          { id: 'json', name: 'JSON', icon: '📄' },
-          { id: 'hash', name: '哈希', icon: '🔐' }
-        ].map(tab => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e2e', color: '#cdd6f4' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #313244', background: '#181825' }}>
+        <h1 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 700 }}>👨‍💻 开发助手</h1>
+        <p style={{ margin: 0, fontSize: '12px', color: '#a6adc8' }}>提升您的开发效率，一站式开发工具</p>
+      </div>
+
+      <div style={{ display: 'flex', borderBottom: '1px solid #313244', background: '#181825' }}>
+        {tabs.map(t => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
             style={{
-              padding: '12px 20px',
-              background: activeTab === tab.id ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
+              padding: '10px 16px',
               border: 'none',
-              color: activeTab === tab.id ? '#e8e8f4' : '#a0a0c8',
+              background: activeTab === t.id ? '#313244' : 'transparent',
+              color: activeTab === t.id ? '#89b4fa' : '#a6adc8',
               cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: activeTab === tab.id ? '600' : '400',
-              borderBottom: activeTab === tab.id ? '2px solid #8b5cf6' : '2px solid transparent'
+              fontSize: '12px',
+              fontWeight: activeTab === t.id ? 600 : 400,
+              borderBottom: activeTab === t.id ? '2px solid #89b4fa' : '2px solid transparent',
+              transition: 'all 0.2s ease',
             }}
           >
-            {tab.icon} {tab.name}
+            {t.name}
           </button>
         ))}
       </div>
 
-      <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-        {activeTab === 'generator' && (
+      <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+        {activeTab === 'welcome' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontSize: '16px', margin: 0, color: '#e8e8f4' }}>⚡ 文本生成器</h3>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button
-                onClick={generateLoremIpsum}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  border: '1px solid rgba(139, 92, 246, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                📝 生成 Lorem Ipsum
-              </button>
-              <button
-                onClick={generateUUID}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(6, 182, 212, 0.2)',
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                🎲 生成 UUID
-              </button>
-              <button
-                onClick={() => setOutput(`#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`)}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  border: '1px solid rgba(16, 185, 129, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                🎨 随机颜色
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'converter' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontSize: '16px', margin: 0, color: '#e8e8f4' }}>🔄 编码转换器</h3>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="输入要转换的文本..."
-              style={{
-                width: '100%',
-                minHeight: '100px',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: '#e8e8f4',
-                fontFamily: 'monospace',
-                fontSize: '13px'
-              }}
-            />
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button
-                onClick={base64Encode}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  border: '1px solid rgba(139, 92, 246, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                Base64 编码
-              </button>
-              <button
-                onClick={base64Decode}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(6, 182, 212, 0.2)',
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                Base64 解码
-              </button>
-              <button
-                onClick={() => setOutput(encodeURIComponent(input))}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  border: '1px solid rgba(16, 185, 129, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                URL 编码
-              </button>
-              <button
-                onClick={() => setOutput(decodeURIComponent(input))}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(245, 158, 11, 0.2)',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                URL 解码
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'json' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontSize: '16px', margin: 0, color: '#e8e8f4' }}>📄 JSON 工具</h3>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder='输入 JSON 数据...'
-              style={{
-                width: '100%',
-                minHeight: '100px',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: '#e8e8f4',
-                fontFamily: 'monospace',
-                fontSize: '13px'
-              }}
-            />
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button
-                onClick={formatJSON}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  border: '1px solid rgba(139, 92, 246, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                格式化
-              </button>
-              <button
-                onClick={minifyJSON}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(6, 182, 212, 0.2)',
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                压缩
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'hash' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontSize: '16px', margin: 0, color: '#e8e8f4' }}>🔐 哈希工具</h3>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder='输入要计算哈希的文本...'
-              style={{
-                width: '100%',
-                minHeight: '100px',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: '#e8e8f4',
-                fontFamily: 'monospace',
-                fontSize: '13px'
-              }}
-            />
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button
-                onClick={calculateHash}
-                style={{
-                  padding: '10px 20px',
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  border: '1px solid rgba(139, 92, 246, 0.4)',
-                  borderRadius: '8px',
-                  color: '#e8e8f4',
-                  cursor: 'pointer',
-                  fontSize: '13px'
-                }}
-              >
-                计算简单哈希
-              </button>
-            </div>
-          </div>
-        )}
-
-        {output && (
-          <div style={{ marginTop: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px'
-            }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#a0a0c8' }}>输出结果</span>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={copyOutput}
-                  style={{
-                    padding: '6px 12px',
-                    background: 'rgba(139, 92, 246, 0.2)',
-                    border: '1px solid rgba(139, 92, 246, 0.4)',
-                    borderRadius: '6px',
-                    color: '#e8e8f4',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  📋 复制
-                </button>
-                <button
-                  onClick={clearAll}
-                  style={{
-                    padding: '6px 12px',
-                    background: 'rgba(239, 68, 68, 0.2)',
-                    border: '1px solid rgba(239, 68, 68, 0.4)',
-                    borderRadius: '6px',
-                    color: '#e8e8f4',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  清空
-                </button>
+            <div style={{ background: 'linear-gradient(135deg, #313244 0%, #45475a 100%)', borderRadius: '12px', padding: '20px' }}>
+              <h2 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600 }}>欢迎使用开发助手!</h2>
+              <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#a6adc8' }}>选择一个工具开始您的开发之旅，或者查看控制台快速执行命令。</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
+                {tools.map(t => (
+                  <div key={t.id} style={{ background: '#1e1e2e', borderRadius: '10px', padding: '14px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseOut={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
+                    <div style={{ fontSize: '24px', marginBottom: '6px' }}>{t.icon}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>{t.name}</div>
+                    <div style={{ fontSize: '11px', color: '#a6adc8' }}>{t.desc}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <pre style={{
-              flex: 1,
-              padding: '16px',
-              background: 'rgba(0, 0, 0, 0.3)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              overflow: 'auto',
-              margin: 0,
-              fontSize: '13px',
-              fontFamily: 'monospace',
-              color: '#a0a0c8',
-              whiteSpace: 'pre-wrap'
-            }}>
-              {output}
-            </pre>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              {[
+                { title: '快捷键', value: 'Ctrl+P - 命令面板', color: '#89b4fa' },
+                { title: '快速启动', value: 'Ctrl+Shift+L - 应用启动', color: '#a6e3a1' },
+                { title: '终端', value: 'Super+T - 打开终端', color: '#f5c2e7' },
+                { title: '代码编辑器', value: 'Super+G - 编辑代码', color: '#f9e2af' },
+              ].map((item, i) => (
+                <div key={i} style={{ background: '#313244', borderRadius: '10px', padding: '14px' }}>
+                  <div style={{ fontSize: '12px', color: '#a6adc8', marginBottom: '4px' }}>{item.title}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: item.color }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'tools' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {tools.map(t => (
+              <div key={t.id} style={{ background: '#313244', borderRadius: '10px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ fontSize: '28px' }}>{t.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 600 }}>{t.name}</div>
+                  <div style={{ fontSize: '12px', color: '#a6adc8' }}>{t.desc}</div>
+                </div>
+                <button style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%)', border: 'none', borderRadius: '8px', color: '#1e1e2e', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}>打开</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'console' && (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
+            <div style={{ flex: 1, background: '#181825', borderRadius: '10px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', overflow: 'auto' }}>
+              {output.length === 0 ? (
+                <div style={{ color: '#6c7086', fontStyle: 'italic' }}>控制台就绪，输入命令开始...</div>
+              ) : (
+                output.map((line, i) => <div key={i}>{line}</div>)
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCommand(input)} style={{ flex: 1, padding: '10px 14px', background: '#313244', border: '1px solid #45475a', borderRadius: '8px', color: '#cdd6f4', fontSize: '13px' }} placeholder="输入命令 (help)..." />
+              <button onClick={() => handleCommand(input)} style={{ padding: '10px 20px', background: '#89b4fa', border: 'none', borderRadius: '8px', color: '#1e1e2e', fontWeight: 600, cursor: 'pointer' }}>执行</button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'snippets' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[
+              { title: 'React 组件', code: 'function Component() {\n  return <div>Hello World</div>;\n}' },
+              { title: 'CSS Flexbox', code: '.flex {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}' },
+              { title: 'Fetch API', code: 'fetch("/api/data")\n  .then(r => r.json())\n  .then(d => console.log(d));' },
+            ].map((s, i) => (
+              <div key={i} style={{ background: '#313244', borderRadius: '10px', padding: '14px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '10px' }}>{s.title}</div>
+                <pre style={{ background: '#181825', padding: '12px', borderRadius: '8px', fontSize: '11px', overflow: 'auto', margin: 0 }}><code>{s.code}</code></pre>
+              </div>
+            ))}
           </div>
         )}
       </div>
     </div>
   )
-})
-
-export default DevAssistant
+}
