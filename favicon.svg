@@ -1,77 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f0f23;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#1a1a40;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2d1b4e;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="penguin" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e1e1e;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+    <linearGradient id="tux" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:1" />
-    </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#8b5cf6" flood-opacity="0.4"/>
-    </filter>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0" />
+    </radialGradient>
   </defs>
   
   <!-- 背景 -->
-  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <rect width="128" height="128" rx="32" fill="url(#bg)"/>
   
-  <!-- 装饰性圆环 -->
-  <circle cx="64" cy="64" r="52" fill="none" stroke="url(#accent)" stroke-width="2" opacity="0.3"/>
-  <circle cx="64" cy="64" r="46" fill="none" stroke="url(#accent)" stroke-width="1" opacity="0.15"/>
+  <!-- 发光效果 -->
+  <circle cx="64" cy="64" r="48" fill="url(#glow)"/>
   
-  <!-- 企鹅身体 - 更现代的设计 -->
-  <g filter="url(#shadow)">
+  <!-- 极简 Tux 头像 -->
+  <g>
     <!-- 头部 -->
-    <ellipse cx="64" cy="48" rx="28" ry="26" fill="url(#penguin)"/>
+    <ellipse cx="64" cy="58" rx="32" ry="30" fill="url(#tux)"/>
     
-    <!-- 身体 -->
-    <path d="M38 58 Q30 70 32 90 Q36 108 64 108 Q92 108 96 90 Q98 70 90 58 L38 58 Z" fill="url(#penguin)"/>
-    
-    <!-- 白色肚子 -->
-    <ellipse cx="64" cy="78" rx="20" ry="24" fill="#ffffff"/>
+    <!-- 白色面部 -->
+    <ellipse cx="64" cy="62" rx="22" ry="18" fill="#ffffff"/>
     
     <!-- 眼睛 -->
-    <ellipse cx="52" cy="44" rx="6" ry="7" fill="#ffffff"/>
-    <ellipse cx="76" cy="44" rx="6" ry="7" fill="#ffffff"/>
-    <circle cx="53" cy="45" r="3" fill="#1e1e1e"/>
-    <circle cx="77" cy="45" r="3" fill="#1e1e1e"/>
-    <circle cx="54" cy="44" r="1" fill="#ffffff"/>
-    <circle cx="78" cy="44" r="1" fill="#ffffff"/>
+    <circle cx="52" cy="52" r="5" fill="#1a1a1a"/>
+    <circle cx="76" cy="52" r="5" fill="#1a1a1a"/>
+    <circle cx="53" cy="51" r="1.5" fill="#ffffff"/>
+    <circle cx="77" cy="51" r="1.5" fill="#ffffff"/>
     
     <!-- 嘴巴 -->
-    <path d="M56 54 L64 62 L72 54 Q64 58 56 54 Z" fill="#f59e0b"/>
-    
-    <!-- 翅膀 -->
-    <path d="M38 60 Q24 72 30 88 Q36 84 44 76 Q42 68 38 60 Z" fill="url(#penguin)"/>
-    <path d="M90 60 Q104 72 98 88 Q92 84 84 76 Q86 68 90 60 Z" fill="url(#penguin)"/>
+    <path d="M54 66 Q64 76 74 66 Q64 70 54 66 Z" fill="#f59e0b"/>
     
     <!-- 脚 -->
-    <path d="M50 106 Q44 114 48 118 Q54 118 56 112 Q54 108 50 106 Z" fill="#f59e0b"/>
-    <path d="M78 106 Q84 114 80 118 Q74 118 72 112 Q74 108 78 106 Z" fill="#f59e0b"/>
+    <path d="M44 84 L38 92 L46 92 L46 96 L54 96 L54 90 Z" fill="#f59e0b"/>
+    <path d="M84 84 L90 92 L82 92 L82 96 L74 96 L74 90 Z" fill="#f59e0b"/>
   </g>
-  
-  <!-- 装饰性光点 -->
-  <circle cx="64" cy="64" r="2" fill="url(#accent)" opacity="0.6">
-    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="40" cy="35" r="1.5" fill="url(#accent)" opacity="0.4">
-    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2.5s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="88" cy="38" r="1.5" fill="url(#accent)" opacity="0.4">
-    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="3s" repeatCount="indefinite"/>
-  </circle>
 </svg>
