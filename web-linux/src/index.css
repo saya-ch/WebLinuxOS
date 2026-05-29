@@ -9,7 +9,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
@@ -19,6 +19,10 @@ body {
 
 button, input, textarea {
   font-family: inherit;
+}
+
+code, pre, .terminal, .code-editor {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace;
 }
 
 * {
@@ -127,6 +131,11 @@ button, input, textarea {
   --glow-accent: 0 0 20px rgba(139, 124, 240, 0.3);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --success: #00d084;
+  --warning: #ffb400;
+  --error: #ff4757;
+  --info: #3498db;
 }
 
 :root.light {

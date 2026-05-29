@@ -89,6 +89,7 @@ export const WrenchIcon = Wrench
 export const CpuIcon = Cpu
 export const FileIcon = FileIconL
 export const AppIcon = AppWindow
+export const ChartIcon = Blocks
 
 export { ChevronRight, ChevronDown, Minus, Square, X, Plus, Volume2, VolumeX, Moon, Sun as SunIcon }
 
