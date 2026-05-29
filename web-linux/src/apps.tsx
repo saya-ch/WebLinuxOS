@@ -377,6 +377,7 @@ function RESTClientIcon() {
 }
 
 export const appRegistry: AppDefinition[] = [
+  { id: 'habit-tracker', name: '习惯追踪', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /><circle cx="12" cy="7" r="1" fill="currentColor" /><circle cx="8" cy="14.5" r="1" fill="currentColor" /><circle cx="16" cy="14.5" r="1" fill="currentColor" /></svg>, component: 'HabitTracker', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'code-sandbox', name: '代码沙盒', icon: <CodeSandboxIcon />, component: 'CodeSandbox', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'rest-client', name: 'REST 客户端', icon: <RESTClientIcon />, component: 'RESTClient', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'ai-chat-assistant', name: 'AI 聊天助手', icon: <AIChatAssistantIcon />, component: 'AIChatAssistant', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
