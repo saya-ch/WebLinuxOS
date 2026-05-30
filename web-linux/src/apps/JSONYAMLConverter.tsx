@@ -1,247 +1,468 @@
-import React, { useState } from 'react'
-import { Copy, FileJson, FileText, CheckCircle2, ArrowRightLeft } from 'lucide-react'
+import { useState } from 'react'
 
-const JSONYAMLConverter: React.FC = () => {
+type Direction = 'json-to-yaml' | 'yaml-to-json'
+
+export default function JSONYAMLConverter() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
-  const [copied, setCopied] = useState(false)
-  const [direction, setDirection] = useState<'json2yaml' | 'yaml2json'>('json2yaml')
-  const [error, setError] = useState<string | null>(null)
+  const [direction, setDirection] = useState<Direction>('json-to-yaml')
+  const [error, setError] = useState('')
+  const [copySuccess, setCopySuccess] = useState(false)
 
-  type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue }
+  // 简单的JSON/YAML转换函数，不依赖外部库
+  const jsonToYaml = (json: any, indent: number = 0): string => {
+    const spaces = '  '.repeat(indent)
+    let result = ''
 
-const jsonToYaml = (jsonStr: string): string => {
-    const obj = JSON.parse(jsonStr) as JSONValue
-    
-    const convert = (value: JSONValue, indent: number = 0): string => {
-      const spaces = '  '.repeat(indent)
-      
-      if (value === null) return 'null'
-      if (typeof value === 'boolean') return value.toString()
-      if (typeof value === 'number') return value.toString()
-      if (typeof value === 'string') {
-        if (value.includes('\n') || value.includes(':') || value.includes('#')) {
-          return `|-\n${spaces}  ` + value.split('\n').join(`\n${spaces}  `)
-        }
-        return `"${value.replace(/"/g, '\\"')}"`
-      }
-      if (Array.isArray(value)) {
-        if (value.length === 0) return '[]'
-        return '\n' + value.map(item => `${spaces}- ${convert(item, indent + 1)}`).join('\n')
-      }
-      if (typeof value === 'object') {
-        const keys = Object.keys(value)
-        if (keys.length === 0) return '{}'
-        return '\n' + keys.map(key => {
-          const val = value[key]
-          const convertedVal = convert(val, indent + 1)
-          if (typeof val === 'object' && val !== null) {
-            return `${spaces}${key}:${convertedVal}`
-          }
-          return `${spaces}${key}: ${convertedVal}`
-        }).join('\n')
-      }
-      return ''
+    if (json === null) {
+      return 'null'
     }
-    
-    return convert(obj)
+
+    if (typeof json === 'boolean') {
+      return json ? 'true' : 'false'
+    }
+
+    if (typeof json === 'number') {
+      return json.toString()
+    }
+
+    if (typeof json === 'string') {
+      // 检查是否需要引号
+      if (json.includes('\n') || json.includes(':') || json.includes('#') || 
+          json.includes('"') || json.includes("'") || json.trim() === '' ||
+          ['true', 'false', 'null', 'yes', 'no', 'on', 'off'].includes(json.toLowerCase())) {
+        return JSON.stringify(json)
+      }
+      return json
+    }
+
+    if (Array.isArray(json)) {
+      if (json.length === 0) return '[]'
+      result = json.map(item => {
+        const itemStr = jsonToYaml(item, indent + 1)
+        if (typeof item === 'object' && item !== null) {
+          return `${spaces}- ${itemStr}`
+        }
+        return `${spaces}- ${itemStr}`
+      }).join('\n')
+      return result
+    }
+
+    if (typeof json === 'object') {
+      const keys = Object.keys(json)
+      if (keys.length === 0) return '{}'
+      result = keys.map(key => {
+        const value = json[key]
+        const keyStr = key.includes(':') || key.includes('#') || key.includes(' ') || key.trim() === '' 
+          ? JSON.stringify(key) 
+          : key
+        const valueStr = jsonToYaml(value, indent + 1)
+        
+        if (typeof value === 'object' && value !== null) {
+          if (Array.isArray(value)) {
+            if (value.length === 0) {
+              return `${spaces}${keyStr}: []`
+            }
+            return `${spaces}${keyStr}:\n${valueStr}`
+          } else {
+            if (Object.keys(value).length === 0) {
+              return `${spaces}${keyStr}: {}`
+            }
+            return `${spaces}${keyStr}:\n${valueStr}`
+          }
+        }
+        return `${spaces}${keyStr}: ${valueStr}`
+      }).join('\n')
+      return result
+    }
+
+    return ''
   }
 
-  interface StackItem {
-    obj: Record<string, JSONValue> | JSONValue[]
-    indent: number
-  }
-  
-  const yamlToJson = (yamlStr: string): string => {
-    const lines = yamlStr.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'))
-    const result: Record<string, JSONValue> = {}
-    const stack: StackItem[] = [{ obj: result, indent: -1 }]
-    
+  // 简单的YAML到JSON解析器（基础功能）
+  const yamlToJson = (yaml: string): any => {
+    const lines = yaml.trim().split('\n')
+    if (lines.length === 0) return {}
+
+    // 先尝试直接用JSON.parse（因为YAML是JSON的超集）
+    try {
+      return JSON.parse(yaml)
+    } catch {}
+
+    // 简单的YAML解析（处理基本情况）
+    const parseValue = (value: string): any => {
+      value = value.trim()
+      if (value === 'true') return true
+      if (value === 'false') return false
+      if (value === 'null') return null
+      if (value === '[]') return []
+      if (value === '{}') return {}
+      
+      // 数字
+      if (/^-?\d+(\.\d+)?$/.test(value)) {
+        return parseFloat(value)
+      }
+      
+      // 字符串
+      if ((value.startsWith('"') && value.endsWith('"')) || 
+          (value.startsWith("'") && value.endsWith("'"))) {
+        try {
+          return JSON.parse(value)
+        } catch {
+          return value.slice(1, -1)
+        }
+      }
+      
+      return value
+    }
+
+    // 简单的对象构建
+    const result: any = {}
+    let currentObject: any = result
+    let currentIndent = 0
+    const objectStack: { indent: number; obj: any; key: string }[] = []
+
     for (const line of lines) {
+      if (!line.trim() || line.trim().startsWith('#')) continue
+
       const indent = line.search(/\S/)
       const content = line.trim()
-      
-      if (!content) continue
-      
-      while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
-        stack.pop()
-      }
-      
-      const current = stack[stack.length - 1]
-      
-      if (content.startsWith('- ')) {
-        const value = content.slice(2).trim()
-        if (!Array.isArray(current.obj)) {
-          const parent = stack[stack.length - 2]
-          const parentObj = parent.obj as Record<string, JSONValue>
-          const lastKey = Object.keys(parentObj).pop()!
-          parentObj[lastKey] = []
-          current.obj = parentObj[lastKey] as JSONValue[]
-        }
-        current.obj.push(parseValue(value))
-      } else if (content.includes(':')) {
-        const colonIndex = content.indexOf(':')
-        const key = content.slice(0, colonIndex).trim()
-        const value = content.slice(colonIndex + 1).trim()
-        
-        const newObj: Record<string, JSONValue> = {}
-        if (Array.isArray(current.obj)) {
-          const arrValue: Record<string, JSONValue> = value ? { _value: parseValue(value) } : newObj
-          current.obj.push(arrValue)
-          if (!value) {
-            stack.push({ obj: newObj, indent })
-          }
-        } else {
-          const currentObj = current.obj as Record<string, JSONValue>
-          currentObj[key] = value ? parseValue(value) : newObj
-          if (!value) {
-            stack.push({ obj: newObj, indent })
-          }
-        }
-      }
-    }
-    
-    return JSON.stringify(result, null, 2)
-  }
 
-  const parseValue = (value: string): JSONValue => {
-    if (value === 'true') return true
-    if (value === 'false') return false
-    if (value === 'null') return null
-    if (!isNaN(Number(value))) return Number(value)
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-      return value.slice(1, -1)
+      // 处理数组项
+      if (content.startsWith('- ')) {
+        // 这种简单解析器主要处理基本对象，暂不处理复杂数组
+        continue
+      }
+
+      // 处理键值对
+      const colonIndex = content.indexOf(':')
+      if (colonIndex !== -1) {
+        const key = content.slice(0, colonIndex).trim()
+        let value = content.slice(colonIndex + 1).trim()
+
+        // 处理缩进和嵌套
+        if (indent < currentIndent) {
+          // 返回上一级
+          while (objectStack.length > 0 && objectStack[objectStack.length - 1].indent >= indent) {
+            const popped = objectStack.pop()
+            if (popped) {
+              currentObject = objectStack.length > 0 ? objectStack[objectStack.length - 1].obj : result
+            }
+          }
+        }
+
+        if (value === '' || value === '{}' || value === '[]') {
+          // 嵌套对象开始
+          const newObj = value === '[]' ? [] : {}
+          currentObject[key] = newObj
+          objectStack.push({ indent, obj: currentObject, key })
+          currentObject = newObj
+          currentIndent = indent
+        } else {
+          // 简单值
+          currentObject[key] = parseValue(value)
+        }
+      }
     }
-    return value
+
+    return result
   }
 
   const convert = () => {
+    setError('')
+    setCopySuccess(false)
+
+    if (!input.trim()) {
+      setOutput('')
+      return
+    }
+
     try {
-      setError(null)
-      if (direction === 'json2yaml') {
-        const yaml = jsonToYaml(input)
+      if (direction === 'json-to-yaml') {
+        const parsed = JSON.parse(input)
+        const yaml = jsonToYaml(parsed)
         setOutput(yaml)
       } else {
         const json = yamlToJson(input)
-        setOutput(json)
+        setOutput(JSON.stringify(json, null, 2))
       }
-    } catch {
-      setError(direction === 'json2yaml' ? 'JSON 解析错误' : 'YAML 解析错误')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '转换失败，请检查输入格式')
+      setOutput('')
     }
   }
 
   const copyOutput = async () => {
+    if (!output) return
     try {
       await navigator.clipboard.writeText(output)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (e) {
-      console.error('复制失败:', e)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch {
+      setError('复制失败')
     }
   }
 
   const swap = () => {
-    setDirection(direction === 'json2yaml' ? 'yaml2json' : 'json2yaml')
+    const temp = input
     setInput(output)
+    setOutput(temp)
+    setDirection(direction === 'json-to-yaml' ? 'yaml-to-json' : 'json-to-yaml')
+    setError('')
+  }
+
+  const clear = () => {
+    setInput('')
     setOutput('')
-    setError(null)
+    setError('')
+    setCopySuccess(false)
+  }
+
+  const loadExample = () => {
+    if (direction === 'json-to-yaml') {
+      setInput(JSON.stringify({
+        name: 'WebLinuxOS',
+        version: '1.0.0',
+        features: ['desktop', 'terminal', 'filemanager'],
+        config: {
+          theme: 'dark',
+          fontSize: 14
+        }
+      }, null, 2))
+    } else {
+      setInput(`name: WebLinuxOS
+version: 1.0.0
+features:
+  - desktop
+  - terminal
+  - filemanager
+config:
+  theme: dark
+  fontSize: 14`)
+    }
+    setError('')
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 text-gray-100 p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div style={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+      padding: '20px',
+      overflow: 'hidden'
+    }}>
+      {/* Header */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '20px' 
+      }}>
         <div>
-          <h2 className="text-2xl font-bold mb-2 text-orange-300">JSON/YAML 转换器</h2>
-          <p className="text-gray-400 text-sm">在 JSON 和 YAML 之间快速转换</p>
+          <h2 style={{ margin: 0, color: '#e2e8f0', fontSize: '22px' }}>🔄 JSON/YAML 转换器</h2>
+          <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '13px' }}>
+            在JSON和YAML格式之间相互转换
+          </p>
         </div>
+      </div>
+
+      {/* Direction Selection */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '8px', 
+        marginBottom: '20px',
+        background: 'rgba(255,255,255,0.05)',
+        padding: '4px',
+        borderRadius: '12px',
+        width: 'fit-content'
+      }}>
         <button
-          onClick={swap}
-          className="p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-          title="交换"
+          onClick={() => { setDirection('json-to-yaml'); setOutput(''); setError('') }}
+          style={{
+            padding: '8px 20px',
+            borderRadius: '8px',
+            border: 'none',
+            background: direction === 'json-to-yaml' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'transparent',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            transition: 'all 0.2s'
+          }}
         >
-          <ArrowRightLeft className="w-6 h-6 text-orange-400" />
+          JSON → YAML
+        </button>
+        <button
+          onClick={() => { setDirection('yaml-to-json'); setOutput(''); setError('') }}
+          style={{
+            padding: '8px 20px',
+            borderRadius: '8px',
+            border: 'none',
+            background: direction === 'yaml-to-json' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'transparent',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            transition: 'all 0.2s'
+          }}
+        >
+          YAML → JSON
         </button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-            {direction === 'json2yaml' ? (
-              <><FileJson className="inline w-4 h-4 mr-2" /> JSON 输入</>
-            ) : (
-              <><FileText className="inline w-4 h-4 mr-2" /> YAML 输入</>
-            )}
-          </label>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={direction === 'json2yaml' 
-              ? `{"name": "WebLinuxOS", "version": "1.0", "features": ["web", "linux", "desktop"]}` 
-              : `name: WebLinuxOS\nversion: "1.0"\nfeatures:\n  - web\n  - linux\n  - desktop`}
-            className="flex-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm"
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-300 flex items-center">
-              {direction === 'json2yaml' ? (
-                <><FileText className="inline w-4 h-4 mr-2" /> YAML 输出</>
-              ) : (
-                <><FileJson className="inline w-4 h-4 mr-2" /> JSON 输出</>
-              )}
-            </label>
-            {output && (
-              <button
-                onClick={copyOutput}
-                className="flex items-center space-x-1 text-xs text-gray-400 hover:text-orange-300 transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
-                    <span>已复制!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>复制</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-          <div className="flex-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-3 overflow-auto">
-            <pre className="text-sm text-gray-200 whitespace-pre-wrap">{output || '输出将显示在这里...'}</pre>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4">
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button
           onClick={convert}
-          disabled={!input.trim()}
-          className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-all shadow-lg hover:shadow-orange-500/25"
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            border: 'none',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            transition: 'all 0.2s',
+            boxShadow: '0 4px 12px rgba(99,102,241,0.3)'
+          }}
         >
           转换
         </button>
+        <button
+          onClick={copyOutput}
+          disabled={!output}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: copySuccess ? '#4ade80' : '#e2e8f0',
+            cursor: output ? 'pointer' : 'not-allowed',
+            fontSize: '14px',
+            transition: 'all 0.2s',
+            opacity: output ? 1 : 0.5
+          }}
+        >
+          {copySuccess ? '✓ 已复制' : '复制结果'}
+        </button>
+        <button
+          onClick={swap}
+          disabled={!output}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#e2e8f0',
+            cursor: output ? 'pointer' : 'not-allowed',
+            fontSize: '14px',
+            transition: 'all 0.2s',
+            opacity: output ? 1 : 0.5
+          }}
+        >
+          交换内容
+        </button>
+        <button
+          onClick={loadExample}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#e2e8f0',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          加载示例
+        </button>
+        <button
+          onClick={clear}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#e2e8f0',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          清空
+        </button>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-gray-700">
-        <h3 className="text-sm font-medium text-gray-400 mb-2">功能说明</h3>
-        <ul className="text-xs text-gray-500 space-y-1">
-          <li>• 支持 JSON 和 YAML 双向转换</li>
-          <li>• 保留原始数据结构和格式</li>
-          <li>• 支持复杂嵌套对象和数组</li>
-        </ul>
+      {/* Error */}
+      {error && (
+        <div style={{
+          background: 'rgba(239,68,68,0.1)',
+          border: '1px solid rgba(239,68,68,0.3)',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          color: '#f87171',
+          fontSize: '13px'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Panels */}
+      <div style={{ display: 'flex', flex: 1, gap: '20px', minHeight: 0, flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <h3 style={{ margin: '0 0 10px 0', color: '#94a3b8', fontSize: '14px' }}>
+            {direction === 'json-to-yaml' ? '输入JSON' : '输入YAML'}
+          </h3>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={direction === 'json-to-yaml' ? '输入JSON字符串...' : '输入YAML字符串...'}
+            style={{
+              flex: 1,
+              padding: '16px',
+              borderRadius: '12px',
+              background: 'rgba(0,0,0,0.3)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#e2e8f0',
+              fontFamily: '"Fira Code", "Monaco", "Ubuntu Mono", monospace',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              resize: 'none',
+              outline: 'none',
+              minHeight: '150px'
+            }}
+          />
+        </div>
+        
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <h3 style={{ margin: '0 0 10px 0', color: '#94a3b8', fontSize: '14px' }}>
+            {direction === 'json-to-yaml' ? 'YAML输出' : 'JSON输出'}
+          </h3>
+          <textarea
+            value={output}
+            readOnly
+            placeholder={direction === 'json-to-yaml' ? '转换后的YAML将显示在这里...' : '转换后的JSON将显示在这里...'}
+            style={{
+              flex: 1,
+              padding: '16px',
+              borderRadius: '12px',
+              background: 'rgba(0,0,0,0.3)',
+              border: '1px solid rgba(34,197,94,0.3)',
+              color: '#e2e8f0',
+              fontFamily: '"Fira Code", "Monaco", "Ubuntu Mono", monospace',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              resize: 'none',
+              outline: 'none',
+              minHeight: '150px'
+            }}
+          />
+        </div>
       </div>
     </div>
   )
 }
-
-export default JSONYAMLConverter
