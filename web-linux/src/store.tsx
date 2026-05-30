@@ -1,223 +1,27 @@
 import { create } from 'zustand'
 import type { AppDefinition, WindowState, DesktopIcon, FileNode } from './types'
 import {
-  FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
-  CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
-  ClipboardIcon, LightningIcon, SearchIcon
-} from './icons'
-
-const STORAGE_KEYS = {
-  FILES: 'weblinux-files',
-  THEME: 'weblinux-theme',
-  WALLPAPER: 'weblinux-wallpaper',
-  LIVE_WALLPAPER: 'weblinux-live-wallpaper',
-  LIVE_WALLPAPER_ENABLED: 'weblinux-live-wallpaper-enabled',
-  CURRENT_DESKTOP: 'weblinux-current-desktop',
-  TOTAL_DESKTOPS: 'weblinux-total-desktops',
-  DESKTOP_ICONS: 'weblinux-desktop-icons',
-  FAVORITES: 'weblinux-favorites',
-  PINNED_APPS: 'weblinux-pinned-apps',
-  RECENT_FILES: 'weblinux-recent-files',
-}
-
-// 文件树操作辅助函数
-function findNodeById(nodes: FileNode[], id: string): FileNode | null {
-  for (const node of nodes) {
-    if (node.id === id) return node
-    if (node.children) {
-      const found = findNodeById(node.children, id)
-      if (found) return found
-    }
-  }
-  return null
-}
-
-function findParentNode(nodes: FileNode[], childId: string): FileNode | null {
-  for (const node of nodes) {
-    if (node.children) {
-      if (node.children.some(c => c.id === childId)) {
-        return node
-      }
-      const found = findParentNode(node.children, childId)
-      if (found) return found
-    }
-  }
-  return null
-}
-
-function findNodeByPath(files: FileNode[], path: string): FileNode | null {
-  if (path === '/' || path === '') return files[0]
-  const parts = path.replace(/^\//, '').split('/')
-  let current: FileNode | null = files[0]
-  for (const part of parts) {
-    if (!part || !current?.children) continue
-    current = current.children.find((c) => c.name === part) || null
-    if (!current) return null
-  }
-  return current
-}
-
-function resolvePath(cwd: string, target: string): string {
-  if (target.startsWith('/')) return target
-  const parts = (cwd + '/' + target).split('/').filter(Boolean)
-  const resolved: string[] = []
-  for (const part of parts) {
-    if (part === '..') {
-      resolved.pop()
-    } else if (part !== '.') {
-      resolved.push(part)
-    }
-  }
-  return '/' + resolved.join('/')
-}
-
-function traverseTree(nodes: FileNode[], callback: (node: FileNode, parent?: FileNode) => FileNode | undefined): FileNode[] {
-  return nodes.map(node => {
-    const result = callback(node)
-    if (result !== undefined) return result
-    if (node.children) {
-      return { ...node, children: traverseTree(node.children, callback) }
-    }
-    return node
-  }).filter((node): node is FileNode => node !== null)
-}
-
-function copyNodeWithNewParent(node: FileNode, newParentId: string, newId?: string): FileNode {
-  const id = newId || `file-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-  const newNode: FileNode = {
-    ...node,
-    id,
-    parentId: newParentId,
-    children: undefined,
-  }
-  if (node.children) {
-    newNode.children = node.children.map(child => copyNodeWithNewParent(child, id))
-  }
-  return newNode
-}
-
-function removeFromTree(nodes: FileNode[], id: string): FileNode[] {
-  return nodes
-    .filter(node => node.id !== id)
-    .map(node => {
-      if (node.children) {
-        return { ...node, children: removeFromTree(node.children, id) }
-      }
-      return node
-    })
-}
-
-function updateInTree(nodes: FileNode[], id: string, updater: (node: FileNode) => FileNode): FileNode[] {
-  return nodes.map(node => {
-    if (node.id === id) return updater(node)
-    if (node.children) {
-      return { ...node, children: updateInTree(node.children, id, updater) }
-    }
-    return node
-  })
-}
-
-export function validateFileName(name: string): { valid: boolean; error?: string } {
-  if (!name || name.trim().length === 0) {
-    return { valid: false, error: '文件名不能为空' }
-  }
-  if (name.length > 255) {
-    return { valid: false, error: '文件名过长（最大255字符）' }
-  }
-  const invalidChars = /[<>:"|?*]/
-  if (invalidChars.test(name)) {
-    return { valid: false, error: '文件名包含非法字符' }
-  }
-  if (name === '.' || name === '..') {
-    return { valid: false, error: '不能使用此文件名' }
-  }
-  return { valid: true }
-}
-
-// 默认桌面图标
-const defaultIcons: DesktopIcon[] = [
-  { id: 'icon-smart-search', appId: 'smart-search', name: '智慧搜索', icon: <SearchIcon />, x: 260, y: 320 },
-  { id: 'icon-files', appId: 'files', name: '文件管理器', icon: <FolderIcon />, x: 20, y: 20 },
-  { id: 'icon-terminal', appId: 'terminal', name: '终端', icon: <TerminalIcon />, x: 20, y: 120 },
-  { id: 'icon-editor', appId: 'text-editor', name: '文本编辑器', icon: <FileTextIcon />, x: 20, y: 220 },
-  { id: 'icon-browser', appId: 'browser', name: '浏览器', icon: <BrowserIcon />, x: 20, y: 320 },
-  { id: 'icon-code', appId: 'code-editor', name: '代码编辑器', icon: <CodeIcon />, x: 20, y: 420 },
-  { id: 'icon-calc', appId: 'calculator', name: '计算器', icon: <CalculatorIcon />, x: 140, y: 20 },
-  { id: 'icon-calendar', appId: 'calendar', name: '日历', icon: <CalendarIcon />, x: 140, y: 120 },
-  { id: 'icon-settings', appId: 'settings', name: '设置', icon: <SettingsIcon />, x: 140, y: 220 },
-  { id: 'icon-monitor', appId: 'system-monitor', name: '系统监视器', icon: <ActivityIcon />, x: 140, y: 320 },
-  { id: 'icon-ai', appId: 'ai-helper', name: 'AI 助手', icon: <ChatIcon />, x: 140, y: 420 },
-  { id: 'icon-kanban', appId: 'kanban-board', name: '任务看板', icon: <BoardIcon />, x: 260, y: 20 },
-  { id: 'icon-clipboard', appId: 'clipboard-manager', name: '剪贴板管理', icon: <ClipboardIcon />, x: 260, y: 120 },
-  { id: 'icon-commands', appId: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, x: 260, y: 220 },
-]
-
-// 默认文件系统
-const defaultFiles: FileNode[] = [
-  { id: 'root', name: '/', type: 'folder', parentId: null, children: [
-    { id: 'home', name: 'home', type: 'folder', parentId: 'root', children: [
-      { id: 'user', name: 'user', type: 'folder', parentId: 'home', children: [
-        { id: 'desktop', name: '桌面', type: 'folder', parentId: 'user', children: [] },
-        { id: 'documents', name: '文档', type: 'folder', parentId: 'user', children: [
-          { id: 'readme', name: 'README.txt', type: 'file', parentId: 'documents', content: '欢迎使用 Web Linux 系统!\n\n这是一个基于 Web 的 Linux 桌面环境。\n\n特性:\n- 50+ 功能齐全的应用程序\n- 完整的窗口管理系统\n- 文件系统\n- 终端仿真器\n\n祝你使用愉快!' },
-          { id: 'notes', name: '笔记.txt', type: 'file', parentId: 'documents', content: '今天的待办事项:\n1. 完成项目开发\n2. 测试所有应用程序\n3. 优化性能' },
-        ] },
-        { id: 'downloads', name: '下载', type: 'folder', parentId: 'user', children: [] },
-        { id: 'pictures', name: '图片', type: 'folder', parentId: 'user', children: [] },
-        { id: 'music', name: '音乐', type: 'folder', parentId: 'user', children: [] },
-        { id: 'videos', name: '视频', type: 'folder', parentId: 'user', children: [] },
-      ] },
-    ] },
-    { id: 'etc', name: 'etc', type: 'folder', parentId: 'root', children: [
-      { id: 'hostname', name: 'hostname', type: 'file', parentId: 'etc', content: 'web-linux' },
-      { id: 'hosts', name: 'hosts', type: 'file', parentId: 'etc', content: '127.0.0.1 localhost\n::1 localhost' },
-    ] },
-    { id: 'tmp', name: 'tmp', type: 'folder', parentId: 'root', children: [] },
-    { id: 'var', name: 'var', type: 'folder', parentId: 'root', children: [
-      { id: 'log', name: 'log', type: 'folder', parentId: 'var', children: [
-        { id: 'syslog', name: 'syslog', type: 'file', parentId: 'log', content: '系统日志:\n[INFO] 系统启动完成\n[INFO] 所有服务已就绪\n[INFO] 桌面环境已加载' },
-      ] },
-    ] },
-  ] },
-]
-
-function loadFromStorage<T>(key: string, defaultValue: T): T {
-  try {
-    const stored = localStorage.getItem(key)
-    if (!stored) return defaultValue
-    const parsed = JSON.parse(stored)
-    return parsed as T
-  } catch (e) {
-    console.warn(`Failed to load from localStorage for key "${key}":`, e)
-    return defaultValue
-  }
-}
-
-// 防抖保存到 localStorage
-let saveTimeout: ReturnType<typeof setTimeout> | null = null
-function debouncedSaveToStorage(key: string, value: unknown, delay: number = 500) {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout)
-  }
-  saveTimeout = setTimeout(() => {
-    try {
-      const serialized = JSON.stringify(value)
-      localStorage.setItem(key, serialized)
-    } catch (e) {
-      console.warn(`Failed to save to localStorage for key "${key}":`, e)
-    }
-    saveTimeout = null
-  }, delay)
-}
-
-function saveToStorage(key: string, value: unknown) {
-  try {
-    const serialized = JSON.stringify(value)
-    localStorage.setItem(key, serialized)
-  } catch (e) {
-    console.warn(`Failed to save to localStorage for key "${key}":`, e)
-  }
-}
+  STORAGE_KEYS,
+  loadFromStorage,
+  debouncedSaveToStorage,
+  saveToStorage,
+  clearAllStorage
+} from './store/storageUtils'
+import {
+  findNodeById,
+  findParentNode,
+  findNodeByPath,
+  traverseTree,
+  copyNodeWithNewParent,
+  removeFromTree,
+  updateInTree
+} from './store/fileUtils'
+import {
+  defaultDesktopIcons,
+  defaultFiles,
+  defaultPinnedApps,
+  defaultTotalDesktops
+} from './store/defaults'
 
 // 加载初始数据
 const initialTheme: 'dark' | 'light' = loadFromStorage(STORAGE_KEYS.THEME, 'dark')
@@ -227,7 +31,7 @@ const initialLiveWallpaperEnabled: boolean = loadFromStorage(STORAGE_KEYS.LIVE_W
 const initialCurrentDesktop = loadFromStorage(STORAGE_KEYS.CURRENT_DESKTOP, 1)
 const initialTotalDesktops = loadFromStorage(STORAGE_KEYS.TOTAL_DESKTOPS, 4)
 const initialFiles: FileNode[] = loadFromStorage(STORAGE_KEYS.FILES, defaultFiles)
-const initialDesktopIcons: DesktopIcon[] = loadFromStorage(STORAGE_KEYS.DESKTOP_ICONS, defaultIcons)
+const initialDesktopIcons: DesktopIcon[] = loadFromStorage(STORAGE_KEYS.DESKTOP_ICONS, defaultDesktopIcons)
 const initialFavorites: string[] = loadFromStorage(STORAGE_KEYS.FAVORITES, [])
 const initialPinnedApps: string[] = loadFromStorage(STORAGE_KEYS.PINNED_APPS, ['terminal', 'files', 'browser', 'settings'])
 const initialRecentFiles: FileNode[] = loadFromStorage(STORAGE_KEYS.RECENT_FILES, [])
@@ -446,7 +250,7 @@ export const useStore = create<Store>((set, get) => ({
     // 重置状态
     set({
       files: defaultFiles,
-      desktopIcons: defaultIcons,
+      desktopIcons: defaultDesktopIcons,
       theme: 'dark',
       wallpaper: '',
       liveWallpaper: 'particles',
