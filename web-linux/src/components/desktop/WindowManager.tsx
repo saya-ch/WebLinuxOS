@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, memo, useMemo } from 'react'
+import { Suspense, lazy, useEffect, memo, useMemo, useRef } from 'react'
 import { useStore } from '../../store'
 import Window from './Window'
 import ErrorBoundary from '../ErrorBoundary'
@@ -43,6 +43,13 @@ function loadComponent(name: string) {
                 color: '#fff',
                 cursor: 'pointer',
                 fontSize: 12,
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--accent-hover)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--accent)'
               }}
             >
               重新加载页面
@@ -60,7 +67,7 @@ function preloadComponents() {
   
   const criticalComponents = [
     'Terminal', 'FileManager', 'Calculator', 'Settings',
-    'Notepad', 'Calendar', 'About'
+    'Notepad', 'Calendar', 'About', 'Weather'
   ]
   
   const loadNext = (index: number) => {
@@ -68,9 +75,9 @@ function preloadComponents() {
     loadComponent(criticalComponents[index])
     if (index < criticalComponents.length - 1) {
       if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(() => loadNext(index + 1))
+        window.requestIdleCallback(() => loadNext(index + 1), { timeout: 1000 })
       } else {
-        setTimeout(() => loadNext(index + 1), 150)
+        setTimeout(() => loadNext(index + 1), 200)
       }
     }
   }
@@ -100,10 +107,10 @@ const LoadingFallback = memo(function LoadingFallback() {
           border: '3px solid var(--window-border)',
           borderTopColor: 'var(--accent)',
           borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
+          animation: 'spin 0.8s linear infinite',
         }}
       />
-      <span>加载中...</span>
+      <span style={{ opacity: 0.9 }}>加载中...</span>
     </div>
   )
 })
@@ -114,16 +121,23 @@ const WindowManager = memo(function WindowManager() {
   const currentDesktop = useStore((s) => s.currentDesktop)
   const windowsPerDesktop = useStore((s) => s.windowsPerDesktop)
 
+  const preloadedRef = useRef(false)
+
   useEffect(() => {
-    preloadComponents()
+    if (!preloadedRef.current) {
+      preloadComponents()
+      preloadedRef.current = true
+    }
   }, [])
 
   const memoizedWindows = useMemo(() => {
     const currentDesktopWindows = windowsPerDesktop[currentDesktop] || []
+    const windowsMap = new Map(apps.map(app => [app.id, app]))
+    
     return windows
       .filter((win) => currentDesktopWindows.includes(win.id))
       .map((win) => {
-        const app = apps.find((a) => a.id === win.appId)
+        const app = windowsMap.get(win.appId)
         if (!app) return null
         const Component = loadComponent(app.component)
         return { win, Component, app }

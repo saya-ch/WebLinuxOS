@@ -1,4 +1,4 @@
-import { useEffect, memo, useCallback, useState } from 'react'
+import { useEffect, memo, useCallback, useState, useRef, useMemo } from 'react'
 import { useStore } from './store'
 import { appRegistry } from './apps'
 import Desktop from './components/desktop/Desktop'
@@ -75,9 +75,20 @@ const App = memo(function App() {
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const registeredRef = useRef(false)
+  const setSearchOpenRef = useRef(setSearchOpen)
+  const setCommandPaletteOpenRef = useRef(setCommandPaletteOpen)
 
   useEffect(() => {
-    appRegistry.forEach((app) => registerApp(app))
+    setSearchOpenRef.current = setSearchOpen
+    setCommandPaletteOpenRef.current = setCommandPaletteOpen
+  }, [setSearchOpen, setCommandPaletteOpen])
+
+  useEffect(() => {
+    if (!registeredRef.current) {
+      appRegistry.forEach((app) => registerApp(app))
+      registeredRef.current = true
+    }
   }, [registerApp])
 
   useEffect(() => {
@@ -103,8 +114,9 @@ const App = memo(function App() {
 
   const handleSystemShortcut = useCallback((action: string) => {
     const focusedWindow = getFocusedWindow()
-    const toggleNotificationCenter = useStore.getState().toggleNotificationCenter
-    const addNotification = useStore.getState().addNotification
+    const store = useStore.getState()
+    const toggleNotificationCenter = store.toggleNotificationCenter
+    const addNotification = store.addNotification
     
     switch (action) {
       case 'launcher':
@@ -132,10 +144,10 @@ const App = memo(function App() {
         openApp('terminal')
         break
       case 'global-search':
-        setSearchOpen(true)
+        setSearchOpenRef.current(true)
         break
       case 'command-palette':
-        setCommandPaletteOpen(true)
+        setCommandPaletteOpenRef.current(true)
         break
       case 'lock-screen':
         addNotification({
@@ -151,14 +163,17 @@ const App = memo(function App() {
     }
   }, [getFocusedWindow, toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp])
 
-  const matchesShortcut = (config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
+  const matchesShortcut = useCallback((config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
     if (config.mod !== undefined && config.mod !== isMod) return false
     if (config.shift !== undefined && config.shift !== isShift) return false
     if (config.alt !== undefined && config.alt !== isAlt) return false
     
     const shortcutKey = Array.isArray(config.key) ? config.key : [config.key]
     return shortcutKey.some(k => k.toLowerCase() === key)
-  }
+  }, [])
+
+  const systemShortcutsArray = useMemo(() => Object.values(systemShortcuts), [])
+  const appShortcutsArray = useMemo(() => Object.values(appShortcuts), [])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -177,13 +192,13 @@ const App = memo(function App() {
 
       if (isMod && key === 'k') {
         e.preventDefault()
-        setSearchOpen(true)
+        setSearchOpenRef.current(true)
         return
       }
       
       if (isMod && key === 'p') {
         e.preventDefault()
-        setCommandPaletteOpen(true)
+        setCommandPaletteOpenRef.current(true)
         return
       }
 
@@ -200,9 +215,10 @@ const App = memo(function App() {
       if (e.ctrlKey && e.altKey && e.key >= '1' && e.key <= '9') {
         e.preventDefault()
         const desktopNum = parseInt(e.key)
-        const total = useStore.getState().totalDesktops
+        const store = useStore.getState()
+        const total = store.totalDesktops
         if (desktopNum <= total) {
-          useStore.getState().switchDesktop(desktopNum)
+          store.switchDesktop(desktopNum)
         }
         return
       }
@@ -210,17 +226,17 @@ const App = memo(function App() {
       // 切换到上一个/下一个桌面
       if (e.ctrlKey && e.altKey && e.key === 'ArrowLeft') {
         e.preventDefault()
-        const { currentDesktop, totalDesktops, switchDesktop } = useStore.getState()
-        const newDesktop = currentDesktop === 1 ? totalDesktops : currentDesktop - 1
-        switchDesktop(newDesktop)
+        const store = useStore.getState()
+        const newDesktop = store.currentDesktop === 1 ? store.totalDesktops : store.currentDesktop - 1
+        store.switchDesktop(newDesktop)
         return
       }
 
       if (e.ctrlKey && e.altKey && e.key === 'ArrowRight') {
         e.preventDefault()
-        const { currentDesktop, totalDesktops, switchDesktop } = useStore.getState()
-        const newDesktop = currentDesktop === totalDesktops ? 1 : currentDesktop + 1
-        switchDesktop(newDesktop)
+        const store = useStore.getState()
+        const newDesktop = store.currentDesktop === store.totalDesktops ? 1 : store.currentDesktop + 1
+        store.switchDesktop(newDesktop)
         return
       }
 
@@ -228,10 +244,10 @@ const App = memo(function App() {
       if (e.ctrlKey && e.shiftKey && e.altKey && e.key >= '1' && e.key <= '9') {
         e.preventDefault()
         const desktopNum = parseInt(e.key)
-        const { windows, totalDesktops, moveWindowToDesktop } = useStore.getState()
-        const focusedWindow = windows.find(w => w.focused)
-        if (focusedWindow && desktopNum <= totalDesktops) {
-          moveWindowToDesktop(focusedWindow.id, desktopNum)
+        const store = useStore.getState()
+        const focusedWindow = store.windows.find(w => w.focused)
+        if (focusedWindow && desktopNum <= store.totalDesktops) {
+          store.moveWindowToDesktop(focusedWindow.id, desktopNum)
         }
         return
       }
@@ -239,16 +255,16 @@ const App = memo(function App() {
       // 移动窗口到下一个桌面并跟随
       if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'ArrowRight') {
         e.preventDefault()
-        const { moveWindowToNextDesktop } = useStore.getState()
-        moveWindowToNextDesktop()
+        const store = useStore.getState()
+        store.moveWindowToNextDesktop()
         return
       }
 
       // Move window to previous desktop and follow
       if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'ArrowLeft') {
         e.preventDefault()
-        const { moveWindowToPrevDesktop } = useStore.getState()
-        moveWindowToPrevDesktop()
+        const store = useStore.getState()
+        store.moveWindowToPrevDesktop()
         return
       }
 
@@ -257,8 +273,8 @@ const App = memo(function App() {
         e.preventDefault()
         const focusedWindow = getFocusedWindow()
         if (focusedWindow) {
-          const windows = useStore.getState().windows
-          const otherWindow = windows.find(w => !w.focused && w.appId === focusedWindow.appId)
+          const store = useStore.getState()
+          const otherWindow = store.windows.find(w => !w.focused && w.appId === focusedWindow.appId)
           if (otherWindow) focusWindow(otherWindow.id)
         }
         return
@@ -268,8 +284,8 @@ const App = memo(function App() {
         e.preventDefault()
         const focusedWindow = getFocusedWindow()
         if (focusedWindow) {
-          const windows = useStore.getState().windows
-          const otherWindow = windows.find(w => !w.focused && w.appId === focusedWindow.appId)
+          const store = useStore.getState()
+          const otherWindow = store.windows.find(w => !w.focused && w.appId === focusedWindow.appId)
           if (otherWindow) focusWindow(otherWindow.id)
         }
         return
@@ -289,7 +305,7 @@ const App = memo(function App() {
       }
 
       // Process system shortcuts
-      for (const { config, action } of Object.values(systemShortcuts)) {
+      for (const { config, action } of systemShortcutsArray) {
         if (matchesShortcut(config, isMod, isShift, isAlt, key)) {
           e.preventDefault()
           handleSystemShortcut(action)
@@ -299,7 +315,7 @@ const App = memo(function App() {
 
       // Process app launch shortcuts
       if (isMod) {
-        for (const { config, appId } of Object.values(appShortcuts)) {
+        for (const { config, appId } of appShortcutsArray) {
           if (matchesShortcut(config, isMod, isShift, isAlt, key)) {
             e.preventDefault()
             openApp(appId)
@@ -308,7 +324,7 @@ const App = memo(function App() {
         }
       }
     },
-    [launcherOpen, toggleLauncher, handleSystemShortcut, openApp, getFocusedWindow, focusWindow, cycleWindows]
+    [launcherOpen, toggleLauncher, handleSystemShortcut, openApp, getFocusedWindow, focusWindow, cycleWindows, systemShortcutsArray, appShortcutsArray, matchesShortcut]
   )
 
   useEffect(() => {
