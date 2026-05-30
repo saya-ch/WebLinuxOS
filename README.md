@@ -283,5 +283,5 @@ Future improvements planned:
 
 ---
 
-**Version**: 4.8.0
+**Version**: 4.9.0
 **Last Updated**: 2026-05-30

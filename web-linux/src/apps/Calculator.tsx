@@ -529,7 +529,7 @@ export default function Calculator() {
     try {
       const val = parseInt(display)
       if (val < 0) throw new Error()
-      setDisplay(val.toString(2))
+      setDisplay(val.toString(2).toUpperCase())
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -541,7 +541,7 @@ export default function Calculator() {
     try {
       const val = parseInt(display)
       if (val < 0) throw new Error()
-      setDisplay(val.toString(8))
+      setDisplay(val.toString(8).toUpperCase())
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -553,7 +553,31 @@ export default function Calculator() {
     try {
       const val = parseInt(display)
       if (val < 0) throw new Error()
-      setDisplay(val.toString(16).toUpperCase())
+      setDisplay('0x' + val.toString(16).toUpperCase())
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleDegrees = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const rad = parseFloat(display)
+      const deg = (rad * 180) / Math.PI
+      setDisplay(String(Math.round(deg * 100) / 100))
+      setResetFlag(true)
+    } catch {
+      setDisplay('Error')
+    }
+  }, [display])
+
+  const handleRadians = useCallback(() => {
+    if (display === 'Error') return
+    try {
+      const deg = parseFloat(display)
+      const rad = (deg * Math.PI) / 180
+      setDisplay(String(Math.round(rad * 100) / 100))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -1029,13 +1053,13 @@ export default function Calculator() {
         <InteractiveButton style={buttonStyles.func} onClick={handleYx}>Y^X</InteractiveButton>
       </div>
       
-      {/* 第十二行：更多函数 */}
+      {/* 第十二行：角度转换 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handleDegrees}>DEG</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleRadians}>RAD</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleFloor}>floor</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleCeil}>ceil</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleRound}>round</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleSinh}>sinh</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleCosh}>cosh</InteractiveButton>
       </div>
       
       {/* 第十三行：更多双曲函数 */}
