@@ -1,12 +1,5 @@
 import { useState, useCallback, memo, useEffect, useRef } from 'react'
 
-interface SearchResult {
-  title: string
-  url: string
-  snippet: string
-  engine: string
-}
-
 const searchEngines = [
   { name: 'Google', icon: '🔍', baseUrl: 'https://www.google.com/search?q=' },
   { name: 'Bing', icon: '🌐', baseUrl: 'https://www.bing.com/search?q=' },
@@ -36,8 +29,6 @@ const quickLinks = [
 const SmartSearch = memo(function SmartSearch() {
   const [query, setQuery] = useState('')
   const [selectedEngine, setSelectedEngine] = useState(searchEngines[0])
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
   const [showEngineMenu, setShowEngineMenu] = useState(false)
   const [showQuickLinks, setShowQuickLinks] = useState(false)
   const [searchHistory, setSearchHistory] = useState<string[]>([])

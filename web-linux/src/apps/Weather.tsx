@@ -67,7 +67,7 @@ const Weather = memo(function Weather() {
   const [selectedCity, setSelectedCity] = useState(popularCities[0])
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   const [showCityList, setShowCityList] = useState(false)
   const [unit, setUnit] = useState<'celsius' | 'fahrenheit'>('celsius')
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -160,14 +160,6 @@ const Weather = memo(function Weather() {
       return Math.round(temp * 9/5 + 32)
     }
     return temp
-  }
-
-  const getTempColor = (temp: number): string => {
-    if (temp <= 0) return '#60a5fa'
-    if (temp <= 10) return '#34d399'
-    if (temp <= 20) return '#a3e635'
-    if (temp <= 30) return '#fbbf24'
-    return '#f87171'
   }
 
   if (loading && !weather) {
