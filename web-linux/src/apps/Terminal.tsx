@@ -249,14 +249,15 @@ export default function Terminal() {
       case '?':
         output = `可用命令:
   文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc, du, ln, stat
-  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard, neofetch, weather, id, groups, users
-  网络工具: ping, ifconfig, curl
-  系统工具: clear, help, history, alias, type, man, exit, cls, reset, chmod, chown
-  系统监控: vmstat, iostat, netstat, ss, lsof
-  工具命令: echo, find, grep, env, export
+  信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard, neofetch, weather, id, groups, users, sysinfo
+  网络工具: ping, ifconfig, curl, host, nslookup, dig, traceroute, nmap
+  系统工具: clear, help, history, alias, type, man, exit, cls, reset, chmod, chown, sync
+  系统监控: vmstat, iostat, netstat, ss, lsof, htop, btop, iotop, powertop
+  工具命令: echo, find, grep, env, export, which, file, locate, whereis
+  实用工具: translate, news, worldtime, todo - 翻译、新闻、时钟、待办
   趣味命令: cowsay, fortune, sl, starwars, asciiart, dog, joke, advice, flip, rps - 试试这些有趣的小命令!
-  加密工具: base64, unbase64, hash, rev - 文本编码解码工具
-  数学工具: calc, prime, factor, roman - 计算器和数学工具
+  加密工具: base64, unbase64, hash, rev, openssl, ssh-keygen - 文本编码解码工具
+  数学工具: calc, prime, factor, roman, bc, expr, seq - 计算器和数学工具
   视觉效果: matrix, figlet, lolcat, cowthink, banner - ASCII艺术
   实用工具: password, uuid, color, currency, units, timeconv, json, urlencode, urldecode
 
@@ -2037,6 +2038,156 @@ export default function Terminal() {
           `║  磁盘空闲: ${(diskFree / 1024).toFixed(0).padEnd(30)}MB║`,
           '╚════════════════════════════════════════════════╝',
         ].join('\n')
+        break
+      }
+      case 'translate': {
+        if (args.length === 0) {
+          output = [
+            `🌍 translate - 翻译工具`,
+            ``,
+            `用法: translate <文本> [目标语言]`,
+            ``,
+            `支持的语言:`,
+            `  zh, cn, chinese - 中文`,
+            `  en, english - 英语`,
+            `  ja, japanese - 日语`,
+            `  ko, korean - 韩语`,
+            `  fr, french - 法语`,
+            `  de, german - 德语`,
+            ``,
+            `示例:`,
+            `  translate Hello world zh`,
+            `  translate 你好 en`,
+            `  translate Bonjour fr`,
+          ].join('\n')
+        } else {
+          const text = args.slice(0, -1).join(' ') || args.join(' ')
+          const targetLang = args[args.length - 1] || 'zh'
+          
+          const translations: Record<string, Record<string, string>> = {
+            en: {
+              'hello': '你好', 'world': '世界', 'hello world': '你好世界',
+              'good morning': '早上好', 'thank you': '谢谢',
+              'welcome': '欢迎', 'goodbye': '再见',
+              'computer': '计算机', 'web': '网页', 'linux': 'Linux'
+            },
+            zh: {
+              '你好': 'Hello', '世界': 'World', '你好世界': 'Hello World',
+              '早上好': 'Good morning', '谢谢': 'Thank you',
+              '欢迎': 'Welcome', '再见': 'Goodbye',
+              '计算机': 'Computer', '网页': 'Web', '系统': 'System'
+            },
+            ja: {
+              'hello': 'こんにちは', 'world': '世界', 'thank you': 'ありがとう',
+              'welcome': 'ようこそ', 'goodbye': 'さようなら'
+            },
+            ko: {
+              'hello': '안녕하세요', 'world': '세계', 'thank you': '감사합니다',
+              'welcome': '환영합니다', 'goodbye': '안녕히 가세요'
+            },
+            fr: {
+              'hello': 'Bonjour', 'world': 'Monde', 'thank you': 'Merci',
+              'welcome': 'Bienvenue', 'goodbye': 'Au revoir'
+            },
+            de: {
+              'hello': 'Hallo', 'world': 'Welt', 'thank you': 'Danke',
+              'welcome': 'Willkommen', 'goodbye': 'Auf Wiedersehen'
+            }
+          }
+          
+          const langKey = targetLang.toLowerCase() === 'cn' ? 'zh' : 
+                         targetLang.toLowerCase() === 'chinese' ? 'zh' :
+                         targetLang.toLowerCase() === 'english' ? 'en' :
+                         targetLang.toLowerCase() === 'japanese' ? 'ja' :
+                         targetLang.toLowerCase() === 'korean' ? 'ko' :
+                         targetLang.toLowerCase() === 'french' ? 'fr' :
+                         targetLang.toLowerCase() === 'german' ? 'de' :
+                         targetLang.toLowerCase()
+          
+          if (!translations[langKey]) {
+            output = `translate: 不支持的目标语言 '${targetLang}'`
+          } else {
+            const lowerText = text.toLowerCase()
+            const result = translations[langKey][lowerText] || 
+                          `[翻译中] "${text}" -> 翻译结果 (模拟)`
+            output = `🌍 翻译结果:\n\n${text}\n↓\n${result}`
+          }
+        }
+        break
+      }
+      case 'news': {
+        const newsItems = [
+          { title: 'WebLinuxOS 4.7.0 发布', category: '科技', summary: '新增终端命令、改进用户界面、增强性能优化' },
+          { title: '人工智能技术持续创新', category: 'AI', summary: '大语言模型应用场景不断扩展' },
+          { title: 'WebAssembly 性能突破', category: '技术', summary: '浏览器端运行速度提升30%' },
+          { title: '云计算市场持续增长', category: '云服务', summary: '企业数字化转型加速' },
+          { title: '开源社区活跃度提升', category: '开源', summary: '全球开发者贡献量创历史新高' },
+          { title: '网络安全意识增强', category: '安全', summary: '企业加大安全投入力度' },
+        ]
+        
+        output = [
+          `📰 WebLinux 新闻速递`,
+          ``,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          ...newsItems.map((item, idx) => 
+            `\n${idx + 1}. [${item.category}] ${item.title}\n   ${item.summary}`
+          ),
+          ``,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          `💡 提示: 使用 news --refresh 获取最新资讯`,
+        ].join('\n')
+        break
+      }
+      case 'worldtime': {
+        const locations = [
+          { name: '北京', tz: 'Asia/Shanghai', offset: 8 },
+          { name: '东京', tz: 'Asia/Tokyo', offset: 9 },
+          { name: '纽约', tz: 'America/New_York', offset: -5 },
+          { name: '伦敦', tz: 'Europe/London', offset: 0 },
+          { name: '巴黎', tz: 'Europe/Paris', offset: 1 },
+          { name: '悉尼', tz: 'Australia/Sydney', offset: 10 },
+        ]
+        
+        const now = new Date()
+        const utc = now.getTime() + now.getTimezoneOffset() * 60000
+        
+        output = [
+          `🌐 世界时钟`,
+          ``,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          ` UTC: ${new Date(utc).toLocaleTimeString('en-US', { hour12: false })}`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          ...locations.map(loc => {
+            const localTime = new Date(utc + loc.offset * 3600000)
+            return ` ${loc.name.padEnd(6)} | ${localTime.toLocaleTimeString('zh-CN', { hour12: false })}`
+          }),
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ].join('\n')
+        break
+      }
+      case 'todo': {
+        if (args.length === 0) {
+          output = `📝 todo - 待办事项管理\n\n用法:\n  todo add <事项>      添加待办\n  todo list            查看待办\n  todo done <序号>     标记完成\n  todo clear           清空所有`
+        } else if (args[0] === 'add') {
+          const task = args.slice(1).join(' ')
+          output = `✅ 已添加待办: ${task}`
+        } else if (args[0] === 'list') {
+          const tasks = ['完成项目文档', '修复终端bug', '优化性能', '更新README']
+          output = [
+            `📝 待办列表`,
+            ``,
+            ...tasks.map((task, idx) => ` ${idx + 1}. ${task}`),
+            ``,
+            `共 ${tasks.length} 项待办`,
+          ].join('\n')
+        } else if (args[0] === 'done') {
+          const idx = parseInt(args[1]) - 1
+          output = `✅ 已完成第 ${idx + 1} 项任务`
+        } else if (args[0] === 'clear') {
+          output = `🗑️ 已清空所有待办`
+        } else {
+          output = `todo: 未知命令 '${args[0]}'`
+        }
         break
       }
       case 'sync': {
