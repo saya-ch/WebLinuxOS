@@ -8,7 +8,7 @@ Visit the live demo at: [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.
 
 ## Overview
 
-WebLinuxOS brings the power of a Linux desktop experience to your browser. It features a modern, responsive interface with multi-window management, virtual desktops, and over 120 applications - all running entirely client-side with no backend dependencies.
+WebLinuxOS brings the power of a Linux desktop experience to your browser. It features a modern, responsive interface with multi-window management, virtual desktops, and 120+ applications - all running entirely client-side with no backend dependencies.
 
 This project demonstrates what's possible with modern web technologies, combining the familiarity of a traditional desktop environment with the accessibility of web applications.
 
@@ -46,11 +46,12 @@ This project demonstrates what's possible with modern web technologies, combinin
 - **Todo List**: Task management with completion tracking
 - **Kanban Board**: Visual task organization with drag-and-drop
 - **Project Planner**: Timeline and milestone tracking
-- **Notes**: Sticky notes for quick reminders
+- **Notes**: Smart notes with tags, colors, archiving, and import/export
 - **Mind Map**: Idea visualization with node-based editing
 - **Presentation Creator**: Slide-based presentations
 - **Flashcards**: Study and memorization tool
 - **Habit Tracker**: Track daily habits and progress
+- **Smart Dashboard**: Real-time data dashboard with weather, crypto, and system stats
 
 ### Utilities
 
@@ -234,6 +235,31 @@ Contributions are welcome! Please follow these steps:
 - Test thoroughly before submitting
 - Update documentation as needed
 
+### Creating New Applications
+
+To add a new application:
+
+1. Create a new file in `src/apps/` (e.g., `MyApp.tsx`)
+2. Export a default React component
+3. Register the app in `src/apps.tsx`
+4. Add app icon and metadata
+5. Test the application
+
+Example:
+
+```typescript
+import { memo } from 'react'
+
+export default memo(function MyApp() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>My Application</h1>
+      <p>Welcome to my new app!</p>
+    </div>
+  )
+})
+```
+
 ## License
 
 MIT License - feel free to use this project for personal or commercial purposes.
@@ -261,6 +287,8 @@ WebLinuxOS is perfect for:
 - **Development**: Test web technologies
 - **Accessibility**: Access your files from any device
 - **Productivity**: Lightweight online workspace
+- **Education**: Teach programming and system concepts
+- **Prototyping**: Rapidly prototype desktop-like applications
 
 ## Support
 
@@ -280,8 +308,27 @@ Future improvements planned:
 - Additional language support
 - Cloud synchronization
 - PWA installation support
+- Plugin system architecture
+- Real-time collaboration features
+
+## Changelog
+
+### v5.0.0 (2026-05-31)
+- Enhanced Smart Notes with tags, colors, archiving, and import/export
+- New Smart Dashboard with real-time weather, crypto, and system monitoring
+- Improved error handling and user feedback
+- Better documentation and developer guide
+- Performance optimizations
+- Bug fixes and UI improvements
+
+### v4.9.1 (Previous)
+- 120+ applications
+- Enhanced terminal with 90+ commands
+- Improved window management
+- New development tools
+- Better multimedia support
 
 ---
 
-**Version**: 4.9.1
+**Version**: 5.0.0
 **Last Updated**: 2026-05-31

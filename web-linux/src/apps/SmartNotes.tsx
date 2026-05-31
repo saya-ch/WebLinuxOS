@@ -1,527 +1,651 @@
-import { useState, useCallback, useMemo, memo } from 'react'
-import { useStore } from '../store'
-import { marked } from 'marked'
+import { useState, useEffect, memo } from 'react'
+import { Search, Plus, Trash2, Tag, Star, Clock, FileText, Archive, Download, Upload } from 'lucide-react'
 
 interface Note {
   id: string
   title: string
   content: string
-  category: string
   tags: string[]
+  starred: boolean
   createdAt: number
   updatedAt: number
-  isPinned: boolean
-}
-
-interface Category {
-  name: string
   color: string
+  archived: boolean
 }
 
-const defaultCategories: Category[] = [
-  { name: '工作', color: '#3498db' },
-  { name: '个人', color: '#e74c3c' },
-  { name: '项目', color: '#2ecc71' },
-  { name: '学习', color: '#9b59b6' },
-  { name: '想法', color: '#f39c12' },
+const NOTE_COLORS = [
+  { name: '默认', value: 'transparent' },
+  { name: '黄色', value: 'rgba(255, 193, 7, 0.2)' },
+  { name: '绿色', value: 'rgba(40, 167, 69, 0.2)' },
+  { name: '蓝色', value: 'rgba(0, 123, 255, 0.2)' },
+  { name: '粉色', value: 'rgba(232, 62, 140, 0.2)' },
+  { name: '紫色', value: 'rgba(108, 117, 125, 0.2)' },
 ]
 
-const SmartNotes = memo(function SmartNotes() {
-  const addNotification = useStore((s) => s.addNotification)
-
+export default memo(function Notes() {
   const [notes, setNotes] = useState<Note[]>(() => {
-    const saved = localStorage.getItem('weblinux-smart-notes')
-    if (saved) {
-      try {
-        return JSON.parse(saved)
-      } catch {
-        return []
-      }
+    try {
+      const saved = localStorage.getItem('weblinux-smartnotes-v2')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
     }
-    return [
-      {
-        id: '1',
-        title: '欢迎使用智能笔记',
-        content: '# 欢迎使用 WebLinuxOS 智能笔记\n\n这是一个功能强大的笔记应用，支持：\n\n- **Markdown 编辑** - 实时预览\n- **分类管理** - 组织笔记\n- **标签系统** - 快速检索\n- **搜索功能** - 快速找到笔记\n- **导出功能** - 导出为 Markdown\n\n开始创建你的笔记吧！',
-        category: '个人',
-        tags: ['欢迎', '使用指南'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        isPinned: true,
-      },
-    ]
   })
-
-  const [selectedNote, setSelectedNote] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
-  const [editCategory, setEditCategory] = useState('')
   const [editTags, setEditTags] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
+  const [editColor, setEditColor] = useState('transparent')
+  const [showArchived, setShowArchived] = useState(false)
 
-  const saveNotes = useCallback((newNotes: Note[]) => {
-    setNotes(newNotes)
-    localStorage.setItem('weblinux-smart-notes', JSON.stringify(newNotes))
-  }, [])
-
-  const currentNote = useMemo(() => {
-    return notes.find(n => n.id === selectedNote) || null
-  }, [notes, selectedNote])
-
-  const filteredNotes = useMemo(() => {
-    return notes.filter(note => {
-      const matchesSearch = searchQuery === '' ||
-        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      const matchesCategory = selectedCategory === null || note.category === selectedCategory
-      return matchesSearch && matchesCategory
-    }).sort((a, b) => {
-      if (a.isPinned && !b.isPinned) return -1
-      if (!a.isPinned && b.isPinned) return 1
-      return b.updatedAt - a.updatedAt
-    })
-  }, [notes, searchQuery, selectedCategory])
-
-  const createNewNote = useCallback(() => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title: '新笔记',
-      content: '',
-      category: defaultCategories[0].name,
-      tags: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      isPinned: false,
+  useEffect(() => {
+    try {
+      localStorage.setItem('weblinux-smartnotes-v2', JSON.stringify(notes))
+    } catch (error) {
+      console.warn('保存笔记失败:', error)
     }
-    const newNotes = [newNote, ...notes]
-    saveNotes(newNotes)
-    setSelectedNote(newNote.id)
-    setIsEditing(true)
-    setEditTitle(newNote.title)
-    setEditContent(newNote.content)
-    setEditCategory(newNote.category)
-    setEditTags('')
-    setShowPreview(false)
-    addNotification({ title: '创建成功', message: '新笔记已创建', type: 'success' })
-  }, [notes, saveNotes, addNotification])
-
-  const startEditing = useCallback(() => {
-    if (!currentNote) return
-    setIsEditing(true)
-    setEditTitle(currentNote.title)
-    setEditContent(currentNote.content)
-    setEditCategory(currentNote.category)
-    setEditTags(currentNote.tags.join(', '))
-  }, [currentNote])
-
-  const saveEdit = useCallback(() => {
-    if (!selectedNote) return
-    const updatedNotes = notes.map(note => {
-      if (note.id === selectedNote) {
-        return {
-          ...note,
-          title: editTitle || '无标题',
-          content: editContent,
-          category: editCategory,
-          tags: editTags.split(',').map(t => t.trim()).filter(Boolean),
-          updatedAt: Date.now(),
-        }
-      }
-      return note
-    })
-    saveNotes(updatedNotes)
-    setIsEditing(false)
-    addNotification({ title: '保存成功', message: '笔记已保存', type: 'success' })
-  }, [selectedNote, notes, editTitle, editContent, editCategory, editTags, saveNotes, addNotification])
-
-  const deleteNote = useCallback((id: string) => {
-    const noteToDelete = notes.find(n => n.id === id)
-    if (!noteToDelete) return
-
-    if (confirm(`确定要删除笔记 "${noteToDelete.title}" 吗？`)) {
-      const newNotes = notes.filter(n => n.id !== id)
-      saveNotes(newNotes)
-      if (selectedNote === id) {
-        setSelectedNote(null)
-      }
-      setIsEditing(false)
-      addNotification({ title: '删除成功', message: '笔记已删除', type: 'info' })
-    }
-  }, [notes, selectedNote, saveNotes, addNotification])
-
-  const togglePin = useCallback((id: string) => {
-    const updatedNotes = notes.map(note => {
-      if (note.id === id) {
-        return { ...note, isPinned: !note.isPinned }
-      }
-      return note
-    })
-    saveNotes(updatedNotes)
-  }, [notes, saveNotes])
-
-  const exportNote = useCallback((note: Note) => {
-    const blob = new Blob([note.content], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${note.title}.md`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    addNotification({ title: '导出成功', message: '笔记已导出为 Markdown 文件', type: 'success' })
-  }, [addNotification])
-
-  const copyToClipboard = useCallback((text: string) => {
-    navigator.clipboard.writeText(text)
-    addNotification({ title: '已复制', message: '内容已复制到剪贴板', type: 'info' })
-  }, [addNotification])
-
-  const allTags = useMemo(() => {
-    const tagSet = new Set<string>()
-    notes.forEach(note => note.tags.forEach(tag => tagSet.add(tag)))
-    return Array.from(tagSet)
   }, [notes])
 
+  const visibleNotes = notes.filter(note => showArchived ? note.archived : !note.archived)
+
+  const filteredNotes = visibleNotes.filter(note => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query) ||
+      note.tags.some(tag => tag.toLowerCase().includes(query))
+    )
+  })
+
+  const sortedNotes = [...filteredNotes].sort((a, b) => {
+    if (a.starred && !b.starred) return -1
+    if (!a.starred && b.starred) return 1
+    return b.updatedAt - a.updatedAt
+  })
+
+  const createNewNote = () => {
+    const newNote: Note = {
+      id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: '新笔记',
+      content: '',
+      tags: [],
+      starred: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      color: 'transparent',
+      archived: false
+    }
+    setNotes(prev => [newNote, ...prev])
+    setSelectedNote(newNote)
+    setEditTitle(newNote.title)
+    setEditContent(newNote.content)
+    setEditTags('')
+    setEditColor('transparent')
+    setIsEditing(true)
+  }
+
+  const selectNote = (note: Note) => {
+    setSelectedNote(note)
+    setEditTitle(note.title)
+    setEditContent(note.content)
+    setEditTags(note.tags.join(', '))
+    setEditColor(note.color)
+    setIsEditing(false)
+  }
+
+  const deleteNote = (id: string) => {
+    setNotes(prev => prev.filter(n => n.id !== id))
+    if (selectedNote?.id === id) {
+      setSelectedNote(null)
+      setIsEditing(false)
+    }
+  }
+
+  const toggleStar = (id: string) => {
+    setNotes(prev => prev.map(n =>
+      n.id === id ? { ...n, starred: !n.starred, updatedAt: Date.now() } : n
+    ))
+  }
+
+  const toggleArchive = (id: string) => {
+    setNotes(prev => prev.map(n =>
+      n.id === id ? { ...n, archived: !n.archived, updatedAt: Date.now() } : n
+    ))
+  }
+
+  const saveNote = () => {
+    if (!selectedNote) return
+
+    const tags = editTags.split(',').map(t => t.trim()).filter(Boolean)
+
+    setNotes(prev => prev.map(n =>
+      n.id === selectedNote.id
+        ? {
+            ...n,
+            title: editTitle || '无标题',
+            content: editContent,
+            tags,
+            color: editColor,
+            updatedAt: Date.now()
+          }
+        : n
+    ))
+
+    setSelectedNote(prev => prev ? {
+      ...prev,
+      title: editTitle || '无标题',
+      content: editContent,
+      tags,
+      color: editColor,
+      updatedAt: Date.now()
+    } : null)
+    setIsEditing(false)
+  }
+
+  const exportNotes = () => {
+    const dataStr = JSON.stringify(notes, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `weblinux-notes-${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const importNotes = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target?.result as string)
+        if (Array.isArray(imported)) {
+          setNotes(prev => [...imported.map((n: Note) => ({
+            ...n,
+            id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+          })), ...prev])
+        }
+      } catch {
+        console.warn('导入笔记失败')
+      }
+    }
+    reader.readAsText(file)
+    event.target.value = ''
+  }
+
   return (
-    <div style={{ display: 'flex', height: '100%', background: 'var(--window-bg)' }}>
+    <div style={{
+      display: 'flex',
+      height: '100%',
+      background: 'var(--window-bg)',
+      fontSize: '14px',
+      overflow: 'hidden'
+    }}>
       <div style={{
-        width: '280px',
-        borderRight: '1px solid var(--window-border)',
+        width: selectedNote ? '280px' : '100%',
+        borderRight: selectedNote ? '1px solid var(--window-border)' : 'none',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        transition: 'width 0.3s ease'
       }}>
-        <div style={{ padding: '12px', borderBottom: '1px solid var(--window-border)' }}>
-          <button
-            onClick={createNewNote}
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '6px',
-              border: 'none',
-              background: 'var(--accent)',
-              color: '#fff',
-              fontWeight: '600',
-              cursor: 'pointer',
-              marginBottom: '12px',
-            }}
-          >
-            + 新建笔记
-          </button>
-          <input
-            type="text"
-            placeholder="搜索笔记..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--window-border)',
-              background: 'var(--window-bg)',
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-            }}
-          />
-        </div>
-
-        <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--window-border)', overflowX: 'auto', whiteSpace: 'nowrap' }}>
-          <button
-            onClick={() => setSelectedCategory(null)}
-            style={{
-              padding: '4px 8px',
-              marginRight: '6px',
-              borderRadius: '4px',
-              border: '1px solid',
-              borderColor: selectedCategory === null ? 'var(--accent)' : 'var(--window-border)',
-              background: selectedCategory === null ? 'var(--accent-bg)' : 'transparent',
-              color: selectedCategory === null ? 'var(--accent)' : 'var(--text-secondary)',
-              fontSize: '11px',
-              cursor: 'pointer',
-            }}
-          >
-            全部
-          </button>
-          {defaultCategories.map(cat => (
+        <div style={{ padding: '16px', borderBottom: '1px solid var(--window-border)' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '12px'
+          }}>
+            <div style={{
+              flex: 1,
+              position: 'relative'
+            }}>
+              <Search size={16} style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                opacity: 0.5
+              }} />
+              <input
+                type="text"
+                placeholder="搜索笔记..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px 8px 36px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--window-border)',
+                  background: 'var(--titlebar-bg)',
+                  color: 'var(--titlebar-text)',
+                  outline: 'none',
+                  fontSize: '13px'
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
             <button
-              key={cat.name}
-              onClick={() => setSelectedCategory(cat.name)}
+              onClick={createNewNote}
               style={{
-                padding: '4px 8px',
-                marginRight: '6px',
-                borderRadius: '4px',
-                border: '1px solid',
-                borderColor: selectedCategory === cat.name ? cat.color : 'var(--window-border)',
-                background: selectedCategory === cat.name ? `${cat.color}20` : 'transparent',
-                color: selectedCategory === cat.name ? cat.color : 'var(--text-secondary)',
-                fontSize: '11px',
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: 'none',
+                background: 'var(--accent)',
+                color: 'white',
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                fontWeight: '500',
+                transition: 'all 0.2s'
               }}
             >
-              {cat.name}
+              <Plus size={16} />
+              新建笔记
             </button>
-          ))}
+            <button
+              onClick={exportNotes}
+              title="导出笔记"
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid var(--window-border)',
+                background: 'var(--titlebar-bg)',
+                color: 'var(--titlebar-text)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Download size={16} />
+            </button>
+            <label style={{
+              padding: '8px',
+              borderRadius: '8px',
+              border: '1px solid var(--window-border)',
+              background: 'var(--titlebar-bg)',
+              color: 'var(--titlebar-text)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Upload size={16} />
+              <input
+                type="file"
+                accept=".json"
+                onChange={importNotes}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center'
+          }}>
+            <button
+              onClick={() => setShowArchived(false)}
+              style={{
+                flex: 1,
+                padding: '6px',
+                borderRadius: '6px',
+                border: 'none',
+                background: !showArchived ? 'var(--accent)' : 'transparent',
+                color: !showArchived ? 'white' : 'var(--titlebar-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                transition: 'all 0.2s'
+              }}
+            >
+              <FileText size={14} style={{ marginRight: '4px' }} />
+              {notes.filter(n => !n.archived).length} 笔记
+            </button>
+            <button
+              onClick={() => setShowArchived(true)}
+              style={{
+                flex: 1,
+                padding: '6px',
+                borderRadius: '6px',
+                border: 'none',
+                background: showArchived ? 'var(--accent)' : 'transparent',
+                color: showArchived ? 'white' : 'var(--titlebar-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Archive size={14} style={{ marginRight: '4px' }} />
+              {notes.filter(n => n.archived).length} 归档
+            </button>
+          </div>
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
-          {filteredNotes.length === 0 ? (
-            <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px', fontSize: '13px' }}>
-              没有找到笔记
+        <div style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '8px'
+        }}>
+          {sortedNotes.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: 'var(--titlebar-text)',
+              opacity: 0.5
+            }}>
+              <FileText size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
+              <p>暂无笔记</p>
+              <p style={{ fontSize: '12px', marginTop: '8px' }}>
+                点击上方按钮创建第一个笔记
+              </p>
             </div>
           ) : (
-            filteredNotes.map(note => (
-              <div
-                key={note.id}
-                onClick={() => {
-                  setSelectedNote(note.id)
-                  setIsEditing(false)
-                  setShowPreview(false)
-                }}
-                style={{
-                  padding: '10px',
-                  marginBottom: '6px',
-                  borderRadius: '6px',
-                  background: selectedNote === note.id ? 'var(--accent-bg)' : 'transparent',
-                  cursor: 'pointer',
-                  border: '1px solid',
-                  borderColor: selectedNote === note.id ? 'var(--accent)' : 'transparent',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  {note.isPinned && <span style={{ fontSize: '10px' }}>📌</span>}
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {note.title}
-                  </span>
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '6px' }}>
-                  {note.content.slice(0, 60)}
-                </div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  <span style={{
-                    fontSize: '10px',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    background: defaultCategories.find(c => c.name === note.category)?.color || '#666',
-                    color: '#fff',
-                  }}>
-                    {note.category}
-                  </span>
-                  {note.tags.slice(0, 2).map(tag => (
-                    <span key={tag} style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '3px', background: 'var(--window-border)', color: 'var(--text-secondary)' }}>
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {allTags.length > 0 && (
-          <div style={{ padding: '8px 12px', borderTop: '1px solid var(--window-border)' }}>
-            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '6px' }}>所有标签</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-              {allTags.map(tag => (
-                <span
-                  key={tag}
-                  onClick={() => setSearchQuery(tag)}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr',
+              gap: '8px'
+            }}>
+              {sortedNotes.map(note => (
+                <div
+                  key={note.id}
+                  onClick={() => selectNote(note)}
                   style={{
-                    fontSize: '10px',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    background: searchQuery === tag ? 'var(--accent)' : 'var(--window-border)',
-                    color: searchQuery === tag ? '#fff' : 'var(--text-secondary)',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: selectedNote?.id === note.id
+                      ? '2px solid var(--accent)'
+                      : '1px solid var(--window-border)',
+                    background: note.color || 'var(--titlebar-bg)',
                     cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    position: 'relative'
                   }}
                 >
-                  #{tag}
-                </span>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    marginBottom: '8px'
+                  }}>
+                    <h3 style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: 'var(--titlebar-text)',
+                      margin: 0,
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {note.title || '无标题'}
+                    </h3>
+                    {note.starred && <Star size={14} fill="currentColor" color="#ffc107" />}
+                  </div>
+                  <p style={{
+                    fontSize: '12px',
+                    color: 'var(--titlebar-text)',
+                    opacity: 0.7,
+                    margin: '0 0 8px 0',
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    lineHeight: '1.4'
+                  }}>
+                    {note.content || '无内容'}
+                  </p>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11px',
+                    color: 'var(--titlebar-text)',
+                    opacity: 0.5
+                  }}>
+                    <Clock size={12} />
+                    {new Date(note.updatedAt).toLocaleDateString('zh-CN')}
+                  </div>
+                  {note.tags.length > 0 && (
+                    <div style={{
+                      display: 'flex',
+                      gap: '4px',
+                      marginTop: '8px',
+                      flexWrap: 'wrap'
+                    }}>
+                      {note.tags.slice(0, 3).map((tag, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: 'var(--accent)',
+                            color: 'white',
+                            fontSize: '10px'
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {selectedNote && (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          background: selectedNote.color || 'var(--window-bg)'
+        }}>
+          <div style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--window-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onFocus={() => setIsEditing(true)}
+              placeholder="笔记标题..."
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--window-border)',
+                background: 'var(--titlebar-bg)',
+                color: 'var(--titlebar-text)',
+                fontSize: '16px',
+                fontWeight: '600',
+                outline: 'none'
+              }}
+            />
+            <button
+              onClick={() => toggleStar(selectedNote.id)}
+              title="收藏"
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid var(--window-border)',
+                background: selectedNote.starred ? '#ffc107' : 'var(--titlebar-bg)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Star size={16} fill={selectedNote.starred ? 'white' : 'none'} color={selectedNote.starred ? 'white' : 'currentColor'} />
+            </button>
+            <button
+              onClick={() => toggleArchive(selectedNote.id)}
+              title={selectedNote.archived ? "取消归档" : "归档"}
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid var(--window-border)',
+                background: 'var(--titlebar-bg)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Archive size={16} />
+            </button>
+            <button
+              onClick={() => deleteNote(selectedNote.id)}
+              title="删除"
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid #dc3545',
+                background: 'var(--titlebar-bg)',
+                color: '#dc3545',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Trash2 size={16} />
+            </button>
+            <button
+              onClick={saveNote}
+              disabled={!isEditing}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                background: isEditing ? 'var(--accent)' : 'var(--titlebar-bg)',
+                color: isEditing ? 'white' : 'var(--titlebar-text)',
+                cursor: isEditing ? 'pointer' : 'not-allowed',
+                opacity: isEditing ? 1 : 0.5,
+                transition: 'all 0.2s',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+            >
+              保存
+            </button>
+          </div>
+
+          <div style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--window-border)'
+          }}>
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              marginBottom: '12px'
+            }}>
+              <Tag size={14} style={{ opacity: 0.7 }} />
+              <input
+                type="text"
+                value={editTags}
+                onChange={(e) => setEditTags(e.target.value)}
+                onFocus={() => setIsEditing(true)}
+                placeholder="标签（用逗号分隔）..."
+                style={{
+                  flex: 1,
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--window-border)',
+                  background: 'var(--titlebar-bg)',
+                  color: 'var(--titlebar-text)',
+                  fontSize: '13px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', opacity: 0.7 }}>颜色:</span>
+              {NOTE_COLORS.map(color => (
+                <button
+                  key={color.value}
+                  onClick={() => {
+                    setEditColor(color.value)
+                    setIsEditing(true)
+                  }}
+                  title={color.name}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: editColor === color.value ? '2px solid var(--accent)' : '1px solid var(--window-border)',
+                    background: color.value === 'transparent' ? 'linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #ff6b6b 100%)' : color.value,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                />
               ))}
             </div>
           </div>
-        )}
-      </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {currentNote ? (
-          <>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--window-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ flex: 1 }}>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    style={{
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--window-border)',
-                      background: 'var(--window-bg)',
-                      color: 'var(--text-primary)',
-                      width: '100%',
-                    }}
-                  />
-                ) : (
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)' }}>{currentNote.title}</h2>
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {isEditing ? (
-                  <>
-                    <button onClick={saveEdit} style={primaryButtonStyle}>保存</button>
-                    <button onClick={() => setIsEditing(false)} style={secondaryButtonStyle}>取消</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={startEditing} style={primaryButtonStyle}>编辑</button>
-                    <button onClick={() => setShowPreview(!showPreview)} style={secondaryButtonStyle}>
-                      {showPreview ? '编辑' : '预览'}
-                    </button>
-                    <button onClick={() => togglePin(currentNote.id)} style={secondaryButtonStyle}>
-                      {currentNote.isPinned ? '📌' : '📍'}
-                    </button>
-                    <button onClick={() => exportNote(currentNote)} style={secondaryButtonStyle}>导出</button>
-                    <button onClick={() => copyToClipboard(currentNote.content)} style={secondaryButtonStyle}>复制</button>
-                    <button onClick={() => deleteNote(currentNote.id)} style={dangerButtonStyle}>删除</button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {isEditing && (
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--window-border)', display: 'flex', gap: '12px' }}>
-                <select
-                  value={editCategory}
-                  onChange={(e) => setEditCategory(e.target.value)}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--window-border)',
-                    background: 'var(--window-bg)',
-                    color: 'var(--text-primary)',
-                    fontSize: '13px',
-                  }}
-                >
-                  {defaultCategories.map(cat => (
-                    <option key={cat.name} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  placeholder="标签 (用逗号分隔)"
-                  value={editTags}
-                  onChange={(e) => setEditTags(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--window-border)',
-                    background: 'var(--window-bg)',
-                    color: 'var(--text-primary)',
-                    fontSize: '13px',
-                  }}
-                />
-              </div>
-            )}
-
-            <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-              {isEditing ? (
-                <textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  placeholder="使用 Markdown 编写笔记..."
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    padding: '12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--window-border)',
-                    background: 'var(--window-bg)',
-                    color: 'var(--text-primary)',
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '14px',
-                    resize: 'none',
-                    lineHeight: 1.6,
-                  }}
-                />
-              ) : showPreview ? (
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '6px',
-                    background: 'var(--titlebar-bg)',
-                    lineHeight: 1.6,
-                  }}
-                  dangerouslySetInnerHTML={{ __html: marked(currentNote.content) as string }}
-                />
-              ) : (
-                <pre style={{
-                  margin: 0,
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: '14px',
-                  lineHeight: 1.6,
-                  color: 'var(--text-primary)',
-                }}>
-                  {currentNote.content}
-                </pre>
-              )}
-            </div>
-
-            <div style={{ padding: '8px 16px', borderTop: '1px solid var(--window-border)', fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-              <span>创建于: {new Date(currentNote.createdAt).toLocaleDateString('zh-CN')}</span>
-              <span>更新于: {new Date(currentNote.updatedAt).toLocaleDateString('zh-CN')}</span>
-            </div>
-          </>
-        ) : (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ fontSize: '64px' }}>📝</div>
-            <div style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>选择或创建一个笔记开始</div>
-            <button onClick={createNewNote} style={primaryButtonStyle}>创建新笔记</button>
+          <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              onFocus={() => setIsEditing(true)}
+              placeholder="开始写笔记..."
+              style={{
+                width: '100%',
+                height: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid var(--window-border)',
+                background: 'var(--titlebar-bg)',
+                color: 'var(--titlebar-text)',
+                fontSize: '14px',
+                lineHeight: '1.6',
+                resize: 'none',
+                outline: 'none',
+                fontFamily: 'inherit'
+              }}
+            />
           </div>
-        )}
-      </div>
+
+          <div style={{
+            padding: '12px 16px',
+            borderTop: '1px solid var(--window-border)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: '11px',
+            color: 'var(--titlebar-text)',
+            opacity: 0.5
+          }}>
+            <span>创建于: {new Date(selectedNote.createdAt).toLocaleString('zh-CN')}</span>
+            <span>更新于: {new Date(selectedNote.updatedAt).toLocaleString('zh-CN')}</span>
+          </div>
+        </div>
+      )}
+
+      {!selectedNote && (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--titlebar-text)',
+          opacity: 0.3
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <FileText size={64} style={{ margin: '0 auto 16px' }} />
+            <p style={{ fontSize: '16px' }}>选择一个笔记或创建新笔记</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 })
-
-const primaryButtonStyle: React.CSSProperties = {
-  padding: '6px 16px',
-  borderRadius: '6px',
-  border: 'none',
-  background: 'var(--accent)',
-  color: '#fff',
-  fontWeight: '600',
-  cursor: 'pointer',
-  fontSize: '13px',
-}
-
-const secondaryButtonStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  borderRadius: '6px',
-  border: '1px solid var(--window-border)',
-  background: 'transparent',
-  color: 'var(--text-secondary)',
-  cursor: 'pointer',
-  fontSize: '13px',
-}
-
-const dangerButtonStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  borderRadius: '6px',
-  border: '1px solid var(--error)',
-  background: 'transparent',
-  color: 'var(--error)',
-  cursor: 'pointer',
-  fontSize: '13px',
-}
-
-export default SmartNotes
