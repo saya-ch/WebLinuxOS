@@ -1,336 +1,238 @@
 # WebLinuxOS
 
-一个功能完整的基于Web的Linux桌面环境，完全在浏览器中运行。无需后端支持 - 所有功能都在客户端运行。
+[English](README.md) | [中文](README_CN.md)
 
-## 在线演示
+A fully functional web-based Linux desktop environment running entirely in the browser. No backend required - all features run client-side.
 
-访问在线演示：[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
+## Live Demo
 
-## 概述
+Visit the live demo: [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
 
-WebLinuxOS将Linux桌面体验带到您的浏览器中。它具有现代化的响应式界面，支持多窗口管理、虚拟桌面和120+应用程序 - 所有功能完全在客户端运行，无需后端依赖。
+## Overview
 
-这个项目展示了现代Web技术的可能性，将传统桌面环境的熟悉感与Web应用的可访问性相结合。
+WebLinuxOS brings the Linux desktop experience to your browser. It features a modern responsive interface with multi-window management, virtual desktops, and 120+ applications - all running entirely client-side without backend dependencies.
 
-## 核心特性
+This project demonstrates the possibilities of modern web technologies, combining the familiarity of traditional desktop environments with the accessibility of web applications.
 
-### 桌面环境
+## Key Features
 
-- **多虚拟桌面**：在多个工作区之间切换，支持自定义壁纸
-- **高级窗口管理**：平滑的动画效果用于打开、关闭，最小化和最大化窗口
-- **智能启动器**：模糊搜索和分类的应用列表
-- **系统托盘**：网络、音量和电池指示器以及快速控制
-- **全局搜索**：跨应用和文件搜索
-- **命令面板**：快速访问系统命令
-- **上下文菜单**：文件和桌面的右键菜单
-- **动态壁纸**：带有粒子和交互元素的动态壁纸效果
-- **启动画面**：优雅的启动动画
+### Desktop Environment
+- **Multiple Virtual Desktops**: Switch between workspaces with customizable wallpapers
+- **Advanced Window Management**: Smooth animations for opening, closing, minimizing, and maximizing windows
+- **Smart Launcher**: Fuzzy search and categorized app list
+- **System Tray**: Network, volume, and battery indicators with quick controls
+- **Global Search**: Cross-app and file search
+- **Command Palette**: Quick access to system commands
+- **Context Menus**: Right-click menus for files and desktop
+- **Dynamic Wallpapers**: Particle and interactive wallpaper effects
+- **Boot Screen**: Elegant startup animation
+- **Dark/Light Theme**: Customizable theme switching
 
-### 开发工具
+### Development Tools
+- **Code Editor**: Syntax highlighting and code editing for multiple languages
+- **API Tester**: Built-in REST API client supporting various HTTP methods
+- **JSON Formatter**: Beautify, validate, and format JSON data
+- **Regex Builder**: Interactive regex testing and building tools
+- **GitHub Trending**: View trending repositories directly in the OS
+- **Python REPL**: Full Python 3 runtime via Pyodide - run Python code in the browser
+- **90+ Terminal Commands**: File operations, system monitoring, network tools, and utilities
+- **Code Snippet Manager**: Save and organize code snippets for quick access
+- **Component Sandbox**: Test and preview React components
 
-- **代码编辑器**：支持多种语言的语法高亮和代码编辑功能
-- **API测试器**：内置REST API客户端，支持各种HTTP方法
-- **JSON格式化器**：美化、验证和格式化JSON数据
-- **正则表达式构建器**：交互式正则表达式测试和构建工具
-- **GitHub热门**：直接在操作系统中查看热门仓库
-- **Python REPL**：通过Pyodide实现完整的Python 3运行时 - 在浏览器中运行Python代码
-- **90+终端命令**：文件操作、系统监控、网络工具和实用程序
-- **代码片段管理器**：保存和组织代码片段以供快速访问
-- **组件沙盒**：测试和预览React组件
+### Office & Productivity
+- **Text/Markdown Editor**: Rich text editing with live preview
+- **Spreadsheet**: Basic spreadsheet functionality for data entry
+- **Calendar**: Date and event management with calendar view
+- **Todo List**: Task management with completion tracking
+- **Kanban Board**: Visual task organization with drag-and-drop
+- **Project Planner**: Timeline and milestone tracking
+- **Smart Notes**: Smart notes with tags, colors, archiving, and import/export
+- **Mind Map**: Idea visualization with node-based editing
+- **Presentation Creator**: Slide-based presentations
+- **Flashcards**: Learning and memorization tool
+- **Habit Tracker**: Track daily habits and progress
+- **Smart Dashboard**: Real-time data dashboard with weather, crypto, and system stats
 
-### 办公与效率
+### Utilities
+- **Calculator**: Scientific calculator with advanced functions and history
+- **Password Manager**: Secure password storage with encryption
+- **Pomodoro**: Productivity timer with customizable work sessions
+- **Color Picker**: Color selection in various formats with clipboard copy
+- **QR Code Generator**: Create QR codes for text, URLs, and contacts
+- **Unit Converter**: Conversion between measurement units
+- **Real-time Translator**: Multi-language translation
+- **Online Toolkit**: JSON parsing, Base64 encoding, URL encoding
+- **Clipboard Manager**: Advanced clipboard history and management
+- **Screenshot Tool**: Desktop screenshots
+- **Screen Recorder**: Record screen activity as video
 
-- **文本/标记编辑器**：带有实时预览的富文本编辑
-- **电子表格**：用于数据录入的基本电子表格功能
-- **日历**：日历视图的日期和事件管理
-- **待办事项**：带有完成跟踪的任务管理
-- **看板**：支持拖放的视觉任务组织
-- **项目规划器**：时间线和里程碑跟踪
-- **智能笔记**：带有标签、颜色、归档和导入/导出功能的智能笔记
-- **思维导图**：基于节点编辑的想法可视化
-- **演示文稿创建器**：基于幻灯片的演示文稿
-- **学习卡片**：学习和记忆工具
-- **习惯追踪器**：追踪日常习惯和进度
-- **智能仪表盘**：带有天气、加密货币和系统统计数据的实时数据仪表盘
+### Multimedia
+- **Music Player**: Audio playback with playlist support
+- **Video Player**: Video playback with controls
+- **Paint**: Basic drawing application with tools
+- **Image Viewer**: View and zoom images
+- **Camera**: Webcam access for video capture
+- **Sound Recorder**: Audio recording with playback
+- **Music Visualizer**: Audio visualization effects
 
-### 实用工具
+### Entertainment
+- **Weather App**: Current weather and forecast based on location data
+- **World Clock**: Multiple timezone display
+- **News Reader**: Latest news updates
+- **Games**: Snake, Tetris, and other classic games
+- **Virtual Pet**: Interactive pet simulation
+- **Particle System**: Visual effect demonstrations
 
-- **计算器**：带有高级函数和历史记录的科学计算器
-- **密码管理器**：带有加密的安全密码存储
-- **番茄工作法**：带有可自定义工作阶段的效率计时器
-- **取色器**：各种格式的颜色选择和剪贴板复制
-- **二维码生成器**：为文本、URL和联系人创建二维码
-- **单位转换器**：测量单位之间的转换
-- **实时翻译**：多语言翻译
-- **在线工具中心**：JSON解析、Base64编码、URL编码
-- **剪贴板管理器**：高级剪贴板历史和管理
-- **截图工具**：桌面截图
-- **屏幕录制器**：将屏幕活动录制为视频
-
-### 多媒体
-
-- **音乐播放器**：支持播放列表的音频播放
-- **视频播放器**：带有控制功能的视频播放
-- **画图**：带有工具的基本绘图应用
-- **图片查看器**：查看和缩放图片
-- **摄像头**：访问网络摄像头进行视频捕捉
-- **录音机**：带有播放的音频录制
-- **音乐可视化器**：音频可视化效果
-
-### 娱乐
-
-- **天气应用**：基于位置数据的当前天气和预报
-- **世界时钟**：多时区显示
-- **新闻阅读器**：最新新闻更新
-- **游戏**：贪吃蛇、俄罗斯方块和其他经典游戏
-- **虚拟宠物**：互动宠物模拟
-- **粒子系统**：视觉效果演示
-
-## 终端命令
-
-终端支持超过90个命令，包括：
-
-### 文件操作
-- `ls`, `cd`, `pwd`, `cat`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `du`
-
-### 系统信息
-- `whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `top`, `sysinfo`
-
-### 网络工具
-- `ping`, `ifconfig`, `curl`, `host`, `nslookup`, `dig`, `traceroute`, `nmap`
-
-### 系统监控
-- `vmstat`, `iostat`, `netstat`, `ss`, `lsof`, `htop`, `btop`
-
-### 实用程序
-- `echo`, `find`, `grep`, `env`, `export`, `which`, `file`
-
-### 效率工具
-- `translate`, `news`, `worldtime`, `todo`
-
-### 加密与安全
-- `base64`, `hash`, `openssl`, `ssh-keygen`
-
-### 数学工具
-- `calc`, `bc`, `expr`, `seq`
-
-### 有趣命令
-- `cowsay`, `fortune`, `joke`, `advice`, `flip`, `rps`
-
-## 快速开始
+## Quick Start
 
 ```bash
-# 克隆仓库
+# Clone repository
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 开发服务器
+# Development server
 npm run dev
 
-# 生产构建
+# Production build
 npm run build
 
-# 部署到GitHub Pages
+# Deploy to GitHub Pages
 npm run deploy
 ```
 
-## 键盘快捷键
+## Keyboard Shortcuts
 
-| 快捷键 | 功能 |
-|--------|------|
-| Ctrl+Shift+L | 打开启动器 |
-| Ctrl+K | 全局搜索 |
-| Ctrl+P | 命令面板 |
-| Alt+Tab | 切换窗口 |
-| Ctrl+Q | 关闭窗口 |
-| Ctrl+C | 复制 |
-| Ctrl+V | 粘贴 |
-| Ctrl+Shift+C | 终端中断 |
-| Ctrl+1-9 | 切换到桌面 |
-| Ctrl+Alt+方向键 | 切换桌面 |
-| Ctrl+Shift+1-9 | 将窗口移动到桌面 |
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+Shift+L | Open launcher |
+| Ctrl+K | Global search |
+| Ctrl+P | Command palette |
+| Alt+Tab | Switch windows |
+| Ctrl+Q | Close window |
+| Ctrl+C | Copy |
+| Ctrl+V | Paste |
+| Ctrl+Shift+C | Terminal interrupt |
+| Ctrl+1-9 | Switch to desktop |
+| Ctrl+Alt+Arrow | Switch desktop |
+| Ctrl+Shift+1-9 | Move window to desktop |
 
-## 技术栈
+## Tech Stack
 
-- **React 19**：带有最新功能的UI框架
-- **TypeScript 6**：类型安全的开发
-- **Zustand 5**：轻量级状态管理
-- **Vite 8**：优化的打包构建工具
-- **Pyodide**：完全在浏览器中运行的Python运行时
-- **Lucide React**：美观的图标库
-- **Tailwind CSS**：实用优先的样式设计
-- **IndexedDB**：持久化数据的本地存储
+- **React 19**: UI framework with latest features
+- **TypeScript 6**: Type-safe development
+- **Zustand 5**: Lightweight state management
+- **Vite 8**: Optimized build tool
+- **Pyodide**: Python runtime running entirely in the browser
+- **Lucide React**: Beautiful icon library
+- **Tailwind CSS**: Utility-first styling (used in some components)
+- **IndexedDB**: Local storage for persistent data
 
-## 架构
+## Architecture
 
-WebLinuxOS遵循模块化架构：
+WebLinuxOS follows a modular architecture:
 
 ```
 src/
-  apps/              # 各个应用程序
+  apps/              # Individual applications
   components/
-    desktop/         # 桌面环境组件
-  store/             # 状态管理工具
-  types.ts           # TypeScript类型定义
-  icons.tsx          # 图标组件
-  App.tsx            # 主应用程序组件
+    desktop/         # Desktop environment components
+  store/             # State management utilities
+  types.ts           # TypeScript type definitions
+  icons.tsx          # Icon components
+  App.tsx            # Main application component
 ```
 
-### 核心组件
+## Performance Optimization
 
-- **Desktop**：带有图标和壁纸的主工作区
-- **WindowManager**：处理窗口定位和z-index
-- **Taskbar**：系统托盘和窗口列表
-- **StartMenu**：带有分类的应用启动器
-- **CommandPalette**：快速命令执行
-- **GlobalSearch**：跨应用搜索
+WebLinuxOS is optimized for performance:
 
-### 状态管理
+- **Code Splitting**: Each application loads on demand
+- **Lazy Loading**: Applications only load when opened
+- **Memoization**: React components optimized with memo
+- **Efficient Rendering**: Virtual lists and optimized updates
+- **GPU Acceleration**: Animations using transform and opacity
+- **Throttle Optimization**: Drag and resize using requestAnimationFrame
 
-应用程序使用Zustand进行状态管理，包括：
-- 窗口状态跟踪
-- 文件系统管理
-- 桌面配置
-- 主题和壁纸设置
-- 用户偏好设置
+## Design System
 
-## 性能优化
+### Color System
+- Primary: `#8b7cf0` (Purple gradient)
+- Success: `#00d084`
+- Warning: `#ffb400`
+- Error: `#ff4757`
+- Info: `#3498db`
 
-WebLinuxOS针对性能进行了优化：
+### Shadow Elevation
+- Elevation 1: `0 2px 8px rgba(0, 0, 0, 0.15)`
+- Elevation 2: `0 4px 16px rgba(0, 0, 0, 0.2)`
+- Elevation 3: `0 8px 32px rgba(0, 0, 0, 0.25)`
 
-- **代码分割**：每个应用程序按需加载
-- **延迟加载**：应用程序仅在打开时加载
-- **记忆化**：React组件使用memo进行优化
-- **高效渲染**：虚拟列表和优化的更新
-- **缓存**：localStorage用于持久化数据
+### Animation System
+- Window open/close: 0.25s cubic-bezier
+- Hover effects: 0.15s ease
+- Bounce animation: 0.3s cubic-bezier
+- Glass blur: 20px blur
 
-## 浏览器支持
+## Browser Support
 
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
-注意：某些功能可能需要现代浏览器功能支持。
+Note: Some features may require modern browser capabilities.
 
-## 贡献
+## Contributing
 
-欢迎贡献！请遵循以下步骤：
+Contributions are welcome! Please follow these steps:
 
-1. Fork仓库
-2. 创建功能分支：`git checkout -b feature-name`
-3. 进行更改
-4. 运行测试：`npm run test`
-5. 构建：`npm run build`
-6. 提交pull request
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature-name`
+3. Make your changes
+4. Run tests: `npm run test`
+5. Build: `npm run build`
+6. Submit a pull request
 
-### 开发指南
+## License
 
-- 所有新代码使用TypeScript
-- 遵循现有代码模式
-- 为复杂逻辑添加适当的注释
-- 提交前进行充分测试
-- 根据需要更新文档
+MIT License - Free for personal or commercial use.
 
-### 创建新应用程序
+## Statistics
 
-要添加新应用程序：
+- **120+ Applications**: Rich built-in applications
+- **90+ Terminal Commands**: Comprehensive command-line interface
+- **150+ Source Files**: Modular and maintainable codebase
+- **50+ Keyboard Shortcuts**: Efficient workflow
 
-1. 在`src/apps/`中创建新文件（例如`MyApp.tsx`）
-2. 导出默认React组件
-3. 在`src/apps.tsx`中注册应用
-4. 添加应用图标和元数据
-5. 测试应用程序
+## Use Cases
 
-示例：
+WebLinuxOS is perfect for:
 
-```typescript
-import { memo } from 'react'
+- **Learning**: Explore desktop environment concepts
+- **Demonstration**: Showcase web application capabilities
+- **Development**: Test web technologies
+- **Accessibility**: Access your files from any device
+- **Productivity**: Lightweight online workspace
+- **Education**: Teaching programming and system concepts
+- **Prototyping**: Rapid desktop-class app prototyping
 
-export default memo(function MyApp() {
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>我的应用程序</h1>
-      <p>欢迎使用我的新应用！</p>
-    </div>
-  )
-})
-```
+## Roadmap
 
-## 许可证
+Planned future improvements:
 
-MIT许可证 - 可免费用于个人或商业目的。
-
-## 鸣谢
-
-- 灵感来自各种基于Web的操作系统和桌面环境
-- 使用现代Web技术和最佳实践构建
-- 欢迎社区贡献和反馈
-- 特别感谢所有贡献者
-
-## 统计数据
-
-- **120+应用程序**：丰富的内置应用程序
-- **90+终端命令**：全面的命令行界面
-- **150+源文件**：模块化和可维护的代码库
-- **50+键盘快捷键**：高效的工作流程
-
-## 使用场景
-
-WebLinuxOS非常适合：
-
-- **学习**：探索桌面环境概念
-- **演示**：展示Web应用能力
-- **开发**：测试Web技术
-- **可访问性**：从任何设备访问您的文件
-- **效率**：轻量级在线工作空间
-- **教育**：教授编程和系统概念
-- **原型制作**：快速原型桌面类应用
-
-## 支持
-
-如果您遇到问题或有建议：
-
-- 在GitHub上提交issue
-- 查看文档
-- 查看现有的问题和解决方案
-
-## 路线图
-
-计划未来的改进：
-
-- 增强移动端响应式设计
-- 更多应用程序和功能
-- 改进性能
-- 额外的语言支持
-- 云同步
-- PWA安装支持
-- 插件系统架构
-- 实时协作功能
-
-## 更新日志
-
-### v5.0.0 (2026-05-31)
-
-- 增强的智能笔记，带有标签、颜色、归档和导入/导出功能
-- 新的智能仪表盘，带有实时天气、加密货币和系统监控
-- 改进的错误处理和用户反馈
-- 更好的文档和开发者指南
-- 性能优化
-- 错误修复和UI改进
-
-### v4.9.1 (上一个版本)
-
-- 120+应用程序
-- 增强的终端，带有90+命令
-- 改进的窗口管理
-- 新的开发工具
-- 更好的多媒体支持
+- Enhanced mobile responsive design
+- More applications and features
+- Performance improvements
+- Additional language support
+- Cloud sync
+- PWA installation support
+- Plugin system architecture
+- Real-time collaboration features
 
 ---
 
-**版本**: 5.0.0
-**最后更新**: 2026-05-31
+**Version**: 5.1.0
+**Last Updated**: 2026-05-31
