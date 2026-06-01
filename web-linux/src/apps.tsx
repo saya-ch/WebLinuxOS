@@ -902,4 +902,8 @@ export const appRegistry: AppDefinition[] = [
   { id: 'bookmark-manager', name: '网络书签管理', icon: <BookmarkManagerIcon />, component: 'BookmarkManager', category: 'internet', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'code-snippet-share', name: '代码片段分享', icon: <CodeSnippetShareIcon />, component: 'CodeSnippetShare', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'system-health-dashboard', name: '智能系统健康监控', icon: <SystemHealthDashboardIcon />, component: 'SystemHealthDashboard', category: 'system', defaultWidth: 1200, defaultHeight: 900, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
+  { id: 'qr-generator-enhanced', name: '增强版二维码生成器', icon: <QRCodeIcon />, component: 'QRGeneratorEnhanced', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'api-tester-enhanced', name: '增强版API测试器', icon: <ApiIcon />, component: 'ApiTesterEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
+  { id: 'smart-notes-enhanced', name: '增强版智能笔记', icon: <NoteIcon />, component: 'SmartNotesEnhanced', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  { id: 'password-manager-enhanced', name: '增强版密码管理器', icon: <LockIcon />, component: 'PasswordManagerEnhanced', category: 'utilities', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
 ]
