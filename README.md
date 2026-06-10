@@ -254,3 +254,10 @@ Planned future improvements:
 
 **Version**: 5.2.0
 **Last Updated**: 2026-05-31
+
+---
+
+## 🏆 Badges
+
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
