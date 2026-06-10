@@ -14,7 +14,9 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       minify: 'terser',
       cssMinify: true,
-      chunkSizeWarningLimit: 1000,
+      target: 'es2020',
+      chunkSizeWarningLimit: 1500,
+      reportCompressedSize: false,
       rollupOptions: {
         output: {
           manualChunks: (id) => {
@@ -32,38 +34,29 @@ export default defineConfig(({ mode }) => {
             }
             if (id.includes('src/apps/')) {
               const match = id.match(/src\/apps\/([A-Za-z]+)\.tsx/)
-              if (match) {
-                return `app-${match[1]}`
-              }
+              if (match) return `app-${match[1]}`
             }
             return undefined
           },
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',
-        }
-      }
+        },
+      },
     },
     optimizeDeps: {
       include: ['react', 'react-dom', 'zustand'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
-      rolldownOptions: {
-        external: ['pyodide'],
-      }
     },
     server: {
       port: 5173,
       open: false,
       host: true,
-      headers: {
-        'Cross-Origin-Embedder-Policy': 'require-corp',
-        'Cross-Origin-Opener-Policy': 'same-origin'
-      }
     },
     preview: {
       port: 4173,
-      open: false
-    }
+      open: false,
+    },
   }
 })

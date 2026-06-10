@@ -107,22 +107,52 @@ const Weather = memo(function Weather() {
     setError(null)
     
     try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,uv_index&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset&timezone=auto`
-      )
-      
-      if (!response.ok) throw new Error('Failed to fetch weather data')
-      
-      const data = await response.json()
-      
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset,uv_index_max&timezone=auto`
+      const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&timezone=auto`
+
+      const [weatherResponse, airQualityResponse] = await Promise.allSettled([
+        fetch(weatherUrl),
+        fetch(airQualityUrl),
+      ])
+
+      if (weatherResponse.status === 'rejected' || !weatherResponse.value.ok) {
+        throw new Error('Failed to fetch weather data')
+      }
+
+      const data = await weatherResponse.value.json()
+
       const getConditionFromCode = (code: number): string => {
-        if (code === 0) return 'clear'
-        if (code <= 3) return 'partly-cloudy'
-        if (code <= 49) return 'fog'
-        if (code <= 69) return 'rain'
-        if (code <= 79) return 'snow'
-        if (code <= 99) return 'thunderstorm'
-        return 'cloudy'
+        const codes: Record<number, string> = {
+          0: 'clear',
+          1: 'sunny',
+          2: 'partly-cloudy',
+          3: 'cloudy',
+          45: 'fog',
+          48: 'fog',
+          51: 'light-rain',
+          53: 'light-rain',
+          55: 'light-rain',
+          56: 'light-rain',
+          57: 'light-rain',
+          61: 'rain',
+          63: 'rain',
+          65: 'rain',
+          66: 'rain',
+          67: 'rain',
+          71: 'snow',
+          73: 'snow',
+          75: 'snow',
+          77: 'snow',
+          80: 'rain',
+          81: 'rain',
+          82: 'heavy-rain',
+          85: 'snow',
+          86: 'snow',
+          95: 'thunderstorm',
+          96: 'thunderstorm',
+          99: 'thunderstorm',
+        }
+        return codes[code] || 'cloudy'
       }
 
       const getDayName = (dateStr: string, index: number): string => {
@@ -133,15 +163,50 @@ const Weather = memo(function Weather() {
         return days[date.getDay()]
       }
 
+      const aqiCategory = (aqi: number): string => {
+        if (aqi <= 50) return '优'
+        if (aqi <= 100) return '良'
+        if (aqi <= 150) return '轻度污染'
+        if (aqi <= 200) return '中度污染'
+        if (aqi <= 300) return '重度污染'
+        return '严重污染'
+      }
+
+      // First resolve air quality data
+      let airQualityData: AirQuality = {
+        aqi: 50,
+        category: '优',
+        pm25: 18,
+        pm10: 30,
+        o3: 45,
+        no2: 15,
+      }
+      if (airQualityResponse.status === 'fulfilled' && airQualityResponse.value.ok) {
+        try {
+          const aq = await airQualityResponse.value.json()
+          const aqiVal = Math.round(aq.current?.european_aqi || 50)
+          airQualityData = {
+            aqi: aqiVal,
+            category: aqiCategory(aqiVal),
+            pm25: Math.round(aq.current?.pm2_5 || 20),
+            pm10: Math.round(aq.current?.pm10 || 30),
+            o3: Math.round(aq.current?.ozone || 40),
+            no2: Math.round(aq.current?.nitrogen_dioxide || 20),
+          }
+        } catch {
+          // use fallback
+        }
+      }
+
       const weatherData: WeatherData = {
         temperature: Math.round(data.current.temperature_2m),
         humidity: data.current.relative_humidity_2m,
         weather: getConditionFromCode(data.current.weather_code),
         windSpeed: Math.round(data.current.wind_speed_10m),
-        uvIndex: data.current.uv_index || 0,
+        uvIndex: (data.daily.uv_index_max?.[0] ?? 0),
         feelsLike: Math.round(data.current.apparent_temperature),
-        pressure: 1013 + Math.floor(Math.random() * 20 - 10),
-        visibility: 8 + Math.floor(Math.random() * 12),
+        pressure: Math.round(data.current.surface_pressure ?? 1013),
+        visibility: 10,
         forecast: data.daily.time.slice(0, 7).map((date: string, i: number) => ({
           day: getDayName(date, i),
           date: date,
@@ -149,7 +214,7 @@ const Weather = memo(function Weather() {
           low: Math.round(data.daily.temperature_2m_min[i]),
           condition: getConditionFromCode(data.daily.weather_code[i]),
           icon: weatherConditions[getConditionFromCode(data.daily.weather_code[i])]?.icon || '🌤️',
-          precipitation: data.daily.precipitation_probability_max[i] || 0,
+          precipitation: data.daily.precipitation_probability_max?.[i] || 0,
         })),
         hourlyForecast: data.hourly.time.slice(0, 24).map((time: string, i: number) => {
           const date = new Date(time)
@@ -173,26 +238,13 @@ const Weather = memo(function Weather() {
             return `${hours}小时${minutes}分钟`
           })()
         },
-        airQuality: {
-          aqi: Math.floor(Math.random() * 150 + 20),
-          category: (() => {
-            const aqi = Math.floor(Math.random() * 150 + 20)
-            if (aqi <= 50) return '优'
-            if (aqi <= 100) return '良'
-            if (aqi <= 150) return '轻度污染'
-            return '中度污染'
-          })(),
-          pm25: Math.floor(Math.random() * 80 + 10),
-          pm10: Math.floor(Math.random() * 100 + 20),
-          o3: Math.floor(Math.random() * 100 + 30),
-          no2: Math.floor(Math.random() * 50 + 10),
-        }
+        airQuality: airQualityData,
       }
 
       setWeather(weatherData)
       setLastUpdated(new Date())
     } catch (err) {
-      setError('无法获取天气数据')
+      setError('无法获取天气数据，请检查网络或稍后再试')
       console.error('Weather fetch error:', err)
     } finally {
       setLoading(false)

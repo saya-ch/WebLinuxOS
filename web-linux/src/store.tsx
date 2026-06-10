@@ -4,12 +4,17 @@ import {
   findNodeById,
   findParentNode,
   findNodeByPath,
+  getNodePath,
   resolvePath,
   traverseTree,
   copyNodeWithNewParent,
   removeFromTree,
   updateInTree,
-  validateFileName
+  validateFileName,
+  generateFileId,
+  countNodes,
+  searchFiles,
+  sortNodes,
 } from './store/fileUtils'
 import {
   STORAGE_KEYS,
@@ -26,17 +31,42 @@ import {
 } from './store/defaults'
 
 // 加载初始数据
-const initialTheme: 'dark' | 'light' = loadFromStorage(STORAGE_KEYS.THEME, 'dark')
+function safeLoadArray<T>(key: string, defaultValue: T[]): T[] {
+  const raw = loadFromStorage<unknown>(key, defaultValue)
+  if (Array.isArray(raw)) return raw as T[]
+  return defaultValue
+}
+
+const initialTheme: 'dark' | 'light' = (() => {
+  const raw = loadFromStorage<string>(STORAGE_KEYS.THEME, 'dark')
+  return raw === 'light' ? 'light' : 'dark'
+})()
 const initialWallpaper: string = loadFromStorage(STORAGE_KEYS.WALLPAPER, '')
 const initialLiveWallpaper: string = loadFromStorage(STORAGE_KEYS.LIVE_WALLPAPER, 'particles')
-const initialLiveWallpaperEnabled: boolean = loadFromStorage(STORAGE_KEYS.LIVE_WALLPAPER_ENABLED, false)
-const initialCurrentDesktop = loadFromStorage(STORAGE_KEYS.CURRENT_DESKTOP, 1)
-const initialTotalDesktops = loadFromStorage(STORAGE_KEYS.TOTAL_DESKTOPS, 4)
-const initialFiles: FileNode[] = loadFromStorage(STORAGE_KEYS.FILES, defaultFiles)
-const initialDesktopIcons: DesktopIcon[] = loadFromStorage(STORAGE_KEYS.DESKTOP_ICONS, defaultDesktopIcons)
-const initialFavorites: string[] = loadFromStorage(STORAGE_KEYS.FAVORITES, [])
-const initialPinnedApps: string[] = loadFromStorage(STORAGE_KEYS.PINNED_APPS, ['terminal', 'files', 'browser', 'settings'])
-const initialRecentFiles: FileNode[] = loadFromStorage(STORAGE_KEYS.RECENT_FILES, [])
+const initialLiveWallpaperEnabled: boolean = Boolean(
+  loadFromStorage<boolean>(STORAGE_KEYS.LIVE_WALLPAPER_ENABLED, false)
+)
+const initialCurrentDesktop = Math.max(
+  1,
+  Math.min(9, Number(loadFromStorage<number>(STORAGE_KEYS.CURRENT_DESKTOP, 1)) || 1)
+)
+const initialTotalDesktops = Math.max(
+  1,
+  Math.min(9, Number(loadFromStorage<number>(STORAGE_KEYS.TOTAL_DESKTOPS, 4)) || 4)
+)
+const initialFiles: FileNode[] = safeLoadArray<FileNode>(STORAGE_KEYS.FILES, defaultFiles)
+const initialDesktopIcons: DesktopIcon[] = safeLoadArray<DesktopIcon>(
+  STORAGE_KEYS.DESKTOP_ICONS,
+  defaultDesktopIcons
+)
+const initialFavorites: string[] = safeLoadArray<string>(STORAGE_KEYS.FAVORITES, [])
+const initialPinnedApps: string[] = safeLoadArray<string>(STORAGE_KEYS.PINNED_APPS, [
+  'terminal',
+  'files',
+  'browser',
+  'settings',
+])
+const initialRecentFiles: FileNode[] = safeLoadArray<FileNode>(STORAGE_KEYS.RECENT_FILES, [])
 
 interface FileOperation {
   type: 'add' | 'delete' | 'update' | 'rename' | 'move' | 'copy'
@@ -540,18 +570,23 @@ export const useStore = create<Store>((set, get) => ({
 
   addFile: (parentId, name, type) =>
     set((s) => {
-      const id = `file-${Date.now()}`
-      const newNode: FileNode = { 
-        id, 
-        name, 
-        type, 
-        parentId, 
-        content: type === 'file' ? '' : undefined, 
-        children: type === 'folder' ? [] : undefined 
+      const validation = validateFileName(name)
+      if (!validation.valid) return s
+      const parent = findNodeById(s.files, parentId)
+      if (!parent || parent.type !== 'folder') return s
+      if (parent.children?.some((c) => c.name === name)) return s
+      const id = generateFileId()
+      const newNode: FileNode = {
+        id,
+        name: name.trim(),
+        type,
+        parentId,
+        content: type === 'file' ? '' : undefined,
+        children: type === 'folder' ? [] : undefined,
       }
       const newFiles = traverseTree(s.files, (node) => {
-        if (node.id === parentId && node.children) {
-          return { ...node, children: [...node.children, newNode] }
+        if (node.id === parentId) {
+          return { ...node, children: [...(node.children || []), newNode] }
         }
         return undefined
       })
@@ -884,4 +919,15 @@ export const useStore = create<Store>((set, get) => ({
   },
 }))
 
-export { findNodeById, findParentNode, findNodeByPath, resolvePath, validateFileName }
+export {
+  findNodeById,
+  findParentNode,
+  findNodeByPath,
+  getNodePath,
+  resolvePath,
+  validateFileName,
+  generateFileId,
+  countNodes,
+  searchFiles,
+  sortNodes,
+}

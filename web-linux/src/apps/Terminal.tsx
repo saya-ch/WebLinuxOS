@@ -12,36 +12,144 @@ function useLatest<T>(value: T): { current: T } {
 }
 
 function safeEval(expression: string): number {
-  const sanitized = expression
-    .replace(/\b(sqrt|sin|cos|tan|log|log10|abs|ceil|floor|round)\b/g, 'Math.$1')
-    .replace(/\b(PI|E)\b/g, 'Math.$1')
-  
-  const unsafePatterns = [
-    /(window|document|global|this|eval|Function|require|import|process)/gi,
-    /[`'"]/g,
-    /new\s+\w+/gi,
-    /\.(prototype|constructor)\b/g,
-    /(\[|\]|\{|\})\s*\{/g,
-  ]
-  
-  for (const pattern of unsafePatterns) {
-    if (pattern.test(expression)) {
-      throw new Error('不允许的表达式内容')
+  const trimmed = expression.trim()
+  if (!trimmed) throw new Error('表达式为空')
+
+  const tokens: Array<{ type: 'num' | 'op' | 'func'; value: string }> = []
+  let i = 0
+  const FUNCTIONS = new Set(['sqrt', 'sin', 'cos', 'tan', 'log', 'log10', 'abs', 'ceil', 'floor', 'round', 'exp', 'pow', 'min', 'max', 'sign'])
+  const CONSTANTS: Record<string, number> = { PI: Math.PI, E: Math.E, pi: Math.PI, e: Math.E }
+
+  while (i < trimmed.length) {
+    const ch = trimmed[i]
+    if (ch === ' ') { i++; continue }
+    if (/[0-9.]/.test(ch)) {
+      let num = ''
+      while (i < trimmed.length && /[0-9.]/.test(trimmed[i])) {
+        num += trimmed[i]
+        i++
+      }
+      if (isNaN(Number(num))) throw new Error('无效的数字: ' + num)
+      tokens.push({ type: 'num', value: num })
+      continue
     }
+    if (/[a-zA-Z_]/.test(ch)) {
+      let word = ''
+      while (i < trimmed.length && /[a-zA-Z0-9_]/.test(trimmed[i])) {
+        word += trimmed[i]
+        i++
+      }
+      if (word in CONSTANTS) {
+        tokens.push({ type: 'num', value: String(CONSTANTS[word]) })
+      } else if (FUNCTIONS.has(word.toLowerCase())) {
+        tokens.push({ type: 'func', value: word.toLowerCase() })
+      } else {
+        throw new Error('未知标识符: ' + word)
+      }
+      continue
+    }
+    if ('+-*/%^(),'.includes(ch)) {
+      tokens.push({ type: 'op', value: ch })
+      i++
+      continue
+    }
+    throw new Error('无效字符: ' + ch)
   }
-  
-  const validPattern = /^[\d+\-*/%^().\sMath]+$/
-  if (!validPattern.test(sanitized)) {
-    throw new Error('表达式包含无效字符')
+
+  let pos = 0
+  function peek() { return tokens[pos] }
+  function eat(type: string, value?: string) {
+    const t = tokens[pos]
+    if (!t || t.type !== type || (value && t.value !== value)) {
+      throw new Error('期望 ' + value + ' 但得到 ' + (t?.value || 'EOF'))
+    }
+    pos++
+    return t
   }
-  
-  const fn = new Function(`'use strict'; return (${sanitized})`)
-  const result = fn()
-  
-  if (typeof result !== 'number' || !isFinite(result)) {
-    throw new Error('结果不是有效数字')
+
+  function parseExpression(): number {
+    let value = parseTerm()
+    while (peek() && (peek()!.value === '+' || peek()!.value === '-')) {
+      const op = eat('op').value
+      const right = parseTerm()
+      value = op === '+' ? value + right : value - right
+    }
+    return value
   }
-  
+  function parseTerm(): number {
+    let value = parseFactor()
+    while (peek() && (peek()!.value === '*' || peek()!.value === '/' || peek()!.value === '%')) {
+      const op = eat('op').value
+      const right = parseFactor()
+      if (op === '*') value = value * right
+      else if (op === '/') { if (right === 0) throw new Error('除零错误'); value = value / right }
+      else value = value % right
+    }
+    return value
+  }
+  function parseFactor(): number {
+    const t = peek()
+    if (!t) throw new Error('意外的表达式结尾')
+    if (t.type === 'op' && t.value === '+') { pos++; return parseFactor() }
+    if (t.type === 'op' && t.value === '-') { pos++; return -parseFactor() }
+    if (t.type === 'op' && t.value === '(') {
+      pos++
+      const value = parseExpression()
+      eat('op', ')')
+      const next = peek()
+      if (next && next.type === 'op' && next.value === '^') {
+        pos++
+        const exp = parseFactor()
+        return Math.pow(value, exp)
+      }
+      return value
+    }
+    if (t.type === 'func') {
+      pos++
+      eat('op', '(')
+      if (t.value === 'pow' || t.value === 'min' || t.value === 'max') {
+        const args: number[] = [parseExpression()]
+        while (peek() && peek()!.value === ',') { pos++; args.push(parseExpression()) }
+        eat('op', ')')
+        if (t.value === 'pow') return Math.pow(args[0], args[1])
+        if (t.value === 'min') return Math.min(...args)
+        if (t.value === 'max') return Math.max(...args)
+      }
+      const arg = parseExpression()
+      eat('op', ')')
+      switch (t.value) {
+        case 'sqrt': return Math.sqrt(arg)
+        case 'sin': return Math.sin(arg)
+        case 'cos': return Math.cos(arg)
+        case 'tan': return Math.tan(arg)
+        case 'log': return Math.log(arg)
+        case 'log10': return Math.log10(arg)
+        case 'abs': return Math.abs(arg)
+        case 'ceil': return Math.ceil(arg)
+        case 'floor': return Math.floor(arg)
+        case 'round': return Math.round(arg)
+        case 'exp': return Math.exp(arg)
+        case 'sign': return Math.sign(arg)
+        default: throw new Error('未知函数: ' + t.value)
+      }
+    }
+    if (t.type === 'num') {
+      pos++
+      const num = Number(t.value)
+      const next = peek()
+      if (next && next.type === 'op' && next.value === '^') {
+        pos++
+        const exp = parseFactor()
+        return Math.pow(num, exp)
+      }
+      return num
+    }
+    throw new Error('意外的 token: ' + t.value)
+  }
+
+  const result = parseExpression()
+  if (pos !== tokens.length) throw new Error('表达式末尾存在多余内容')
+  if (typeof result !== 'number' || !isFinite(result)) throw new Error('结果不是有效数字')
   return result
 }
 
