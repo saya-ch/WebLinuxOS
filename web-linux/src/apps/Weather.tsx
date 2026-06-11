@@ -93,18 +93,118 @@ const popularCities = [
   { name: '孟买', country: '印度', lat: 19.0760, lon: 72.8777 },
 ]
 
+const FALLBACK_WEATHER: WeatherData = {
+  temperature: 22,
+  humidity: 65,
+  weather: 'partly-cloudy',
+  windSpeed: 12,
+  uvIndex: 5,
+  feelsLike: 24,
+  pressure: 1013,
+  visibility: 10,
+  forecast: [
+    { day: '今天', date: '', high: 26, low: 18, condition: 'partly-cloudy', icon: '⛅', precipitation: 10 },
+    { day: '明天', date: '', high: 28, low: 20, condition: 'sunny', icon: '☀️', precipitation: 5 },
+    { day: '周三', date: '', high: 25, low: 19, condition: 'rain', icon: '🌧️', precipitation: 70 },
+    { day: '周四', date: '', high: 23, low: 17, condition: 'cloudy', icon: '☁️', precipitation: 30 },
+    { day: '周五', date: '', high: 27, low: 20, condition: 'sunny', icon: '☀️', precipitation: 0 },
+    { day: '周六', date: '', high: 29, low: 21, condition: 'clear', icon: '☀️', precipitation: 0 },
+    { day: '周日', date: '', high: 28, low: 20, condition: 'partly-cloudy', icon: '⛅', precipitation: 15 },
+  ],
+  hourlyForecast: Array.from({ length: 24 }, (_, i) => ({
+    time: `${i}:00`,
+    temp: 20 + Math.sin(i / 24 * Math.PI) * 8,
+    icon: i >= 6 && i <= 18 ? '☀️' : '🌙',
+    precipitation: Math.floor(Math.random() * 30),
+  })),
+  alerts: [],
+  airQuality: { aqi: 58, category: '良', pm25: 32, pm10: 48, o3: 62, no2: 25 },
+  sunInfo: { sunrise: '06:12', sunset: '19:45', dayLength: '13小时33分钟' },
+}
+
+function getCachedWeather(cityKey: string): WeatherData | null {
+  try {
+    const raw = localStorage.getItem(`weather-cache-${cityKey}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    const age = Date.now() - parsed.timestamp
+    if (age < 10 * 60 * 1000) { // 10 分钟缓存
+      return parsed.data
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+function setCachedWeather(cityKey: string, data: WeatherData) {
+  try {
+    localStorage.setItem(`weather-cache-${cityKey}`, JSON.stringify({
+      timestamp: Date.now(),
+      data
+    }))
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function generateSmartAdvice(weather: WeatherData): string[] {
+  const advice: string[] = []
+  const temp = weather.temperature
+  const condition = weather.weather
+
+  // 温度建议
+  if (temp >= 30) advice.push('🔥 天气炎热，建议穿轻便衣物并多喝水')
+  else if (temp >= 25) advice.push('☀️ 温暖舒适，适合户外活动')
+  else if (temp >= 15) advice.push('👕 气温适中，建议穿薄外套或长袖')
+  else if (temp >= 5) advice.push('🧥 天气较冷，建议穿厚外套保暖')
+  else advice.push('❄️ 寒冷天气，请注意保暖和防风')
+
+  // 天气条件建议
+  if (condition.includes('rain') || condition.includes('storm')) advice.push('☔ 记得带伞，注意防雨')
+  if (condition.includes('snow')) advice.push('⛄ 下雪天气，请注意防滑保暖')
+  if (condition.includes('fog')) advice.push('🌫️ 有雾，能见度较低，请小心')
+  if (condition === 'clear' || condition === 'sunny') advice.push('🕶️ 阳光充足，可考虑戴墨镜')
+
+  // 风力
+  if (weather.windSpeed >= 30) advice.push('💨 风力较大，请避免高空作业')
+
+  // UV
+  if (weather.uvIndex >= 8) advice.push('🌞 紫外线强，外出请做好防晒')
+  else if (weather.uvIndex >= 6) advice.push('🌞 紫外线中等，注意防晒')
+
+  // 空气质量
+  if (weather.airQuality) {
+    if (weather.airQuality.aqi >= 150) advice.push('🏭 空气质量较差，敏感人群减少户外活动')
+    else if (weather.airQuality.aqi >= 100) advice.push('🏭 空气质量一般，可考虑佩戴口罩')
+  }
+
+  return advice.slice(0, 4)
+}
+
 const Weather = memo(function Weather() {
   const [selectedCity, setSelectedCity] = useState(popularCities[0])
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [, setError] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showCityList, setShowCityList] = useState(false)
   const [unit, setUnit] = useState<'celsius' | 'fahrenheit'>('celsius')
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [useGeoLocation, setUseGeoLocation] = useState(false)
+  const [geoStatus, setGeoStatus] = useState<string>('')
 
   const fetchWeather = useCallback(async (city: typeof selectedCity) => {
     setLoading(true)
-    setError(null)
+    setErrorMsg(null)
+
+    // 先尝试使用缓存
+    const cacheKey = `${city.lat.toFixed(2)}-${city.lon.toFixed(2)}`
+    const cached = getCachedWeather(cacheKey)
+    if (cached) {
+      setWeather(cached)
+      setLoading(false)
+      setLastUpdated(new Date())
+    }
     
     try {
       const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset,uv_index_max&timezone=auto`
@@ -242,14 +342,19 @@ const Weather = memo(function Weather() {
       }
 
       setWeather(weatherData)
+      setCachedWeather(cacheKey, weatherData)
       setLastUpdated(new Date())
     } catch (err) {
-      setError('无法获取天气数据，请检查网络或稍后再试')
+      setErrorMsg('无法获取天气数据，使用缓存或模拟数据')
       console.error('Weather fetch error:', err)
+      // 如果没有缓存，使用模拟数据
+      if (!weather) {
+        setWeather(FALLBACK_WEATHER)
+      }
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [weather])
 
   useEffect(() => {
     fetchWeather(selectedCity)
@@ -269,6 +374,36 @@ const Weather = memo(function Weather() {
     }
     return temp
   }
+
+  const handleGeoLocation = () => {
+    setGeoStatus('正在获取位置...')
+    setUseGeoLocation(true)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newCity = {
+            name: '当前位置',
+            country: `${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`,
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          }
+          setSelectedCity(newCity)
+          setGeoStatus('位置获取成功')
+          setTimeout(() => setGeoStatus(''), 2000)
+        },
+        (error) => {
+          setGeoStatus('无法获取位置: ' + error.message)
+          setTimeout(() => setGeoStatus(''), 3000)
+        },
+        { timeout: 10000 }
+      )
+    } else {
+      setGeoStatus('浏览器不支持地理定位')
+      setTimeout(() => setGeoStatus(''), 3000)
+    }
+  }
+
+  const smartAdvice = weather ? generateSmartAdvice(weather) : []
 
   if (loading && !weather) {
     return (
@@ -296,9 +431,35 @@ const Weather = memo(function Weather() {
       overflow: 'auto'
     }}>
       <div style={{ padding: 24 }}>
+        {geoStatus && (
+          <div style={{
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: 8,
+            padding: '8px 16px',
+            marginBottom: 16,
+            color: '#fff',
+            fontSize: 13,
+            textAlign: 'center'
+          }}>
+            {geoStatus}
+          </div>
+        )}
+        {errorMsg && (
+          <div style={{
+            background: 'rgba(255,152,0,0.3)',
+            borderRadius: 8,
+            padding: '8px 16px',
+            marginBottom: 16,
+            color: '#fff',
+            fontSize: 13,
+            textAlign: 'center'
+          }}>
+            ⚠️ {errorMsg}
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
               <button
                 onClick={() => setShowCityList(!showCityList)}
                 style={{
@@ -311,8 +472,25 @@ const Weather = memo(function Weather() {
                   fontSize: 24,
                   fontWeight: 700
                 }}
+                title="选择城市"
               >
                 📍 {selectedCity.name}
+              </button>
+              <button
+                onClick={handleGeoLocation}
+                style={{
+                  background: useGeoLocation ? 'rgba(76,175,80,0.5)' : 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '8px 12px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  transition: 'background 0.2s'
+                }}
+                title="使用我的位置"
+              >
+                🎯 定位
               </button>
               {showCityList && (
                 <div style={{
@@ -596,6 +774,32 @@ const Weather = memo(function Weather() {
                 ))}
               </div>
             </div>
+
+            {smartAdvice.length > 0 && (
+              <div style={{
+                marginTop: 24,
+                background: 'rgba(255,255,255,0.08)',
+                borderRadius: 16,
+                padding: '20px',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <h3 style={{ color: '#fff', margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>
+                  💡 智能建议
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {smartAdvice.map((advice, idx) => (
+                    <div key={idx} style={{
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: 13,
+                      lineHeight: 1.5,
+                      padding: '6px 0'
+                    }}>
+                      {advice}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {lastUpdated && (
               <div style={{

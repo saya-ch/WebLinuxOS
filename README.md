@@ -68,6 +68,7 @@ Unlike a typical desktop simulator, WebLinuxOS integrates real public APIs and p
 - **Flashcards**: Learning and memorization tool
 - **Habit Tracker**: Track daily habits and progress
 - **Smart Dashboard**: Real-time data dashboard with weather and system stats
+- **Unified Dashboard**: Consolidated intelligence dashboard combining weather data, cryptocurrency prices, GitHub trending projects, and live system metrics in a single unified view
 
 ### Utilities
 - **Calculator**: Scientific calculator with advanced functions and history
@@ -203,8 +204,8 @@ MIT License - Free for personal or commercial use.
 
 ---
 
-**Version**: 5.2.0
-**Last Updated**: 2026-05-31
+**Version**: 5.5.0
+**Last Updated**: 2026-06-11
 
 ---
 
