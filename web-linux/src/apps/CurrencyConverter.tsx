@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 
 interface ExchangeRates {
   [currency: string]: number
@@ -57,6 +57,27 @@ const FALLBACK_RATES: ExchangeRates = {
   NZD: 1.65,
 }
 
+const CACHE_KEY = 'weblinux-currency-rates-v1'
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+
+function getCachedRates(): { rates: ExchangeRates; timestamp: number } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (Date.now() - parsed.timestamp > CACHE_TTL) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function setCachedRates(rates: ExchangeRates) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ rates, timestamp: Date.now() }))
+  } catch { /* ignore */ }
+}
+
 export default function CurrencyConverter() {
   const [fromCurrency, setFromCurrency] = useState<string>('USD')
   const [toCurrency, setToCurrency] = useState<string>('CNY')
@@ -64,38 +85,56 @@ export default function CurrencyConverter() {
   const [toAmount, setToAmount] = useState<string>('')
   const [rates, setRates] = useState<ExchangeRates>({})
   const [loading, setLoading] = useState(true)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [history, setHistory] = useState<{ from: string; to: string; amount: string; result: string; time: Date }[]>([])
 
-  const fetchRates = async () => {
+  const fetchRates = useCallback(async () => {
+    // 先命中缓存
+    const cached = getCachedRates()
+    if (cached) {
+      setRates(cached.rates)
+      setLastUpdated(new Date(cached.timestamp))
+      setLoading(false)
+    }
+
     try {
       const response = await fetch('https://open.er-api.com/v6/latest/USD')
       if (!response.ok) {
-        throw new Error('Failed to fetch rates')
+        throw new Error(`服务返回错误: ${response.status}`)
       }
       const data = await response.json()
-      setRates(data.rates)
-      setLastUpdated(new Date())
+      if (data && data.rates && typeof data.rates === 'object') {
+        setRates(data.rates)
+        setLastUpdated(new Date())
+        setCachedRates(data.rates)
+        setErrorMsg(null)
+      } else {
+        throw new Error('返回的数据格式不正确')
+      }
     } catch (err) {
-      console.warn('Using fallback rates:', err)
-      setRates(FALLBACK_RATES)
-      setLastUpdated(new Date())
+      console.warn('Currency fetch failed:', err)
+      if (!cached) {
+        setRates(FALLBACK_RATES)
+        setLastUpdated(new Date())
+      }
+      setErrorMsg('实时汇率获取失败，' + (cached ? '使用缓存汇率' : '使用参考汇率'))
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchRates()
-    const interval = setInterval(fetchRates, 60 * 60 * 1000) // 每小时更新
+    const interval = setInterval(fetchRates, 60 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchRates])
 
   const convert = useMemo(() => {
     if (!rates[fromCurrency] || !rates[toCurrency] || !fromAmount || isNaN(parseFloat(fromAmount))) {
       return ''
     }
-    
+
     const amount = parseFloat(fromAmount)
     const usdAmount = amount / rates[fromCurrency]
     const result = usdAmount * rates[toCurrency]
@@ -107,10 +146,8 @@ export default function CurrencyConverter() {
   }, [convert])
 
   const swapCurrencies = () => {
-    const temp = fromCurrency
     setFromCurrency(toCurrency)
-    setToCurrency(temp)
-    setFromAmount(toAmount)
+    setToCurrency(fromCurrency)
   }
 
   const addToHistory = () => {
@@ -322,13 +359,23 @@ export default function CurrencyConverter() {
         </div>
 
         {lastUpdated && (
-          <div style={{ 
-            marginTop: '16px', 
-            textAlign: 'center', 
-            color: '#888', 
-            fontSize: '12px' 
+          <div style={{
+            marginTop: '16px',
+            textAlign: 'center',
+            color: '#888',
+            fontSize: '12px'
           }}>
             {loading ? '加载中...' : `最后更新: ${formatDate(lastUpdated)}`}
+          </div>
+        )}
+        {errorMsg && (
+          <div style={{
+            marginTop: '8px',
+            textAlign: 'center',
+            color: 'rgb(239, 68, 68)',
+            fontSize: '12px'
+          }}>
+            ⚠️ {errorMsg}
           </div>
         )}
       </div>

@@ -205,7 +205,7 @@ const Weather = memo(function Weather() {
       setLoading(false)
       setLastUpdated(new Date())
     }
-    
+
     try {
       const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset,uv_index_max&timezone=auto`
       const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&timezone=auto`
@@ -221,46 +221,24 @@ const Weather = memo(function Weather() {
 
       const data = await weatherResponse.value.json()
 
-      const getConditionFromCode = (code: number): string => {
-        const codes: Record<number, string> = {
-          0: 'clear',
-          1: 'sunny',
-          2: 'partly-cloudy',
-          3: 'cloudy',
-          45: 'fog',
-          48: 'fog',
-          51: 'light-rain',
-          53: 'light-rain',
-          55: 'light-rain',
-          56: 'light-rain',
-          57: 'light-rain',
-          61: 'rain',
-          63: 'rain',
-          65: 'rain',
-          66: 'rain',
-          67: 'rain',
-          71: 'snow',
-          73: 'snow',
-          75: 'snow',
-          77: 'snow',
-          80: 'rain',
-          81: 'rain',
-          82: 'heavy-rain',
-          85: 'snow',
-          86: 'snow',
-          95: 'thunderstorm',
-          96: 'thunderstorm',
-          99: 'thunderstorm',
-        }
-        return codes[code] || 'cloudy'
+      const weatherCodeMap: Record<number, string> = {
+        0: 'clear', 1: 'sunny', 2: 'partly-cloudy', 3: 'cloudy',
+        45: 'fog', 48: 'fog',
+        51: 'light-rain', 53: 'light-rain', 55: 'light-rain',
+        56: 'light-rain', 57: 'light-rain',
+        61: 'rain', 63: 'rain', 65: 'rain', 66: 'rain', 67: 'rain',
+        71: 'snow', 73: 'snow', 75: 'snow', 77: 'snow',
+        80: 'rain', 81: 'rain', 82: 'heavy-rain',
+        85: 'snow', 86: 'snow',
+        95: 'thunderstorm', 96: 'thunderstorm', 99: 'thunderstorm',
       }
+      const getConditionFromCode = (code: number): string => weatherCodeMap[code] || 'cloudy'
 
       const getDayName = (dateStr: string, index: number): string => {
         if (index === 0) return '今天'
         if (index === 1) return '明天'
-        const date = new Date(dateStr)
-        const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-        return days[date.getDay()]
+        const day = new Date(dateStr).getDay()
+        return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][day]
       }
 
       const aqiCategory = (aqi: number): string => {
@@ -272,14 +250,8 @@ const Weather = memo(function Weather() {
         return '严重污染'
       }
 
-      // First resolve air quality data
       let airQualityData: AirQuality = {
-        aqi: 50,
-        category: '优',
-        pm25: 18,
-        pm10: 30,
-        o3: 45,
-        no2: 15,
+        aqi: 50, category: '优', pm25: 18, pm10: 30, o3: 45, no2: 15,
       }
       if (airQualityResponse.status === 'fulfilled' && airQualityResponse.value.ok) {
         try {
@@ -297,6 +269,12 @@ const Weather = memo(function Weather() {
           // use fallback
         }
       }
+
+      const sunrise = new Date(data.daily.sunrise[0])
+      const sunset = new Date(data.daily.sunset[0])
+      const diffMs = sunset.getTime() - sunrise.getTime()
+      const dayHours = Math.floor(diffMs / (1000 * 60 * 60))
+      const dayMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
 
       const weatherData: WeatherData = {
         temperature: Math.round(data.current.temperature_2m),
@@ -327,16 +305,9 @@ const Weather = memo(function Weather() {
         }),
         alerts: [],
         sunInfo: {
-          sunrise: new Date(data.daily.sunrise[0]).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-          sunset: new Date(data.daily.sunset[0]).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-          dayLength: (() => {
-            const sunrise = new Date(data.daily.sunrise[0])
-            const sunset = new Date(data.daily.sunset[0])
-            const diffMs = sunset.getTime() - sunrise.getTime()
-            const hours = Math.floor(diffMs / (1000 * 60 * 60))
-            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-            return `${hours}小时${minutes}分钟`
-          })()
+          sunrise: sunrise.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+          sunset: sunset.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+          dayLength: `${dayHours}小时${dayMinutes}分钟`,
         },
         airQuality: airQualityData,
       }
@@ -344,21 +315,21 @@ const Weather = memo(function Weather() {
       setWeather(weatherData)
       setCachedWeather(cacheKey, weatherData)
       setLastUpdated(new Date())
+      setErrorMsg(null)
     } catch (err) {
-      setErrorMsg('无法获取天气数据，使用缓存或模拟数据')
       console.error('Weather fetch error:', err)
-      // 如果没有缓存，使用模拟数据
-      if (!weather) {
-        setWeather(FALLBACK_WEATHER)
-      }
+      setErrorMsg('无法获取实时天气数据，显示本地缓存/模拟信息')
+      // 使用 ref 检查当前是否有天气数据，避免闭包陷阱
+      setWeather((current) => current || FALLBACK_WEATHER)
+      if (!lastUpdated) setLastUpdated(new Date())
     } finally {
       setLoading(false)
     }
-  }, [weather])
+  }, [lastUpdated])
 
   useEffect(() => {
     fetchWeather(selectedCity)
-    const interval = setInterval(() => fetchWeather(selectedCity), 300000)
+    const interval = setInterval(() => fetchWeather(selectedCity), 30 * 60 * 1000)
     return () => clearInterval(interval)
   }, [selectedCity, fetchWeather])
 

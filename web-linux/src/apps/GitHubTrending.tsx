@@ -28,8 +28,9 @@ interface CacheEntry {
   timestamp: number
 }
 
-const CACHE_TTL = 5 * 60 * 1000
-const CACHE_KEY_PREFIX = 'weblinux-github-trending'
+const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+const CACHE_KEY_PREFIX = 'weblinux-github-trending-v2'
+const FALLBACK_CACHE_KEY = 'weblinux-github-fallback-v2'
 
 const languages: LanguageOption[] = [
   { value: '', label: '全部语言' },
@@ -403,36 +404,69 @@ export default function GitHubTrending() {
       setRepos(cache.data)
       setLastUpdated(new Date(cache.timestamp))
       setLoading(false)
-      return
     }
 
     try {
       const days = dateRange === 'daily' ? 1 : dateRange === 'weekly' ? 7 : 30
-      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-      let query = `created:>=${since}`
+      // 策略 1: 基于 push 时间 + 星数，尝试找到最近活跃的流行仓库
+      const pushedSince = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+      const queries: string[] = []
       if (selectedLanguage) {
-        query += ` language:${selectedLanguage}`
+        queries.push(`pushed:>=${pushedSince} language:${selectedLanguage}`)
+        queries.push(`language:${selectedLanguage} stars:>1000`)
+      } else {
+        queries.push(`pushed:>=${pushedSince}`)
+        queries.push('stars:>10000')
       }
 
-      const response = await fetch(
-        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=30`
-      )
+      let finalItems: GitHubRepo[] = []
+      let lastError: Error | null = null
 
-      if (!response.ok) {
-        throw new Error('获取数据失败')
+      for (const query of queries) {
+        try {
+          const response = await fetch(
+            `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=30`,
+            { headers: { Accept: 'application/vnd.github+json' } }
+          )
+          if (!response.ok) {
+            lastError = new Error(`GitHub API 错误: ${response.status} ${response.statusText}`)
+            continue
+          }
+          const data = await response.json()
+          const items: GitHubRepo[] = data.items || []
+          // 合并并去重
+          const seen = new Set(finalItems.map((r) => r.id))
+          for (const item of items) {
+            if (!seen.has(item.id)) finalItems.push(item)
+          }
+          if (finalItems.length >= 20) break
+        } catch (e) {
+          lastError = e instanceof Error ? e : new Error(String(e))
+        }
       }
 
-      const data = await response.json()
-      const items = (data.items || []) as GitHubRepo[]
-      setRepos(items)
+      if (!finalItems.length) {
+        throw lastError || new Error('没有找到匹配的仓库')
+      }
+
+      finalItems.sort((a, b) => b.stargazers_count - a.stargazers_count)
+      setRepos(finalItems)
       setLastUpdated(new Date())
-      setCache(selectedLanguage, dateRange, items)
+      setCache(selectedLanguage, dateRange, finalItems)
+      setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '获取失败')
-      setRepos(mockRepos)
-      setLastUpdated(new Date())
-      setCache(selectedLanguage, dateRange, mockRepos)
+      const msg = err instanceof Error ? err.message : '获取失败'
+      setError(msg + (cache ? ' (使用缓存数据)' : ' (使用示例数据)'))
+      if (!cache) {
+        setRepos(mockRepos)
+        setLastUpdated(new Date())
+        setCache(selectedLanguage, dateRange, mockRepos)
+        try {
+          localStorage.setItem(FALLBACK_CACHE_KEY, JSON.stringify({ data: mockRepos, timestamp: Date.now() }))
+        } catch { /* ignore */ }
+      }
     } finally {
       setLoading(false)
     }
@@ -603,7 +637,21 @@ export default function GitHubTrending() {
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-        {loading && (
+        {error && (
+          <div style={{
+            marginBottom: 12,
+            padding: '10px 14px',
+            borderRadius: 8,
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: 'rgb(239, 68, 68)',
+            fontSize: 12,
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
+
+        {loading && !repos.length && (
           <div style={{ textAlign: 'center', padding: 40 }}>
             <div style={{ fontSize: 32 }}>🚀</div>
             <div style={{ marginTop: 8, color: mutedColor }}>正在加载热门仓库...</div>

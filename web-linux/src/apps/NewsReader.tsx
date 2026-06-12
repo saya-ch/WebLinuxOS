@@ -19,12 +19,81 @@ const CATEGORIES = [
   { id: 'sports', name: '体育', icon: '⚽' },
 ]
 
-// 使用免费的Spaceflight News API
+// 公开可用的新闻/内容 API（均为 CORS 友好）
+// - Spaceflight News API: 航天/科学相关新闻
+// - Hacker News Algolia API: 技术/商业社区热门话题
 const SPACEFLIGHT_NEWS_API = 'https://api.spaceflightnewsapi.net/v4'
+const HACKERNEWS_API = 'https://hn.algolia.com/api/v1'
+const CACHE_KEY_PREFIX = 'weblinux-news-v1'
+const CACHE_TTL = 10 * 60 * 1000
+
+function getCategoryCache(category: string, query: string): NewsArticle[] | null {
+  try {
+    const raw = localStorage.getItem(`${CACHE_KEY_PREFIX}-${category}-${query}`)
+    if (!raw) return null
+    const parsed: { articles: NewsArticle[]; timestamp: number } = JSON.parse(raw)
+    if (Date.now() - parsed.timestamp > CACHE_TTL) return null
+    return parsed.articles
+  } catch { return null }
+}
+
+function setCategoryCache(category: string, query: string, articles: NewsArticle[]) {
+  try {
+    localStorage.setItem(
+      `${CACHE_KEY_PREFIX}-${category}-${query}`,
+      JSON.stringify({ articles, timestamp: Date.now() })
+    )
+  } catch { /* ignore */ }
+}
 
 const getCategoryName = (id: string) => CATEGORIES.find(c => c.id === id)?.name || '综合'
 
-// 生成固定日期，避免在渲染期间调用 Date.now()
+// 调用 Hacker News Algolia API 获取真实科技/商业/综合内容
+async function fetchHackerNewsFromApi(query?: string): Promise<NewsArticle[]> {
+  const endpoint = query
+    ? `${HACKERNEWS_API}/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=15`
+    : `${HACKERNEWS_API}/search?tags=front_page&hitsPerPage=15`
+  const response = await fetch(endpoint)
+  if (!response.ok) throw new Error(`HackerNews API ${response.status}`)
+  const data = await response.json()
+  const hits = data.hits || []
+  return hits
+    .filter((h: { title?: string | null }) => h && h.title)
+    .map((h: {
+      title: string; url?: string; author?: string
+      created_at_i?: number; points?: number; num_comments?: number; objectID?: string
+    }) => ({
+      title: h.title,
+      description: `${h.points || 0} points · by ${h.author || 'unknown'}${h.num_comments ? ` · ${h.num_comments} comments` : ''}`,
+      url: h.url || `https://news.ycombinator.com/item?id=${h.objectID || ''}`,
+      source: { name: 'Hacker News' },
+      publishedAt: h.created_at_i ? new Date(h.created_at_i * 1000).toISOString() : new Date().toISOString(),
+    }))
+}
+
+// 调用 Spaceflight News API 获取真实航天/科学新闻
+async function fetchSpaceflightFromApi(query?: string): Promise<NewsArticle[]> {
+  const url = query
+    ? `${SPACEFLIGHT_NEWS_API}/articles?title_contains=${encodeURIComponent(query)}&limit=15`
+    : `${SPACEFLIGHT_NEWS_API}/articles?limit=15&ordering=-published_at`
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Spaceflight API ${response.status}`)
+  const data = await response.json()
+  const results = data.results || []
+  return results.map((item: {
+    title?: string; summary?: string; news_site?: string
+    url?: string; image_url?: string; published_at?: string
+  }) => ({
+    title: item.title || '新闻',
+    description: item.summary || item.news_site || '',
+    url: item.url || '',
+    urlToImage: item.image_url,
+    source: { name: item.news_site || 'Spaceflight News' },
+    publishedAt: item.published_at || new Date().toISOString(),
+  }))
+}
+
+// 模拟数据作为备用
 const getMockArticles = (category: string, now: number) => [
   {
     title: `${getCategoryName(category)}领域取得重大突破`,
@@ -99,63 +168,56 @@ export default function NewsReader() {
     return date.toLocaleDateString('zh-CN')
   }
 
-  // 获取真实新闻数据
-  const fetchSpaceflightNews = async (category: string) => {
-    try {
-      const url = `${SPACEFLIGHT_NEWS_API}/articles?limit=12&ordering=-published_at`
-      
-      const response = await fetch(url)
-      if (!response.ok) throw new Error('Failed to fetch news')
-      
-      const data = await response.json()
-      
-      const mappedArticles: NewsArticle[] = data.results.map((item: unknown) => {
-        const typedItem = item as { title?: string; summary?: string; news_site?: string; url?: string; image_url?: string; published_at?: string }
-        return {
-          title: typedItem.title || '',
-          description: typedItem.summary || typedItem.news_site || '',
-          url: typedItem.url || '',
-          urlToImage: typedItem.image_url,
-          source: { name: typedItem.news_site || '' },
-          publishedAt: typedItem.published_at || new Date().toISOString(),
-        }
-      })
-      
-      return { articles: mappedArticles }
-    } catch {
-      // 如果失败，使用模拟数据作为备用
-      return fetchMockNews(category)
-    }
-  }
-
-  // 模拟新闻数据作为备用
-  const fetchMockNews = async (category: string) => {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    return { articles: getMockArticles(category, nowTimestamp) }
-  }
-
-  const loadNews = useCallback(async (category: string) => {
+  // 加载新闻（已通过外部 fetchHackerNewsFromApi / fetchSpaceflightFromApi 实现）
+  const loadNews = useCallback(async (category: string, query?: string) => {
     setLoading(true)
     setError(null)
-    try {
-      let response
-      if (category === 'technology' || category === 'science') {
-        response = await fetchSpaceflightNews(category)
-      } else {
-        response = await fetchMockNews(category)
-      }
-      setArticles(response.articles)
-    } catch {
-      setError('加载新闻失败，请稍后重试')
-    } finally {
-      setLoading(false)
+
+    const queryKey = query || ''
+    const cached = getCategoryCache(category, queryKey)
+    if (cached) {
+      setArticles(cached)
     }
+
+    let finalArticles: NewsArticle[] | null = null
+    let apiError: string | null = null
+
+    try {
+      if (category === 'technology' || category === 'business' || category === 'general') {
+        finalArticles = await fetchHackerNewsFromApi(query)
+      } else if (category === 'science' || category === 'health' || category === 'entertainment' || category === 'sports') {
+        try {
+          finalArticles = await fetchSpaceflightFromApi(query)
+        } catch {
+          finalArticles = await fetchHackerNewsFromApi(query)
+        }
+      } else {
+        finalArticles = await fetchHackerNewsFromApi(query)
+      }
+    } catch (e) {
+      apiError = e instanceof Error ? e.message : '请求失败'
+      console.warn('News fetch error:', apiError)
+    }
+
+    if (finalArticles && finalArticles.length > 0) {
+      setArticles(finalArticles)
+      setCategoryCache(category, queryKey, finalArticles)
+    } else if (!cached) {
+      const mock = getMockArticles(category, nowTimestamp)
+      setArticles(mock)
+      setCategoryCache(category, queryKey, mock)
+      setError('无法获取实时新闻，显示示例内容')
+    } else {
+      setError((apiError || '请求失败') + '（使用缓存）')
+    }
+    setLoading(false)
   }, [nowTimestamp])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (searchQuery.trim()) {
-      loadNews(selectedCategory)
+    const q = searchQuery.trim()
+    if (q) {
+      loadNews(selectedCategory, q)
       setSearchMode(true)
     }
   }
