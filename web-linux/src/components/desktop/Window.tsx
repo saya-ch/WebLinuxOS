@@ -145,6 +145,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         startHeight: win.height,
       }
       e.stopPropagation()
+      e.preventDefault()
     },
     [win.id, win.x, win.y, win.width, win.height, win.maximized, focusWindow],
   )
@@ -325,7 +326,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           </button>
         </div>
       </div>
-      <div className="window-content" id={`${win.id}-content`}>{children}</div>
+      <div className="window-content" id={`${win.id}-content`} tabIndex={-1} aria-label={`${win.title} 窗口内容`}>{children}</div>
       {!win.maximized && win.resizable && (
         <>
           <div

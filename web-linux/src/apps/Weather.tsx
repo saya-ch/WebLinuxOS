@@ -211,12 +211,15 @@ const Weather = memo(function Weather() {
       const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&timezone=auto`
 
       const [weatherResponse, airQualityResponse] = await Promise.allSettled([
-        fetch(weatherUrl),
-        fetch(airQualityUrl),
+        fetch(weatherUrl, { cache: 'force-cache', headers: { 'Accept': 'application/json' } }),
+        fetch(airQualityUrl, { cache: 'force-cache', headers: { 'Accept': 'application/json' } }),
       ])
 
-      if (weatherResponse.status === 'rejected' || !weatherResponse.value.ok) {
-        throw new Error('Failed to fetch weather data')
+      if (weatherResponse.status === 'rejected') {
+        throw new Error('无法连接到天气服务')
+      }
+      if (!weatherResponse.value.ok) {
+        throw new Error(`天气服务返回 HTTP ${weatherResponse.value.status}`)
       }
 
       const data = await weatherResponse.value.json()
@@ -318,7 +321,8 @@ const Weather = memo(function Weather() {
       setErrorMsg(null)
     } catch (err) {
       console.error('Weather fetch error:', err)
-      setErrorMsg('无法获取实时天气数据，显示本地缓存/模拟信息')
+      const message = err instanceof Error ? err.message : '未知错误'
+      setErrorMsg(`天气服务暂时不可用（${message}），已显示缓存或模拟数据`)
       // 使用 ref 检查当前是否有天气数据，避免闭包陷阱
       setWeather((current) => current || FALLBACK_WEATHER)
       if (!lastUpdated) setLastUpdated(new Date())

@@ -64,15 +64,48 @@ export default function GitHubExplorer() {
   const fetchTrending = useCallback(async () => {
     setTrendingLoading(true)
     try {
+      const CACHE_KEY = 'gh-trending-cache'
+      const cached = localStorage.getItem(CACHE_KEY)
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached)
+          if (Date.now() - parsed.timestamp < 5 * 60 * 1000) {
+            setTrendingRepos(parsed.items)
+            setTrendingLoading(false)
+            return
+          }
+        } catch {}
+      }
+
       const response = await fetch(
-        'https://api.github.com/search/repositories?q=stars:>1000&sort=stars&order=desc&per_page=20'
+        'https://api.github.com/search/repositories?q=stars:>1000&sort=stars&order=desc&per_page=20',
+        { headers: { 'Accept': 'application/vnd.github+json' } }
       )
+
+      if (response.status === 403) {
+        const rateLimitReset = response.headers.get('X-RateLimit-Reset')
+        const resetTime = rateLimitReset
+          ? new Date(parseInt(rateLimitReset, 10) * 1000).toLocaleTimeString()
+          : '稍后'
+        throw new Error(`GitHub API 速率限制，${resetTime} 后恢复`)
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
       const data = await response.json()
       if (data.items) {
         setTrendingRepos(data.items)
+        try {
+          localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({ timestamp: Date.now(), items: data.items })
+          )
+        } catch {}
       }
     } catch (err) {
       console.error('Failed to fetch trending repos:', err)
+      setError(err instanceof Error ? err.message : '加载热门仓库失败，请检查网络连接')
     } finally {
       setTrendingLoading(false)
     }
@@ -87,6 +120,7 @@ export default function GitHubExplorer() {
       setRepositories([])
       setCurrentPage(1)
       setHasMore(true)
+      setError(null)
       return
     }
 
@@ -94,11 +128,45 @@ export default function GitHubExplorer() {
     setError(null)
 
     try {
+      const CACHE_KEY = `gh-search-${query.toLowerCase()}-${page}`
+      const cached = localStorage.getItem(CACHE_KEY)
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached)
+          if (Date.now() - parsed.timestamp < 2 * 60 * 1000) {
+            if (page === 1) {
+            setRepositories(parsed.items)
+          } else {
+            setRepositories(prev => [...prev, ...parsed.items])
+          }
+          setHasMore(parsed.items.length === 20)
+          setCurrentPage(page)
+            setLoading(false)
+            return
+          }
+        } catch {}
+      }
+
       const response = await fetch(
-        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&page=${page}&per_page=20`
+        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&page=${page}&per_page=20`,
+        { headers: { 'Accept': 'application/vnd.github+json' } }
       )
+
+      if (response.status === 403) {
+        const rateLimitReset = response.headers.get('X-RateLimit-Reset')
+        const resetTime = rateLimitReset
+          ? new Date(parseInt(rateLimitReset, 10) * 1000).toLocaleTimeString()
+          : '稍后'
+        throw new Error(`GitHub API 速率限制，${resetTime} 后恢复`)
+      }
+      if (response.status === 422) {
+        throw new Error('搜索语法错误，请尝试其他关键词')
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
       const data = await response.json()
-      
       if (data.items) {
         if (page === 1) {
           setRepositories(data.items)
@@ -107,9 +175,15 @@ export default function GitHubExplorer() {
         }
         setHasMore(data.items.length === 20)
         setCurrentPage(page)
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          items: data.items,
+        }))
+        } catch {}
       }
     } catch (err) {
-      setError('搜索时出错，请稍后重试')
+      setError(err instanceof Error ? err.message : '搜索时出错，请稍后重试')
       console.error('Search error:', err)
     } finally {
       setLoading(false)

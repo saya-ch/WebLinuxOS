@@ -1578,10 +1578,38 @@ body {
 }
 
 .window-content {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
   background: var(--window-bg);
+  background-clip: padding-box;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.window-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.window-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.window-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.window-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 124, 240, 0.3);
+  background-clip: padding-box;
 }
 
 .window-resize-handle {

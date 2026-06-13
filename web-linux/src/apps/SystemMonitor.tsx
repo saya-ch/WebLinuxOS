@@ -119,14 +119,29 @@ function MiniChart({ data, color }: { data: number[]; color: string }) {
 }
 
 export default function SystemMonitor() {
-  const [memory, setMemory] = useState<MemoryInfo>({ total: 16384, used: 8192, free: 8192, percentage: 50 })
-  const [cpu, setCpu] = useState<CPUInfo>({ usage: 25, cores: 8, model: 'WebAssembly Virtual CPU' })
+  // 基于真实浏览器 API 增强。注意: 许多真实 API 仅在某些浏览器可用
+  const detectCores = (navigator as Navigator & { hardwareConcurrency?: number }).hardwareConcurrency || 4
+  const detectDeviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+  const totalMemMB = detectDeviceMemory ? detectDeviceMemory * 1024 : 8192
+
+  const [memory, setMemory] = useState<MemoryInfo>({
+    total: totalMemMB,
+    used: Math.round(totalMemMB * 0.5),
+    free: Math.round(totalMemMB * 0.5),
+    percentage: 50
+  })
+  const [cpu, setCpu] = useState<CPUInfo>({
+    usage: 25,
+    cores: detectCores,
+    model: `${detectCores} 核心浏览器运行时`
+  })
   const [disk] = useState<DiskInfo>({ total: 50 * 1024, used: 15 * 1024, free: 35 * 1024, percentage: 30 })
   const [network, setNetwork] = useState<NetworkInfo>({ bytesSent: 0, bytesReceived: 0, packetsSent: 0, packetsReceived: 0 })
   const [processes, setProcesses] = useState<ProcessInfo[]>([])
   const [cpuHistory, setCpuHistory] = useState<number[]>(Array(20).fill(25))
   const [memHistory, setMemHistory] = useState<number[]>(Array(20).fill(50))
   const [uptime, setUptime] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 })
+  const [fps, setFps] = useState<number>(60)
 
   useEffect(() => {
     const startTime = Date.now()
@@ -144,40 +159,74 @@ export default function SystemMonitor() {
 
     generateProcesses()
 
+    // FPS 监控
+    let frameCount = 0
+    let lastFpsTime = performance.now()
+    const fpsObserver = () => {
+      frameCount++
+      const now = performance.now()
+      if (now - lastFpsTime >= 1000) {
+        setFps(Math.round(frameCount * 1000 / (now - lastFpsTime)))
+        frameCount = 0
+        lastFpsTime = now
+      }
+      requestAnimationFrame(fpsObserver)
+    }
+    const rafId = requestAnimationFrame(fpsObserver)
+
     const interval = setInterval(() => {
-      const newCpuUsage = Math.random() * 30 + 10
-      const newMemUsage = Math.random() * 20 + 40
+      // 使用 performance.memory (Chrome only) 如果不可用则回退到模拟
+      const perf = (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      let newMemUsage: number
+      let usedMB: number
+      if (perf && perf.jsHeapSizeLimit > 0) {
+        usedMB = (perf.usedJSHeapSize / (1024 * 1024))
+        const limitMB = perf.jsHeapSizeLimit / (1024 * 1024)
+        newMemUsage = Math.min(100, Math.max(5, (usedMB / Math.max(limitMB, 1)) * 10))
+      } else {
+        newMemUsage = Math.random() * 30 + 40
+        usedMB = (totalMemMB * newMemUsage) / 100
+      }
+
+      // 模拟 CPU 但基于主线程计时测量 FPS 以获得一些现实感
+      const simulatedCpu = Math.min(100, Math.max(5, 100 - fps / 1.5)) + (Math.random() - 0.5) * 10
+      const newCpuUsage = Math.min(100, Math.max(0, simulatedCpu))
 
       setCpu(prev => ({
         ...prev,
         usage: newCpuUsage,
-        cores: 8,
-        model: 'WebAssembly Virtual CPU'
+        cores: detectCores,
+        model: `${detectCores} 核心浏览器运行时`
       }))
 
       setMemory(() => ({
-        total: 16384,
-        used: Math.floor(16384 * newMemUsage / 100),
-        free: Math.floor(16384 * (100 - newMemUsage) / 100),
-        percentage: newMemUsage
+        total: totalMemMB,
+        used: Math.round(usedMB),
+        free: Math.round(totalMemMB - usedMB),
+        percentage: (usedMB / totalMemMB) * 100
       }))
 
-      setNetwork(prev => ({
-        bytesSent: prev.bytesSent + Math.floor(Math.random() * 10000),
-        bytesReceived: prev.bytesReceived + Math.floor(Math.random() * 50000),
-        packetsSent: prev.packetsSent + Math.floor(Math.random() * 100),
-        packetsReceived: prev.packetsReceived + Math.floor(Math.random() * 200)
-      }))
+      // 网络: 使用 navigator.connection 若可用
+      const conn = (navigator as Navigator & { connection?: { downlink: number; rtt: number } }).connection
+      if (conn) {
+        const received = conn.downlink > 0 ? conn.downlink * 1024 * 1024 / 8 : Math.random() * 50000
+        setNetwork(prev => ({
+          bytesSent: prev.bytesSent + Math.floor(Math.random() * 10000),
+          bytesReceived: prev.bytesReceived + Math.floor(received),
+          packetsSent: prev.packetsSent + Math.floor(Math.random() * 100),
+          packetsReceived: prev.packetsReceived + Math.floor(Math.random() * 200)
+        }))
+      } else {
+        setNetwork(prev => ({
+          bytesSent: prev.bytesSent + Math.floor(Math.random() * 10000),
+          bytesReceived: prev.bytesReceived + Math.floor(Math.random() * 50000),
+          packetsSent: prev.packetsSent + Math.floor(Math.random() * 100),
+          packetsReceived: prev.packetsReceived + Math.floor(Math.random() * 200)
+        }))
+      }
 
-      setCpuHistory(prev => {
-        const newHistory = [...prev.slice(1), newCpuUsage]
-        return newHistory
-      })
-
-      setMemHistory(prev => {
-        const newHistory = [...prev.slice(1), newMemUsage]
-        return newHistory
-      })
+      setCpuHistory(prev => [...prev.slice(1), newCpuUsage])
+      setMemHistory(prev => [...prev.slice(1), (usedMB / totalMemMB) * 100])
 
       const elapsed = Math.floor((Date.now() - startTime) / 1000)
       setUptime({
@@ -188,7 +237,11 @@ export default function SystemMonitor() {
       generateProcesses()
     }, 2000)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      cancelAnimationFrame(rafId)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const topProcesses = useMemo(() => {
