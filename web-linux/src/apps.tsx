@@ -500,6 +500,49 @@ function SystemHealthDashboardIcon() {
   )
 }
 
+function OnlineCodeRunnerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+    </svg>
+  )
+}
+
+function WebToolsHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+    </svg>
+  )
+}
+
+function SystemMonitorProIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="7" y1="12" x2="17" y2="12" />
+    </svg>
+  )
+}
+
+function AIAssistantProIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <line x1="9" y1="9" x2="9.01" y2="9" />
+      <line x1="15" y1="9" x2="15.01" y2="9" />
+      <path d="M12 2v4M12 18v4" />
+    </svg>
+  )
+}
+
 function CodeDiffIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -983,4 +1026,8 @@ export const appRegistry: AppDefinition[] = [
   { id: 'password-manager-enhanced', name: '增强版密码管理器', icon: <LockIcon />, component: 'PasswordManagerEnhanced', category: 'utilities', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'code-diff-enhanced', name: '增强版代码差异查看器', icon: <CodeDiffIcon />, component: 'CodeDiffViewerEnhanced', category: 'development', defaultWidth: 1300, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'api-docs-enhanced', name: '增强版API文档查看器', icon: <EnhancedApiDocsIcon />, component: 'ApiDocsViewerEnhanced', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
+  { id: 'online-code-runner', name: '在线代码运行器', icon: <OnlineCodeRunnerIcon />, component: 'OnlineCodeRunner', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'web-tools-hub', name: 'Web工具中心', icon: <WebToolsHubIcon />, component: 'WebToolsHub', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+  { id: 'system-monitor-pro', name: '系统监控中心', icon: <SystemMonitorProIcon />, component: 'SystemMonitor', category: 'system', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+  { id: 'ai-assistant-pro', name: 'AI智能助手', icon: <AIAssistantProIcon />, component: 'AIAssistant', category: 'utilities', defaultWidth: 800, defaultHeight: 650, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
 ]
