@@ -1,4 +1,4 @@
-import { useState, useCallback, memo, useEffect } from 'react'
+import { useState, memo, useEffect } from 'react'
 
 interface Tool {
   id: string
@@ -383,7 +383,7 @@ function NetworkSpeedTool() {
     const startTime = performance.now()
     try {
       // 使用一个公开的图片进行测速
-      const response = await fetch('https://www.google.com/favicon.ico', {
+      await fetch('https://www.google.com/favicon.ico', {
         mode: 'no-cors',
         cache: 'no-store'
       })
@@ -939,7 +939,7 @@ function HashGeneratorTool() {
   const [hashes, setHashes] = useState<{ md5: string; sha256: string } | null>(null)
   
   // 简单的MD5实现（仅用于演示）
-  const simpleHash = (str: string, algorithm: 'md5' | 'sha256') => {
+  const simpleHash = () => {
     // 使用Web Crypto API
     return '演示Hash（实际需要Web Crypto API）'
   }
@@ -961,8 +961,8 @@ function HashGeneratorTool() {
       setHashes({ md5, sha256 })
     } catch {
       setHashes({
-        md5: simpleHash(input, 'md5'),
-        sha256: simpleHash(input, 'sha256')
+        md5: simpleHash(),
+        sha256: simpleHash()
       })
     }
   }

@@ -333,21 +333,6 @@ const OnlineCodeRunner = memo(function OnlineCodeRunner() {
     setShowTemplates(false)
   }, [])
   
-  const handleFormatCode = useCallback(() => {
-    // 简单的代码格式化
-    try {
-      if (language === 'javascript') {
-        // 使用 Function 构造器验证语法
-        new Function(code)
-        setCode(code.trim())
-      } else {
-        setCode(code.trim())
-      }
-    } catch {
-      // 语法错误时不格式化
-    }
-  }, [code, language])
-  
   const lineCount = code.split('\n').length
   
   return (
