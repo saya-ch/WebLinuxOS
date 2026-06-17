@@ -35,9 +35,18 @@ jobs:
         working-directory: ./web-linux
         run: npm ci
 
-      - name: Build
+      - name: Build (GitHub Pages mode)
         working-directory: ./web-linux
         run: npm run deploy
+
+      - name: Verify build output
+        run: |
+          echo "--- Root directory listing (first-pass) ---"
+          ls -la ./
+          echo "--- Checking index.html exists ---"
+          test -f ./index.html && echo "OK: index.html exists" || (echo "FAIL: index.html missing" && exit 1)
+          echo "--- Checking assets folder ---"
+          test -d ./assets && echo "OK: assets/ exists" || (echo "FAIL: assets/ missing" && exit 1)
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

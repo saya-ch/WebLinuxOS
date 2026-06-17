@@ -182,6 +182,14 @@ function generateSmartAdvice(weather: WeatherData): string[] {
   return advice.slice(0, 4)
 }
 
+interface SearchResult {
+  name: string
+  country: string
+  admin1?: string
+  lat: number
+  lon: number
+}
+
 const Weather = memo(function Weather() {
   const [selectedCity, setSelectedCity] = useState(popularCities[0])
   const [weather, setWeather] = useState<WeatherData | null>(null)
@@ -192,8 +200,19 @@ const Weather = memo(function Weather() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [useGeoLocation, setUseGeoLocation] = useState(false)
   const [geoStatus, setGeoStatus] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [searching, setSearching] = useState(false)
+  const [favoriteCities, setFavoriteCities] = useState<SearchResult[]>(() => {
+    try {
+      const raw = localStorage.getItem('weblinux-weather-favorites')
+      return raw ? JSON.parse(raw) : []
+    } catch {
+      return []
+    }
+  })
 
-  const fetchWeather = useCallback(async (city: typeof selectedCity) => {
+  const fetchWeather = useCallback(async (city: { name: string; country: string; lat: number; lon: number }) => {
     setLoading(true)
     setErrorMsg(null)
 
@@ -337,6 +356,65 @@ const Weather = memo(function Weather() {
     return () => clearInterval(interval)
   }, [selectedCity, fetchWeather])
 
+  const searchCity = useCallback(async (query: string) => {
+    if (!query.trim() || query.trim().length < 2) {
+      setSearchResults([])
+      return
+    }
+    setSearching(true)
+    try {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=10&language=zh&format=json`
+      const response = await fetch(url, { cache: 'force-cache' })
+      if (!response.ok) throw new Error('搜索失败')
+      const data = await response.json()
+      const results: SearchResult[] = (data.results || []).map((r: any) => ({
+        name: r.name,
+        country: r.country || '',
+        admin1: r.admin1,
+        lat: r.latitude,
+        lon: r.longitude,
+      }))
+      setSearchResults(results)
+    } catch (err) {
+      console.error('City search error:', err)
+      setSearchResults([])
+    } finally {
+      setSearching(false)
+    }
+  }, [])
+
+  // 防抖搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        searchCity(searchQuery)
+      } else {
+        setSearchResults([])
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery, searchCity])
+
+  const toggleFavorite = (city: SearchResult) => {
+    const key = `${city.lat.toFixed(2)}-${city.lon.toFixed(2)}`
+    const exists = favoriteCities.find(c => `${c.lat.toFixed(2)}-${c.lon.toFixed(2)}` === key)
+    let next: SearchResult[]
+    if (exists) {
+      next = favoriteCities.filter(c => `${c.lat.toFixed(2)}-${c.lon.toFixed(2)}` !== key)
+    } else {
+      next = [...favoriteCities, city]
+    }
+    setFavoriteCities(next)
+    try {
+      localStorage.setItem('weblinux-weather-favorites', JSON.stringify(next))
+    } catch { /* ignore */ }
+  }
+
+  const isFavorite = (city: SearchResult) => {
+    const key = `${city.lat.toFixed(2)}-${city.lon.toFixed(2)}`
+    return favoriteCities.some(c => `${c.lat.toFixed(2)}-${c.lon.toFixed(2)}` === key)
+  }
+
   const getWeatherInfo = () => {
     if (!weather) return null
     const info = weatherConditions[weather.weather]
@@ -432,8 +510,8 @@ const Weather = memo(function Weather() {
             ⚠️ {errorMsg}
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, gap: 12, position: 'relative' }}>
+          <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
               <button
                 onClick={() => setShowCityList(!showCityList)}
@@ -467,21 +545,171 @@ const Weather = memo(function Weather() {
               >
                 🎯 定位
               </button>
+              <button
+                onClick={() => fetchWeather(selectedCity)}
+                disabled={loading}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '8px 12px',
+                  color: '#fff',
+                  cursor: loading ? 'wait' : 'pointer',
+                  fontSize: 16,
+                  opacity: loading ? 0.6 : 1,
+                  transition: 'opacity 0.2s'
+                }}
+                title="刷新"
+              >
+                🔄 刷新
+              </button>
               {showCityList && (
                 <div style={{
                   position: 'absolute',
                   top: 70,
                   left: 24,
+                  right: 24,
                   background: 'rgba(30, 60, 114, 0.98)',
-                  borderRadius: 12,
-                  padding: 8,
-                  minWidth: 250,
-                  maxHeight: 300,
+                  borderRadius: 16,
+                  padding: 12,
+                  maxHeight: 420,
                   overflow: 'auto',
                   zIndex: 1000,
                   backdropFilter: 'blur(20px)',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
                 }}>
+                  <div style={{ marginBottom: 12 }}>
+                    <input
+                      type="text"
+                      placeholder="🔍 搜索全球城市（如 Tokyo / 巴黎 / Shanghai）"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: 10,
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        background: 'rgba(0,0,0,0.2)',
+                        color: '#fff',
+                        fontSize: 14,
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  {searching && (
+                    <div style={{ color: '#fff', fontSize: 13, padding: '8px 12px', opacity: 0.7 }}>
+                      正在搜索...
+                    </div>
+                  )}
+
+                  {searchResults.length > 0 && (
+                    <>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '0 8px 8px 8px', fontWeight: 600 }}>
+                        🔎 搜索结果
+                      </div>
+                      {searchResults.map((city, i) => (
+                        <div
+                          key={`s-${i}-${city.name}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '10px 12px',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => {
+                            setSelectedCity({ name: city.name, country: city.admin1 ? `${city.admin1}, ${city.country}` : city.country, lat: city.lat, lon: city.lon })
+                            setShowCityList(false)
+                            setSearchQuery('')
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>{city.name}</div>
+                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+                              {city.admin1 ? `${city.admin1}, ` : ''}{city.country}
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleFavorite(city)
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: 16,
+                              padding: '4px 8px',
+                              color: isFavorite(city) ? '#ffeb3b' : 'rgba(255,255,255,0.4)'
+                            }}
+                          >
+                            {isFavorite(city) ? '★' : '☆'}
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {favoriteCities.length > 0 && (
+                    <>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '12px 8px 8px 8px', fontWeight: 600 }}>
+                        ⭐ 我的收藏
+                      </div>
+                      {favoriteCities.map((city, i) => (
+                        <div
+                          key={`f-${i}-${city.name}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '10px 12px',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => {
+                            setSelectedCity({ name: city.name, country: city.admin1 ? `${city.admin1}, ${city.country}` : city.country, lat: city.lat, lon: city.lon })
+                            setShowCityList(false)
+                            setSearchQuery('')
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>{city.name}</div>
+                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+                              {city.admin1 ? `${city.admin1}, ` : ''}{city.country}
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleFavorite(city)
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: 16,
+                              padding: '4px 8px',
+                              color: '#ffeb3b'
+                            }}
+                          >
+                            ★
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '12px 8px 8px 8px', fontWeight: 600 }}>
+                    🌍 热门城市
+                  </div>
                   {popularCities.map((city) => (
                     <button
                       key={city.name}
@@ -492,7 +720,7 @@ const Weather = memo(function Weather() {
                       style={{
                         width: '100%',
                         padding: '10px 12px',
-                        background: selectedCity.name === city.name ? 'rgba(255,255,255,0.2)' : 'transparent',
+                        background: 'transparent',
                         border: 'none',
                         borderRadius: 8,
                         color: '#fff',
@@ -503,6 +731,8 @@ const Weather = memo(function Weather() {
                         justifyContent: 'space-between',
                         alignItems: 'center'
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <span>{city.name}</span>
                       <span style={{ fontSize: 12, opacity: 0.7 }}>{city.country}</span>

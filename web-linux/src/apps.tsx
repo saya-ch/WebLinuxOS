@@ -717,6 +717,17 @@ function CodeFormatterIcon() {
   )
 }
 
+function DevToolboxIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <rect x="2" y="7" width="14" height="12" rx="2" />
+      <path d="M6 7V4h10a2 2 0 0 1 2 2v10" />
+      <circle cx="9" cy="13" r="2" />
+      <path d="M12 11l4 4M16 11l-4 4" />
+    </svg>
+  )
+}
+
 function TaskManagerProIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -839,6 +850,7 @@ function TaskManagerPlusIcon() {
 }
 
 export const appRegistry: AppDefinition[] = [
+  { id: 'dev-toolbox', name: '开发者工具箱', icon: <DevToolboxIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'unified-dashboard', name: '统一数据仪表盘', icon: <UnifiedDashboardIcon />, component: 'UnifiedDashboard', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'task-manager-plus', name: '任务管理器 Plus', icon: <TaskManagerPlusIcon />, component: 'TaskManagerPlus', category: 'office', defaultWidth: 1300, defaultHeight: 900, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'idea-board', name: '灵感板', icon: <IdeaBoardIcon />, component: 'IdeaBoard', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
