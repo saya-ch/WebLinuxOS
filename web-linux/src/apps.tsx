@@ -881,6 +881,15 @@ function TaskManagerPlusIcon() {
   )
 }
 
+function AirQualityIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M12 2v10M12 22v-6M6 12H2M22 12h-4M7.05 7.05L4.22 4.22M19.78 19.78l-2.83-2.83M7.05 16.95l-2.83 2.83M19.78 4.22l-2.83 2.83" />
+      <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3" />
+    </svg>
+  )
+}
+
 export const appRegistry: AppDefinition[] = [
   { id: 'dev-toolbox', name: '开发者工具箱', icon: <DevToolboxIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'unified-dashboard', name: '统一数据仪表盘', icon: <UnifiedDashboardIcon />, component: 'UnifiedDashboard', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
@@ -1080,4 +1089,5 @@ export const appRegistry: AppDefinition[] = [
   { id: 'system-status-dashboard', name: '系统状态仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>, component: 'SystemStatusDashboard', category: 'system', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
   { id: 'ai-assistant-v2', name: 'AI智能助手', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="2" fill="currentColor"/></svg>, component: 'AIAssistantPro', category: 'utilities', defaultWidth: 850, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'web-dev-toolkit', name: 'Web开发工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, component: 'WebDevToolkit', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'air-quality-monitor', name: '空气质量监测', icon: <AirQualityIcon />, component: 'AirQualityMonitor', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
 ]
