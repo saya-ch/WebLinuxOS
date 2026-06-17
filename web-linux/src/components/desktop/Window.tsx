@@ -21,6 +21,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const [isClosing, setIsClosing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [dragOpacity, setDragOpacity] = useState(1)
+  const [snapHint, setSnapHint] = useState<string | null>(null)
   const stateRef = useRef({
     startX: 0,
     startY: 0,
@@ -29,6 +30,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     startWidth: 0,
     startHeight: 0,
   })
+  const dragStartPos = useRef({ x: 0, y: 0 })
+  const hasDragged = useRef(false)
 
   const app = apps.find((a) => a.id === win.appId)
 
@@ -132,21 +135,41 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
 
   const handleDragStart = useCallback(
     (e: React.MouseEvent) => {
-      if (win.maximized) return
-      focusWindow(win.id)
-      setDragging(true)
-      stateRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        startWindowX: win.x,
-        startWindowY: win.y,
-        startWidth: win.width,
-        startHeight: win.height,
+      if (win.maximized) {
+        // 从最大化状态拖动时，先还原窗口，并基于鼠标位置智能还原
+        const newW = Math.min(win.width, window.innerWidth - 80)
+        const newH = Math.min(win.height, window.innerHeight - 80)
+        const newX = Math.max(8, Math.min(window.innerWidth - newW - 8, e.clientX - newW / 2))
+        const newY = Math.max(8, Math.min(window.innerHeight - newH - 48, e.clientY - 20))
+        updateWindowPosition(win.id, newX, newY)
+        updateWindowSize(win.id, newW, newH)
+        maximizeWindow(win.id) // 切换回非最大化
+        stateRef.current = {
+          startX: e.clientX,
+          startY: e.clientY,
+          startWindowX: newX,
+          startWindowY: newY,
+          startWidth: newW,
+          startHeight: newH,
+        }
+      } else {
+        focusWindow(win.id)
+        stateRef.current = {
+          startX: e.clientX,
+          startY: e.clientY,
+          startWindowX: win.x,
+          startWindowY: win.y,
+          startWidth: win.width,
+          startHeight: win.height,
+        }
       }
+      dragStartPos.current = { x: e.clientX, y: e.clientY }
+      hasDragged.current = false
+      setDragging(true)
       e.stopPropagation()
       e.preventDefault()
     },
-    [win.id, win.x, win.y, win.width, win.height, win.maximized, focusWindow],
+    [win.id, win.x, win.y, win.width, win.height, win.maximized, focusWindow, updateWindowPosition, updateWindowSize, maximizeWindow],
   )
 
   const handleResizeStart = useCallback(
@@ -178,17 +201,50 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       if (now - lastUpdateTime < 16) return
       lastUpdateTime = now
 
-      if (rafId) {
-        cancelAnimationFrame(rafId)
-      }
+      if (rafId) cancelAnimationFrame(rafId)
 
       rafId = requestAnimationFrame(() => {
         const ref = stateRef.current
         if (dragging) {
           const dx = e.clientX - ref.startX
           const dy = e.clientY - ref.startY
-          const newX = Math.max(-ref.startWidth + 100, ref.startWindowX + dx)
-          const newY = Math.max(0, Math.min(ref.startWindowY + dy, window.innerHeight - 40))
+
+          // 轻微移动才触发（防止点击误触发拖动）
+          if (!hasDragged.current && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+            hasDragged.current = true
+          }
+
+          const screenW = window.innerWidth
+          const screenH = window.innerHeight
+          let newX = ref.startWindowX + dx
+          let newY = ref.startWindowY + dy
+
+          // 边缘吸附（snap）
+          const SNAP_THRESHOLD = 20
+          const w = ref.startWidth
+          const h = ref.startHeight
+
+          let newSnap: string | null = null
+
+          if (Math.abs(newX) < SNAP_THRESHOLD) { newX = 0; newSnap = 'LEFT' }
+          else if (Math.abs(newX + w - screenW) < SNAP_THRESHOLD) { newX = screenW - w; newSnap = 'RIGHT' }
+
+          if (Math.abs(newY) < SNAP_THRESHOLD) { newY = 0; newSnap = newSnap ? newSnap + '+TOP' : 'TOP' }
+          else if (Math.abs(newY + h - (screenH - 40)) < SNAP_THRESHOLD) { newY = screenH - h - 40; newSnap = newSnap ? newSnap + '+BOTTOM' : 'BOTTOM' }
+
+          // 顶部1/2 和 2/3 快捷键吸附
+          if (dragging && e.clientY < 8) {
+            // 顶部吸附 = 最大化
+            if (!win.maximized) {
+              // 仅当拖动到顶端时，不自动最大化，仅提示
+          }
+          }
+
+          // 边界限制
+          newX = Math.max(-w + 80, Math.min(newX, screenW - 80))
+          newY = Math.max(0, Math.min(newY, screenH - 40 - 40))
+
+          setSnapHint(newSnap)
           updateWindowPosition(win.id, newX, newY)
         }
         if (resizing) {
@@ -198,24 +254,26 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           let newHeight = ref.startHeight
           let newX = ref.startWindowX
           const newY = ref.startWindowY
-          const maxW = win.maxWidth || Math.max(win.minWidth, window.innerWidth - ref.startWindowX - 8)
-          const maxH = win.maxHeight || Math.max(win.minHeight, window.innerHeight - 40 - ref.startWindowY - 8)
+          const maxW = window.innerWidth - newX - 8
+          const maxH = window.innerHeight - 40 - newY - 8
+          const minW = Math.max(win.minWidth || 320, win.minWidth)
+          const minH = Math.max(win.minHeight || 240, win.minHeight)
 
           if (resizing === 'right' || resizing === 'corner') {
-            newWidth = Math.max(win.minWidth, Math.min(ref.startWidth + dx, maxW))
+            newWidth = Math.max(minW, Math.min(ref.startWidth + dx, maxW))
           }
           if (resizing === 'left') {
             const rawWidth = ref.startWidth - dx
-            newWidth = Math.max(win.minWidth, Math.min(rawWidth, ref.startWindowX + ref.startWidth - 8))
-            if (newWidth === win.minWidth && dx > 0) {
-              newX = ref.startWindowX + ref.startWidth - win.minWidth
+            newWidth = Math.max(minW, Math.min(rawWidth, ref.startWindowX + ref.startWidth - 8))
+            if (newWidth === minW && dx > 0) {
+              newX = ref.startWindowX + ref.startWidth - minW
             } else {
               newX = ref.startWindowX + (ref.startWidth - newWidth)
             }
             newX = Math.max(8, newX)
           }
           if (resizing === 'bottom' || resizing === 'corner') {
-            newHeight = Math.max(win.minHeight, Math.min(ref.startHeight + dy, maxH))
+            newHeight = Math.max(minH, Math.min(ref.startHeight + dy, maxH))
           }
 
           updateWindowPosition(win.id, newX, newY)
@@ -231,18 +289,17 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       }
       setDragging(false)
       setResizing(null)
+      setSnapHint(null)
     }
 
     document.addEventListener('mousemove', handleMouseMove, { passive: true })
     document.addEventListener('mouseup', handleMouseUp, { passive: true })
     return () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId)
-      }
+      if (rafId) cancelAnimationFrame(rafId)
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [dragging, resizing, win.id, win.minWidth, win.minHeight, win.maxWidth, win.maxHeight, updateWindowPosition, updateWindowSize])
+  }, [dragging, resizing, win.id, win.minWidth, win.minHeight, win.maximized, updateWindowPosition, updateWindowSize])
 
   const handleWindowClick = useCallback(() => {
     focusWindow(win.id)
@@ -349,6 +406,13 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             onMouseDown={(e) => handleResizeStart(e, 'corner')}
           />
         </>
+      )}
+      {snapHint && (
+        <div
+          className="window-snap-hint"
+          aria-hidden="true"
+          data-snap={snapHint}
+        />
       )}
     </div>
   )

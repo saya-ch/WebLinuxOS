@@ -246,6 +246,7 @@ export default function Terminal() {
   const copyFile = useStore((s) => s.copyFile)
   const moveFile = useStore((s) => s.moveFile)
   const renameFile = useStore((s) => s.renameFile)
+  const updateFileContent = useStore((s) => s.updateFileContent)
   const getWindows = useStore((s) => s.windows)
   const closeWindow = useStore((s) => s.closeWindow)
   const theme = useStore((s) => s.theme)
@@ -357,7 +358,7 @@ export default function Terminal() {
       case 'help':
       case '?':
         output = `可用命令:
-  文件操作: ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, wc, du, ln, stat
+  文件操作: ls, cd, pwd, cat, head, tail, mkdir, touch, rm, cp, mv, tree, wc, du, ln, stat, write, tee, append
   信息查看: whoami, hostname, date, uname, uptime, cal, free, df, ps, top, dashboard, neofetch, weather, id, groups, users, sysinfo
   网络工具: ping, ifconfig, curl, host, nslookup, dig, traceroute, nmap
   系统工具: clear, help, history, alias, type, man, exit, cls, reset, chmod, chown, sync
@@ -1906,6 +1907,102 @@ export default function Terminal() {
         }
         break
       }
+      case 'head': {
+        if (args.length === 0) {
+          output = 'head: 缺少操作数'
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          const node = findNodeByPath(files, resolved)
+          if (node && node.type === 'file') {
+            const lines = (node.content || '').split('\n')
+            output = lines.slice(0, 10).join('\n')
+          } else {
+            output = `head: ${args[0]}: 没有那个文件或目录`
+          }
+        }
+        break
+      }
+      case 'tail': {
+        if (args.length === 0) {
+          output = 'tail: 缺少操作数'
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          const node = findNodeByPath(files, resolved)
+          if (node && node.type === 'file') {
+            const lines = (node.content || '').split('\n')
+            output = lines.slice(-10).join('\n')
+          } else {
+            output = `tail: ${args[0]}: 没有那个文件或目录`
+          }
+        }
+        break
+      }
+      case 'write':
+      case 'tee': {
+        // 用法: write <file> <content...>
+        // 或:  tee <file> <content...>  同时输出到终端
+        if (args.length < 2) {
+          output = `${args[0] || 'write'}: 缺少操作数\n用法: ${command} <文件名> <内容...>`
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          const parts1 = resolved.split('/').filter(Boolean)
+          const parentPath = '/' + parts1.slice(0, -1).join('/') || '/'
+          const fileName = parts1[parts1.length - 1]
+          const parentNode = findNodeByPath(files, parentPath)
+          const existing = findNodeByPath(files, resolved)
+          const content = args.slice(1).join(' ')
+          if (existing) {
+            updateFileContent(existing.id, content)
+            output = command === 'tee' ? content : ''
+          } else if (parentNode) {
+            addFile(parentNode.id, fileName, 'file')
+            // 异步更新内容
+            setTimeout(() => {
+              const updatedFiles = useStore.getState().files
+              const newFile = findNodeByPath(updatedFiles, resolved)
+              if (newFile) updateFileContent(newFile.id, content)
+            }, 50)
+            output = command === 'tee' ? content : ''
+          } else {
+            output = `${command}: 无法创建 '${args[0]}': 没有那个文件或目录`
+          }
+        }
+        break
+      }
+      case 'append': {
+        if (args.length < 2) {
+          output = 'append: 缺少操作数\n用法: append <文件名> <内容...>'
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          const existing = findNodeByPath(files, resolved)
+          const content = args.slice(1).join(' ')
+          if (existing && existing.type === 'file') {
+            updateFileContent(existing.id, (existing.content || '') + content)
+          } else {
+            output = `append: ${args[0]}: 没有那个文件或目录`
+          }
+        }
+        break
+      }
+      case 'stat': {
+        if (args.length === 0) {
+          output = 'stat: 缺少操作数'
+        } else {
+          const resolved = resolvePath(cwd, args[0])
+          const node = findNodeByPath(files, resolved)
+          if (node) {
+            const size = node.type === 'file' ? (node.content || '').length : (node.children ? node.children.length : 0)
+            output = `  文件: ${node.name}
+  大小: ${size}        类型: ${node.type === 'folder' ? '目录' : '文件'}
+  路径: ${resolved}
+  ID:   ${node.id}
+${node.children ? `  包含: ${node.children.length} 项` : ''}`
+          } else {
+            output = `stat: ${args[0]}: 没有那个文件或目录`
+          }
+        }
+        break
+      }
       case 'echo':
         output = args.join(' ')
         break
@@ -2655,16 +2752,95 @@ export default function Terminal() {
         }
         break
       }
-      case 'find':
-        output = args.length > 0
-          ? `./${args[0]}\n./home/user/documents/${args[0] || 'results'}`
-          : 'find: 缺少操作数'
+      case 'find': {
+        const startPath = args.length > 0 && !args[0].startsWith('-') ? resolvePath(cwd, args[0]) : cwd
+        const namePattern = args.find(a => a.startsWith('-name='))?.slice(6) || args.find((_, i) => args[i - 1] === '-name')
+        const query = args.find(a => !a.startsWith('-')) && namePattern ? namePattern : args.filter(a => !a.startsWith('-'))[0]
+        const startNode = findNodeByPath(files, startPath)
+        if (!startNode || startNode.type !== 'folder') {
+          output = `find: '${args[0] || startPath}': 没有那个文件或目录`
+          break
+        }
+        const results: string[] = []
+        const walk = (node: FileNode, path: string) => {
+          const entry = path === '/' ? '/' + node.name : path + (path === '/' ? '' : '/') + node.name
+          if (node.type === 'file') {
+            if (!query || node.name.toLowerCase().includes(query.toLowerCase())) {
+              results.push(entry)
+            }
+          } else if (node.children) {
+            if (!query || node.name.toLowerCase().includes(query.toLowerCase())) {
+              results.push(entry)
+            }
+            node.children.forEach(child => walk(child, entry))
+          }
+        }
+        if (startNode.children) {
+          startNode.children.forEach(child => walk(child, startPath))
+        }
+        output = results.length > 0 ? results.slice(0, 100).join('\n') : `未找到匹配文件 (查询: ${query || '*'})`
         break
-      case 'grep':
-        output = args.length >= 2
-          ? `匹配到 3 行结果:\n  第10行: ...包含"${args[1]}"的内容...\n  第25行: ...包含"${args[1]}"的内容...\n  第42行: ...包含"${args[1]}"的内容...`
-          : 'grep: 用法: grep [选项] 模式 [文件...]'
+      }
+      case 'grep': {
+        if (args.length < 1) {
+          output = 'grep: 用法: grep [选项] 模式 [文件...]'
+          break
+        }
+        const pattern = args.find(a => !a.startsWith('-')) || ''
+        const fileArg = args.find(a => a !== pattern && !a.startsWith('-'))
+        const ignoreCase = args.some(a => a === '-i' || a === '--ignore-case')
+        const showLineNum = args.some(a => a === '-n' || a === '--line-number')
+        const countOnly = args.some(a => a === '-c' || a === '--count')
+
+        if (fileArg) {
+          const resolved = resolvePath(cwd, fileArg)
+          const node = findNodeByPath(files, resolved)
+          if (!node || node.type !== 'file') {
+            output = `grep: ${fileArg}: 没有那个文件或目录`
+            break
+          }
+          const content = node.content || ''
+          const matchFlags = ignoreCase ? 'i' : ''
+          try {
+            const regex = new RegExp(pattern, matchFlags)
+            const lines = content.split('\n')
+            const matches = lines.map((line, i) => ({ line: i + 1, content: line })).filter(l => regex.test(l.content))
+            if (countOnly) {
+              output = `${matches.length}`
+            } else if (matches.length === 0) {
+              output = ''
+            } else {
+              output = matches.slice(0, 50).map(m => showLineNum ? `${m.line}: ${m.content}` : m.content).join('\n')
+            }
+          } catch (err) {
+            output = `grep: 无效的正则表达式: ${pattern}`
+          }
+        } else {
+          // 无文件: 遍历 cwd 中的所有文件
+          const cwdNode = findNodeByPath(files, cwd)
+          if (cwdNode?.children) {
+            const matchFlags = ignoreCase ? 'i' : ''
+            try {
+              const regex = new RegExp(pattern, matchFlags)
+              const allMatches: string[] = []
+              cwdNode.children.forEach(child => {
+                if (child.type === 'file' && child.content) {
+                  const lines = child.content.split('\n')
+                  lines.forEach((line, idx) => {
+                    if (regex.test(line)) {
+                      allMatches.push(showLineNum ? `${child.name}:${idx + 1}: ${line}` : `${child.name}: ${line}`)
+                    }
+                  })
+                }
+              })
+              output = allMatches.length > 0 ? allMatches.slice(0, 100).join('\n') : ''
+            } catch (err) {
+              output = `grep: 无效的正则表达式: ${pattern}`
+            }
+          }
+        }
         break
+      }
       case 'ps':
         output = '  PID TTY          TIME CMD\n    1 ?        00:00:01 systemd\n  234 ?        00:00:00 terminal\n  567 ?        00:00:05 browser\n  890 ?        00:00:02 file-manager'
         break
@@ -2717,20 +2893,43 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
         RX packets 234  bytes 23456 (22.9 KiB)
         TX packets 234  bytes 23456 (22.9 KiB)`
         break
-      case 'curl':
+      case 'curl': {
         if (args.length === 0) {
-          output = 'curl: 请指定 URL'
-        } else {
-          output = `<!DOCTYPE html>
-<html>
-<head><title>WebLinuxOS Test</title></head>
-<body>
-  <h1>Hello from WebLinuxOS!</h1>
-  <p>You requested: ${args[0]}</p>
-</body>
-</html>`
+          output = 'curl: 请指定 URL\n用法: curl [选项] <URL>\n示例:\n  curl https://api.github.com/users/torvalds\n  curl https://ipapi.co/json/\n  curl https://api.coindesk.com/v1/bpi/currentprice.json'
+          break
+        }
+        const urlArg = args.find(a => a.startsWith('http')) || args[0]
+        const verbose = args.includes('-v') || args.includes('--verbose')
+
+        setHistory((prev) => [...prev, { input: trimmed, output: `  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\n⏳ 正在请求 ${urlArg}...` }])
+        try {
+          const response = await fetch(urlArg, {
+            headers: { 'Accept': 'application/json, text/plain, */*' },
+          })
+          const contentType = response.headers.get('content-type') || ''
+          let body: string
+          if (contentType.includes('application/json')) {
+            const json = await response.json()
+            body = JSON.stringify(json, null, 2)
+          } else {
+            body = await response.text()
+          }
+          const statusLine = `HTTP/${response.ok ? '2.0' : '1.1'} ${response.status} ${response.statusText || ''}\nContent-Type: ${contentType}\nContent-Length: ${body.length}`
+          if (verbose) {
+            setHistory((prev) => [...prev, { input: '', output: `${statusLine}\n\n${body.slice(0, 4000)}` }])
+          } else {
+            setHistory((prev) => [...prev, { input: '', output: body.slice(0, 4000) }])
+          }
+          return
+        } catch (err) {
+          setHistory((prev) => [...prev, {
+            input: '',
+            output: `curl: (6) Could not resolve host: ${urlArg}\n  注意: 浏览器中仅可请求支持 CORS 的 API。以下是一些可测试的 API:\n    https://api.github.com/users/torvalds\n    https://ipapi.co/json/\n    https://api.coindesk.com/v1/bpi/currentprice.json\n    https://httpbin.org/get`
+          }])
+          return
         }
         break
+      }
       case 'git':
         if (args[0] === 'status') {
           output = `On branch main
