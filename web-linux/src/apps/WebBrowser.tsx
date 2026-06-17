@@ -8,12 +8,12 @@ const welcomePage = `
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; }
-    .container { text-align: center; max-width: 600px; padding: 40px; }
-    h1 { font-size: 36px; margin-bottom: 12px; background: linear-gradient(90deg, #e94560, #f5c542, #4ecca3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .container { text-align: center; max-width: 700px; padding: 40px; }
+    h1 { font-size: 36px; margin-bottom: 12px; background: linear-gradient(90deg, #e94560, #f5c542, #4ecca3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .search-box { display: flex; margin: 24px 0; background: rgba(255,255,255,0.1); border-radius: 24px; padding: 4px; }
     .search-box input { flex: 1; padding: 12px 20px; border: none; outline: none; background: transparent; color: #fff; font-size: 16px; }
     .search-box button { padding: 10px 24px; border: none; border-radius: 20px; background: #e94560; color: #fff; cursor: pointer; font-size: 14px; }
-    .links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 32px; }
+    .links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; }
     .link-card { padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.08); cursor: pointer; transition: 0.2s; text-decoration: none; color: #ccc; text-align: center; }
     .link-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
     .link-card .icon { font-size: 24px; margin-bottom: 8px; }
@@ -23,15 +23,26 @@ const welcomePage = `
     .quick-links h3 { font-size: 14px; color: #aaa; margin-bottom: 12px; }
     .search-tips { margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; }
     .search-tips p { font-size: 12px; color: #888; }
+    .search-engines { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+    .search-engines button { padding: 6px 12px; border-radius: 12px; background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; font-size: 12px; }
+    .search-engines button:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .search-engines button.active { background: rgba(233,69,96,0.3); color: #fff; border-color: #e94560; }
   </style>
   <title>Web Linux 浏览器</title>
   <script>
+    let currentEngine = 'google';
     function navigate() {
       const input = document.getElementById('urlInput');
       const url = input.value.trim();
       if (url) {
-        window.parent.postMessage({ type: 'navigate', url }, '*');
+        window.parent.postMessage({ type: 'navigate', url, engine: currentEngine }, '*');
       }
+    }
+    function setEngine(engine) {
+      currentEngine = engine;
+      document.querySelectorAll('.search-engines button').forEach(b => b.classList.remove('active'));
+      const target = document.querySelector('.search-engines button[data-engine="' + engine + '"]');
+      if (target) target.classList.add('active');
     }
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') navigate();
@@ -40,11 +51,19 @@ const welcomePage = `
 </head>
 <body>
   <div class="container">
-    <h1>🌐 Web Linux 浏览器</h1>
-    <p style="color:#aaa;margin-bottom:8px;">欢迎使用内置浏览器</p>
+    <h1>Web Linux 浏览器</h1>
+    <p style="color:#aaa;margin-bottom:8px;">欢迎使用内置浏览器 - 集成多搜索引擎与隐私模式</p>
     <div class="search-box">
       <input type="text" placeholder="输入网址或搜索内容..." id="urlInput" />
       <button onclick="navigate()">前往</button>
+    </div>
+    <div class="search-engines">
+      <button class="active" data-engine="google" onclick="setEngine('google')">Google</button>
+      <button data-engine="duckduckgo" onclick="setEngine('duckduckgo')">DuckDuckGo</button>
+      <button data-engine="bing" onclick="setEngine('bing')">Bing</button>
+      <button data-engine="brave" onclick="setEngine('brave')">Brave</button>
+      <button data-engine="wikipedia" onclick="setEngine('wikipedia')">Wikipedia</button>
+      <button data-engine="github" onclick="setEngine('github')">GitHub</button>
     </div>
     <div class="quick-links">
       <h3>快捷链接</h3>
@@ -53,25 +72,39 @@ const welcomePage = `
         <div class="link-card" onclick="document.getElementById('urlInput').value='https://github.com'; navigate();"><div class="icon">💻</div><div class="title">GitHub</div><div class="url">代码托管</div></div>
         <div class="link-card" onclick="document.getElementById('urlInput').value='https://developer.mozilla.org'; navigate();"><div class="icon">📚</div><div class="title">MDN</div><div class="url">开发者文档</div></div>
         <div class="link-card" onclick="document.getElementById('urlInput').value='https://stackoverflow.com'; navigate();"><div class="icon">❓</div><div class="title">Stack Overflow</div><div class="url">技术问答</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://news.ycombinator.com'; navigate();"><div class="icon">📰</div><div class="title">Hacker News</div><div class="url">科技新闻</div></div>
+        <div class="link-card" onclick="document.getElementById('urlInput').value='https://news.ycombinator.com'; navigate();"><div class="icon">📰</div><div class="title">HN</div><div class="url">科技新闻</div></div>
         <div class="link-card" onclick="document.getElementById('urlInput').value='https://codepen.io'; navigate();"><div class="icon">🎨</div><div class="title">CodePen</div><div class="url">代码演示</div></div>
+        <div class="link-card" onclick="document.getElementById('urlInput').value='https://wikipedia.org'; navigate();"><div class="icon">📖</div><div class="title">Wikipedia</div><div class="url">百科</div></div>
+        <div class="link-card" onclick="document.getElementById('urlInput').value='https://duckduckgo.com'; navigate();"><div class="icon">🦆</div><div class="title">DuckDuckGo</div><div class="url">隐私搜索</div></div>
       </div>
     </div>
     <div class="search-tips">
-      <p>💡 提示: 直接输入关键词进行搜索，或输入完整网址访问网站</p>
+      <p>提示: 直接输入关键词进行搜索，或输入完整网址访问网站</p>
     </div>
   </div>
 </body>
 </html>`
 
 const DEFAULT_BOOKMARKS = [
-  { name: '🏠 主页', url: 'about:blank' },
-  { name: '🔍 Google', url: 'https://www.google.com' },
-  { name: '📖 MDN', url: 'https://developer.mozilla.org' },
-  { name: '💻 GitHub', url: 'https://github.com' },
-  { name: '📰 Hacker News', url: 'https://news.ycombinator.com' },
-  { name: '❓ Stack Overflow', url: 'https://stackoverflow.com' },
+  { name: '主页', url: 'about:blank' },
+  { name: 'Google', url: 'https://www.google.com' },
+  { name: 'MDN', url: 'https://developer.mozilla.org' },
+  { name: 'GitHub', url: 'https://github.com' },
+  { name: 'HN', url: 'https://news.ycombinator.com' },
+  { name: 'SO', url: 'https://stackoverflow.com' },
 ]
+
+const SEARCH_ENGINES: Record<string, (q: string) => string> = {
+  google: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+  duckduckgo: (q) => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+  bing: (q) => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+  brave: (q) => `https://search.brave.com/search?q=${encodeURIComponent(q)}`,
+  wikipedia: (q) => `https://wikipedia.org/w/index.php?search=${encodeURIComponent(q)}`,
+  github: (q) => `https://github.com/search?q=${encodeURIComponent(q)}&type=repositories`,
+}
+
+const BM_STORAGE = 'weblinux-browser-bookmarks'
+const HIST_STORAGE = 'weblinux-browser-history'
 
 interface Tab {
   id: string
@@ -81,12 +114,39 @@ interface Tab {
   loading: boolean
 }
 
+function loadBookmarks(): typeof DEFAULT_BOOKMARKS {
+  try {
+    const raw = localStorage.getItem(BM_STORAGE)
+    if (!raw) return DEFAULT_BOOKMARKS
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+  } catch {}
+  return DEFAULT_BOOKMARKS
+}
+
+function loadHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(HIST_STORAGE)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed
+  } catch {}
+  return []
+}
+
 export default function WebBrowser() {
   const [, setUrl] = useState('about:blank')
   const [urlInput, setUrlInput] = useState('')
-  const [history, setHistory] = useState<string[]>([])
+  const [history, setHistory] = useState<string[]>(loadHistory)
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const [bookmarks, setBookmarks] = useState(DEFAULT_BOOKMARKS)
+  const [bookmarks, setBookmarks] = useState(loadBookmarks)
+  const [searchEngine, setSearchEngine] = useState<string>(() => {
+    try {
+      return localStorage.getItem('weblinux-browser-engine') || 'google'
+    } catch {
+      return 'google'
+    }
+  })
   const [tabs, setTabs] = useState<Tab[]>([{ id: 'tab-1', title: '新标签页', url: 'about:blank', loading: false }])
   const [activeTabId, setActiveTabId] = useState('tab-1')
   const [tabContents, setTabContents] = useState<Record<string, string>>({ 'tab-1': welcomePage })
@@ -98,37 +158,59 @@ export default function WebBrowser() {
 
   const activeTab = tabs.find((t) => t.id === activeTabId)
 
-  const navigate = useCallback((targetUrl: string, tabId?: string) => {
+  useEffect(() => {
+    try {
+      localStorage.setItem(BM_STORAGE, JSON.stringify(bookmarks))
+    } catch {}
+  }, [bookmarks])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(HIST_STORAGE, JSON.stringify(history))
+    } catch {}
+  }, [history])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('weblinux-browser-engine', searchEngine)
+    } catch {}
+  }, [searchEngine])
+
+  const navigate = useCallback((targetUrl: string, tabId?: string, engine?: string) => {
     const currentTabId = tabId || activeTabId
+    const useEngine = engine || searchEngine
     let finalUrl = targetUrl.trim()
-    
+
     if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(finalUrl)) {
-      if (finalUrl.includes('.') && !finalUrl.includes(' ')) {
+      if (finalUrl.includes('.') && !finalUrl.includes(' ') && finalUrl.includes('.')) {
         finalUrl = 'https://' + finalUrl
       } else {
-        finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(finalUrl)
+        const builder = SEARCH_ENGINES[useEngine] || SEARCH_ENGINES.google
+        finalUrl = builder(finalUrl)
       }
     }
-    
+
     setUrl(finalUrl)
     setUrlInput(finalUrl)
     setSearchSuggestions([])
-    
-    const newHistory = history.slice(0, historyIndex + 1)
-    newHistory.push(finalUrl)
-    setHistory(newHistory)
-    setHistoryIndex(newHistory.length - 1)
-    
-    setTabs((prev) => prev.map((t) => 
+
+    setHistory(prev => {
+      const truncated = prev.slice(0, historyIndex + 1)
+      const next = [...truncated, finalUrl].slice(-200)
+      setHistoryIndex(next.length - 1)
+      return next
+    })
+
+    setTabs((prev) => prev.map((t) =>
       t.id === currentTabId ? { ...t, url: finalUrl, title: finalUrl, loading: true, favicon: undefined } : t
     ))
-    
+
     setTimeout(() => {
-      setTabs((prev) => prev.map((t) => 
+      setTabs((prev) => prev.map((t) =>
         t.id === currentTabId ? { ...t, loading: false } : t
       ))
     }, 1500)
-  }, [history, historyIndex, activeTabId])
+  }, [historyIndex, activeTabId, searchEngine])
 
   const goBack = useCallback(() => {
     if (historyIndex > 0) {
@@ -201,8 +283,13 @@ export default function WebBrowser() {
     if (activeTab && activeTab.url !== 'about:blank') {
       const existing = bookmarks.find(b => b.url === activeTab.url)
       if (!existing) {
-        const newBookmark = { name: `📌 ${activeTab.title.split('/')[2] || '书签'}`, url: activeTab.url }
-        setBookmarks([...bookmarks, newBookmark])
+        try {
+          const hostname = new URL(activeTab.url).hostname.replace('www.', '')
+          const newBookmark = { name: hostname, url: activeTab.url }
+          setBookmarks([...bookmarks, newBookmark])
+        } catch {
+          setBookmarks([...bookmarks, { name: '书签', url: activeTab.url }])
+        }
       }
     }
   }, [activeTab, bookmarks])
@@ -214,21 +301,29 @@ export default function WebBrowser() {
   const handleUrlInputChange = useCallback((value: string) => {
     setUrlInput(value)
     if (value.length > 2) {
-      const suggestions = [
-        `https://${value}`,
-        `https://www.${value}.com`,
-        `https://${value}.com`,
-      ].filter(s => s.length > 10)
-      setSearchSuggestions(suggestions)
+      const v = value.trim()
+      const suggestions: string[] = []
+      if (!v.includes(' ')) {
+        suggestions.push(`https://${v}`)
+        if (!v.startsWith('www.') && !v.includes('.')) {
+          suggestions.push(`https://www.${v}.com`)
+          suggestions.push(`https://${v}.com`)
+        } else if (!v.startsWith('www.')) {
+          suggestions.push(`https://www.${v}`)
+        }
+      } else {
+        suggestions.push(`${SEARCH_ENGINES[searchEngine] ? Object.keys(SEARCH_ENGINES).find(k => k === searchEngine) || 'Google' : 'Google'} 搜索`)
+      }
+      setSearchSuggestions(suggestions.slice(0, 5))
     } else {
       setSearchSuggestions([])
     }
-  }, [])
+  }, [searchEngine])
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'navigate') {
-        navigate(event.data.url)
+        navigate(event.data.url, undefined, event.data.engine)
       }
     }
     window.addEventListener('message', handleMessage)
@@ -310,22 +405,45 @@ export default function WebBrowser() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: '#2d2d2d', borderBottom: '1px solid #333' }}>
-        <button 
-          onClick={goBack} 
+        <button
+          onClick={goBack}
           disabled={historyIndex <= 0}
-          title="后退" 
+          title="后退"
           style={{...navBtn, opacity: historyIndex <= 0 ? 0.3 : 1, cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer'}}
         >◀</button>
-        <button 
-          onClick={goForward} 
+        <button
+          onClick={goForward}
           disabled={historyIndex >= history.length - 1}
-          title="前进" 
+          title="前进"
           style={{...navBtn, opacity: historyIndex >= history.length - 1 ? 0.3 : 1, cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer'}}
         >▶</button>
         <button onClick={refresh} title="刷新" style={navBtn}>🔄</button>
         <button onClick={goHome} title="主页" style={navBtn}>🏠</button>
         <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} title="历史记录" style={{...navBtn, opacity: showHistoryPanel ? 1 : 0.5}}>📜</button>
-        
+
+        <select
+          value={searchEngine}
+          onChange={(e) => setSearchEngine(e.target.value)}
+          title="默认搜索引擎"
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #444',
+            borderRadius: 4,
+            background: '#1e1e1e',
+            color: '#d4d4d4',
+            fontSize: 11,
+            outline: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <option value="google">Google</option>
+          <option value="duckduckgo">DuckDuckGo</option>
+          <option value="bing">Bing</option>
+          <option value="brave">Brave</option>
+          <option value="wikipedia">Wikipedia</option>
+          <option value="github">GitHub</option>
+        </select>
+
         <div style={{ flex: 1, margin: '0 8px', position: 'relative' }}>
           <input
             ref={urlInputRef}

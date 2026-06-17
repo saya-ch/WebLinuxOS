@@ -1,15 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig(({ mode }) => {
-  const isGitHubPages = mode === 'github-pages'
-  
+export default defineConfig(() => {
   return {
     plugins: [react()],
-    base: isGitHubPages ? '/WebLinuxOS/' : '/',
+    // 该项目主部署目标是 GitHub Pages (https://<user>.github.io/WebLinuxOS/)，
+    // 因此默认 base 固定为仓库子路径；本地开发或自定义域名时可通过 VITE_BASE_PATH 覆盖。
+    base: process.env.VITE_BASE_PATH || '/WebLinuxOS/',
     build: {
-      outDir: isGitHubPages ? '../' : '../dist',
-      emptyOutDir: isGitHubPages ? false : true,
+      // GitHub Pages 部署工作流以仓库根目录作为上传源，因此默认输出到上级目录
+      // (即仓库根)。如需打包到 ../dist，请设置 OUTPUT_DIR=dist
+      outDir: process.env.OUTPUT_DIR || '../',
+      // 警告：outDir 指向仓库根时，Vite 会清空其中的所有内容。
+      // 这里显式关闭以避免误删 .git、README 等重要文件。
+      // 部署前请使用 `npm run clean` 清理旧的构建产物。
+      emptyOutDir: false,
       publicDir: 'public',
       sourcemap: false,
       minify: 'terser',

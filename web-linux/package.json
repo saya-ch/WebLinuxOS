@@ -1,14 +1,15 @@
 {
   "name": "weblinuxos",
   "private": true,
-  "version": "6.0.0",
+  "version": "6.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:local": "tsc -b && VITE_BASE_PATH=/ vite build",
+    "build:github": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:github": "tsc -b && vite build --mode github-pages",
     "clean": "rm -rf ../dist ../assets ../index.html ../favicon.svg ../icons.svg ../.nojekyll ../manifest.json ../screenshots",
     "predeploy": "npm run clean",
     "deploy": "npm run build:github",

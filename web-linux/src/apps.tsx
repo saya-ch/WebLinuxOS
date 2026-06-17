@@ -1069,4 +1069,5 @@ export const appRegistry: AppDefinition[] = [
   { id: 'system-health-dashboard-enhanced', name: '增强版系统健康监控', icon: <SystemHealthDashboardIcon />, component: 'SystemHealthDashboardEnhanced', category: 'system', defaultWidth: 1200, defaultHeight: 900, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'code-collaboration-hub', name: '代码协作中心', icon: <CodeStudioIcon />, component: 'CodeCollaborationHub', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'api-tester-pro', name: 'API测试器Pro', icon: <ApiIcon />, component: 'APITesterPro', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  { id: 'productivity-hub', name: '生产力中心', icon: <ListTodoIcon />, component: 'ProductivityHub', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
 ]

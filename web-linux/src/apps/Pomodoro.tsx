@@ -7,13 +7,49 @@ interface PomodoroPhase {
   color: string
 }
 
+interface PomodoroSession {
+  date: string
+  cycles: number
+  focusSeconds: number
+  tasks: string
+}
+
+const STORAGE_KEY = 'weblinux-pomodoro-stats'
+
+function loadStats(): { cycles: number; totalTime: number; sessions: PomodoroSession[] } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return { cycles: 0, totalTime: 0, sessions: [] }
+    const parsed = JSON.parse(raw)
+    return {
+      cycles: Number(parsed.cycles) || 0,
+      totalTime: Number(parsed.totalTime) || 0,
+      sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+    }
+  } catch {
+    return { cycles: 0, totalTime: 0, sessions: [] }
+  }
+}
+
+function saveStats(cycles: number, totalTime: number, sessions: PomodoroSession[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cycles, totalTime, sessions }))
+  } catch {}
+}
+
 const Pomodoro: React.FC = () => {
+  const initial = useMemo(() => loadStats(), [])
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0)
-  const [cycles, setCycles] = useState(0)
-  const [totalTime, setTotalTime] = useState(0)
+  const [cycles, setCycles] = useState(initial.cycles)
+  const [totalTime, setTotalTime] = useState(initial.totalTime)
+  const [sessions, setSessions] = useState<PomodoroSession[]>(initial.sessions)
+  const [taskInput, setTaskInput] = useState('')
+  const [currentTask, setCurrentTask] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
   const timerRef = useRef<number | null>(null)
+  const sessionStartRef = useRef<{ start: number; task: string } | null>(null)
 
   const phases = useMemo<PomodoroPhase[]>(() => [
     { id: 'work', name: '专注工作', duration: 25 * 60, color: 'from-red-500 to-orange-500' },
@@ -38,6 +74,9 @@ const Pomodoro: React.FC = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
+    if (!sessionStartRef.current) {
+      sessionStartRef.current = { start: Date.now(), task: currentTask || '未命名任务' }
+    }
     setIsRunning(true)
     timerRef.current = window.setInterval(() => {
       setTimeLeft(prev => {
@@ -58,6 +97,22 @@ const Pomodoro: React.FC = () => {
     setIsRunning(false)
   }
 
+  const recordSession = (finalCycles: number) => {
+    if (!sessionStartRef.current) return
+    const start = sessionStartRef.current
+    const focusSeconds = Math.round((Date.now() - start.start) / 1000)
+    if (focusSeconds < 30) return
+    const today = new Date().toISOString().slice(0, 10)
+    setSessions(prev => {
+      const next = [
+        { date: today, cycles: finalCycles, focusSeconds, tasks: start.task },
+        ...prev,
+      ].slice(0, 50)
+      return next
+    })
+    sessionStartRef.current = null
+  }
+
   const resetTimer = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current)
@@ -69,12 +124,15 @@ const Pomodoro: React.FC = () => {
   const nextPhase = useCallback(() => {
     pauseTimer()
     const newIndex = (currentPhaseIndex + 1) % phases.length
+    let updatedCycles = cycles
     if (newIndex === 0) {
-      setCycles(c => c + 1)
+      updatedCycles = cycles + 1
+      setCycles(updatedCycles)
+      recordSession(updatedCycles)
     }
     setCurrentPhaseIndex(newIndex)
     setTimeLeft(phases[newIndex].duration)
-  }, [currentPhaseIndex, phases])
+  }, [currentPhaseIndex, phases, cycles, totalTime, sessions])
 
   const previousPhase = () => {
     let newIndex = currentPhaseIndex - 1
@@ -99,7 +157,9 @@ const Pomodoro: React.FC = () => {
     }
   }, [])
 
-  // 不再需要这个 useEffect，因为我们已经在 nextPhase 和 previousPhase 中处理了
+  useEffect(() => {
+    saveStats(cycles, totalTime, sessions)
+  }, [cycles, totalTime, sessions])
 
   return (
     <div className="h-full w-full flex flex-col p-6 gap-6 bg-slate-900/80">
@@ -233,6 +293,61 @@ const Pomodoro: React.FC = () => {
         >
           10分钟
         </button>
+      </div>
+
+      <div className="border-t border-slate-700/60 pt-4 flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={taskInput}
+            onChange={(e) => setTaskInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && taskInput.trim()) {
+                setCurrentTask(taskInput.trim())
+                setTaskInput('')
+              }
+            }}
+            placeholder="输入当前专注任务..."
+            className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          />
+          <button
+            onClick={() => {
+              if (taskInput.trim()) {
+                setCurrentTask(taskInput.trim())
+                setTaskInput('')
+              }
+            }}
+            className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
+          >
+            设置
+          </button>
+        </div>
+        {currentTask && (
+          <div className="text-sm text-slate-300 px-1">
+            当前任务: <span className="text-blue-300">{currentTask}</span>
+          </div>
+        )}
+        <button
+          onClick={() => setShowHistory(s => !s)}
+          className="text-xs text-slate-400 hover:text-slate-200 self-start"
+        >
+          {showHistory ? '隐藏' : '查看'}历史会话 ({sessions.length})
+        </button>
+        {showHistory && (
+          <div className="max-h-40 overflow-y-auto bg-slate-800/50 rounded-lg p-2 text-xs space-y-1">
+            {sessions.length === 0 ? (
+              <div className="text-slate-500 px-2 py-1">暂无历史记录</div>
+            ) : (
+              sessions.map((s, i) => (
+                <div key={i} className="flex justify-between text-slate-300 px-2 py-1 hover:bg-slate-700/50 rounded">
+                  <span className="truncate flex-1">{s.tasks}</span>
+                  <span className="text-slate-500 ml-2">{s.date}</span>
+                  <span className="text-blue-300 ml-2">{Math.round(s.focusSeconds / 60)}分钟</span>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
