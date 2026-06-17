@@ -2863,17 +2863,45 @@ index.html           [ <=>                ]   1.23K  --.-KB/s    in 0.001s
         output = `kubectl: command not found (需要Kubernetes环境)`
         break
       case 'systemctl':
-        if (args[1] === 'status') {
-          output = `● ssh.service - OpenSSH server daemon
-   Loaded: loaded (/usr/lib/systemd/system/ssh.service; enabled)
+        if (args[0] === 'status') {
+          const serviceName = args[1] || 'ssh.service'
+          output = `● ${serviceName} - Service Status
+   Loaded: loaded (/usr/lib/systemd/system/${serviceName}; enabled)
    Active: active (running) since ${new Date().toDateString()}; 2 weeks ago`
-        } else if (args[1] === 'start') {
-          output = `Starting ${args[0]}...`
-        } else if (args[1] === 'stop') {
-          output = `Stopping ${args[0]}...`
+        } else if (args[0] === 'start') {
+          const serviceName = args[1] || 'service'
+          output = `Starting ${serviceName}...
+${serviceName}.service: Started.`
+        } else if (args[0] === 'stop') {
+          const serviceName = args[1] || 'service'
+          output = `Stopping ${serviceName}...
+${serviceName}.service: Stopped.`
+        } else if (args[0] === 'restart') {
+          const serviceName = args[1] || 'service'
+          output = `Restarting ${serviceName}...
+${serviceName}.service: Restarted.`
+        } else if (args[0] === 'enable') {
+          const serviceName = args[1] || 'service'
+          output = `Created symlink /etc/systemd/system/multi-user.target.wants/${serviceName}.service → /usr/lib/systemd/system/${serviceName}.service.`
+        } else if (args[0] === 'disable') {
+          const serviceName = args[1] || 'service'
+          output = `Removed /etc/systemd/system/multi-user.target.wants/${serviceName}.service.`
         } else {
-          output = `systemctl: 请指定服务名称和操作
-用法: systemctl [COMMAND] [NAME]`
+          output = `systemctl - Systemd service manager
+用法: systemctl [COMMAND] [NAME]
+
+命令:
+  status    查看服务状态
+  start     启动服务
+  stop      停止服务
+  restart   重启服务
+  enable    启用服务开机自启
+  disable   禁用服务开机自启
+
+示例:
+  systemctl status sshd
+  systemctl start nginx
+  systemctl restart apache2`
         }
         break
       case 'journalctl':
@@ -3175,11 +3203,10 @@ tcp LISTEN 0 128 *:22 *:* users:(("sshd",pid=567,fd=3))`
           ].join('\n')
         } else {
           try {
-            const sanitized = expression.replace(/[^0-9+\-*/%.()]/g, '')
-            const result = Function(`'use strict'; return (${sanitized})`)()
-            output = `scale=2\n${expression}\n${Number(result).toFixed(2)}`
-          } catch {
-            output = 'bc: 表达式错误'
+            const result = safeEval(expression)
+            output = `scale=2\n${expression}\n${result.toFixed(2)}`
+          } catch (e) {
+            output = `bc: 表达式错误 - ${(e as Error).message}`
           }
         }
         break
@@ -3190,10 +3217,10 @@ tcp LISTEN 0 128 *:22 *:* users:(("sshd",pid=567,fd=3))`
           output = 'expr: 缺少操作数'
         } else {
           try {
-            const result = Function(`'use strict'; return (${expression})`)()
+            const result = safeEval(expression)
             output = String(result)
-          } catch {
-            output = 'expr: 表达式错误'
+          } catch (e) {
+            output = `expr: 表达式错误 - ${(e as Error).message}`
           }
         }
         break
