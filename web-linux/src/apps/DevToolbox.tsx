@@ -1,4 +1,4 @@
-import { useState, useMemo, memo, useCallback } from 'react'
+import { useState, useMemo, memo, useCallback, useEffect } from 'react'
 
 type ToolId =
   | 'base64'
@@ -237,25 +237,29 @@ function Base64Tool() {
   const [error, setError] = useState('')
 
   const output = useMemo(() => {
-    if (!input) return ''
+    if (!input) return { result: '', error: '' }
     try {
+      let result = ''
       if (mode === 'encode') {
-        // UTF-8 安全
         const bytes = new TextEncoder().encode(input)
         let binary = ''
         bytes.forEach((b) => (binary += String.fromCharCode(b)))
-        return btoa(binary)
+        result = btoa(binary)
       } else {
         const binary = atob(input.trim())
         const bytes = new Uint8Array(binary.length)
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-        return new TextDecoder('utf-8').decode(bytes)
+        result = new TextDecoder('utf-8').decode(bytes)
       }
-    } catch (e) {
-      setError(mode === 'decode' ? '无效的 Base64 字符串' : '编码失败')
-      return ''
+      return { result, error: '' }
+    } catch {
+      return { result: '', error: mode === 'decode' ? '无效的 Base64 字符串' : '编码失败' }
     }
   }, [input, mode])
+
+  useEffect(() => {
+    setError(output.error)
+  }, [output])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -265,7 +269,7 @@ function Base64Tool() {
       </div>
       <Textarea placeholder={mode === 'encode' ? '输入要编码的文本...' : '输入 Base64 字符串...'} value={input} onChange={setInput} rows={6} />
       {error && <OutputBox label="错误"><span style={{ color: '#fca5a5' }}>{error}</span></OutputBox>}
-      {!error && output && <OutputBox label={`结果 (${output.length} 字符)`}>{output}</OutputBox>}
+      {!error && output.result && <OutputBox label={`结果 (${output.result.length} 字符)`}>{output.result}</OutputBox>}
     </div>
   )
 }
@@ -279,16 +283,21 @@ function UrlTool() {
   const [error, setError] = useState('')
 
   const output = useMemo(() => {
-    if (!input) return ''
+    if (!input) return { result: '', error: '' }
     try {
-      if (mode === 'encode') return encodeURI(input)
-      if (mode === 'encodeComponent') return encodeURIComponent(input)
-      return decodeURIComponent(input)
+      let result = ''
+      if (mode === 'encode') result = encodeURI(input)
+      else if (mode === 'encodeComponent') result = encodeURIComponent(input)
+      else result = decodeURIComponent(input)
+      return { result, error: '' }
     } catch {
-      setError('无效的 URI')
-      return ''
+      return { result: '', error: '无效的 URI' }
     }
   }, [input, mode])
+
+  useEffect(() => {
+    setError(output.error)
+  }, [output])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -299,7 +308,7 @@ function UrlTool() {
       </div>
       <Textarea placeholder="输入 URL 或文本..." value={input} onChange={setInput} rows={5} />
       {error && <OutputBox label="错误"><span style={{ color: '#fca5a5' }}>{error}</span></OutputBox>}
-      {!error && output && <OutputBox label="结果">{output}</OutputBox>}
+      {!error && output.result && <OutputBox label="结果">{output.result}</OutputBox>}
     </div>
   )
 }

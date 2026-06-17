@@ -58,6 +58,19 @@ export default function ClipboardManager() {
   const listRef = useRef<HTMLDivElement>(null)
   const monitorRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const detectType = (text: string): ClipboardItem['type'] => {
+    if (/^https?:\/\//.test(text)) return 'link'
+    if (/^(import|export|function|const|let|var|class|interface|type)\s/m.test(text) ||
+        /[{}\[\]();]/.test(text)) return 'code'
+    if (/^data:image\//.test(text)) return 'image'
+    return 'text'
+  }
+
+  const generatePreview = (content: string): string => {
+    const preview = content.slice(0, 100)
+    return preview.length < content.length ? preview + '...' : preview
+  }
+
   useEffect(() => {
     try {
       localStorage.setItem('weblinux-clipboard-manager', JSON.stringify(items))
@@ -103,19 +116,6 @@ export default function ClipboardManager() {
       }
     }
   }, [])
-
-  const detectType = (text: string): ClipboardItem['type'] => {
-    if (/^https?:\/\//.test(text)) return 'link'
-    if (/^(import|export|function|const|let|var|class|interface|type)\s/m.test(text) || 
-        /[{}\[\]();]/.test(text)) return 'code'
-    if (/^data:image\//.test(text)) return 'image'
-    return 'text'
-  }
-
-  const generatePreview = (content: string): string => {
-    const preview = content.slice(0, 100)
-    return preview.length < content.length ? preview + '...' : preview
-  }
 
   const filteredItems = items.filter(item => {
     if (showArchived && !item.archived) return false

@@ -96,7 +96,7 @@ export default function AICodeTutor() {
       } else {
         setOutput('代码已准备就绪！');
       }
-    } catch (_err) {
+    } catch {
       setOutput('代码执行出错！');
     } finally {
       setIsRunning(false);
@@ -121,7 +121,7 @@ export default function AICodeTutor() {
       const randomResponse = responses[Math.floor(Math.random() * responses.length)];
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: `${randomResponse}\n\n关于 \"${userMsg}\"，这是我的建议...` 
+        content: `${randomResponse}\n\n关于 "${userMsg}"，这是我的建议...` 
       }]);
     }, 800);
   };
