@@ -2092,31 +2092,115 @@ export default function Terminal() {
         break
       }
       case 'weather': {
-        const weatherConditions = ['晴朗', '多云', '小雨', '晴间多云', '雷阵雨', '小到中雨', '中到大雨', '晴到多云', '阴天', '雷阵雨伴有冰雹']
-        const windDirections = ['东北风', '东风', '东南风', '南风', '西南风', '西风', '西北风', '北风']
-        const icons = ['☀️', '⛅', '🌧️', '🌤️', '⛈️', '🌦️', '🌧️', '🌤️', '☁️', '⛈️']
-        const temp = Math.floor(Math.random() * 30 + 10)
-        const condition = weatherConditions[Math.floor(Math.random() * weatherConditions.length)]
-        const icon = icons[weatherConditions.indexOf(condition)]
-        const windDir = windDirections[Math.floor(Math.random() * windDirections.length)]
-        const windSpeed = Math.floor(Math.random() * 15 + 1)
-        const humidity = Math.floor(Math.random() * 40 + 40)
-        const pressure = Math.floor(Math.random() * 40 + 1000)
+        const cityCoords: Record<string, { lat: number; lon: number; name: string }> = {
+          'beijing': { lat: 39.9042, lon: 116.4074, name: '北京' },
+          'shanghai': { lat: 31.2304, lon: 121.4737, name: '上海' },
+          'guangzhou': { lat: 23.1291, lon: 113.2644, name: '广州' },
+          'shenzhen': { lat: 22.5431, lon: 114.0579, name: '深圳' },
+          'hangzhou': { lat: 30.2741, lon: 120.1552, name: '杭州' },
+          'chengdu': { lat: 30.5728, lon: 104.0668, name: '成都' },
+          'wuhan': { lat: 30.5928, lon: 114.3055, name: '武汉' },
+          'xian': { lat: 34.2619, lon: 108.9463, name: '西安' },
+          'tokyo': { lat: 35.6762, lon: 139.6503, name: '东京' },
+          'seoul': { lat: 37.5665, lon: 126.9780, name: '首尔' },
+          'newyork': { lat: 40.7128, lon: -74.0060, name: '纽约' },
+          'london': { lat: 51.5074, lon: -0.1278, name: '伦敦' },
+          'paris': { lat: 48.8566, lon: 2.3522, name: '巴黎' },
+          'sydney': { lat: -33.8688, lon: 151.2093, name: '悉尼' },
+          'singapore': { lat: 1.3521, lon: 103.8198, name: '新加坡' },
+        }
 
-        const location = args.length > 0 ? args.join(' ') : '本地'
+        const locationInput = args.length > 0 ? args.join(' ') : 'beijing'
+        const coords = cityCoords[locationInput.toLowerCase()] || { lat: 39.9042, lon: 116.4074, name: '北京' }
 
-        output = [
-          `${icon}  ${location} 天气预报`,
-          `╔══════════════════════════════════════════╗`,
-          `║  天气: ${condition.padEnd(22)}║`,
-          `║  温度: ${temp}°C${' '.repeat(18)}║`,
-          `║  风向: ${windDir} ${windSpeed}级${' '.repeat(15)}║`,
-          `║  湿度: ${humidity}%${' '.repeat(20)}║`,
-          `║  气压: ${pressure}hPa${' '.repeat(16)}║`,
-          `╚══════════════════════════════════════════╝`,
-          '',
-          '小贴士: 出门记得看天气预报哦!',
-        ].join('\n')
+        const weatherCodes: Record<number, { desc: string; icon: string }> = {
+          0: { desc: '晴天', icon: '☀️' },
+          1: { desc: '晴', icon: '☀️' },
+          2: { desc: '多云', icon: '⛅' },
+          3: { desc: '阴天', icon: '☁️' },
+          45: { desc: '雾', icon: '🌫️' },
+          48: { desc: '雾凇', icon: '❄️' },
+          51: { desc: '小雨', icon: '🌧️' },
+          53: { desc: '中雨', icon: '🌧️' },
+          55: { desc: '大雨', icon: '🌧️' },
+          61: { desc: '阵雨', icon: '🌦️' },
+          63: { desc: '阵雨', icon: '🌦️' },
+          65: { desc: '阵雨', icon: '🌧️' },
+          71: { desc: '小雪', icon: '❄️' },
+          73: { desc: '中雪', icon: '❄️' },
+          75: { desc: '大雪', icon: '❄️' },
+          80: { desc: '雷阵雨', icon: '⛈️' },
+          81: { desc: '雷阵雨', icon: '⛈️' },
+          82: { desc: '雷阵雨', icon: '⛈️' },
+          95: { desc: '雷雨', icon: '⛈️' },
+          96: { desc: '雷雨', icon: '⛈️' },
+          99: { desc: '雷雨', icon: '⛈️' },
+        }
+
+        try {
+          const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Shanghai`
+          )
+          const data = await response.json()
+
+          const weatherCode = data.current.weather_code
+          const weatherInfo = weatherCodes[weatherCode] || { desc: '未知', icon: '❓' }
+          const temp = Math.round(data.current.temperature_2m)
+          const humidity = data.current.relative_humidity_2m
+          const windSpeed = Math.round(data.current.wind_speed_10m)
+          const windDir = Math.round(data.current.wind_direction_10m)
+          const pressure = Math.round(data.current.surface_pressure)
+
+          const windDirections = ['北风', '东北风', '东风', '东南风', '南风', '西南风', '西风', '西北风']
+          const windIndex = Math.round((windDir % 360) / 45) % 8
+          const windDirection = windDirections[windIndex]
+
+          const maxTemp = Math.round(data.daily.temperature_2m_max[0])
+          const minTemp = Math.round(data.daily.temperature_2m_min[0])
+
+          output = [
+            `${weatherInfo.icon}  ${coords.name} 天气预报`,
+            `╔══════════════════════════════════════════╗`,
+            `║  天气: ${weatherInfo.desc.padEnd(22)}║`,
+            `║  温度: ${temp}°C${' '.repeat(18)}║`,
+            `║  风向: ${windDirection} ${windSpeed}km/h${' '.repeat(10)}║`,
+            `║  湿度: ${humidity}%${' '.repeat(20)}║`,
+            `║  气压: ${pressure}hPa${' '.repeat(16)}║`,
+            `╠══════════════════════════════════════════╣`,
+            `║  今日最高: ${maxTemp}°C 最低: ${minTemp}°C${' '.repeat(4)}║`,
+            `╚══════════════════════════════════════════╝`,
+            '',
+            `⏰ 更新时间: ${new Date(data.current.time).toLocaleString('zh-CN')}`,
+            '',
+            '💡 支持的城市: beijing, shanghai, guangzhou, shenzhen, hangzhou, chengdu, wuhan, xian, tokyo, seoul, newyork, london, paris, sydney, singapore',
+          ].join('\n')
+        } catch {
+          const weatherConditions = ['晴朗', '多云', '小雨', '晴间多云', '雷阵雨', '小到中雨', '中到大雨', '晴到多云', '阴天', '雷阵雨伴有冰雹']
+          const windDirections = ['东北风', '东风', '东南风', '南风', '西南风', '西风', '西北风', '北风']
+          const icons = ['☀️', '⛅', '🌧️', '🌤️', '⛈️', '🌦️', '🌧️', '🌤️', '☁️', '⛈️']
+          const temp = Math.floor(Math.random() * 30 + 10)
+          const condition = weatherConditions[Math.floor(Math.random() * weatherConditions.length)]
+          const icon = icons[weatherConditions.indexOf(condition)]
+          const windDir = windDirections[Math.floor(Math.random() * windDirections.length)]
+          const windSpeed = Math.floor(Math.random() * 15 + 1)
+          const humidity = Math.floor(Math.random() * 40 + 40)
+          const pressure = Math.floor(Math.random() * 40 + 1000)
+
+          output = [
+            `${icon}  ${coords.name} 天气预报 (模拟)`,
+            `╔══════════════════════════════════════════╗`,
+            `║  天气: ${condition.padEnd(22)}║`,
+            `║  温度: ${temp}°C${' '.repeat(18)}║`,
+            `║  风向: ${windDir} ${windSpeed}级${' '.repeat(15)}║`,
+            `║  湿度: ${humidity}%${' '.repeat(20)}║`,
+            `║  气压: ${pressure}hPa${' '.repeat(16)}║`,
+            `╚══════════════════════════════════════════╝`,
+            '',
+            '💡 提示: API不可用时显示模拟数据',
+            '',
+            '支持的城市: beijing, shanghai, guangzhou, shenzhen, hangzhou, chengdu, wuhan, xian, tokyo, seoul, newyork, london, paris, sydney, singapore',
+          ].join('\n')
+        }
         break
       }
       case 'github': {

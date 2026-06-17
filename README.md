@@ -204,6 +204,38 @@ web-linux/src/
 - **本地缓存** - API 结果缓存，减少重复请求
 - **预加载** - 关键应用在空闲时预加载
 
+## 终端命令
+
+WebLinuxOS 终端支持 90+ 命令，包括：
+
+### 文件操作
+- `ls`, `cd`, `pwd`, `cat`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `du`
+
+### 系统信息
+- `whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `top`, `neofetch`
+
+### 网络工具
+- `ping`, `ifconfig`, `host`, `nslookup`, `dig`, `fetch`, `curl`
+
+### 实用工具
+- `calc` - 数学计算器
+- `weather <城市>` - 实时天气查询（支持 15+ 城市）
+- `crypto [货币]` - 加密货币价格
+- `github <关键词>` - GitHub 仓库搜索
+- `hn` - Hacker News 热门新闻
+- `translate <文本>` - 多语言翻译
+- `uuid` - 生成 UUID
+- `qrcode <文本>` - 生成二维码
+- `base64` / `unbase64` - Base64 编码解码
+- `hash` - 哈希计算
+- `color <HEX>` - 颜色转换
+- `units <值> <单位>` - 单位转换
+- `timeconv` - 时区转换
+- `currency` - 货币转换
+
+### 趣味命令
+- `cowsay`, `fortune`, `matrix`, `starwars`, `asciiart`, `dog`, `joke`, `advice`
+
 ## GitHub Pages 部署
 
 仓库配置了自动部署流程 `.github/workflows/deploy.yml`：
