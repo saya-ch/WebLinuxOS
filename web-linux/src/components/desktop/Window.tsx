@@ -43,43 +43,42 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   useEffect(() => {
     if (dragging) {
       setDragOpacity(0.85)
-      document.body.style.cursor = 'grabbing'
+      document.body.style.setProperty('cursor', 'grabbing', 'important')
       document.body.style.userSelect = 'none'
-    } else {
+    } else if (!resizing) {
       setDragOpacity(1)
-      document.body.style.cursor = 'default'
-      document.body.style.userSelect = 'auto'
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     }
     return () => {
-      document.body.style.cursor = 'default'
-      document.body.style.userSelect = 'auto'
+      if (!resizing) {
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
     }
-  }, [dragging])
+  }, [dragging, resizing])
 
   useEffect(() => {
     if (resizing) {
       document.body.style.userSelect = 'none'
-      switch (resizing) {
-        case 'corner':
-          document.body.style.cursor = 'nwse-resize'
-          break
-        case 'bottom':
-          document.body.style.cursor = 'ns-resize'
-          break
-        case 'right':
-        case 'left':
-          document.body.style.cursor = 'ew-resize'
-          break
+      const cursorMap: Record<string, string> = {
+        corner: 'nwse-resize',
+        bottom: 'ns-resize',
+        right: 'ew-resize',
+        left: 'ew-resize',
       }
-    } else {
-      document.body.style.cursor = 'default'
-      document.body.style.userSelect = 'auto'
+      document.body.style.setProperty('cursor', cursorMap[resizing] || 'default', 'important')
+    } else if (!dragging) {
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     }
     return () => {
-      document.body.style.cursor = 'default'
-      document.body.style.userSelect = 'auto'
+      if (!dragging) {
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
     }
-  }, [resizing])
+  }, [resizing, dragging])
 
   const handleClose = useCallback(() => {
     setIsClosing(true)
@@ -199,20 +198,24 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           let newHeight = ref.startHeight
           let newX = ref.startWindowX
           const newY = ref.startWindowY
+          const maxW = win.maxWidth || Math.max(win.minWidth, window.innerWidth - ref.startWindowX - 8)
+          const maxH = win.maxHeight || Math.max(win.minHeight, window.innerHeight - 40 - ref.startWindowY - 8)
 
           if (resizing === 'right' || resizing === 'corner') {
-            newWidth = Math.max(win.minWidth, Math.min(ref.startWidth + dx, win.maxWidth || window.innerWidth))
+            newWidth = Math.max(win.minWidth, Math.min(ref.startWidth + dx, maxW))
           }
           if (resizing === 'left') {
-            newWidth = Math.max(win.minWidth, Math.min(ref.startWidth - dx, win.maxWidth || window.innerWidth))
+            const rawWidth = ref.startWidth - dx
+            newWidth = Math.max(win.minWidth, Math.min(rawWidth, ref.startWindowX + ref.startWidth - 8))
             if (newWidth === win.minWidth && dx > 0) {
               newX = ref.startWindowX + ref.startWidth - win.minWidth
             } else {
-              newX = Math.max(-newWidth + 100, ref.startWindowX + dx)
+              newX = ref.startWindowX + (ref.startWidth - newWidth)
             }
+            newX = Math.max(8, newX)
           }
           if (resizing === 'bottom' || resizing === 'corner') {
-            newHeight = Math.max(win.minHeight, Math.min(ref.startHeight + dy, (win.maxHeight || window.innerHeight) - 40))
+            newHeight = Math.max(win.minHeight, Math.min(ref.startHeight + dy, maxH))
           }
 
           updateWindowPosition(win.id, newX, newY)

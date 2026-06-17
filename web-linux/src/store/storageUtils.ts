@@ -18,7 +18,13 @@ export const STORAGE_KEYS = {
 
 const STORAGE_SIZE_LIMIT = 4_500_000
 
-const saveTimeouts: Map<string, ReturnType<typeof setTimeout>> = new Map()
+interface PendingWrite {
+  timeout: ReturnType<typeof setTimeout>
+  key: string
+  value: unknown
+}
+
+const pendingWrites: Map<string, PendingWrite> = new Map()
 
 let storageAvailable = true
 try {
@@ -87,9 +93,9 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
 }
 
 export function debouncedSaveToStorage(key: string, value: unknown, delay: number = 500) {
-  const existingTimeout = saveTimeouts.get(key)
-  if (existingTimeout) {
-    clearTimeout(existingTimeout)
+  const existing = pendingWrites.get(key)
+  if (existing) {
+    clearTimeout(existing.timeout)
   }
   const timeout = setTimeout(() => {
     try {
@@ -107,9 +113,9 @@ export function debouncedSaveToStorage(key: string, value: unknown, delay: numbe
     } catch (e) {
       console.warn(`Failed to save to localStorage for key "${key}":`, e)
     }
-    saveTimeouts.delete(key)
+    pendingWrites.delete(key)
   }, delay)
-  saveTimeouts.set(key, timeout)
+  pendingWrites.set(key, { timeout, key, value })
 }
 
 export function saveToStorage(key: string, value: unknown) {
@@ -118,14 +124,22 @@ export function saveToStorage(key: string, value: unknown) {
     const size = estimateSize(serialized)
     if (size > STORAGE_SIZE_LIMIT) {
       console.warn(
-        `[storage] 数据过大 (${Math.round(size / 1024)}KB)，无法保存到 localStorage [${key}]。`
+        `[storage] 数据过大 (${Math.round(size / 1024)}KB)，尝试保存到 localStorage [${key}] 可能失败。`
       )
-      return false
     }
-    safeSetItem(key, serialized)
+    const ok = safeSetItem(key, serialized)
+    if (!ok) {
+      // 回退到内存存储
+      memoryStore[key] = serialized
+    }
     return true
   } catch (e) {
     console.warn(`Failed to save to localStorage for key "${key}":`, e)
+    try {
+      memoryStore[key] = JSON.stringify(value)
+    } catch {
+      /* noop */
+    }
     return false
   }
 }
@@ -173,13 +187,39 @@ export function getStorageUsage(): { used: number; keys: number } {
 }
 
 export function clearAllStorage() {
-  saveTimeouts.forEach((t) => clearTimeout(t))
-  saveTimeouts.clear()
+  pendingWrites.forEach((p) => clearTimeout(p.timeout))
+  pendingWrites.clear()
   Object.values(STORAGE_KEYS).forEach((key) => safeRemoveItem(key))
+  Object.keys(memoryStore).forEach((key) => {
+    if (key.startsWith('weblinux-')) {
+      delete memoryStore[key]
+    }
+  })
 }
 
 export function flushPendingSaves() {
-  saveTimeouts.forEach((t) => {
-    try { t } catch { /* noop */ }
+  const pending = Array.from(pendingWrites.values())
+  pendingWrites.clear()
+  pending.forEach((p) => {
+    try {
+      clearTimeout(p.timeout)
+      saveToStorage(p.key, p.value)
+    } catch {
+      /* noop */
+    }
   })
+}
+
+export function listStorageKeys(): string[] {
+  const keys: string[] = []
+  if (storageAvailable) {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith('weblinux-')) keys.push(k)
+    }
+  }
+  Object.keys(memoryStore).forEach((k) => {
+    if (k.startsWith('weblinux-') && !keys.includes(k)) keys.push(k)
+  })
+  return keys
 }

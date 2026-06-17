@@ -181,6 +181,7 @@ const App = memo(function App() {
       const isShift = e.shiftKey
       const isAlt = e.altKey
       const key = e.key.toLowerCase()
+      const activeElement = document.activeElement
 
       if (launcherOpen) {
         if (e.key === 'Escape') {
@@ -190,24 +191,30 @@ const App = memo(function App() {
         return
       }
 
+      // Prevent most global shortcuts when typing in text fields (but always allow Esc)
+      const isTypingInField =
+        activeElement &&
+        (activeElement.tagName === 'INPUT' ||
+          activeElement.tagName === 'TEXTAREA' ||
+          activeElement.getAttribute('contenteditable') === 'true')
+
+      if (isTypingInField) {
+        // Allow only Escape (to blur) and combinations explicitly intended for text editing
+        if (e.key === 'Escape') {
+          ;(activeElement as HTMLElement).blur()
+        }
+        return
+      }
+
       if (isMod && key === 'k') {
         e.preventDefault()
         setSearchOpenRef.current(true)
         return
       }
-      
+
       if (isMod && key === 'p') {
         e.preventDefault()
         setCommandPaletteOpenRef.current(true)
-        return
-      }
-
-      // Focus trap check - don't process shortcuts when typing in input fields
-      const activeElement = document.activeElement
-      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.getAttribute('contenteditable') === 'true')) {
-        if (e.key === 'Escape') {
-          (activeElement as HTMLElement).blur()
-        }
         return
       }
 

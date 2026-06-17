@@ -158,7 +158,17 @@ const Desktop = memo(function Desktop() {
   const lastClickRef = useRef<{ id: string; time: number } | null>(null)
   const [particles, setParticles] = useState<Particle[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const mousePosRef = useRef({ x: 0, y: 0 })
+  const liveWallpaperRef = useRef(liveWallpaper)
+  const liveWallpaperEnabledRef = useRef(liveWallpaperEnabled)
+
+  useEffect(() => {
+    liveWallpaperRef.current = liveWallpaper
+  }, [liveWallpaper])
+
+  useEffect(() => {
+    liveWallpaperEnabledRef.current = liveWallpaperEnabled
+  }, [liveWallpaperEnabled])
 
   const initializeParticles = useCallback(() => {
     const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
@@ -182,21 +192,46 @@ const Desktop = memo(function Desktop() {
 
   useEffect(() => {
     if (!liveWallpaperEnabled) return
-    
+
     let animationId: number
     let lastTime = 0
-    const targetFPS = 60
+    let running = true
+    const targetFPS = 30
     const frameInterval = 1000 / targetFPS
-    
+    let connectionBatchCounter = 0
+
+    const computeConnections = (list: Particle[]): Connection[] => {
+      const active: Connection[] = []
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          const p1 = list[i]
+          const p2 = list[j]
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 12) {
+            active.push({ from: i, to: j, opacity: 1 - dist / 12 })
+          }
+        }
+      }
+      return active
+    }
+
     const animate = (currentTime: number) => {
+      if (!running) return
       if (lastTime === 0) lastTime = currentTime
       const deltaTime = currentTime - lastTime
-      
+
       if (deltaTime >= frameInterval) {
         lastTime = currentTime - (deltaTime % frameInterval)
-        
-        setParticles(prev => {
-          const newParticles = prev.map(p => {
+        const mp = mousePosRef.current
+        const currentMode = liveWallpaperRef.current
+
+        setParticles((prev) => {
+          if (prev.length === 0) return prev
+          const newParticles: Particle[] = new Array(prev.length)
+          for (let i = 0; i < prev.length; i++) {
+            const p = prev[i]
             let newX = p.x + p.vx
             let newY = p.y + p.vy
             let newVx = p.vx
@@ -211,76 +246,62 @@ const Desktop = memo(function Desktop() {
               newY = Math.max(0, Math.min(100, newY))
             }
 
-            if (liveWallpaper === 'interactive' && liveWallpaperEnabled) {
-              const dx = (mousePos.x - p.x) / 100
-              const dy = (mousePos.y - p.y) / 100
+            if (currentMode === 'interactive') {
+              const dx = (mp.x - newX) / 100
+              const dy = (mp.y - newY) / 100
               const dist = Math.sqrt(dx * dx + dy * dy)
-              if (dist < 0.3 && dist > 0) {
+              if (dist < 0.25 && dist > 0.001) {
                 newVx -= dx * 0.01
                 newVy -= dy * 0.01
               }
             }
 
-            newVx += (Math.random() - 0.5) * 0.01
-            newVy += (Math.random() - 0.5) * 0.01
+            newVx += (Math.random() - 0.5) * 0.005
+            newVy += (Math.random() - 0.5) * 0.005
 
-            const maxSpeed = 0.5
+            const maxSpeed = 0.4
             const speed = Math.sqrt(newVx * newVx + newVy * newVy)
             if (speed > maxSpeed) {
               newVx = (newVx / speed) * maxSpeed
               newVy = (newVy / speed) * maxSpeed
             }
 
-            return { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
-          })
-          
-          particlesRef.current = newParticles
-          
-          if (liveWallpaper !== 'particles' && liveWallpaperEnabled && newParticles.length <= 50) {
-            const newConnections: Connection[] = []
-            for (let i = 0; i < newParticles.length; i += 2) {
-              if (i + 1 < newParticles.length) {
-                const p1 = newParticles[i]
-                const p2 = newParticles[i + 1]
-                const dx = p1.x - p2.x
-                const dy = p1.y - p2.y
-                const dist = Math.sqrt(dx * dx + dy * dy)
-                if (dist < 15) {
-                  newConnections.push({
-                    from: i,
-                    to: i + 1,
-                    opacity: 1 - dist / 15
-                  })
-                }
-              }
-            }
-            setConnections(newConnections)
-          } else {
-            setConnections([])
+            newParticles[i] = { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
           }
-          
+
+          particlesRef.current = newParticles
+
+          if (currentMode !== 'particles') {
+            connectionBatchCounter++
+            if (connectionBatchCounter % 3 === 0) {
+              setConnections(computeConnections(newParticles))
+            }
+          } else {
+            if (connectionBatchCounter % 5 === 0) setConnections([])
+            connectionBatchCounter = 0
+          }
+
           return newParticles
         })
       }
-      
+
       animationId = requestAnimationFrame(animate)
     }
-    
+
     animationId = requestAnimationFrame(animate)
-    
+
     return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId)
-      }
+      running = false
+      if (animationId) cancelAnimationFrame(animationId)
     }
-  }, [liveWallpaperEnabled, liveWallpaper, mousePos])
+  }, [liveWallpaperEnabled])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect()
-    setMousePos({
+    mousePosRef.current = {
       x: ((e.clientX - rect.left) / rect.width) * 100,
       y: ((e.clientY - rect.top) / rect.height) * 100
-    })
+    }
   }, [])
 
   useEffect(() => {
