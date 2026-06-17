@@ -161,6 +161,7 @@ interface HistoryEntry {
 const COMMANDS = [
   'help', 'clear', 'pwd', 'whoami', 'ls', 'cd', 'cat', 'echo', 'mkdir', 'touch', 'rm', 'cp', 'mv',
   'history', 'neofetch', 'weather', 'git', 'npm', 'node', 'python', 'python3',
+  'github', 'hn', 'news', 'crypto', 'ipinfo', 'geocode',
   'exit', 'date', 'hostname', 'uname', 'lsb_release',
   'tree', 'wc', 'which', 'uptime', 'cal', 'env', 'export', 'alias', 'type',
   'man', 'find', 'grep', 'ps', 'top', 'df', 'free', 'ping', 'ifconfig',
@@ -2117,6 +2118,201 @@ export default function Terminal() {
           '小贴士: 出门记得看天气预报哦!',
         ].join('\n')
         break
+      }
+      case 'github': {
+        if (args.length === 0) {
+          output = [
+            `🔍 GitHub 搜索`,
+            ``,
+            `用法: github <关键词> [选项]`,
+            ``,
+            `选项:`,
+            `  --stars      按星数排序`,
+            `  --forks      按fork数排序`,
+            `  --recent     最新更新`,
+            `  --language   指定语言`,
+            ``,
+            `示例:`,
+            `  github react hooks`,
+            `  github python --stars`,
+            `  github typescript --language TypeScript`,
+          ].join('\n')
+        } else {
+          const query = args.join(' ')
+          output = `🔍 正在搜索 GitHub: "${query}"...\n\n请稍候，正在获取结果...`
+          setHistory(prev => [...prev, { input: trimmed, output }])
+          fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&per_page=5`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.items && data.items.length > 0) {
+                const results = data.items.slice(0, 5).map((item: any, idx: number) => [
+                  `${idx + 1}. ${item.full_name}`,
+                  `   ⭐ ${item.stargazers_count} stars`,
+                  `   🍴 ${item.forks_count} forks`,
+                  `   📝 ${item.description || '无描述'}`,
+                  `   🔗 ${item.html_url}`,
+                ].join('\n'))
+                const newOutput = [
+                  `🔍 GitHub 搜索结果: "${query}"`,
+                  ``,
+                  `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                  ...results,
+                  ``,
+                  `显示前5个结果，共 ${data.total_count} 个仓库`,
+                ].join('\n')
+                setHistory(prev => {
+                  const updated = [...prev]
+                  updated[updated.length - 1] = { input: trimmed, output: newOutput }
+                  return updated
+                })
+              } else {
+                setHistory(prev => {
+                  const updated = [...prev]
+                  updated[updated.length - 1] = { input: trimmed, output: `🔍 未找到匹配的仓库` }
+                  return updated
+                })
+              }
+            })
+            .catch(() => {
+              setHistory(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { input: trimmed, output: `❌ GitHub API 请求失败，请稍后重试` }
+                return updated
+              })
+            })
+          return
+        }
+        break
+      }
+      case 'hn': {
+        output = `📰 正在获取 Hacker News 热门新闻...`
+        setHistory(prev => [...prev, { input: trimmed, output }])
+        fetch('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
+          .then(res => res.json())
+          .then(ids => {
+            const topIds = ids.slice(0, 5)
+            return Promise.all(topIds.map((id: number) => 
+              fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json())
+            ))
+          })
+          .then(items => {
+            const results = items.map((item: any, idx: number) => [
+              `${idx + 1}. ${item.title}`,
+              `   🔥 ${item.score} 分 | 💬 ${item.descendants} 评论`,
+              `   🔗 https://news.ycombinator.com/item?id=${item.id}`,
+            ].join('\n'))
+            const newOutput = [
+              `📰 Hacker News Top Stories`,
+              ``,
+              `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+              ...results,
+              ``,
+              `💡 按 'hn' 刷新查看最新热门`,
+            ].join('\n')
+            setHistory(prev => {
+              const updated = [...prev]
+              updated[updated.length - 1] = { input: trimmed, output: newOutput }
+              return updated
+            })
+          })
+          .catch(() => {
+            setHistory(prev => {
+              const updated = [...prev]
+              updated[updated.length - 1] = { input: trimmed, output: `❌ Hacker News API 请求失败` }
+              return updated
+            })
+          })
+        return
+      }
+      case 'crypto': {
+        if (args.length === 0) {
+          output = [
+            `💰 加密货币价格`,
+            ``,
+            `用法: crypto [货币代码]`,
+            ``,
+            `支持的货币: BTC, ETH, BNB, SOL, XRP, ADA`,
+            ``,
+            `示例:`,
+            `  crypto          (查看主流币种)`,
+            `  crypto BTC      (查看比特币)`,
+            `  crypto ETH      (查看以太坊)`,
+          ].join('\n')
+        } else {
+          const symbol = args[0].toUpperCase()
+          output = `💰 正在获取 ${symbol} 价格...`
+          setHistory(prev => [...prev, { input: trimmed, output }])
+          fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=usd&include_24hr_change=true`)
+            .then(res => res.json())
+            .then(data => {
+              const coin = data[symbol.toLowerCase()]
+              if (coin) {
+                const newOutput = [
+                  `💰 ${symbol} 价格`,
+                  ``,
+                  `   USD: $${coin.usd.toLocaleString()}`,
+                  `   CNY: ¥${(coin.usd * 7.2).toLocaleString()}`,
+                  `   24h: ${coin.usd_24h_change > 0 ? '+' : ''}${coin.usd_24h_change.toFixed(2)}%`,
+                ].join('\n')
+                setHistory(prev => {
+                  const updated = [...prev]
+                  updated[updated.length - 1] = { input: trimmed, output: newOutput }
+                  return updated
+                })
+              } else {
+                setHistory(prev => {
+                  const updated = [...prev]
+                  updated[updated.length - 1] = { input: trimmed, output: `❌ 未找到 ${symbol} 的价格信息` }
+                  return updated
+                })
+              }
+            })
+            .catch(() => {
+              setHistory(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { input: trimmed, output: `❌ 加密货币 API 请求失败` }
+                return updated
+              })
+            })
+          return
+        }
+        break
+      }
+      case 'ipinfo': {
+        output = `🌐 正在获取 IP 信息...`
+        setHistory(prev => [...prev, { input: trimmed, output }])
+        fetch('https://api.ipify.org?format=json')
+          .then(res => res.json())
+          .then(data => {
+            const ip = data.ip
+            return fetch(`https://ipapi.co/${ip}/json/`)
+          })
+          .then(res => res.json())
+          .then(data => {
+            const newOutput = [
+              `🌐 IP 信息`,
+              ``,
+              `   IP地址: ${data.ip}`,
+              `   城市: ${data.city || '未知'}`,
+              `   地区: ${data.region || '未知'}`,
+              `   国家: ${data.country_name || '未知'} (${data.country_code || ''})`,
+              `   时区: ${data.timezone || '未知'}`,
+              `   ISP: ${data.org || '未知'}`,
+            ].join('\n')
+            setHistory(prev => {
+              const updated = [...prev]
+              updated[updated.length - 1] = { input: trimmed, output: newOutput }
+              return updated
+            })
+          })
+          .catch(() => {
+            setHistory(prev => {
+              const updated = [...prev]
+              updated[updated.length - 1] = { input: trimmed, output: `❌ IP 信息获取失败` }
+              return updated
+            })
+          })
+        return
       }
       case 'sysinfo': {
         const cpuUsage = Math.floor(Math.random() * 30 + 20)

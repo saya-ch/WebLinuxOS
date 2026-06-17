@@ -230,6 +230,7 @@ export default function FileManager() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [previewFile, setPreviewFile] = useState<FileNode | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [draggingFileId, setDraggingFileId] = useState<string | null>(null)
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null)
   const [propertiesFile, setPropertiesFile] = useState<FileNode | null>(null)
   const [batchRenameOpen, setBatchRenameOpen] = useState(false)
@@ -392,6 +393,7 @@ export default function FileManager() {
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(true)
+    e.dataTransfer.dropEffect = 'move'
   }, [])
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
@@ -402,6 +404,17 @@ export default function FileManager() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
+    
+    // 检查是否是内部拖拽
+    if (draggingFileId) {
+      const draggingFile = findNodeById(files, draggingFileId)
+      if (draggingFile && draggingFile.parentId !== currentNodeId) {
+        copyFile(draggingFile.id, currentNodeId)
+        deleteFile(draggingFile.id)
+      }
+      setDraggingFileId(null)
+      return
+    }
     
     const items = e.dataTransfer.items
     if (!items) return
@@ -437,7 +450,17 @@ export default function FileManager() {
         }
       }
     })
-  }, [currentNodeId, addFile, updateFileContent])
+  }, [currentNodeId, addFile, updateFileContent, draggingFileId, files, copyFile, deleteFile])
+
+  const handleFileDragStart = useCallback((e: React.DragEvent, fileId: string) => {
+    e.dataTransfer.setData('text/plain', fileId)
+    setDraggingFileId(fileId)
+  }, [])
+
+  const handleFileDragEnd = useCallback(() => {
+    setDraggingFileId(null)
+    setIsDragging(false)
+  }, [])
 
   function handleRenameStart(fileId: string) {
     const node = findNodeById(files, fileId)
@@ -906,10 +929,13 @@ export default function FileManager() {
                 return displayNodes.map((file) => (
                   <div
                     key={file.id}
-                    className={`app-file-grid-item${selectedFileIds.has(file.id) ? ' selected' : ''}`}
+                    className={`app-file-grid-item${selectedFileIds.has(file.id) ? ' selected' : ''}${draggingFileId === file.id ? ' dragging' : ''}`}
                     onClick={(e) => handleFileClick(file.id, e)}
                     onDoubleClick={() => handleFileDoubleClick(file)}
                     onContextMenu={(e) => handleContextMenu(e, file.id)}
+                    draggable
+                    onDragStart={(e) => handleFileDragStart(e, file.id)}
+                    onDragEnd={handleFileDragEnd}
                   >
                     <div className="app-file-grid-icon">{getFileIcon(file.name, file.type)}</div>
                     <div className="app-file-grid-name" title={file.name}>
@@ -922,10 +948,13 @@ export default function FileManager() {
               return displayNodes.map((file) => (
                 <div
                   key={file.id}
-                  className={`app-file-row${selectedFileIds.has(file.id) ? ' selected' : ''}`}
+                  className={`app-file-row${selectedFileIds.has(file.id) ? ' selected' : ''}${draggingFileId === file.id ? ' dragging' : ''}`}
                   onClick={(e) => handleFileClick(file.id, e)}
                   onDoubleClick={() => handleFileDoubleClick(file)}
                   onContextMenu={(e) => handleContextMenu(e, file.id)}
+                  draggable
+                  onDragStart={(e) => handleFileDragStart(e, file.id)}
+                  onDragEnd={handleFileDragEnd}
                 >
                   <span className="app-file-col-name">
                     <span className="app-file-icon">{getFileIcon(file.name, file.type)}</span>
