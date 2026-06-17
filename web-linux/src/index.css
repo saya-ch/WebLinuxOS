@@ -811,7 +811,7 @@ code, pre, .terminal, .code-editor {
   }
 }
 
-@keyframes aurora {
+@keyframes aurora-bg {
   0% {
     transform: translateX(-100%) rotate(45deg);
     opacity: 0;
@@ -997,7 +997,7 @@ code, pre, .terminal, .code-editor {
     rgba(108, 92, 231, 0.1) 50%,
     transparent 60%
   );
-  animation: aurora 4s ease-in-out infinite;
+  animation: aurora-bg 4s ease-in-out infinite;
   pointer-events: none;
   z-index: -1;
 }

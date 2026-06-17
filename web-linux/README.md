@@ -234,12 +234,17 @@ Planned future improvements:
 
 ## Changelog
 
-### v5.6.0
-- Fixed security vulnerabilities in terminal (bc/expr commands)
-- Improved systemctl command implementation
-- Enhanced error handling in terminal commands
-- Updated README with professional formatting
-- Code quality improvements
+### v6.2.0
+- Fixed duplicate app IDs in apps registry
+- Resolved CSS animation naming conflicts (aurora animation)
+- Improved code quality and bug fixes
+- Enhanced build configuration for GitHub Pages deployment
+
+### v6.0.0
+- Major release with significant improvements
+- Enhanced desktop environment features
+- New applications and utilities
+- Performance optimizations
 
 ### v5.3.0
 - Added online code runner supporting JavaScript, Python, TypeScript, HTML, Markdown, JSON, SQL, Bash
@@ -272,4 +277,4 @@ Planned future improvements:
 
 ---
 
-Version: 5.6.0 | Last Updated: 2026-06-17
+Version: 6.2.0 | Last Updated: 2026-06-18
