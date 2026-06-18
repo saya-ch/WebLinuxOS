@@ -1,643 +1,598 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
 
-const welcomePage = `
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; }
-    .container { text-align: center; max-width: 700px; padding: 40px; }
-    h1 { font-size: 36px; margin-bottom: 12px; background: linear-gradient(90deg, #e94560, #f5c542, #4ecca3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .search-box { display: flex; margin: 24px 0; background: rgba(255,255,255,0.1); border-radius: 24px; padding: 4px; }
-    .search-box input { flex: 1; padding: 12px 20px; border: none; outline: none; background: transparent; color: #fff; font-size: 16px; }
-    .search-box button { padding: 10px 24px; border: none; border-radius: 20px; background: #e94560; color: #fff; cursor: pointer; font-size: 14px; }
-    .links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; }
-    .link-card { padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.08); cursor: pointer; transition: 0.2s; text-decoration: none; color: #ccc; text-align: center; }
-    .link-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
-    .link-card .icon { font-size: 24px; margin-bottom: 8px; }
-    .link-card .title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
-    .link-card .url { font-size: 10px; color: #888; }
-    .quick-links { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .quick-links h3 { font-size: 14px; color: #aaa; margin-bottom: 12px; }
-    .search-tips { margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; }
-    .search-tips p { font-size: 12px; color: #888; }
-    .search-engines { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
-    .search-engines button { padding: 6px 12px; border-radius: 12px; background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; font-size: 12px; }
-    .search-engines button:hover { background: rgba(255,255,255,0.15); color: #fff; }
-    .search-engines button.active { background: rgba(233,69,96,0.3); color: #fff; border-color: #e94560; }
-  </style>
-  <title>Web Linux 浏览器</title>
-  <script>
-    let currentEngine = 'google';
-    function navigate() {
-      const input = document.getElementById('urlInput');
-      const url = input.value.trim();
-      if (url) {
-        window.parent.postMessage({ type: 'navigate', url, engine: currentEngine }, '*');
-      }
-    }
-    function setEngine(engine) {
-      currentEngine = engine;
-      document.querySelectorAll('.search-engines button').forEach(b => b.classList.remove('active'));
-      const target = document.querySelector('.search-engines button[data-engine="' + engine + '"]');
-      if (target) target.classList.add('active');
-    }
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') navigate();
-    });
-  </script>
-</head>
-<body>
-  <div class="container">
-    <h1>Web Linux 浏览器</h1>
-    <p style="color:#aaa;margin-bottom:8px;">欢迎使用内置浏览器 - 集成多搜索引擎与隐私模式</p>
-    <div class="search-box">
-      <input type="text" placeholder="输入网址或搜索内容..." id="urlInput" />
-      <button onclick="navigate()">前往</button>
-    </div>
-    <div class="search-engines">
-      <button class="active" data-engine="google" onclick="setEngine('google')">Google</button>
-      <button data-engine="duckduckgo" onclick="setEngine('duckduckgo')">DuckDuckGo</button>
-      <button data-engine="bing" onclick="setEngine('bing')">Bing</button>
-      <button data-engine="brave" onclick="setEngine('brave')">Brave</button>
-      <button data-engine="wikipedia" onclick="setEngine('wikipedia')">Wikipedia</button>
-      <button data-engine="github" onclick="setEngine('github')">GitHub</button>
-    </div>
-    <div class="quick-links">
-      <h3>快捷链接</h3>
-      <div class="links">
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://www.google.com'; navigate();"><div class="icon">🔍</div><div class="title">Google</div><div class="url">搜索</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://github.com'; navigate();"><div class="icon">💻</div><div class="title">GitHub</div><div class="url">代码托管</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://developer.mozilla.org'; navigate();"><div class="icon">📚</div><div class="title">MDN</div><div class="url">开发者文档</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://stackoverflow.com'; navigate();"><div class="icon">❓</div><div class="title">Stack Overflow</div><div class="url">技术问答</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://news.ycombinator.com'; navigate();"><div class="icon">📰</div><div class="title">HN</div><div class="url">科技新闻</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://codepen.io'; navigate();"><div class="icon">🎨</div><div class="title">CodePen</div><div class="url">代码演示</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://wikipedia.org'; navigate();"><div class="icon">📖</div><div class="title">Wikipedia</div><div class="url">百科</div></div>
-        <div class="link-card" onclick="document.getElementById('urlInput').value='https://duckduckgo.com'; navigate();"><div class="icon">🦆</div><div class="title">DuckDuckGo</div><div class="url">隐私搜索</div></div>
-      </div>
-    </div>
-    <div class="search-tips">
-      <p>提示: 直接输入关键词进行搜索，或输入完整网址访问网站</p>
-    </div>
-  </div>
-</body>
-</html>`
+interface HistoryItem {
+  url: string
+  title: string
+  timestamp: Date
+}
 
-const DEFAULT_BOOKMARKS = [
-  { name: '主页', url: 'about:blank' },
-  { name: 'Google', url: 'https://www.google.com' },
-  { name: 'MDN', url: 'https://developer.mozilla.org' },
-  { name: 'GitHub', url: 'https://github.com' },
-  { name: 'HN', url: 'https://news.ycombinator.com' },
-  { name: 'SO', url: 'https://stackoverflow.com' },
+interface Bookmark {
+  url: string
+  title: string
+  addedAt: Date
+}
+
+// 预设的快速访问网站
+const QUICK_ACCESS = [
+  { url: 'https://www.google.com', title: 'Google', icon: '🔍' },
+  { url: 'https://www.github.com', title: 'GitHub', icon: '🐙' },
+  { url: 'https://www.wikipedia.org', title: 'Wikipedia', icon: '📚' },
+  { url: 'https://www.youtube.com', title: 'YouTube', icon: '📺' },
+  { url: 'https://www.reddit.com', title: 'Reddit', icon: '🔴' },
+  { url: 'https://www.twitter.com', title: 'Twitter', icon: '🐦' },
+  { url: 'https://www.stackoverflow.com', title: 'Stack Overflow', icon: '💻' },
+  { url: 'https://www.medium.com', title: 'Medium', icon: '📝' },
+  { url: 'https://www.hackernews.com', title: 'Hacker News', icon: '📰' },
+  { url: 'https://www.producthunt.com', title: 'Product Hunt', icon: '🚀' },
 ]
 
-const SEARCH_ENGINES: Record<string, (q: string) => string> = {
-  google: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
-  duckduckgo: (q) => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
-  bing: (q) => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
-  brave: (q) => `https://search.brave.com/search?q=${encodeURIComponent(q)}`,
-  wikipedia: (q) => `https://wikipedia.org/w/index.php?search=${encodeURIComponent(q)}`,
-  github: (q) => `https://github.com/search?q=${encodeURIComponent(q)}&type=repositories`,
-}
-
-const BM_STORAGE = 'weblinux-browser-bookmarks'
-const HIST_STORAGE = 'weblinux-browser-history'
-
-interface Tab {
-  id: string
-  title: string
-  url: string
-  favicon?: string
-  loading: boolean
-}
-
-function loadBookmarks(): typeof DEFAULT_BOOKMARKS {
-  try {
-    const raw = localStorage.getItem(BM_STORAGE)
-    if (!raw) return DEFAULT_BOOKMARKS
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed
-  } catch {}
-  return DEFAULT_BOOKMARKS
-}
-
-function loadHistory(): string[] {
-  try {
-    const raw = localStorage.getItem(HIST_STORAGE)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) return parsed
-  } catch {}
-  return []
-}
-
-export default function WebBrowser() {
-  const [, setUrl] = useState('about:blank')
-  const [urlInput, setUrlInput] = useState('')
-  const [history, setHistory] = useState<string[]>(loadHistory)
-  const [historyIndex, setHistoryIndex] = useState(-1)
-  const [bookmarks, setBookmarks] = useState(loadBookmarks)
-  const [searchEngine, setSearchEngine] = useState<string>(() => {
+const WebBrowser = memo(function WebBrowser() {
+  const [url, setUrl] = useState('https://www.google.com')
+  const [inputUrl, setInputUrl] = useState('https://www.google.com')
+  const [isLoading, setIsLoading] = useState(false)
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
     try {
-      return localStorage.getItem('weblinux-browser-engine') || 'google'
+      const saved = localStorage.getItem('weblinux-browser-history')
+      return saved ? JSON.parse(saved) : []
     } catch {
-      return 'google'
+      return []
     }
   })
-  const [tabs, setTabs] = useState<Tab[]>([{ id: 'tab-1', title: '新标签页', url: 'about:blank', loading: false }])
-  const [activeTabId, setActiveTabId] = useState('tab-1')
-  const [tabContents, setTabContents] = useState<Record<string, string>>({ 'tab-1': welcomePage })
-  const [showBookmarksBar, setShowBookmarksBar] = useState(true)
-  const [showHistoryPanel, setShowHistoryPanel] = useState(false)
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
-  const tabCounter = useRef(1)
-  const urlInputRef = useRef<HTMLInputElement>(null)
-
-  const activeTab = tabs.find((t) => t.id === activeTabId)
-
-  useEffect(() => {
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => {
     try {
-      localStorage.setItem(BM_STORAGE, JSON.stringify(bookmarks))
-    } catch {}
-  }, [bookmarks])
-
+      const saved = localStorage.getItem('weblinux-browser-bookmarks')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [showHistory, setShowHistory] = useState(false)
+  const [showBookmarks, setShowBookmarks] = useState(false)
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const [currentTitle, setCurrentTitle] = useState('Web Browser')
+  const [error, setError] = useState<string | null>(null)
+  
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  
+  // 保存历史到localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem(HIST_STORAGE, JSON.stringify(history))
-    } catch {}
+    if (history.length > 0) {
+      localStorage.setItem('weblinux-browser-history', JSON.stringify(history.slice(-50)))
+    }
   }, [history])
-
+  
+  // 保存书签到localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem('weblinux-browser-engine', searchEngine)
-    } catch {}
-  }, [searchEngine])
-
-  const navigate = useCallback((targetUrl: string, tabId?: string, engine?: string) => {
-    const currentTabId = tabId || activeTabId
-    const useEngine = engine || searchEngine
+    if (bookmarks.length > 0) {
+      localStorage.setItem('weblinux-browser-bookmarks', JSON.stringify(bookmarks))
+    }
+  }, [bookmarks])
+  
+  // 导航到URL
+  const navigateTo = useCallback((targetUrl: string) => {
     let finalUrl = targetUrl.trim()
-
-    if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(finalUrl)) {
-      if (finalUrl.includes('.') && !finalUrl.includes(' ') && finalUrl.includes('.')) {
+    
+    // 如果没有协议，添加https
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      // 检查是否是域名
+      if (finalUrl.includes('.') && !finalUrl.includes(' ')) {
         finalUrl = 'https://' + finalUrl
       } else {
-        const builder = SEARCH_ENGINES[useEngine] || SEARCH_ENGINES.google
-        finalUrl = builder(finalUrl)
+        // 作为搜索查询
+        finalUrl = `https://www.google.com/search?q=${encodeURIComponent(finalUrl)}`
       }
     }
-
+    
     setUrl(finalUrl)
-    setUrlInput(finalUrl)
-    setSearchSuggestions([])
-
-    setHistory(prev => {
-      const truncated = prev.slice(0, historyIndex + 1)
-      const next = [...truncated, finalUrl].slice(-200)
-      setHistoryIndex(next.length - 1)
-      return next
-    })
-
-    setTabs((prev) => prev.map((t) =>
-      t.id === currentTabId ? { ...t, url: finalUrl, title: finalUrl, loading: true, favicon: undefined } : t
-    ))
-
+    setInputUrl(finalUrl)
+    setIsLoading(true)
+    setError(null)
+    
+    // 添加到历史
+    const newHistoryItem: HistoryItem = {
+      url: finalUrl,
+      title: finalUrl.split('/')[2] || finalUrl,
+      timestamp: new Date()
+    }
+    setHistory(prev => [...prev.slice(historyIndex + 1), newHistoryItem])
+    setHistoryIndex(prev => prev + 1)
+    
+    // 模拟加载完成
     setTimeout(() => {
-      setTabs((prev) => prev.map((t) =>
-        t.id === currentTabId ? { ...t, loading: false } : t
-      ))
-    }, 1500)
-  }, [historyIndex, activeTabId, searchEngine])
-
+      setIsLoading(false)
+      setCurrentTitle(finalUrl.split('/')[2] || 'Web Browser')
+    }, 500)
+  }, [historyIndex])
+  
+  // 返回上一页
   const goBack = useCallback(() => {
     if (historyIndex > 0) {
-      const newIdx = historyIndex - 1
-      setHistoryIndex(newIdx)
-      setUrl(history[newIdx])
-      setUrlInput(history[newIdx])
+      const prevItem = history[historyIndex - 1]
+      setUrl(prevItem.url)
+      setInputUrl(prevItem.url)
+      setHistoryIndex(prev => prev - 1)
+      setIsLoading(true)
+      setTimeout(() => setIsLoading(false), 300)
     }
-  }, [history, historyIndex])
-
+  }, [historyIndex, history])
+  
+  // 前进下一页
   const goForward = useCallback(() => {
     if (historyIndex < history.length - 1) {
-      const newIdx = historyIndex + 1
-      setHistoryIndex(newIdx)
-      setUrl(history[newIdx])
-      setUrlInput(history[newIdx])
+      const nextItem = history[historyIndex + 1]
+      setUrl(nextItem.url)
+      setInputUrl(nextItem.url)
+      setHistoryIndex(prev => prev + 1)
+      setIsLoading(true)
+      setTimeout(() => setIsLoading(false), 300)
     }
-  }, [history, historyIndex])
-
+  }, [historyIndex, history])
+  
+  // 刷新页面
   const refresh = useCallback(() => {
-    if (activeTab && activeTab.url !== 'about:blank') {
-      setTabs((prev) => prev.map((t) => 
-        t.id === activeTabId ? { ...t, loading: true } : t
-      ))
-      setTimeout(() => {
-        setTabs((prev) => prev.map((t) => 
-          t.id === activeTabId ? { ...t, loading: false } : t
-        ))
-      }, 1000)
+    setIsLoading(true)
+    setError(null)
+    // 重新加载iframe
+    if (iframeRef.current) {
+      iframeRef.current.src = url
     }
-  }, [activeTab, activeTabId])
-
-  const goHome = useCallback(() => {
-    setUrl('about:blank')
-    setUrlInput('')
-    setTabs((prev) => prev.map((t) => 
-      t.id === activeTabId ? { ...t, url: 'about:blank', title: '新标签页', loading: false } : t
-    ))
-  }, [activeTabId])
-
-  const addTab = useCallback(() => {
-    tabCounter.current++
-    const id = `tab-${tabCounter.current}`
-    setTabs((prev) => [...prev, { id, title: '新标签页', url: 'about:blank', loading: false }])
-    setTabContents((prev) => ({ ...prev, [id]: welcomePage }))
-    setActiveTabId(id)
-    setUrlInput('')
-    setShowHistoryPanel(false)
-  }, [])
-
-  const closeTab = useCallback((id: string) => {
-    if (tabs.length <= 1) return
-    const idx = tabs.findIndex((t) => t.id === id)
-    setTabs((prev) => prev.filter((t) => t.id !== id))
-    setTabContents((prev) => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
-    if (activeTabId === id) {
-      const next = tabs[idx + 1] || tabs[idx - 1]
-      if (next) {
-        setActiveTabId(next.id)
-        setUrlInput(next.url !== 'about:blank' ? next.url : '')
-      }
-    }
-  }, [tabs, activeTabId])
-
+    setTimeout(() => setIsLoading(false), 500)
+  }, [url])
+  
+  // 添加书签
   const addBookmark = useCallback(() => {
-    if (activeTab && activeTab.url !== 'about:blank') {
-      const existing = bookmarks.find(b => b.url === activeTab.url)
-      if (!existing) {
-        try {
-          const hostname = new URL(activeTab.url).hostname.replace('www.', '')
-          const newBookmark = { name: hostname, url: activeTab.url }
-          setBookmarks([...bookmarks, newBookmark])
-        } catch {
-          setBookmarks([...bookmarks, { name: '书签', url: activeTab.url }])
-        }
+    const exists = bookmarks.some(b => b.url === url)
+    if (!exists) {
+      const newBookmark: Bookmark = {
+        url,
+        title: currentTitle,
+        addedAt: new Date()
       }
+      setBookmarks(prev => [...prev, newBookmark])
     }
-  }, [activeTab, bookmarks])
-
-  const removeBookmark = useCallback((url: string) => {
-    setBookmarks(bookmarks.filter(b => b.url !== url))
-  }, [bookmarks])
-
-  const handleUrlInputChange = useCallback((value: string) => {
-    setUrlInput(value)
-    if (value.length > 2) {
-      const v = value.trim()
-      const suggestions: string[] = []
-      if (!v.includes(' ')) {
-        suggestions.push(`https://${v}`)
-        if (!v.startsWith('www.') && !v.includes('.')) {
-          suggestions.push(`https://www.${v}.com`)
-          suggestions.push(`https://${v}.com`)
-        } else if (!v.startsWith('www.')) {
-          suggestions.push(`https://www.${v}`)
-        }
-      } else {
-        suggestions.push(`${SEARCH_ENGINES[searchEngine] ? Object.keys(SEARCH_ENGINES).find(k => k === searchEngine) || 'Google' : 'Google'} 搜索`)
-      }
-      setSearchSuggestions(suggestions.slice(0, 5))
-    } else {
-      setSearchSuggestions([])
-    }
-  }, [searchEngine])
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'navigate') {
-        navigate(event.data.url, undefined, event.data.engine)
-      }
-    }
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [navigate])
-
+  }, [url, currentTitle, bookmarks])
+  
+  // 删除书签
+  const removeBookmark = useCallback((targetUrl: string) => {
+    setBookmarks(prev => prev.filter(b => b.url !== targetUrl))
+  }, [])
+  
+  // 清除历史
+  const clearHistory = useCallback(() => {
+    setHistory([])
+    setHistoryIndex(-1)
+    localStorage.removeItem('weblinux-browser-history')
+  }, [])
+  
+  // 处理iframe加载错误
+  const handleIframeError = useCallback(() => {
+    setError('无法加载此页面。某些网站可能阻止在iframe中显示。')
+    setIsLoading(false)
+  }, [])
+  
+  // 检查是否已收藏
+  const isBookmarked = bookmarks.some(b => b.url === url)
+  
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#1e1e1e', color: '#d4d4d4' }}>
-      <div style={{ display: 'flex', background: '#252526', borderBottom: '1px solid #333', overflow: 'hidden' }}>
-        {tabs.map((tab) => (
-          <div
-            key={tab.id}
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#1a1a2e',
+      color: '#e6edf3',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      {/* 工具栏 */}
+      <div style={{
+        padding: '8px 12px',
+        background: '#161b22',
+        borderBottom: '1px solid #30363d',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        flexWrap: 'wrap'
+      }}>
+        {/* 导航按钮 */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            onClick={goBack}
+            disabled={historyIndex <= 0}
             style={{
-              padding: '8px 14px',
-              cursor: 'pointer',
-              fontSize: 12,
-              background: tab.id === activeTabId ? '#1e1e1e' : '#2d2d2d',
-              borderRight: '1px solid #333',
-              borderTop: tab.id === activeTabId ? '2px solid #007acc' : '2px solid transparent',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              whiteSpace: 'nowrap',
-              maxWidth: 180,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              transition: 'background 0.15s',
-            }}
-            onClick={() => {
-              setActiveTabId(tab.id)
-              setUrlInput(tab.url !== 'about:blank' ? tab.url : '')
-            }}
-            onMouseEnter={(e) => {
-              if (tab.id !== activeTabId) {
-                (e.currentTarget as HTMLElement).style.background = '#333'
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (tab.id !== activeTabId) {
-                (e.currentTarget as HTMLElement).style.background = '#2d2d2d'
-              }
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: historyIndex > 0 ? 'transparent' : 'rgba(48,54,61,0.5)',
+              color: historyIndex > 0 ? '#c9d1d9' : '#6e7681',
+              cursor: historyIndex > 0 ? 'pointer' : 'not-allowed',
+              fontSize: 14,
+              transition: 'all 0.2s'
             }}
           >
-            {tab.loading && (
-              <span style={{ fontSize: 12, animation: 'spin 1s linear infinite' }}>⏳</span>
-            )}
-            {!tab.loading && tab.favicon && (
-              <img src={tab.favicon} alt="" style={{ width: 14, height: 14, borderRadius: 2 }} />
-            )}
-            {!tab.loading && !tab.favicon && (
-              <span>🌐</span>
-            )}
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
-              {tab.title.length > 30 ? tab.title.slice(0, 30) + '...' : tab.title}
-            </span>
-            <span
-              style={{ fontSize: 16, lineHeight: 1, cursor: 'pointer', opacity: 0.5, flexShrink: 0 }}
-              onClick={(e) => { e.stopPropagation(); closeTab(tab.id) }}
-              onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.opacity = '1'}
-              onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.opacity = '0.5'}
-            >×</span>
-          </div>
-        ))}
-        <div 
-          style={{ 
-            padding: '8px 12px', 
-            cursor: 'pointer', 
-            fontSize: 16, 
-            color: '#888',
-            borderLeft: '1px solid #333',
-            transition: 'background 0.15s'
-          }} 
-          onClick={addTab}
-          onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = '#333'}
-          onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-        >
-          +
+            ←
+          </button>
+          <button
+            onClick={goForward}
+            disabled={historyIndex >= history.length - 1}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: historyIndex < history.length - 1 ? 'transparent' : 'rgba(48,54,61,0.5)',
+              color: historyIndex < history.length - 1 ? '#c9d1d9' : '#6e7681',
+              cursor: historyIndex < history.length - 1 ? 'pointer' : 'not-allowed',
+              fontSize: 14,
+              transition: 'all 0.2s'
+            }}
+          >
+            →
+          </button>
+          <button
+            onClick={refresh}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: 'transparent',
+              color: '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 14,
+              transition: 'all 0.2s'
+            }}
+          >
+            {isLoading ? '⏳' : '🔄'}
+          </button>
         </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: '#2d2d2d', borderBottom: '1px solid #333' }}>
-        <button
-          onClick={goBack}
-          disabled={historyIndex <= 0}
-          title="后退"
-          style={{...navBtn, opacity: historyIndex <= 0 ? 0.3 : 1, cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer'}}
-        >◀</button>
-        <button
-          onClick={goForward}
-          disabled={historyIndex >= history.length - 1}
-          title="前进"
-          style={{...navBtn, opacity: historyIndex >= history.length - 1 ? 0.3 : 1, cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer'}}
-        >▶</button>
-        <button onClick={refresh} title="刷新" style={navBtn}>🔄</button>
-        <button onClick={goHome} title="主页" style={navBtn}>🏠</button>
-        <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} title="历史记录" style={{...navBtn, opacity: showHistoryPanel ? 1 : 0.5}}>📜</button>
-
-        <select
-          value={searchEngine}
-          onChange={(e) => setSearchEngine(e.target.value)}
-          title="默认搜索引擎"
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #444',
-            borderRadius: 4,
-            background: '#1e1e1e',
-            color: '#d4d4d4',
-            fontSize: 11,
-            outline: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          <option value="google">Google</option>
-          <option value="duckduckgo">DuckDuckGo</option>
-          <option value="bing">Bing</option>
-          <option value="brave">Brave</option>
-          <option value="wikipedia">Wikipedia</option>
-          <option value="github">GitHub</option>
-        </select>
-
-        <div style={{ flex: 1, margin: '0 8px', position: 'relative' }}>
+        
+        {/* URL输入框 */}
+        <div style={{
+          flex: 1,
+          minWidth: 200,
+          position: 'relative'
+        }}>
           <input
-            ref={urlInputRef}
-            value={urlInput}
-            onChange={(e) => handleUrlInputChange(e.target.value)}
-            onKeyDown={(e) => { 
-              if (e.key === 'Enter') navigate(urlInput) 
-              if (e.key === 'ArrowDown' && searchSuggestions.length > 0) {
-                e.preventDefault()
+            type="text"
+            value={inputUrl}
+            onChange={(e) => setInputUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                navigateTo(inputUrl)
               }
             }}
+            placeholder="输入网址或搜索..."
             style={{
               width: '100%',
-              padding: '6px 12px',
-              border: '1px solid #444',
-              borderRadius: 16,
-              background: '#1e1e1e',
-              color: '#d4d4d4',
-              fontSize: 13,
+              padding: '10px 14px',
+              borderRadius: 8,
+              border: '1px solid #30363d',
+              background: '#0d1117',
+              color: '#e6edf3',
+              fontSize: 14,
               outline: 'none',
-              transition: 'border-color 0.2s',
+              transition: 'border-color 0.2s'
             }}
-            placeholder="输入网址或搜索内容..."
           />
-          {searchSuggestions.length > 0 && (
+          {isLoading && (
             <div style={{
               position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              background: '#252526',
-              border: '1px solid #333',
-              borderTop: 'none',
-              borderRadius: '0 0 8px 8px',
-              zIndex: 100,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#667eea',
+              fontSize: 12
             }}>
-              {searchSuggestions.map((suggestion, i) => (
-                <div 
-                  key={i}
-                  style={{
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                  }}
-                  onClick={() => {
-                    navigate(suggestion)
-                    setSearchSuggestions([])
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = '#333'}
-                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                >
-                  🔍 {suggestion}
-                </div>
-              ))}
+              加载中...
             </div>
           )}
         </div>
         
-        <button onClick={addBookmark} title="添加书签" style={navBtn}>⭐</button>
-        <button onClick={() => setShowBookmarksBar(!showBookmarksBar)} title="书签栏" style={{...navBtn, opacity: showBookmarksBar ? 1 : 0.5}}>📑</button>
-      </div>
-
-      {showBookmarksBar && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#252526', borderBottom: '1px solid #333', overflowX: 'auto', overflowY: 'hidden' }}>
-          {bookmarks.map((bm, i) => (
-            <div
-              key={i}
-              style={{ 
-                padding: '4px 10px', 
-                cursor: 'pointer', 
-                fontSize: 12, 
-                borderRadius: 10, 
-                background: '#333',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                transition: 'background 0.15s'
-              }}
-              onClick={() => {
-                setUrlInput(bm.url)
-                if (bm.url === 'about:blank') goHome()
-                else navigate(bm.url)
-              }}
-              onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = '#444'}
-              onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = '#333'}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                removeBookmark(bm.url)
-              }}
-            >
-              {bm.name}
-            </div>
-          ))}
+        {/* 操作按钮 */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            onClick={addBookmark}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: isBookmarked ? 'rgba(102,126,234,0.2)' : 'transparent',
+              color: isBookmarked ? '#667eea' : '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 14,
+              transition: 'all 0.2s'
+            }}
+          >
+            {isBookmarked ? '★' : '☆'}
+          </button>
+          <button
+            onClick={() => setShowBookmarks(!showBookmarks)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: showBookmarks ? 'rgba(102,126,234,0.2)' : 'transparent',
+              color: '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 14,
+              transition: 'all 0.2s'
+            }}
+          >
+            📚
+          </button>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: showHistory ? 'rgba(102,126,234,0.2)' : 'transparent',
+              color: '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 14,
+              transition: 'all 0.2s'
+            }}
+          >
+            📜
+          </button>
         </div>
-      )}
-
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {showHistoryPanel && (
-          <div style={{ width: 220, background: '#252526', borderRight: '1px solid #333', overflowY: 'auto' }}>
-            <div style={{ padding: '12px', borderBottom: '1px solid #333', fontWeight: 'bold', fontSize: 13 }}>
-              📜 历史记录
+      </div>
+      
+      {/* 主内容区 */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        overflow: 'hidden'
+      }}>
+        {/* 侧边栏 */}
+        {(showHistory || showBookmarks) && (
+          <div style={{
+            width: 280,
+            background: '#161b22',
+            borderRight: '1px solid #30363d',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              padding: '12px 16px',
+              borderBottom: '1px solid #30363d',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>
+                {showHistory ? '浏览历史' : '书签'}
+              </h3>
+              <button
+                onClick={() => {
+                  if (showHistory) clearHistory()
+                  else setBookmarks([])
+                }}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 4,
+                  border: '1px solid #30363d',
+                  background: 'transparent',
+                  color: '#8b949e',
+                  cursor: 'pointer',
+                  fontSize: 12
+                }}
+              >
+                清空
+              </button>
             </div>
-            <div style={{ padding: '8px' }}>
-              {history.length === 0 ? (
-                <div style={{ padding: '16px', textAlign: 'center', color: '#666', fontSize: 12 }}>
-                  暂无历史记录
-                </div>
-              ) : (
-                [...history].reverse().slice(0, 50).map((url, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      padding: '8px',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      borderRadius: 4,
-                      marginBottom: 2,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                    onClick={() => {
-                      navigate(url)
-                      setShowHistoryPanel(false)
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = '#333'}
-                    onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >
-                    🌐 {url.length > 50 ? url.slice(0, 50) + '...' : url}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: 8
+            }}>
+              {showHistory ? (
+                history.length === 0 ? (
+                  <div style={{
+                    color: '#8b949e',
+                    textAlign: 'center',
+                    padding: 20,
+                    fontSize: 13
+                  }}>
+                    暂无浏览历史
                   </div>
-                ))
+                ) : (
+                  history.slice().reverse().map((item, i) => (
+                    <div
+                      key={i}
+                      onClick={() => {
+                        navigateTo(item.url)
+                        setShowHistory(false)
+                      }}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: 6,
+                        background: url === item.url ? 'rgba(102,126,234,0.2)' : 'transparent',
+                        cursor: 'pointer',
+                        marginBottom: 4,
+                        border: '1px solid transparent',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <div style={{ fontSize: 13, color: '#e6edf3', marginBottom: 4 }}>
+                        {item.title}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#8b949e' }}>
+                        {item.url}
+                      </div>
+                    </div>
+                  ))
+                )
+              ) : (
+                bookmarks.length === 0 ? (
+                  <div style={{
+                    color: '#8b949e',
+                    textAlign: 'center',
+                    padding: 20,
+                    fontSize: 13
+                  }}>
+                    暂无书签
+                  </div>
+                ) : (
+                  bookmarks.map((bookmark, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: 6,
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        marginBottom: 4,
+                        border: '1px solid transparent',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <div
+                        onClick={() => {
+                          navigateTo(bookmark.url)
+                          setShowBookmarks(false)
+                        }}
+                        style={{ flex: 1 }}
+                      >
+                        <div style={{ fontSize: 13, color: '#e6edf3', marginBottom: 4 }}>
+                          {bookmark.title}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#8b949e' }}>
+                          {bookmark.url}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeBookmark(bookmark.url)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#8b949e',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          padding: 4
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )
               )}
             </div>
           </div>
         )}
         
-        <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-          {activeTab && activeTab.url === 'about:blank' ? (
-            <iframe
-              srcDoc={tabContents[activeTabId] || welcomePage}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              title="browser-content"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            />
+        {/* 浏览器内容 */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          {error ? (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 16,
+              padding: 40
+            }}>
+              <div style={{ fontSize: 48 }}>⚠️</div>
+              <div style={{ fontSize: 16, color: '#e6edf3', textAlign: 'center' }}>
+                {error}
+              </div>
+              <div style={{ fontSize: 13, color: '#8b949e', textAlign: 'center', maxWidth: 400 }}>
+                这是由于网站的安全策略限制。你可以尝试访问其他网站，或使用外部浏览器打开此链接。
+              </div>
+              <button
+                onClick={() => window.open(url, '_blank')}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  fontWeight: 600
+                }}
+              >
+                在外部浏览器打开
+              </button>
+            </div>
           ) : (
             <iframe
-              src={activeTab?.url}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              title="browser-content"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
-              onLoad={() => {
-                setTabs((prev) => prev.map((t) => 
-                  t.id === activeTabId ? { ...t, loading: false } : t
-                ))
+              ref={iframeRef}
+              src={url}
+              title="Web Browser"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+              style={{
+                flex: 1,
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                background: '#fff'
               }}
+              onError={handleIframeError}
             />
-          )}
-          
-          {activeTab?.loading && (
-            <div style={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              height: 3, 
-              background: '#333',
-              zIndex: 10,
-              overflow: 'hidden'
-            }}>
-              <div style={{ 
-                height: '100%', 
-                width: '30%', 
-                background: 'linear-gradient(90deg, #007acc, #4ecca3)', 
-                animation: 'progress 1s ease-in-out infinite',
-                borderRadius: 2 
-              }} />
-              <style>{`@keyframes progress { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }`}</style>
-            </div>
           )}
         </div>
       </div>
+      
+      {/* 快速访问栏 */}
+      <div style={{
+        padding: '8px 12px',
+        background: '#161b22',
+        borderTop: '1px solid #30363d',
+        display: 'flex',
+        gap: 8,
+        flexWrap: 'wrap',
+        alignItems: 'center'
+      }}>
+        <span style={{ fontSize: 12, color: '#8b949e' }}>快速访问:</span>
+        {QUICK_ACCESS.map(site => (
+          <button
+            key={site.url}
+            onClick={() => navigateTo(site.url)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: 'transparent',
+              color: '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>{site.icon}</span>
+            <span>{site.title}</span>
+          </button>
+        ))}
+      </div>
+      
+      {/* 状态栏 */}
+      <div style={{
+        padding: '6px 12px',
+        background: '#0d1117',
+        borderTop: '1px solid #30363d',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontSize: 11,
+        color: '#8b949e'
+      }}>
+        <span>{currentTitle}</span>
+        <span>{url}</span>
+      </div>
     </div>
   )
-}
+})
 
-const navBtn: React.CSSProperties = {
-  background: 'transparent',
-  border: 'none',
-  color: '#ccc',
-  cursor: 'pointer',
-  padding: '4px 8px',
-  borderRadius: 3,
-  fontSize: 12,
-  transition: 'opacity 0.15s',
-}
+export default WebBrowser
