@@ -98,6 +98,17 @@ export default function AdvancedDataViz() {
     setCurrentDataSetId(newDataSets[0].id)
   }, [dataSets, currentDataSetId, addNotification])
 
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const exportChart = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -113,17 +124,6 @@ export default function AdvancedDataViz() {
     }
     addNotification({ title: '导出成功', message: `图表已导出为 ${exportFormat.toUpperCase()}`, type: 'success' })
   }, [canvasRef, exportFormat, title, currentDataSet, addNotification])
-
-  const downloadBlob = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
 
   const loadSampleData = useCallback(() => {
     const newData: DataPoint[] = Array.from({ length: 6 }, (_, i) => ({

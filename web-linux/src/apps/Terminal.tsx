@@ -1984,25 +1984,6 @@ export default function Terminal() {
         }
         break
       }
-      case 'stat': {
-        if (args.length === 0) {
-          output = 'stat: 缺少操作数'
-        } else {
-          const resolved = resolvePath(cwd, args[0])
-          const node = findNodeByPath(files, resolved)
-          if (node) {
-            const size = node.type === 'file' ? (node.content || '').length : (node.children ? node.children.length : 0)
-            output = `  文件: ${node.name}
-  大小: ${size}        类型: ${node.type === 'folder' ? '目录' : '文件'}
-  路径: ${resolved}
-  ID:   ${node.id}
-${node.children ? `  包含: ${node.children.length} 项` : ''}`
-          } else {
-            output = `stat: ${args[0]}: 没有那个文件或目录`
-          }
-        }
-        break
-      }
       case 'echo':
         output = args.join(' ')
         break
@@ -4081,6 +4062,171 @@ usage: scp [-346BCpqrTv] [-c cipher] [-F ssh_config] [-i identity_file]
 usage: rsync [OPTION]... SRC [SRC]... DEST
        rsync [OPTION]... SRC [SRC]... [USER@]HOST:DEST`
         break
+      case 'news': {
+        const fetchNews = async () => {
+          try {
+            const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/news/rss')
+            const data = await response.json()
+            if (data.items && data.items.length > 0) {
+              let newsOutput = '📰 今日头条新闻\n'
+              newsOutput += '════════════════════════════════════════\n'
+              data.items.slice(0, 5).forEach((item: any, index: number) => {
+                newsOutput += `${index + 1}. ${item.title}\n`
+                newsOutput += `   来源: ${item.source_title}\n`
+                newsOutput += `   链接: ${item.link}\n\n`
+              })
+              setHistory((prev) => [...prev, { input: '', output: newsOutput }])
+            } else {
+              setHistory((prev) => [...prev, { input: '', output: '❌ 获取新闻失败' }])
+            }
+          } catch {
+            setHistory((prev) => [...prev, { input: '', output: '❌ 获取新闻失败，请稍后重试' }])
+          }
+        }
+        setHistory((prev) => [...prev, { input: trimmed, output: '⏳ 正在获取新闻...' }])
+        fetchNews()
+        return
+      }
+      case 'crypto': {
+        const cryptoOutput = `💰 加密货币实时价格 (模拟数据)
+════════════════════════════════════════
+BTC  Bitcoin        $42,500.00  ⬆️ 2.3%
+ETH  Ethereum       $2,350.50   ⬆️ 1.8%
+SOL  Solana         $98.75      ⬇️ 0.5%
+XRP  Ripple         $0.62       ⬆️ 3.2%
+DOGE Dogecoin       $0.123      ⬇️ 1.1%
+
+💡 提示: 数据每5分钟更新一次`
+        output = cryptoOutput
+        break
+      }
+      case 'stock': {
+        if (args.length === 0) {
+          output = `📈 股票市场概览 (模拟数据)
+════════════════════════════════════════
+上证指数     3,125.80   ⬆️ 0.85%
+深证成指     10,234.50  ⬆️ 1.20%
+创业板指     2,156.30   ⬇️ 0.35%
+纳斯达克     14,856.20  ⬆️ 0.65%
+道琼斯       33,987.40  ⬆️ 0.45%
+
+用法: stock [代码]
+示例: stock AAPL 或 stock GOOGL`
+        } else {
+          const stockCode = args[0].toUpperCase()
+          const stocks: Record<string, { name: string; price: string; change: string; changePercent: string }> = {
+            'AAPL': { name: 'Apple Inc.', price: '$178.50', change: '+$2.30', changePercent: '+1.31%' },
+            'GOOGL': { name: 'Alphabet Inc.', price: '$141.80', change: '-$1.20', changePercent: '-0.84%' },
+            'MSFT': { name: 'Microsoft Corp.', price: '$378.90', change: '+$4.50', changePercent: '+1.20%' },
+            'TSLA': { name: 'Tesla Inc.', price: '$248.30', change: '+$8.70', changePercent: '+3.64%' },
+            'NVDA': { name: 'NVIDIA Corp.', price: '$875.20', change: '+$15.30', changePercent: '+1.78%' },
+          }
+          const stock = stocks[stockCode] || { name: 'Unknown', price: 'N/A', change: 'N/A', changePercent: 'N/A' }
+          output = `📊 ${stockCode} - ${stock.name}
+════════════════════════════════════════
+当前价格: ${stock.price}
+涨跌额:   ${stock.change}
+涨跌幅:   ${stock.changePercent}`
+        }
+        break
+      }
+      case 'dict': {
+        if (args.length === 0) {
+          output = '📖 词典查询\n用法: dict 单词\n示例: dict hello'
+        } else {
+          const word = args[0].toLowerCase()
+          const dictionary: Record<string, { phonetic: string; meaning: string; example: string }> = {
+            'hello': { phonetic: '/həˈloʊ/', meaning: '你好；喂', example: 'Hello, how are you?' },
+            'world': { phonetic: '/wɜːrld/', meaning: '世界；地球', example: 'The world is beautiful.' },
+            'computer': { phonetic: '/kəmˈpjuːtər/', meaning: '计算机；电脑', example: 'I use my computer every day.' },
+            'programming': { phonetic: '/ˈproʊɡræmɪŋ/', meaning: '编程；程序设计', example: 'Programming is fun!' },
+            'weblinux': { phonetic: '/ˈweb ˈlaɪnʌks/', meaning: '基于Web的Linux操作系统', example: 'WebLinuxOS is awesome!' },
+          }
+          const result = dictionary[word]
+          if (result) {
+            output = `📖 ${word}
+────────────────────────────────
+音标: ${result.phonetic}
+释义: ${result.meaning}
+例句: ${result.example}`
+          } else {
+            output = `❌ 未找到 "${word}" 的释义`
+          }
+        }
+        break
+      }
+      case 'translate': {
+        if (args.length < 2) {
+          output = '🌍 翻译工具\n用法: translate [目标语言] [文本]\n支持语言: zh, en, ja, ko, fr, de\n示例: translate zh Hello World\n      translate en 你好世界'
+        } else {
+          const targetLang = args[0]
+          const text = args.slice(1).join(' ')
+          const translations: Record<string, Record<string, string>> = {
+            'zh': {
+              'hello': '你好',
+              'world': '世界',
+              'hello world': '你好世界',
+              'welcome': '欢迎',
+              'thank you': '谢谢',
+              'goodbye': '再见',
+              'computer': '电脑',
+              'web linux': '网络Linux',
+            },
+            'en': {
+              '你好': 'Hello',
+              '世界': 'World',
+              '你好世界': 'Hello World',
+              '欢迎': 'Welcome',
+              '谢谢': 'Thank you',
+              '再见': 'Goodbye',
+              '电脑': 'Computer',
+              '网络': 'Network',
+            },
+            'ja': {
+              'hello': 'こんにちは',
+              'world': '世界',
+              'hello world': 'こんにちは世界',
+              'thank you': 'ありがとう',
+            },
+            'ko': {
+              'hello': '안녕하세요',
+              'world': '세계',
+              'hello world': '안녕하세요 세계',
+              'thank you': '감사합니다',
+            },
+          }
+          const langTrans = translations[targetLang] || {}
+          const result = langTrans[text.toLowerCase()] || `翻译结果: ${text}`
+          output = `🌍 ${text} → ${result}`
+        }
+        break
+      }
+      case 'ipinfo': {
+        const fetchIPInfo = async () => {
+          try {
+            const response = await fetch('https://ipapi.co/json/')
+            const data = await response.json()
+            if (data.ip) {
+              let ipOutput = `🌐 IP 信息查询\n`
+              ipOutput += '════════════════════════════════════════\n'
+              ipOutput += `IP 地址: ${data.ip}\n`
+              ipOutput += `国家: ${data.country_name || '未知'}\n`
+              ipOutput += `地区: ${data.region || '未知'}\n`
+              ipOutput += `城市: ${data.city || '未知'}\n`
+              ipOutput += `时区: ${data.timezone || '未知'}\n`
+              ipOutput += `运营商: ${data.org || '未知'}`
+              setHistory((prev) => [...prev, { input: '', output: ipOutput }])
+            } else {
+              setHistory((prev) => [...prev, { input: '', output: '❌ 获取IP信息失败' }])
+            }
+          } catch {
+            setHistory((prev) => [...prev, { input: '', output: '❌ 获取IP信息失败，请稍后重试' }])
+          }
+        }
+        setHistory((prev) => [...prev, { input: trimmed, output: '⏳ 正在获取IP信息...' }])
+        fetchIPInfo()
+        return
+      }
       case 'exit':
       case 'quit':
       case 'q':
