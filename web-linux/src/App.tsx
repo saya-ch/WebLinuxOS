@@ -99,10 +99,6 @@ const App = memo(function App() {
     }
   }, [theme])
 
-  const getFocusedWindow = useCallback(() => {
-    return windows.find((w) => w.focused)
-  }, [windows])
-
   const cycleWindows = useCallback((reverse = false) => {
     if (windows.length <= 1) return
     const sortedWindows = [...windows].sort((a, b) => b.zIndex - a.zIndex)
@@ -113,7 +109,7 @@ const App = memo(function App() {
   }, [windows, focusWindow])
 
   const handleSystemShortcut = useCallback((action: string) => {
-    const focusedWindow = getFocusedWindow()
+    const focusedWindowId = windows.find((w) => w.focused)?.id
     const store = useStore.getState()
     const toggleNotificationCenter = store.toggleNotificationCenter
     const addNotification = store.addNotification
@@ -129,16 +125,16 @@ const App = memo(function App() {
         cycleWindows(true)
         break
       case 'maximize-f11':
-        if (focusedWindow) maximizeWindow(focusedWindow.id)
+        if (focusedWindowId) maximizeWindow(focusedWindowId)
         break
       case 'screenshot':
         openApp('screenshot')
         break
       case 'close-window':
-        if (focusedWindow) closeWindow(focusedWindow.id)
+        if (focusedWindowId) closeWindow(focusedWindowId)
         break
       case 'minimize-window':
-        if (focusedWindow) minimizeWindow(focusedWindow.id)
+        if (focusedWindowId) minimizeWindow(focusedWindowId)
         break
       case 'new-terminal':
         openApp('terminal')
@@ -161,7 +157,7 @@ const App = memo(function App() {
         toggleNotificationCenter()
         break
     }
-  }, [getFocusedWindow, toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp])
+  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows, focusWindow])
 
   const matchesShortcut = useCallback((config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
     if (config.mod !== undefined && config.mod !== isMod) return false
@@ -279,10 +275,9 @@ const App = memo(function App() {
       // 仅在同一个 appId 下存在多个窗口实例时才执行切换，避免无意义操作。
       if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
         e.preventDefault()
-        const focusedWindow = getFocusedWindow()
+        const focusedWindow = windows.find(w => w.focused)
         if (focusedWindow) {
-          const store = useStore.getState()
-          const sameAppWindows = store.windows.filter(w => w.appId === focusedWindow.appId)
+          const sameAppWindows = windows.filter(w => w.appId === focusedWindow.appId)
           if (sameAppWindows.length > 1) {
             const idx = sameAppWindows.findIndex(w => w.focused)
             const next = sameAppWindows[(idx - 1 + sameAppWindows.length) % sameAppWindows.length]
@@ -294,10 +289,9 @@ const App = memo(function App() {
 
       if (e.ctrlKey && e.shiftKey && e.key === 'ArrowDown') {
         e.preventDefault()
-        const focusedWindow = getFocusedWindow()
+        const focusedWindow = windows.find(w => w.focused)
         if (focusedWindow) {
-          const store = useStore.getState()
-          const sameAppWindows = store.windows.filter(w => w.appId === focusedWindow.appId)
+          const sameAppWindows = windows.filter(w => w.appId === focusedWindow.appId)
           if (sameAppWindows.length > 1) {
             const idx = sameAppWindows.findIndex(w => w.focused)
             const next = sameAppWindows[(idx + 1) % sameAppWindows.length]
@@ -340,7 +334,7 @@ const App = memo(function App() {
         }
       }
     },
-    [launcherOpen, toggleLauncher, handleSystemShortcut, openApp, getFocusedWindow, focusWindow, cycleWindows, systemShortcutsArray, appShortcutsArray, matchesShortcut]
+    [launcherOpen, toggleLauncher, handleSystemShortcut, openApp, focusWindow, cycleWindows, systemShortcutsArray, appShortcutsArray, matchesShortcut, windows]
   )
 
   useEffect(() => {
