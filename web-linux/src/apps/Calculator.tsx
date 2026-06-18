@@ -52,13 +52,49 @@ interface HistoryItem {
   result: string
 }
 
+// 汇率相关类型
+interface ExchangeRates {
+  rates: Record<string, number>
+  base: string
+  timestamp: number
+}
+
+// 常用货币列表
+const COMMON_CURRENCIES = [
+  { code: 'USD', name: '美元', symbol: '$' },
+  { code: 'EUR', name: '欧元', symbol: '€' },
+  { code: 'GBP', name: '英镑', symbol: '£' },
+  { code: 'JPY', name: '日元', symbol: '¥' },
+  { code: 'CNY', name: '人民币', symbol: '¥' },
+  { code: 'HKD', name: '港币', symbol: 'HK$' },
+  { code: 'AUD', name: '澳元', symbol: 'A$' },
+  { code: 'CAD', name: '加元', symbol: 'C$' },
+  { code: 'CHF', name: '瑞郎', symbol: 'Fr' },
+  { code: 'SGD', name: '新加坡元', symbol: 'S$' },
+  { code: 'NZD', name: '新西兰元', symbol: 'NZ$' },
+  { code: 'INR', name: '印度卢比', symbol: '₹' },
+  { code: 'KRW', name: '韩元', symbol: '₩' },
+  { code: 'RUB', name: '卢布', symbol: '₽' },
+  { code: 'BRL', name: '雷亚尔', symbol: 'R$' },
+  { code: 'ZAR', name: '兰特', symbol: 'R' },
+]
+
 export default function Calculator() {
   const [display, setDisplay] = useState('0')
   const [expression, setExpression] = useState('')
   const [resetFlag, setResetFlag] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [showHistory, setShowHistory] = useState(false)
-  const [angleMode, setAngleMode] = useState<'rad' | 'deg'>('rad') // 角度模式：弧度或角度
+  const [angleMode, setAngleMode] = useState<'rad' | 'deg'>('rad')
+  // 新增：模式和汇率状态
+  const [mode, setMode] = useState<'calc' | 'exchange'>('calc')
+  const [exchangeData, setExchangeData] = useState<ExchangeRates | null>(null)
+  const [exchangeLoading, setExchangeLoading] = useState(false)
+  const [exchangeError, setExchangeError] = useState<string | null>(null)
+  const [exchangeFrom, setExchangeFrom] = useState('USD')
+  const [exchangeTo, setExchangeTo] = useState('CNY')
+  const [exchangeAmount, setExchangeAmount] = useState('1')
+  const [lastExchangeFetch, setLastExchangeFetch] = useState(0)
 
   // 角度和弧度转换辅助函数
   const toRad = useCallback((x: number): number => {
@@ -745,6 +781,102 @@ export default function Calculator() {
     setResetFlag(true)
   }, [])
 
+  // 从 API 获取汇率（使用 open.er-api.com - 免费公开API，无需密钥）
+  const fetchExchangeRates = useCallback(async (baseCurrency: string) => {
+    const now = Date.now()
+    // 缓存1小时：如果缓存不到1小时且已存在数据，则直接使用
+    if (exchangeData && exchangeData.base === baseCurrency && (now - lastExchangeFetch) < 60 * 60 * 1000) {
+      return
+    }
+    setExchangeLoading(true)
+    setExchangeError(null)
+    try {
+      const url = `https://open.er-api.com/v6/latest/${baseCurrency}`
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      if (data.result !== 'success') throw new Error('API error')
+      setExchangeData({
+        rates: data.rates,
+        base: data.base_code,
+        timestamp: data.time_last_update_unix || Date.now() / 1000,
+      })
+      setLastExchangeFetch(now)
+      // 持久化到localStorage
+      try {
+        localStorage.setItem('weblinux-rates-' + baseCurrency, JSON.stringify({
+          rates: data.rates,
+          base: data.base_code,
+          timestamp: data.time_last_update_unix || Date.now() / 1000,
+          fetchTime: now,
+        }))
+      } catch { /* ignore */ }
+    } catch (err) {
+      // 尝试从 localStorage 读取旧数据
+      try {
+        const cached = localStorage.getItem('weblinux-rates-' + baseCurrency)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          setExchangeData(parsed)
+          setLastExchangeFetch(parsed.fetchTime || Date.now())
+          setExchangeError('使用缓存数据（网络不可用）')
+        } else {
+          // 默认模拟数据
+          setExchangeData({
+            rates: {
+              USD: 1, EUR: 0.92, GBP: 0.79, JPY: 155, CNY: 7.24, HKD: 7.81,
+              AUD: 1.52, CAD: 1.36, CHF: 0.90, SGD: 1.35, NZD: 1.64, INR: 83.2,
+              KRW: 1370, RUB: 92.5, BRL: 5.15, ZAR: 18.7,
+            },
+            base: baseCurrency,
+            timestamp: Math.floor(Date.now() / 1000),
+          })
+          setExchangeError('使用模拟汇率数据')
+        }
+      } catch {
+        setExchangeError('无法获取汇率，请稍后再试')
+      }
+    } finally {
+      setExchangeLoading(false)
+    }
+  }, [exchangeData, lastExchangeFetch])
+
+  // 计算汇率结果
+  const getExchangeResult = useCallback((): string => {
+    if (!exchangeData) return '—'
+    const amt = parseFloat(exchangeAmount) || 0
+    if (exchangeFrom === exchangeTo) {
+      return amt.toLocaleString(undefined, { maximumFractionDigits: 4 })
+    }
+    // 注意：API 返回的是相对于 base 的汇率。我们需要将 base 货币作为转换基础
+    // 如果 exchangeData.base === exchangeFrom：
+    //   result = amt * rates[exchangeTo]
+    // 否则：重新计算
+    let rate: number
+    if (exchangeData.base === exchangeFrom) {
+      rate = exchangeData.rates[exchangeTo] || 1
+    } else if (exchangeData.base === exchangeTo) {
+      rate = 1 / (exchangeData.rates[exchangeFrom] || 1)
+    } else {
+      // 通过USD或base换算
+      const fromBase = exchangeData.rates[exchangeFrom] || 1
+      const toBase = exchangeData.rates[exchangeTo] || 1
+      rate = toBase / fromBase
+    }
+    const result = amt * rate
+    return result.toLocaleString(undefined, { maximumFractionDigits: 4 })
+  }, [exchangeData, exchangeAmount, exchangeFrom, exchangeTo])
+
+  const getCurrencySymbol = (code: string): string => {
+    return COMMON_CURRENCIES.find(c => c.code === code)?.symbol || code
+  }
+
+  const swapCurrencies = () => {
+    const f = exchangeFrom
+    setExchangeFrom(exchangeTo)
+    setExchangeTo(f)
+  }
+
   // 使用 useMemo 优化按钮样式 - 现代化设计
   const buttonStyles = useMemo(() => ({
     btn: {
@@ -901,14 +1033,14 @@ export default function Calculator() {
       overflowY: 'auto' 
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <button 
-          style={{ 
-            padding: '8px 16px', 
-            fontSize: 13, 
-            background: 'linear-gradient(145deg, #3a3a4a, #333342)', 
-            border: 'none', 
-            borderRadius: 8, 
-            color: '#fff', 
+        <button
+          style={{
+            padding: '8px 16px',
+            fontSize: 13,
+            background: 'linear-gradient(145deg, #3a3a4a, #333342)',
+            border: 'none',
+            borderRadius: 8,
+            color: '#fff',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
           }}
@@ -917,11 +1049,37 @@ export default function Calculator() {
           📋 历史 ({history.length})
         </button>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button 
-            style={{ 
+          <button
+            style={{
               ...buttonStyles.modeToggle,
-              background: angleMode === 'rad' 
-                ? 'linear-gradient(145deg, #60a5fa, #3b82f6)' 
+              background: mode === 'calc'
+                ? 'linear-gradient(145deg, #60a5fa, #3b82f6)'
+                : 'linear-gradient(145deg, #3a3a4a, #333342)'
+            }}
+            onClick={() => setMode('calc')}
+          >
+            计算器
+          </button>
+          <button
+            style={{
+              ...buttonStyles.modeToggle,
+              background: mode === 'exchange'
+                ? 'linear-gradient(145deg, #f59e0b, #d97706)'
+                : 'linear-gradient(145deg, #3a3a4a, #333342)'
+            }}
+            onClick={() => {
+              setMode('exchange')
+              fetchExchangeRates(exchangeFrom)
+            }}
+          >
+            💱 汇率
+          </button>
+          <button
+            style={{
+              ...buttonStyles.modeToggle,
+              display: mode === 'calc' ? 'inline-block' : 'none',
+              background: angleMode === 'rad'
+                ? 'linear-gradient(145deg, #60a5fa, #3b82f6)'
                 : 'linear-gradient(145deg, #3a3a4a, #333342)'
             }}
             onClick={() => setAngleMode(angleMode === 'rad' ? 'deg' : 'rad')}
@@ -931,24 +1089,190 @@ export default function Calculator() {
         </div>
       </div>
 
-      <div className="app-calc-display" style={{ 
-        background: 'linear-gradient(145deg, #0f0f1a, #0a0a12)', 
-        borderRadius: 16, 
-        padding: '20px 16px', 
-        marginBottom: 16, 
-        textAlign: 'right', 
-        minHeight: 100, 
-        display: 'flex', 
-        flexDirection: 'column', 
+      {mode === 'exchange' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #0f0f1a, #0a0a12)',
+            borderRadius: 16,
+            padding: 20,
+            boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.3)',
+            border: '1px solid rgba(255,255,255,0.05)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <label style={{ color: '#aaa', fontSize: 13 }}>源货币</label>
+              <select
+                value={exchangeFrom}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setExchangeFrom(v)
+                  fetchExchangeRates(v)
+                }}
+                style={{
+                  background: '#1a1a2e',
+                  color: '#fff',
+                  border: '1px solid #333',
+                  borderRadius: 8,
+                  padding: '6px 10px',
+                  fontSize: 14,
+                  outline: 'none',
+                }}
+              >
+                {COMMON_CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</option>
+                ))}
+              </select>
+            </div>
+            <input
+              type="number"
+              value={exchangeAmount}
+              onChange={(e) => setExchangeAmount(e.target.value)}
+              placeholder="输入金额"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                color: '#fff',
+                border: 'none',
+                borderBottom: '2px solid #333',
+                fontSize: 32,
+                fontWeight: 300,
+                textAlign: 'right',
+                outline: 'none',
+                padding: '8px 0',
+                letterSpacing: '-1px',
+              }}
+            />
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button
+              onClick={swapCurrencies}
+              style={{
+                background: 'linear-gradient(145deg, #60a5fa, #3b82f6)',
+                border: 'none',
+                color: '#fff',
+                padding: '10px 24px',
+                borderRadius: 12,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(96, 165, 250, 0.4)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.95)')}
+              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              ⇅ 交换
+            </button>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(145deg, #0f0f1a, #0a0a12)',
+            borderRadius: 16,
+            padding: 20,
+            boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.3)',
+            border: '1px solid rgba(255,255,255,0.05)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <label style={{ color: '#aaa', fontSize: 13 }}>目标货币</label>
+              <select
+                value={exchangeTo}
+                onChange={(e) => setExchangeTo(e.target.value)}
+                style={{
+                  background: '#1a1a2e',
+                  color: '#fff',
+                  border: '1px solid #333',
+                  borderRadius: 8,
+                  padding: '6px 10px',
+                  fontSize: 14,
+                  outline: 'none',
+                }}
+              >
+                {COMMON_CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</option>
+                ))}
+              </select>
+            </div>
+            <div style={{
+              fontSize: 32,
+              fontWeight: 300,
+              textAlign: 'right',
+              padding: '8px 0',
+              color: '#fff',
+              letterSpacing: '-1px',
+              background: 'linear-gradient(90deg, #4ade80, #60a5fa)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>
+              {exchangeLoading ? '加载中...' : `${getCurrencySymbol(exchangeTo)} ${getExchangeResult()}`}
+            </div>
+          </div>
+
+          {exchangeError && (
+            <div style={{
+              background: 'linear-gradient(145deg, #7c2d12, #431407)',
+              color: '#fdba74',
+              padding: '10px 14px',
+              borderRadius: 10,
+              fontSize: 13,
+              textAlign: 'center',
+            }}>
+              {exchangeError}
+            </div>
+          )}
+
+          {exchangeData && !exchangeLoading && (
+            <div style={{
+              background: 'linear-gradient(145deg, #1f2937, #111827)',
+              color: '#9ca3af',
+              padding: 12,
+              borderRadius: 10,
+              fontSize: 12,
+              textAlign: 'center',
+            }}>
+              汇率基准：{exchangeData.base} · 更新于 {new Date(exchangeData.timestamp * 1000).toLocaleString()}
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginTop: 4 }}>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '1')}>1</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '2')}>2</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '3')}>3</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '4')}>4</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '5')}>5</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '6')}>6</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '7')}>7</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '8')}>8</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '9')}>9</InteractiveButton>
+            <InteractiveButton style={buttonStyles.btn} onClick={() => setExchangeAmount(exchangeAmount + '0')}>0</InteractiveButton>
+            <InteractiveButton style={buttonStyles.func} onClick={() => setExchangeAmount('')}>清空</InteractiveButton>
+            <InteractiveButton style={buttonStyles.func} onClick={() => setExchangeAmount(exchangeAmount.slice(0, -1))}>⌫</InteractiveButton>
+            <InteractiveButton style={buttonStyles.func} onClick={() => setExchangeAmount(exchangeAmount + '.')}>.</InteractiveButton>
+            <InteractiveButton style={buttonStyles.eq} onClick={() => fetchExchangeRates(exchangeFrom)}>刷新</InteractiveButton>
+            <InteractiveButton style={buttonStyles.op} onClick={swapCurrencies}>⇅</InteractiveButton>
+          </div>
+        </div>
+      ) : null}
+
+      {mode === 'calc' && (
+        <>
+      <div className="app-calc-display" style={{
+        background: 'linear-gradient(145deg, #0f0f1a, #0a0a12)',
+        borderRadius: 16,
+        padding: '20px 16px',
+        marginBottom: 16,
+        textAlign: 'right',
+        minHeight: 100,
+        display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'flex-end',
         boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.3)',
         border: '1px solid rgba(255,255,255,0.05)',
       }}>
         <div style={{ color: '#666', fontSize: 14, minHeight: 22, wordBreak: 'break-all' }}>{expression}</div>
-        <div style={{ 
-          color: '#fff', 
-          fontSize: 40, 
-          fontWeight: 300, 
+        <div style={{
+          color: '#fff',
+          fontSize: 40,
+          fontWeight: 300,
           wordBreak: 'break-all',
           letterSpacing: '-1px',
         }}>{display}</div>
@@ -1063,13 +1387,15 @@ export default function Calculator() {
       </div>
       
       {/* 第十三行：更多双曲函数 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={handleSinh}>sinh</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleCosh}>cosh</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleTanH}>tanh</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleNthRoot}>NTH</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleAsin}>asin</InteractiveButton>
       </div>
+        </>
+      )}
     </div>
   )
 }
