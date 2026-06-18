@@ -30,7 +30,9 @@ WebLinuxOS brings the Linux desktop experience to your browser. It features a mo
 - GitHub trending repository viewer
 - Python REPL via Pyodide
 - 90+ terminal commands (file operations, system monitoring, network tools)
-- Code snippet manager
+- Code snippet manager with JSON import/export
+- CSS toolbox: gradient, box-shadow, border-radius, flexbox, grid, text-shadow generators
+- AI prompt library with categorized presets
 
 ### Productivity
 - Text/markdown editor with live preview
@@ -42,6 +44,7 @@ WebLinuxOS brings the Linux desktop experience to your browser. It features a mo
 - Mind mapping tool
 - Presentation creator
 - Smart schedule assistant with AI suggestions
+- Spaced repetition knowledge cards for learning
 
 ### Utilities
 - Scientific calculator with advanced functions
@@ -62,7 +65,9 @@ WebLinuxOS brings the Linux desktop experience to your browser. It features a mo
 ### Online Services Integration
 - Weather information from wttr.in
 - Cryptocurrency prices from CoinGecko
-- Daily NASA astronomy picture
+- Daily NASA astronomy picture with historical lookup
+- Near-Earth asteroid tracking via NASA NeoWs API
+- Real-time ISS (International Space Station) position
 - Real-time exchange rates
 - Dictionary definitions
 - Random quotes and jokes

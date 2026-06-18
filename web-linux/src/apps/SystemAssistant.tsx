@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react'
+import type { CSSProperties } from 'react'
 import { useStore } from '../store'
 
 interface SystemStatus {
@@ -251,7 +252,7 @@ const SystemAssistant = memo(function SystemAssistant() {
     container: {
       height: '100%',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'column' as const,
       background: theme === 'dark' ? '#0d0d1a' : '#f5f5f5',
       color: theme === 'dark' ? '#e0e0e0' : '#333',
       overflow: 'hidden'
@@ -302,7 +303,7 @@ const SystemAssistant = memo(function SystemAssistant() {
       borderRadius: '12px',
       background: theme === 'dark' ? '#1a1a2e' : '#fff',
       border: `1px solid ${theme === 'dark' ? '#2a2a4a' : '#ddd'}`,
-      textAlign: 'center'
+      textAlign: 'center' as const
     },
     statusIcon: {
       fontSize: '24px',
@@ -322,15 +323,15 @@ const SystemAssistant = memo(function SystemAssistant() {
       gridTemplateColumns: 'repeat(4, 1fr)',
       gap: '12px'
     },
-    actionButton: (isFavorite: boolean) => ({
+    actionButton: (isFavorite: boolean): CSSProperties => ({
       padding: '16px',
       borderRadius: '12px',
       background: isFavorite ? (theme === 'dark' ? '#2a2a4a' : '#e8e8ff') : (theme === 'dark' ? '#1a1a2e' : '#fff'),
       border: `1px solid ${theme === 'dark' ? '#2a2a4a' : '#ddd'}`,
       cursor: 'pointer',
-      textAlign: 'center',
+      textAlign: 'center' as const,
       transition: 'all 0.2s',
-      position: 'relative'
+      position: 'relative' as const
     }),
     suggestionCard: (type: string) => ({
       padding: '16px',
