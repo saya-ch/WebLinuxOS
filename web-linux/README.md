@@ -41,6 +41,7 @@ WebLinuxOS brings the Linux desktop experience to your browser. It features a mo
 - Smart notes with tags and import/export
 - Mind mapping tool
 - Presentation creator
+- Smart schedule assistant with AI suggestions
 
 ### Utilities
 - Scientific calculator with advanced functions
@@ -50,12 +51,22 @@ WebLinuxOS brings the Linux desktop experience to your browser. It features a mo
 - Real-time translation
 - Clipboard manager with history
 - Weather application
+- Online API hub with NASA, news, and crypto data
 
 ### Multimedia & Entertainment
 - Music player with playlist support
 - Paint application with drawing tools
 - Camera access for video capture
 - Classic games (Snake, Tetris)
+
+### Online Services Integration
+- Weather information from wttr.in
+- Cryptocurrency prices from CoinGecko
+- Daily NASA astronomy picture
+- Real-time exchange rates
+- Dictionary definitions
+- Random quotes and jokes
+- IP geolocation information
 
 ## Terminal Commands
 

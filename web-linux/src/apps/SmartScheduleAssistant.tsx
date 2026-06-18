@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { useStore } from '../../store'
+import { useStore } from '../store'
 
 interface ScheduleEvent {
   id: string
@@ -163,14 +163,14 @@ function generateAISuggestion(event: ScheduleEvent, allEvents: ScheduleEvent[]):
 }
 
 export default function SmartScheduleAssistant() {
-  const theme = useStore((s) => s.theme)
+  const theme = useStore((s: { theme: 'dark' | 'light' }) => s.theme)
   const [events, setEvents] = useState<ScheduleEvent[]>(() => {
     const saved = localStorage.getItem('smart-schedule-events')
     return saved ? JSON.parse(saved) : []
   })
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
-  const [selectedHour, setSelectedHour] = useState<number | null>(null)
+  const [, setSelectedHour] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'analysis'>('timeline')
   
   // 表单状态

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useStore } from '../../store'
+import { useStore } from '../store'
 
 interface CodeAnalysis {
   language: string
@@ -266,7 +266,7 @@ function analyzeCode(code: string): CodeAnalysis {
 }
 
 export default function CodeInterpreter() {
-  const theme = useStore((s) => s.theme)
+  const theme = useStore((s: { theme: 'dark' | 'light' }) => s.theme)
   const [code, setCode] = useState('')
   const [analysis, setAnalysis] = useState<CodeAnalysis | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
