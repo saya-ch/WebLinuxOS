@@ -50,12 +50,12 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       document.body.style.userSelect = 'none'
     } else if (!resizing) {
       setDragOpacity(1)
-      document.body.style.cursor = ''
+      document.body.style.setProperty('cursor', '')
       document.body.style.userSelect = ''
     }
     return () => {
       if (!resizing) {
-        document.body.style.cursor = ''
+        document.body.style.setProperty('cursor', '')
         document.body.style.userSelect = ''
       }
     }
@@ -72,12 +72,12 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       }
       document.body.style.setProperty('cursor', cursorMap[resizing] || 'default', 'important')
     } else if (!dragging) {
-      document.body.style.cursor = ''
+      document.body.style.setProperty('cursor', '')
       document.body.style.userSelect = ''
     }
     return () => {
       if (!dragging) {
-        document.body.style.cursor = ''
+        document.body.style.setProperty('cursor', '')
         document.body.style.userSelect = ''
       }
     }
@@ -232,12 +232,9 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           if (Math.abs(newY) < SNAP_THRESHOLD) { newY = 0; newSnap = newSnap ? newSnap + '+TOP' : 'TOP' }
           else if (Math.abs(newY + h - (screenH - 40)) < SNAP_THRESHOLD) { newY = screenH - h - 40; newSnap = newSnap ? newSnap + '+BOTTOM' : 'BOTTOM' }
 
-          // 顶部1/2 和 2/3 快捷键吸附
+          // 拖动到屏幕顶端时显示 MAXIMIZE snap hint
           if (dragging && e.clientY < 8) {
-            // 顶部吸附 = 最大化
-            if (!win.maximized) {
-              // 仅当拖动到顶端时，不自动最大化，仅提示
-          }
+            newSnap = 'MAXIMIZE'
           }
 
           // 边界限制
@@ -282,10 +279,13 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       })
     }
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
       if (rafId) {
         cancelAnimationFrame(rafId)
         rafId = null
+      }
+      if (dragging && e.clientY < 8 && !win.maximized) {
+        maximizeWindow(win.id)
       }
       setDragging(false)
       setResizing(null)
@@ -299,7 +299,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [dragging, resizing, win.id, win.minWidth, win.minHeight, win.maximized, updateWindowPosition, updateWindowSize])
+  }, [dragging, resizing, win.id, win.minWidth, win.minHeight, win.maximized, updateWindowPosition, updateWindowSize, maximizeWindow])
 
   const handleWindowClick = useCallback(() => {
     focusWindow(win.id)

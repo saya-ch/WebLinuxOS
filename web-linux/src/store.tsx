@@ -357,7 +357,30 @@ export const useStore = create<Store>((set, get) => ({
   openApp: (appId) => {
     const state = get()
     const app = state.apps.find((a) => a.id === appId)
-    if (app) state.addWindow(app)
+    if (!app) {
+      console.warn(`[openApp] 未找到 id 为 "${appId}" 的应用，已忽略操作`)
+      return
+    }
+    if (!app.multiple) {
+      const existing = state.windows.find((w) => w.appId === appId)
+      if (existing) {
+        get().focusWindow(existing.id)
+        if (existing.minimized) {
+          set((s) => ({
+            windows: s.windows.map((w) =>
+              w.id === existing.id ? { ...w, minimized: false } : w
+            )
+          }))
+        }
+        const winDesktop = Object.entries(state.windowsPerDesktop)
+          .find(([, ids]) => ids.includes(existing.id))?.[0]
+        if (winDesktop && Number(winDesktop) !== state.currentDesktop) {
+          get().switchDesktop(Number(winDesktop))
+        }
+        return
+      }
+    }
+    state.addWindow(app)
   },
 
   closeWindow: (id) => set((s) => {
@@ -371,8 +394,20 @@ export const useStore = create<Store>((set, get) => ({
     }
   }),
 
-  switchDesktop: (desktopNumber) => set(() => {
+  switchDesktop: (desktopNumber) => set((s) => {
     saveToStorage(STORAGE_KEYS.CURRENT_DESKTOP, String(desktopNumber))
+    const needsInit =
+      !s.windowsPerDesktop[desktopNumber] ||
+      !Array.isArray(s.windowsPerDesktop[desktopNumber])
+    if (needsInit) {
+      return {
+        currentDesktop: desktopNumber,
+        windowsPerDesktop: {
+          ...s.windowsPerDesktop,
+          [desktopNumber]: []
+        }
+      }
+    }
     return { currentDesktop: desktopNumber }
   }),
 

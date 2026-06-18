@@ -276,13 +276,18 @@ const App = memo(function App() {
       }
 
       // Switch to same app window (Ctrl+Shift+ArrowUp/Down)
+      // 仅在同一个 appId 下存在多个窗口实例时才执行切换，避免无意义操作。
       if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
         e.preventDefault()
         const focusedWindow = getFocusedWindow()
         if (focusedWindow) {
           const store = useStore.getState()
-          const otherWindow = store.windows.find(w => !w.focused && w.appId === focusedWindow.appId)
-          if (otherWindow) focusWindow(otherWindow.id)
+          const sameAppWindows = store.windows.filter(w => w.appId === focusedWindow.appId)
+          if (sameAppWindows.length > 1) {
+            const idx = sameAppWindows.findIndex(w => w.focused)
+            const next = sameAppWindows[(idx - 1 + sameAppWindows.length) % sameAppWindows.length]
+            focusWindow(next.id)
+          }
         }
         return
       }
@@ -292,8 +297,12 @@ const App = memo(function App() {
         const focusedWindow = getFocusedWindow()
         if (focusedWindow) {
           const store = useStore.getState()
-          const otherWindow = store.windows.find(w => !w.focused && w.appId === focusedWindow.appId)
-          if (otherWindow) focusWindow(otherWindow.id)
+          const sameAppWindows = store.windows.filter(w => w.appId === focusedWindow.appId)
+          if (sameAppWindows.length > 1) {
+            const idx = sameAppWindows.findIndex(w => w.focused)
+            const next = sameAppWindows[(idx + 1) % sameAppWindows.length]
+            focusWindow(next.id)
+          }
         }
         return
       }

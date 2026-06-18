@@ -39,14 +39,30 @@ jobs:
         working-directory: ./web-linux
         run: npm run deploy
 
+      - name: Ensure .nojekyll and fallback 404
+        run: |
+          touch ./.nojekyll
+          if [ ! -f ./404.html ] && [ -f ./index.html ]; then
+            cp ./index.html ./404.html
+          fi
+          echo ""
+          echo "--- Deployment inventory ---"
+          echo "Root files:"
+          ls -1 ./ | head -30
+          echo ""
+          echo "Asset files count:"
+          ls ./assets 2>/dev/null | wc -l || echo 0
+
       - name: Verify build output
         run: |
-          echo "--- Root directory listing (first-pass) ---"
-          ls -la ./
           echo "--- Checking index.html exists ---"
           test -f ./index.html && echo "OK: index.html exists" || (echo "FAIL: index.html missing" && exit 1)
           echo "--- Checking assets folder ---"
           test -d ./assets && echo "OK: assets/ exists" || (echo "FAIL: assets/ missing" && exit 1)
+          echo "--- Checking favicon ---"
+          test -f ./favicon.svg && echo "OK: favicon.svg exists" || echo "WARN: favicon missing"
+          echo "--- Checking manifest ---"
+          test -f ./manifest.json && echo "OK: manifest.json exists" || echo "WARN: manifest.json missing"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -66,3 +82,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

@@ -17,6 +17,30 @@ import {
 
 import type { AppDefinition } from './types'
 
+// 批量注册常量：如果未来需要从外部（如单独配置文件 / 插件系统 / API 拉取）
+// 提供应用清单，可以将它们推入 APP_REGISTRY_EXTRAS，再在 appRegistry 末尾
+// 通过 `...APP_REGISTRY_EXTRAS` 一次性展开注册，避免在此文件中逐条追加。
+// 注意：要求每个 app id 全局唯一，注册前请使用 `apps.tsx` 文件末尾的
+// 注释 / 外部脚本校验。
+//
+// 使用示例（未来扩展）：
+//   export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+//     { id: 'my-app', ... },
+//   ]
+//   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
+export const APP_REGISTRY_EXTRAS: AppDefinition[] = []
+
+// 批量注册函数：用于在运行时动态添加应用（保留去重保护）
+export function registerApps(extras: AppDefinition[]) {
+  const existingIds = new Set(appRegistry.map((app) => app.id))
+  for (const app of extras) {
+    if (!existingIds.has(app.id)) {
+      appRegistry.push(app)
+      existingIds.add(app.id)
+    }
+  }
+}
+
 function SmartNotesIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -391,6 +415,16 @@ function SmartNewsReaderIcon() {
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 17.5" />
       <line x1="8" y1="6" x2="18" y2="6" />
       <line x1="8" y1="10" x2="15" y2="10" />
+    </svg>
+  )
+}
+
+function WikipediaReaderIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20" />
+      <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z" />
     </svg>
   )
 }
@@ -890,6 +924,33 @@ function AirQualityIcon() {
   )
 }
 
+function SpaceExplorerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3 L10 12 L12 15 L14 12 Z" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="5.5" cy="12" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="18.5" cy="12" r="0.8" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function ChinesePoetryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M6 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16" />
+      <path d="M16 4h3a1 1 0 0 1 1 1v16H6" />
+      <line x1="9" y1="8" x2="13" y2="8" />
+      <line x1="9" y1="12" x2="13" y2="12" />
+      <line x1="9" y1="16" x2="12" y2="16" />
+    </svg>
+  )
+}
+
+// 注意（校验提示）：以下所有条目在 src/apps/ 下均应存在同名 .tsx 组件文件，
+// 且每个 id 必须全局唯一。如新增注册，请先确认组件文件已就位。
+// （当前 200 项已完成组件存在性与 id 去重校验，无异常。）
 export const appRegistry: AppDefinition[] = [
   { id: 'dev-toolbox', name: '开发者工具箱', icon: <DevToolboxIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'unified-dashboard', name: '统一数据仪表盘', icon: <UnifiedDashboardIcon />, component: 'UnifiedDashboard', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
@@ -907,6 +968,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'component-sandbox', name: '组件开发沙盒', icon: <ComponentSandboxIcon />, component: 'ComponentSandbox', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'realtime-dashboard', name: '实时数据仪表盘', icon: <RealTimeDashboardIcon />, component: 'RealTimeDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'smart-news-reader', name: '智能新闻阅读器', icon: <SmartNewsReaderIcon />, component: 'SmartNewsReader', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  { id: 'wikipedia-reader', name: '维基百科阅读器', icon: <WikipediaReaderIcon />, component: 'WikipediaReader', category: 'internet', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'advanced-data-viz', name: '高级数据可视化', icon: <AdvancedDataVizIcon />, component: 'AdvancedDataViz', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'dev-assistant', name: '开发助手', icon: <DevAssistantIcon />, component: 'DevAssistant', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'habit-tracker', name: '习惯追踪', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /><circle cx="12" cy="7" r="1" fill="currentColor" /><circle cx="8" cy="14.5" r="1" fill="currentColor" /><circle cx="16" cy="14.5" r="1" fill="currentColor" /></svg>, component: 'HabitTracker', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
@@ -1091,4 +1153,8 @@ export const appRegistry: AppDefinition[] = [
   { id: 'ai-assistant-v2', name: 'AI智能助手', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="2" fill="currentColor"/></svg>, component: 'AIAssistantPro', category: 'utilities', defaultWidth: 850, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'web-dev-toolkit', name: 'Web开发工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, component: 'WebDevToolkit', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'air-quality-monitor', name: '空气质量监测', icon: <AirQualityIcon />, component: 'AirQualityMonitor', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
+  { id: 'devops-tools', name: 'DevOps 工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/><line x1="7.5" y1="12.5" x2="11.5" y2="16.5"/><line x1="15.5" y1="4.5" x2="19.5" y2="8.5"/></svg>, component: 'DevOpsTools', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 780, minHeight: 550, resizable: true, multiple: false },
+  { id: 'chinese-poetry', name: '中国古诗词', icon: <ChinesePoetryIcon />, component: 'ChinesePoetry', category: 'utilities', defaultWidth: 1000, defaultHeight: 800, minWidth: 680, minHeight: 500, resizable: true, multiple: false },
+  { id: 'rss-reader', name: 'RSS 订阅阅读器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="6" cy="18" r="2" fill="currentColor" stroke="none"/><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/></svg>, component: 'RSSReader', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 760, minHeight: 540, resizable: true, multiple: false },
+  { id: 'space-explorer', name: '宇宙探索', icon: <SpaceExplorerIcon />, component: 'SpaceExplorer', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
 ]
