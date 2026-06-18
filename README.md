@@ -2,7 +2,7 @@
 
 > 浏览器中的完整 Linux 桌面环境 — 真实、开源、零后端依赖
 
-WebLinuxOS 不是一个模拟器，而是一个完全运行在浏览器中的**真实桌面环境**。它使用 React 19 + TypeScript 构建，通过 Zustand 管理窗口、文件与设置状态，支持完整的窗口管理、多虚拟桌面、虚拟文件系统，并集成了 150+ 应用程序与多种公开 API。所有计算均在本地浏览器中执行，无需任何服务器后端。
+WebLinuxOS 不是一个模拟器，而是一个完全运行在浏览器中的**真实桌面环境**。它使用 React 19 + TypeScript 构建，通过 Zustand 管理窗口、文件与设置状态，支持完整的窗口管理、多虚拟桌面、虚拟文件系统，并集成了 **200+ 应用程序**与多种公开 API。所有计算均在本地浏览器中执行，无需任何服务器后端。
 
 ---
 
@@ -164,19 +164,19 @@ Store 暴露的 Action 包括 `openApp`、`closeWindow`、`focusWindow`、`maxim
 
 ---
 
-## 150+ 应用程序
+## 200+ 应用程序
 
 下表按类别汇总所有可用应用（每类取代表性列示，完整列表见 `src/apps.tsx`）：
 
 | 类别 | 应用 |
 | ---- | ---- |
 | **系统** | Terminal、About、Help、System Info、System Dashboard、System Health Check、System Toolbox、Settings、FileManager、DiskUsage、DiskUtility、ProcessMonitor、TaskManager(+/Pro)、PerformanceMonitor、PackageManager、ActivityTracker、CommandReference、QuickCommands、TaskAutomation |
-| **开发** | CodeRunner、CodeEditor、CodeStudio、CodeSandbox、CodeFormatter、CodeSnippetsManager、CodeGenerator、CodeReviewer、CodeDiffViewer、IntelligentCodeGenerator、JSONFormatter、JSONSchemaValidator、JSONYAMLConverter、RegexTester、RegexBuilder、CronTools、DevAssistant、DevToolbox、DevTools、ApiTester、ApiTesterEnhanced、ApiDocsViewer、ApiDocsViewerEnhanced、APILab、RESTClient、OnlineCodeRunner、DevOpsTools、URLTools、Base64Tools、TextFormatter |
-| **办公** | Notepad、Notes、NotesApp、SmartNotes、SmartNotesEnhanced、MarkdownEditor、MarkdownPreview、MarkdownPreviewer、MarkdownToHTML、MarkdownSlides、TextDiffViewer、TextEditor、Spreadsheet、KanbanBoard、TaskBoard、TaskDashboard、ProjectManager、ProjectPlanner、SmartProjectHub、Flashcards、IdeaCapture、IdeaBoard、MindMap、StickyNotesWall、CollaborativeWhiteboard、Whiteboard、WhiteboardPro、Presentation、BackupTool、DataExporter |
+| **开发** | CodeRunner、CodeEditor、CodeStudio、CodeSandbox、CodeFormatter、CodeSnippetsManager、CodeGenerator、**CodeInterpreter(AI代码解释器)**、CodeReviewer、CodeDiffViewer、IntelligentCodeGenerator、JSONFormatter、JSONSchemaValidator、JSONYAMLConverter、RegexTester、RegexBuilder、CronTools、DevAssistant、DevToolbox、DevTools、ApiTester、ApiTesterEnhanced、ApiDocsViewer、ApiDocsViewerEnhanced、APILab、RESTClient、OnlineCodeRunner、DevOpsTools、URLTools、Base64Tools、TextFormatter |
+| **办公** | Notepad、Notes、NotesApp、SmartNotes、SmartNotesEnhanced、MarkdownEditor、MarkdownPreview、MarkdownPreviewer、MarkdownToHTML、MarkdownSlides、TextDiffViewer、TextEditor、Spreadsheet、KanbanBoard、TaskBoard、TaskDashboard、ProjectManager、ProjectPlanner、SmartProjectHub、**SmartScheduleAssistant(智能日程助手)**、Flashcards、IdeaCapture、IdeaBoard、MindMap、StickyNotesWall、CollaborativeWhiteboard、Whiteboard、WhiteboardPro、Presentation、BackupTool、DataExporter |
 | **网络 / 信息** | Weather、HackerNewsReader、GitHubExplorer、GitHubTrending、NewsReader、SmartNewsReader、WikipediaReader、SpaceExplorer、RSSReader、NetworkExplorer、NetworkMonitor、NetworkSpeedTest、DnsLookup、IPLookup、Maps |
 | **创意 / 设计** | Paint、ColorPicker、ColorPaletteGenerator、CreativeToolkit、FontViewer、ImageViewer、ImageOptimizer、ParticleSystem、WallpaperGallery、ComponentSandbox |
 | **媒体** | MusicPlayer、MusicStudio、MusicVisualizer、Camera、SoundRecorder、Screenshot、ScreenRecorder、VideoPlayer、PDFViewer |
-| **实用工具** | Calculator、TimerApp、Pomodoro、FocusMode、HabitTracker、Calendar、Clock、QuickLauncher、Magnifier、GlobalSearch、SmartSearch、QRGenerator、QRGeneratorEnhanced、PasswordGenerator、PasswordChecker、PasswordManager、PasswordManagerEnhanced、SmartPasswordManager、ClipboardManager、ClipboardHistory、ClipboardManagerAdvanced、UnitConverter、CurrencyConverter、CurrencyLive、StockTracker、CryptoTracker、RecipeBook、DailyInspo、RandomTools、EmojiBrowser、CharacterMap、Firewall、BluetoothManager、PowerManager、OnlineToolkit |
+| **实用工具** | Calculator、TimerApp、Pomodoro、FocusMode、HabitTracker、Calendar、Clock、QuickLauncher、Magnifier、GlobalSearch、SmartSearch、QRGenerator、QRGeneratorEnhanced、PasswordGenerator、PasswordChecker、PasswordManager、PasswordManagerEnhanced、SmartPasswordManager、ClipboardManager、ClipboardHistory、ClipboardManagerAdvanced、UnitConverter、CurrencyConverter、CurrencyLive、StockTracker、CryptoTracker、RecipeBook、DailyInspo、RandomTools、EmojiBrowser、CharacterMap、Firewall、BluetoothManager、PowerManager、OnlineToolkit、**OnlineAPIHub(在线API工具中心)** |
 | **AI / 智能** | AIAssistant、AIChatAssistant、ChatAI、AIHelper、AISmartAssistant、AITaskAssistant、AICodeAssistant、AICodeTutor、IntelligentCodeGenerator、CodeReviewer、SmartDashboard、SmartHub、SmartProjectHub、SmartNotes、SmartNotesEnhanced、SmartPasswordManager |
 | **可视化 / 仪表盘** | DataViz、DataVisualizer、AdvancedDataViz、RealTimeDashboard、SystemDashboard、SystemHealthDashboard、SystemHealthDashboardEnhanced、UnifiedDashboard、RealTimeTranslator、ProductivityHub、RealTimeTranslator、LearningPlatform |
 | **通信** | Email、Chat、Contacts |
@@ -203,6 +203,7 @@ Store 暴露的 Action 包括 `openApp`、`closeWindow`、`focusWindow`、`maxim
 | CryptoTracker | CoinGecko | 加密货币行情 |
 | 翻译助手 (Translator) | [MyMemory Translation API](https://mymemory.translated.net/doc/spec.php) | 中英文互译、自动检测 |
 | RSSReader | 站点原始 RSS/Atom + [AllOrigins CORS 代理](https://allorigins.win) | 读取任意公开 RSS/Atom 订阅 |
+| **OnlineAPIHub** | wttr.in、quotable.io、jokeapi.dev、uselessfacts.jsph.pl、CoinGecko、ipapi.co、dictionaryapi.dev、exchangerate-api.com、worldtimeapi.org、random.org、colourlovers.com | 天气、名言、笑话、知识、加密货币、IP信息、词典、汇率、时区、随机数、颜色生成 |
 
 > 所有 API 均为公开免费端点，部分存在速率限制。某些端点（如无 CORS 头部的 RSS 源）会通过免费代理获取。
 
