@@ -159,7 +159,7 @@ export default function AIGenerator() {
   
   const handleLoadHistory = useCallback((item: typeof state.history[0]) => {
     setState(s => ({ ...s, prompt: item.prompt, response: item.response }))
-  }, [])
+  }, [setState])
   
   const formatTimestamp = (ts: number) => {
     return new Date(ts).toLocaleTimeString('zh-CN', {

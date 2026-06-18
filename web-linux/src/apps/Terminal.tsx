@@ -1085,38 +1085,38 @@ export default function Terminal() {
           output = 'search: 请提供搜索关键词\n用法: search <关键词>'
         } else {
           const searchTerm = args.join(' ').toLowerCase()
-          const searchInTree = (nodes: FileNode[]): FileNode[] => {
-            const results: FileNode[] = []
+          const searchStartTime = Date.now()
+          
+          const searchInTree = (nodes: FileNode[], currentPath: string = ''): Array<{ node: FileNode; path: string }> => {
+            const results: Array<{ node: FileNode; path: string }> = []
             for (const node of nodes) {
+              const nodePath = currentPath ? `${currentPath}/${node.name}` : `/${node.name}`
               if (node.name.toLowerCase().includes(searchTerm)) {
-                results.push(node)
+                results.push({ node, path: nodePath })
               }
               if (node.children) {
-                results.push(...searchInTree(node.children))
+                results.push(...searchInTree(node.children, nodePath))
               }
             }
             return results
           }
+          
           const results = searchInTree(files)
+          const searchTime = Date.now() - searchStartTime
+          
           if (results.length === 0) {
-            output = `未找到包含 "${args.join(' ')}" 的文件或目录`
+            output = `未找到包含 "${args.join(' ')}" 的文件或目录\n搜索耗时: ${searchTime}ms`
           } else {
             output = [
-              `找到 ${results.length} 个结果:`,
+              `找到 ${results.length} 个结果 (耗时: ${searchTime}ms):`,
               '',
               ...results.map(r => {
-                const path = (function findPath(node: FileNode, targetId: string, currentPath: string = ''): string | null {
-                  if (node.id === targetId) return currentPath
-                  if (node.children) {
-                    for (const child of node.children) {
-                      const result = findPath(child, targetId, currentPath + '/' + node.name)
-                      if (result) return result
-                    }
-                  }
-                  return null
-                })(files[0], r.id) || '/'
-                return `📄 ${r.name} (${r.type === 'folder' ? '目录' : '文件'}) @ ${path}`
-              })
+                const icon = r.node.type === 'folder' ? '📁' : '📄'
+                const type = r.node.type === 'folder' ? '目录' : '文件'
+                return `${icon} ${r.node.name} (${type}) @ ${r.path}`
+              }),
+              '',
+              `提示: 使用 'cd <路径>' 切换到目标目录`
             ].join('\n')
           }
         }
@@ -2531,26 +2531,131 @@ ${node.children ? `  包含: ${node.children.length} 项` : ''}`
       }
 
       case 'news': {
-        const newsItems = [
-          { title: 'WebLinuxOS 4.7.0 发布', category: '科技', summary: '新增终端命令、改进用户界面、增强性能优化' },
-          { title: '人工智能技术持续创新', category: 'AI', summary: '大语言模型应用场景不断扩展' },
-          { title: 'WebAssembly 性能突破', category: '技术', summary: '浏览器端运行速度提升30%' },
-          { title: '云计算市场持续增长', category: '云服务', summary: '企业数字化转型加速' },
-          { title: '开源社区活跃度提升', category: '开源', summary: '全球开发者贡献量创历史新高' },
-          { title: '网络安全意识增强', category: '安全', summary: '企业加大安全投入力度' },
-        ]
-        
-        output = [
-          `📰 WebLinux 新闻速递`,
-          ``,
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-          ...newsItems.map((item, idx) => 
-            `\n${idx + 1}. [${item.category}] ${item.title}\n   ${item.summary}`
-          ),
-          ``,
-          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-          `💡 提示: 使用 news --refresh 获取最新资讯`,
-        ].join('\n')
+        output = `📰 正在获取最新新闻...`
+        setHistory(prev => [...prev, { input: trimmed, output }])
+        fetch('https://newsapi.org/v2/top-headlines?country=cn&category=technology&apiKey=demo')
+          .then(res => res.json())
+          .then(data => {
+            if (data.articles && data.articles.length > 0) {
+              const results = data.articles.slice(0, 5).map((article: any, idx: number) => [
+                `${idx + 1}. ${article.title}`,
+                `   📰 ${article.source.name}`,
+                `   🔗 ${article.url}`,
+              ].join('\n'))
+              const newOutput = [
+                `📰 科技新闻速递`,
+                ``,
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                ...results,
+                ``,
+                `显示前5条，共 ${data.totalResults} 条新闻`,
+              ].join('\n')
+              setHistory(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { input: trimmed, output: newOutput }
+                return updated
+              })
+            } else {
+              const newsItems = [
+                { title: 'WebLinuxOS 6.2.0 发布', category: '科技', summary: '新增终端命令、改进用户界面、增强性能优化' },
+                { title: '人工智能技术持续创新', category: 'AI', summary: '大语言模型应用场景不断扩展' },
+                { title: 'WebAssembly 性能突破', category: '技术', summary: '浏览器端运行速度提升30%' },
+                { title: '云计算市场持续增长', category: '云服务', summary: '企业数字化转型加速' },
+                { title: '开源社区活跃度提升', category: '开源', summary: '全球开发者贡献量创历史新高' },
+              ]
+              const newOutput = [
+                `📰 WebLinux 新闻速递 (模拟数据)`,
+                ``,
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                ...newsItems.map((item, idx) => 
+                  `\n${idx + 1}. [${item.category}] ${item.title}\n   ${item.summary}`
+                ),
+                ``,
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                `💡 提示: 实时新闻API需要API密钥`,
+              ].join('\n')
+              setHistory(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { input: trimmed, output: newOutput }
+                return updated
+              })
+            }
+          })
+          .catch(() => {
+            const newsItems = [
+              { title: 'WebLinuxOS 6.2.0 发布', category: '科技', summary: '新增终端命令、改进用户界面、增强性能优化' },
+              { title: '人工智能技术持续创新', category: 'AI', summary: '大语言模型应用场景不断扩展' },
+              { title: 'WebAssembly 性能突破', category: '技术', summary: '浏览器端运行速度提升30%' },
+              { title: '云计算市场持续增长', category: '云服务', summary: '企业数字化转型加速' },
+            ]
+            const newOutput = [
+              `📰 WebLinux 新闻速递 (模拟数据)`,
+              ``,
+              `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+              ...newsItems.map((item, idx) => 
+                `\n${idx + 1}. [${item.category}] ${item.title}\n   ${item.summary}`
+              ),
+              ``,
+              `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+              `💡 提示: 网络不可用时显示模拟数据`,
+            ].join('\n')
+            setHistory(prev => {
+              const updated = [...prev]
+              updated[updated.length - 1] = { input: trimmed, output: newOutput }
+              return updated
+            })
+          })
+        return
+      }
+      case 'stock': {
+        if (args.length === 0) {
+          output = [
+            `📈 股票行情查询`,
+            ``,
+            `用法: stock [代码]`,
+            ``,
+            `示例:`,
+            `  stock          (查看热门股票)`,
+            `  stock AAPL     (查看苹果)`,
+            `  stock GOOGL    (查看谷歌)`,
+            `  stock MSFT     (查看微软)`,
+            ``,
+            `支持的股票: AAPL, GOOGL, MSFT, AMZN, TSLA, META, NVDA`,
+          ].join('\n')
+        } else {
+          const symbol = args[0].toUpperCase()
+          const stockData: Record<string, { name: string; price: number; change: number; high: number; low: number }> = {
+            'AAPL': { name: '苹果公司', price: 178.50, change: 2.35, high: 180.20, low: 176.80 },
+            'GOOGL': { name: '谷歌', price: 141.80, change: -1.20, high: 143.50, low: 140.90 },
+            'MSFT': { name: '微软', price: 378.90, change: 1.80, high: 380.50, low: 377.20 },
+            'AMZN': { name: '亚马逊', price: 178.25, change: -0.50, high: 179.80, low: 177.50 },
+            'TSLA': { name: '特斯拉', price: 248.60, change: 3.45, high: 252.00, low: 245.80 },
+            'META': { name: 'Meta', price: 505.20, change: 2.10, high: 508.90, low: 502.10 },
+            'NVDA': { name: '英伟达', price: 875.30, change: 4.50, high: 880.00, low: 868.50 },
+          }
+          
+          const stock = stockData[symbol]
+          if (stock) {
+            const changeSign = stock.change >= 0 ? '+' : ''
+            const changeColor = stock.change >= 0 ? '32' : '31'
+            const escapeChar = String.fromCharCode(27)
+            output = [
+              `📈 ${symbol} - ${stock.name}`,
+              `╔══════════════════════════════════════╗`,
+              `║  当前价: $${stock.price.toFixed(2)}          ║`,
+              `║  涨跌额: ${escapeChar}[${changeColor}m${changeSign}${stock.change.toFixed(2)}${escapeChar}[0m        ║`,
+              `║  涨跌幅: ${escapeChar}[${changeColor}m${changeSign}${((stock.change / (stock.price - stock.change)) * 100).toFixed(2)}%${escapeChar}[0m    ║`,
+              `║  最高价: $${stock.high.toFixed(2)}          ║`,
+              `║  最低价: $${stock.low.toFixed(2)}          ║`,
+              `╚══════════════════════════════════════╝`,
+              ``,
+              `⏰ 数据更新时间: ${new Date().toLocaleTimeString('zh-CN')}`,
+              `💡 提示: 这是模拟数据，实时行情请使用专业财经软件`,
+            ].join('\n')
+          } else {
+            output = `stock: 未找到股票 "${symbol}"\n\n支持的股票: AAPL, GOOGL, MSFT, AMZN, TSLA, META, NVDA`
+          }
+        }
         break
       }
       case 'worldtime': {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store';
 
 interface Message {
@@ -366,13 +366,15 @@ function example() {
     setInput('');
     setIsTyping(true);
 
-    const delay = 800 + Math.floor(Math.random() * 1200);
-    setTimeout(() => {
+    const generateResponseAsync = useCallback(() => {
       const messageId = crypto.randomUUID();
       const aiResponse = generateResponse(input, messageId);
       setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);
-    }, delay);
+    }, [input]);
+    
+    const delay = 800 + Math.floor(Math.random() * 1200);
+    setTimeout(generateResponseAsync, delay);
   };
 
   const handleSuggestionClick = (suggestion: string) => {

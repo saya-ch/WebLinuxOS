@@ -157,7 +157,7 @@ const App = memo(function App() {
         toggleNotificationCenter()
         break
     }
-  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows, focusWindow])
+  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows])
 
   const matchesShortcut = useCallback((config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
     if (config.mod !== undefined && config.mod !== isMod) return false
