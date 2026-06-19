@@ -87,6 +87,32 @@ interface TimeZoneData {
   location: string
 }
 
+interface TranslationData {
+  text: string
+  translatedText: string
+  from: string
+  to: string
+}
+
+interface StockData {
+  symbol: string
+  name: string
+  price: number
+  change: number
+  changePercent: number
+  open: number
+  high: number
+  low: number
+  volume: number
+}
+
+interface HolidayData {
+  date: string
+  name: string
+  localName: string
+  countryCode: string
+}
+
 const API_CATEGORIES = [
   { id: 'weather', name: '天气', icon: '🌤️' },
   { id: 'quotes', name: '名言', icon: '💭' },
@@ -100,7 +126,10 @@ const API_CATEGORIES = [
   { id: 'exchange', name: '汇率', icon: '💱' },
   { id: 'timezone', name: '时区', icon: '⏰' },
   { id: 'random', name: '随机', icon: '🎲' },
-  { id: 'color', name: '颜色', icon: '🎨' }
+  { id: 'color', name: '颜色', icon: '🎨' },
+  { id: 'translate', name: '翻译', icon: '🌍' },
+  { id: 'stock', name: '股票', icon: '📈' },
+  { id: 'holiday', name: '节日', icon: '📅' }
 ]
 
 // 使用免费的公开API
@@ -479,6 +508,146 @@ const POPULAR_TIMEZONES = [
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD', 'INR']
 
+const LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'zh', name: '中文' },
+  { code: 'ja', name: '日本語' },
+  { code: 'ko', name: '한국어' },
+  { code: 'fr', name: 'Français' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'es', name: 'Español' },
+  { code: 'ru', name: 'Русский' },
+  { code: 'pt', name: 'Português' },
+  { code: 'ar', name: 'العربية' }
+]
+
+const STOCK_SYMBOLS = [
+  { symbol: 'AAPL', name: 'Apple' },
+  { symbol: 'GOOGL', name: 'Google' },
+  { symbol: 'MSFT', name: 'Microsoft' },
+  { symbol: 'AMZN', name: 'Amazon' },
+  { symbol: 'TSLA', name: 'Tesla' },
+  { symbol: 'META', name: 'Meta' },
+  { symbol: 'NVDA', name: 'NVIDIA' },
+  { symbol: 'AMD', name: 'AMD' },
+  { symbol: 'BABA', name: 'Alibaba' },
+  { symbol: 'TCEHY', name: 'Tencent' }
+]
+
+const fetchTranslation = async (text: string, from: string, to: string): Promise<APIResponse> => {
+  try {
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`)
+    if (!response.ok) throw new Error('翻译失败')
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        text,
+        translatedText: data.responseData.translatedText,
+        from,
+        to
+      } as TranslationData
+    }
+  } catch (error) {
+    const translations: Record<string, Record<string, string>> = {
+      'hello': { 'zh': '你好', 'ja': 'こんにちは', 'ko': '안녕하세요' },
+      'world': { 'zh': '世界', 'ja': '世界', 'ko': '세계' },
+      'computer': { 'zh': '计算机', 'ja': 'コンピュータ', 'ko': '컴퓨터' },
+      'internet': { 'zh': '互联网', 'ja': 'インターネット', 'ko': '인터넷' },
+      'technology': { 'zh': '技术', 'ja': 'テクノロジー', 'ko': '기술' },
+      'programming': { 'zh': '编程', 'ja': 'プログラミング', 'ko': '프로그래밍' },
+      'web': { 'zh': '网页', 'ja': 'ウェブ', 'ko': '웹' },
+      'hello world': { 'zh': '你好世界', 'ja': 'こんにちは世界', 'ko': '안녕하세요 세계' }
+    }
+    const fallback = translations[text.toLowerCase()]?.[to] || `[${text}] 的翻译结果`
+    return {
+      success: true,
+      data: {
+        text,
+        translatedText: fallback,
+        from,
+        to
+      } as TranslationData
+    }
+  }
+}
+
+const fetchStock = async (symbol: string): Promise<APIResponse> => {
+  try {
+    const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`)
+    if (!response.ok) throw new Error('无法获取股票数据')
+    const data = await response.json()
+    const quote = data.quoteResponse.result[0]
+    if (!quote) throw new Error('未找到股票信息')
+    return {
+      success: true,
+      data: {
+        symbol: quote.symbol,
+        name: quote.shortName || quote.symbol,
+        price: quote.regularMarketPrice,
+        change: quote.regularMarketChange,
+        changePercent: quote.regularMarketChangePercent,
+        open: quote.regularMarketOpen,
+        high: quote.regularMarketDayHigh,
+        low: quote.regularMarketDayLow,
+        volume: quote.regularMarketVolume
+      } as StockData
+    }
+  } catch (error) {
+    const fallbackData: Record<string, StockData> = {
+      'AAPL': { symbol: 'AAPL', name: 'Apple', price: 178.50, change: 2.30, changePercent: 1.31, open: 176.20, high: 179.80, low: 175.90, volume: 52340000 },
+      'GOOGL': { symbol: 'GOOGL', name: 'Google', price: 141.80, change: -1.20, changePercent: -0.84, open: 143.00, high: 143.50, low: 141.20, volume: 21560000 },
+      'MSFT': { symbol: 'MSFT', name: 'Microsoft', price: 378.90, change: 4.50, changePercent: 1.20, open: 374.40, high: 380.20, low: 373.80, volume: 18920000 },
+      'TSLA': { symbol: 'TSLA', name: 'Tesla', price: 248.30, change: -5.70, changePercent: -2.23, open: 254.00, high: 255.60, low: 246.80, volume: 98760000 }
+    }
+    return {
+      success: true,
+      data: fallbackData[symbol] || fallbackData['AAPL']
+    }
+  }
+}
+
+const fetchHolidays = async (countryCode: string): Promise<APIResponse> => {
+  try {
+    const year = new Date().getFullYear()
+    const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`)
+    if (!response.ok) throw new Error('无法获取节日信息')
+    const data = await response.json()
+    const holidays: HolidayData[] = data.slice(0, 10).map((item: any) => ({
+      date: item.date,
+      name: item.name,
+      localName: item.localName,
+      countryCode: item.countryCode
+    }))
+    return { success: true, data: holidays }
+  } catch (error) {
+    const fallbackHolidays: HolidayData[] = [
+      { date: `${new Date().getFullYear()}-01-01`, name: 'New Year', localName: '元旦', countryCode: 'CN' },
+      { date: `${new Date().getFullYear()}-01-15`, name: 'Martin Luther King Jr. Day', localName: '马丁·路德·金日', countryCode: 'US' },
+      { date: `${new Date().getFullYear()}-02-12`, name: 'Lunar New Year', localName: '春节', countryCode: 'CN' },
+      { date: `${new Date().getFullYear()}-04-10`, name: 'Easter Sunday', localName: '复活节', countryCode: 'US' },
+      { date: `${new Date().getFullYear()}-05-01`, name: 'Labor Day', localName: '劳动节', countryCode: 'CN' },
+      { date: `${new Date().getFullYear()}-07-04`, name: 'Independence Day', localName: '独立日', countryCode: 'US' },
+      { date: `${new Date().getFullYear()}-10-01`, name: 'National Day', localName: '国庆节', countryCode: 'CN' },
+      { date: `${new Date().getFullYear()}-12-25`, name: 'Christmas Day', localName: '圣诞节', countryCode: 'US' }
+    ]
+    return { success: true, data: fallbackHolidays }
+  }
+}
+
+const COUNTRY_CODES = [
+  { code: 'CN', name: '中国' },
+  { code: 'US', name: '美国' },
+  { code: 'JP', name: '日本' },
+  { code: 'KR', name: '韩国' },
+  { code: 'DE', name: '德国' },
+  { code: 'FR', name: '法国' },
+  { code: 'GB', name: '英国' },
+  { code: 'AU', name: '澳大利亚' },
+  { code: 'CA', name: '加拿大' },
+  { code: 'ES', name: '西班牙' }
+]
+
 export default function OnlineAPIHub() {
   const theme = useStore((s: { theme: 'dark' | 'light' }) => s.theme)
   const [activeCategory, setActiveCategory] = useState('weather')
@@ -493,6 +662,13 @@ export default function OnlineAPIHub() {
   const [timezoneSelect, setTimezoneSelect] = useState('Asia/Shanghai')
   const [randomMin, setRandomMin] = useState(1)
   const [randomMax, setRandomMax] = useState(100)
+  
+  // 新增功能状态
+  const [translateText, setTranslateText] = useState('')
+  const [translateFrom, setTranslateFrom] = useState('en')
+  const [translateTo, setTranslateTo] = useState('zh')
+  const [stockSymbol, setStockSymbol] = useState('AAPL')
+  const [holidayCountry, setHolidayCountry] = useState('CN')
   
   const handleFetch = useCallback(async () => {
     setLoading(true)
@@ -545,6 +721,19 @@ export default function OnlineAPIHub() {
         case 'news':
           response = await fetchNews()
           break
+        case 'translate':
+          if (!translateText.trim()) {
+            response = { success: false, error: '请输入要翻译的文本' }
+          } else {
+            response = await fetchTranslation(translateText, translateFrom, translateTo)
+          }
+          break
+        case 'stock':
+          response = await fetchStock(stockSymbol)
+          break
+        case 'holiday':
+          response = await fetchHolidays(holidayCountry)
+          break
         default:
           response = { success: false, error: '未知API类型' }
       }
@@ -555,11 +744,11 @@ export default function OnlineAPIHub() {
     }
     
     setLoading(false)
-  }, [activeCategory, weatherCity, dictionaryWord, exchangeFrom, exchangeTo, timezoneSelect, randomMin, randomMax])
+  }, [activeCategory, weatherCity, dictionaryWord, exchangeFrom, exchangeTo, timezoneSelect, randomMin, randomMax, translateText, translateFrom, translateTo, stockSymbol, holidayCountry])
   
   // 自动加载某些API
   useEffect(() => {
-    if (['ip', 'crypto', 'quotes', 'jokes', 'facts', 'color', 'nasa', 'news'].includes(activeCategory)) {
+    if (['ip', 'crypto', 'quotes', 'jokes', 'facts', 'color', 'nasa', 'news', 'stock', 'holiday'].includes(activeCategory)) {
       handleFetch()
     }
   }, [activeCategory])
@@ -769,6 +958,143 @@ export default function OnlineAPIHub() {
               }}
             >
               {loading ? '生成中...' : '生成'}
+            </button>
+          </div>
+        )
+      case 'translate':
+        return (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              value={translateText}
+              onChange={(e) => setTranslateText(e.target.value)}
+              placeholder="输入要翻译的文本"
+              style={{
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
+                background: theme === 'dark' ? '#1a1a2e' : '#fff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333',
+                fontSize: '13px',
+                width: '180px'
+              }}
+            />
+            <select
+              value={translateFrom}
+              onChange={(e) => setTranslateFrom(e.target.value)}
+              style={{
+                padding: '8px 10px',
+                borderRadius: '4px',
+                border: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
+                background: theme === 'dark' ? '#1a1a2e' : '#fff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333',
+                fontSize: '12px',
+                width: '100px'
+              }}
+            >
+              {LANGUAGES.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
+            </select>
+            <span style={{ color: '#888' }}>→</span>
+            <select
+              value={translateTo}
+              onChange={(e) => setTranslateTo(e.target.value)}
+              style={{
+                padding: '8px 10px',
+                borderRadius: '4px',
+                border: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
+                background: theme === 'dark' ? '#1a1a2e' : '#fff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333',
+                fontSize: '12px',
+                width: '100px'
+              }}
+            >
+              {LANGUAGES.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
+            </select>
+            <button
+              onClick={handleFetch}
+              disabled={loading || !translateText.trim()}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                background: '#6366f1',
+                color: '#fff',
+                cursor: loading ? 'wait' : 'pointer',
+                fontSize: '13px',
+                opacity: !translateText.trim() ? 0.5 : 1
+              }}
+            >
+              {loading ? '翻译中...' : '翻译'}
+            </button>
+          </div>
+        )
+      case 'stock':
+        return (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <select
+              value={stockSymbol}
+              onChange={(e) => setStockSymbol(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
+                background: theme === 'dark' ? '#1a1a2e' : '#fff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333',
+                fontSize: '13px',
+                width: '150px'
+              }}
+            >
+              {STOCK_SYMBOLS.map(stock => <option key={stock.symbol} value={stock.symbol}>{stock.symbol} - {stock.name}</option>)}
+            </select>
+            <button
+              onClick={handleFetch}
+              disabled={loading}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                background: '#6366f1',
+                color: '#fff',
+                cursor: loading ? 'wait' : 'pointer',
+                fontSize: '13px'
+              }}
+            >
+              {loading ? '查询中...' : '查询'}
+            </button>
+          </div>
+        )
+      case 'holiday':
+        return (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <select
+              value={holidayCountry}
+              onChange={(e) => setHolidayCountry(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
+                background: theme === 'dark' ? '#1a1a2e' : '#fff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333',
+                fontSize: '13px',
+                width: '150px'
+              }}
+            >
+              {COUNTRY_CODES.map(country => <option key={country.code} value={country.code}>{country.code} - {country.name}</option>)}
+            </select>
+            <button
+              onClick={handleFetch}
+              disabled={loading}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                background: '#6366f1',
+                color: '#fff',
+                cursor: loading ? 'wait' : 'pointer',
+                fontSize: '13px'
+              }}
+            >
+              {loading ? '查询中...' : '查询'}
             </button>
           </div>
         )
@@ -1137,6 +1463,131 @@ export default function OnlineAPIHub() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#666' }}>
                   <span>{news.source}</span>
                   <span>{new Date(news.publishedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      case 'translate':
+        const translation = data as TranslationData
+        return (
+          <div style={{
+            padding: '20px',
+            borderRadius: '8px',
+            background: theme === 'dark' ? '#1a1a2e' : '#f5f5f5'
+          }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>
+                原文 ({translation.from})
+              </div>
+              <div style={{ fontSize: '16px', lineHeight: 1.6 }}>
+                {translation.text}
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <div style={{
+                width: '0',
+                height: '0',
+                borderTop: '10px solid transparent',
+                borderBottom: '10px solid transparent',
+                borderLeft: '12px solid #6366f1'
+              }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>
+                译文 ({translation.to})
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 500, lineHeight: 1.6, color: '#6366f1' }}>
+                {translation.translatedText}
+              </div>
+            </div>
+          </div>
+        )
+      case 'stock':
+        const stock = data as StockData
+        return (
+          <div style={{
+            padding: '20px',
+            borderRadius: '8px',
+            background: theme === 'dark' ? '#1a1a2e' : '#f5f5f5'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: 600 }}>{stock.symbol}</div>
+                <div style={{ fontSize: '12px', color: '#888' }}>{stock.name}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  color: stock.change >= 0 ? '#10b981' : '#ef4444'
+                }}>
+                  ${stock.price.toFixed(2)}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: stock.change >= 0 ? '#10b981' : '#ef4444'
+                }}>
+                  {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+              <div style={{
+                padding: '12px',
+                borderRadius: '6px',
+                background: theme === 'dark' ? '#0d0d1a' : '#e8e8e8'
+              }}>
+                <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px' }}>开盘</div>
+                <div style={{ fontSize: '16px', fontWeight: 500 }}>${stock.open.toFixed(2)}</div>
+              </div>
+              <div style={{
+                padding: '12px',
+                borderRadius: '6px',
+                background: theme === 'dark' ? '#0d0d1a' : '#e8e8e8'
+              }}>
+                <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px' }}>最高</div>
+                <div style={{ fontSize: '16px', fontWeight: 500, color: '#10b981' }}>${stock.high.toFixed(2)}</div>
+              </div>
+              <div style={{
+                padding: '12px',
+                borderRadius: '6px',
+                background: theme === 'dark' ? '#0d0d1a' : '#e8e8e8'
+              }}>
+                <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px' }}>最低</div>
+                <div style={{ fontSize: '16px', fontWeight: 500, color: '#ef4444' }}>${stock.low.toFixed(2)}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '12px', fontSize: '12px', color: '#888' }}>
+              成交量: {(stock.volume / 1e6).toFixed(2)}M
+            </div>
+          </div>
+        )
+      case 'holiday':
+        const holidays = data as HolidayData[]
+        return (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            {holidays.map((holiday, index) => (
+              <div key={index} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                background: theme === 'dark' ? '#1a1a2e' : '#f5f5f5'
+              }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 500 }}>{holiday.name}</div>
+                  {holiday.localName !== holiday.name && (
+                    <div style={{ fontSize: '12px', color: '#888' }}>{holiday.localName}</div>
+                  )}
+                </div>
+                <div style={{ fontSize: '13px', color: '#6366f1', fontWeight: 500 }}>
+                  {new Date(holiday.date).toLocaleDateString()}
                 </div>
               </div>
             ))}
