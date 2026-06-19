@@ -51,18 +51,23 @@ const SystemMonitor = memo(function SystemMonitor() {
       const cpuDelta = (Math.random() - 0.5) * 10
       const memoryDelta = (Math.random() - 0.5) * 5
       
-      setSystemInfo(prev => ({
-        ...prev,
-        cpuUsage: Math.max(5, Math.min(95, prev.cpuUsage + cpuDelta)),
-        memoryUsage: Math.max(20, Math.min(90, prev.memoryUsage + memoryDelta)),
-        fps: Math.floor(55 + Math.random() * 10)
-      }))
-      
-      // 更新历史数据
-      setHistoryData(prev => ({
-        cpu: [...prev.cpu.slice(-30), systemInfo.cpuUsage],
-        memory: [...prev.memory.slice(-30), systemInfo.memoryUsage]
-      }))
+      setSystemInfo(prev => {
+        const newCpuUsage = Math.max(5, Math.min(95, prev.cpuUsage + cpuDelta))
+        const newMemoryUsage = Math.max(20, Math.min(90, prev.memoryUsage + memoryDelta))
+        
+        // 在setSystemInfo回调中同时更新历史数据
+        setHistoryData(hPrev => ({
+          cpu: [...hPrev.cpu.slice(-30), newCpuUsage],
+          memory: [...hPrev.memory.slice(-30), newMemoryUsage]
+        }))
+        
+        return {
+          ...prev,
+          cpuUsage: newCpuUsage,
+          memoryUsage: newMemoryUsage,
+          fps: Math.floor(55 + Math.random() * 10)
+        }
+      })
       
       // 更新进程数据
       setProcesses(prev => prev.map(p => ({
@@ -73,7 +78,7 @@ const SystemMonitor = memo(function SystemMonitor() {
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [systemInfo.cpuUsage, systemInfo.memoryUsage])
+  }, [])
   
   const getUsageColor = useCallback((usage: number) => {
     if (usage < 50) return '#22c55e'
