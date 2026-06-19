@@ -947,6 +947,19 @@ function SpaceExplorerIcon() {
   )
 }
 
+function QuickNotesProIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <line x1="10" y1="9" x2="8" y2="9" />
+      <circle cx="18" cy="18" r="3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 function ChinesePoetryIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1177,4 +1190,5 @@ export const appRegistry: AppDefinition[] = [
   { id: 'knowledge-cards', name: '知识卡片记忆', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="17" x2="22" y2="17"/><line x1="8" y1="21" x2="16" y2="21"/><circle cx="12" cy="10" r="2" fill="currentColor" stroke="none"/></svg>, component: 'KnowledgeCards', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 750, minHeight: 550, resizable: true, multiple: false },
   { id: 'space-explorer-pro', name: '太空探索专业版', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2a10 10 0 0 1 0 20M2 12h20"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>, component: 'SpaceExplorerPro', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 850, minHeight: 650, resizable: true, multiple: false },
   { id: 'css-toolbox', name: 'CSS 工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M4 4h16l-2 16H6L4 4z"/><path d="M8 10h8M8 14h8"/></svg>, component: 'CSSToolbox', category: 'development', defaultWidth: 1250, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
+  { id: 'quick-notes-pro', name: '便签专业版', icon: <QuickNotesProIcon />, component: 'QuickNotesPro', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
 ]
