@@ -1,423 +1,433 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useStore } from '../store'
 
-interface IPLocation {
+// ==================== 类型定义 ====================
+interface IPInfoData {
   ip: string
-  country: string
-  countryCode: string
-  region: string
-  regionName: string
-  city: string
-  zip: string
-  lat: number
-  lon: number
-  timezone: string
-  isp: string
-  org: string
-  as: string
+  city?: string
+  region?: string
+  country?: string
+  country_name?: string
+  continent_code?: string
+  timezone?: string
+  latitude?: number
+  longitude?: number
+  isp?: string
+  org?: string
+  asn?: string
+  postal?: string
+  currency?: string
+  utc_offset?: string
 }
 
-interface IPInfo {
-  location: IPLocation | null
-  ispInfo: { name: string; type: string; domain: string } | null
-  security: { isProxy: boolean; isVPN: boolean; isTor: boolean } | null
-  error: string | null
+// ==================== 常量 ====================
+// 首选 ipapi.co（无需 key，CORS 友好）；错误时可回退到 ip-api.com
+const PRIMARY_API = 'https://ipapi.co'
+const FALLBACK_API = 'http://ip-api.com/json'
+
+// ==================== 工具函数 ====================
+function validateIP(ip: string): boolean {
+  // IPv4
+  const v4 = /^(25[0-5]|2[0-4]\d|[01]?\d?\d)(\.(25[0-5]|2[0-4]\d|[01]?\d?\d)){3}$/
+  // IPv6 (简化校验)
+  const v6 = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/
+  return v4.test(ip.trim()) || v6.test(ip.trim())
 }
 
-const IPLookup = memo(function IPLookup() {
-  const [inputIP, setInputIP] = useState('')
-  const [ipInfo, setIpInfo] = useState<IPInfo>({
-    location: null,
-    ispInfo: null,
-    security: null,
-    error: null
-  })
-  const [loading, setLoading] = useState(false)
+function flagFromCountry(code?: string): string {
+  if (!code || code.length !== 2) return '🌍'
+  const A = 0x1f1e6
+  const chars = code.toUpperCase().split('').map((c) => A + c.charCodeAt(0) - 'A'.charCodeAt(0))
+  return String.fromCodePoint(...chars)
+}
+
+// ==================== 主组件 ====================
+export default function IPLookup() {
+  const [input, setInput] = useState<string>('')
+  const [data, setData] = useState<IPInfoData | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<string[]>([])
-  const [myIP, setMyIP] = useState<string>('')
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [source, setSource] = useState<string>('')
 
-  const fetchIPInfo = useCallback(async (ip: string) => {
-    if (!ip.trim()) return
+  const addNotification = useStore((s) => s.addNotification)
+
+  // ========== 从 localStorage 载入历史 ==========
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('weblinux-ip-history')
+      if (raw) setHistory(JSON.parse(raw))
+    } catch { /* 忽略 */ }
+  }, [])
+
+  // ========== 保存历史 ==========
+  const saveHistory = useCallback((next: string[]) => {
+    try {
+      localStorage.setItem('weblinux-ip-history', JSON.stringify(next))
+    } catch { /* 忽略 */ }
+  }, [])
+
+  // ========== 查询 IP 信息 ==========
+  const queryIP = useCallback(async (ip?: string) => {
+    const target = (ip ?? input).trim()
+
+    // 如果输入非空且非有效 IP，提示错误
+    if (target && !validateIP(target)) {
+      setError('请输入有效的 IPv4 / IPv6 地址')
+      setData(null)
+      return
+    }
 
     setLoading(true)
-    setIpInfo({ location: null, ispInfo: null, security: null, error: null })
+    setError(null)
+    setData(null)
 
     try {
-      const response = await fetch(`https://ip-api.com/json/${encodeURIComponent(ip.trim())}`)
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+      // 优先使用 ipapi.co
+      const endpoint = target ? `${PRIMARY_API}/${encodeURIComponent(target)}/json/` : `${PRIMARY_API}/json/`
+      let res = await fetch(endpoint)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      let body: any = await res.json()
+
+      // ipapi.co 在某些情况下返回 { error: true, reason: 'reserved range' }
+      if (body && body.error) {
+        throw new Error(body.reason || 'IP 查询失败')
+      }
+      if (!body || !body.ip) {
+        throw new Error('返回数据无效')
       }
 
-      const data = await response.json()
-
-      if (data.status === 'fail') {
-        throw new Error(data.message || '无法获取IP信息')
+      setSource('ipapi.co')
+      const info: IPInfoData = {
+        ip: body.ip,
+        city: body.city,
+        region: body.region,
+        country: body.country,
+        country_name: body.country_name,
+        continent_code: body.continent_code,
+        timezone: body.timezone,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        isp: body.org || body.isp,
+        org: body.org,
+        asn: body.asn,
+        postal: body.postal,
+        currency: body.currency,
+        utc_offset: body.utc_offset,
       }
+      setData(info)
+      setLastUpdated(new Date())
 
-      const location: IPLocation = {
-        ip: data.query,
-        country: data.country || '未知',
-        countryCode: data.countryCode || '',
-        region: data.region || '',
-        regionName: data.regionName || '未知',
-        city: data.city || '未知',
-        zip: data.zip || '',
-        lat: data.lat || 0,
-        lon: data.lon || 0,
-        timezone: data.timezone || '',
-        isp: data.isp || '',
-        org: data.org || '',
-        as: data.as || ''
+      // 加入历史（去重，最多保留 10 条）
+      if (info.ip) {
+        setHistory((prev) => {
+          const next = [info.ip, ...prev.filter((h) => h !== info.ip)].slice(0, 10)
+          saveHistory(next)
+          return next
+        })
       }
-
-      const ispInfo = {
-        name: data.isp || '未知',
-        type: data.org || '未知',
-        domain: ''
+    } catch (primaryErr) {
+      // 尝试回退到 ip-api.com（需要注意其在 HTTPS 下不可用）
+      try {
+        const endpoint = target ? `${FALLBACK_API}/${encodeURIComponent(target)}` : FALLBACK_API
+        const res = await fetch(endpoint)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const body: any = await res.json()
+        if (body.status !== 'success') {
+          throw new Error(body.message || '查询失败')
+        }
+        setSource('ip-api.com')
+        const info: IPInfoData = {
+          ip: body.query,
+          city: body.city,
+          region: body.regionName,
+          country: body.countryCode,
+          country_name: body.country,
+          continent_code: body.continent,
+          timezone: body.timezone,
+          latitude: body.lat,
+          longitude: body.lon,
+          isp: body.isp,
+          org: body.org,
+          asn: body.as,
+          postal: body.zip,
+          currency: undefined,
+          utc_offset: undefined,
+        }
+        setData(info)
+        setLastUpdated(new Date())
+        if (info.ip) {
+          setHistory((prev) => {
+            const next = [info.ip, ...prev.filter((h) => h !== info.ip)].slice(0, 10)
+            saveHistory(next)
+            return next
+          })
+        }
+      } catch (fallbackErr) {
+        const msg = primaryErr instanceof Error ? primaryErr.message : '请求失败'
+        setError(`IP 信息查询失败：${msg}`)
+        addNotification({ title: 'IP 查询', message: 'IP 信息查询失败', type: 'error' })
       }
-
-      const security = {
-        isProxy: data.proxy || false,
-        isVPN: false,
-        isTor: false
-      }
-
-      setIpInfo({ location, ispInfo, security, error: null })
-
-      setHistory(prev => {
-        const newHistory = [ip.trim(), ...prev.filter(h => h !== ip.trim())].slice(0, 10)
-        try {
-          localStorage.setItem('weblinux-ip-history', JSON.stringify(newHistory))
-        } catch { /* ignore */ }
-        return newHistory
-      })
-    } catch (err) {
-      console.error('IP lookup error:', err)
-      setIpInfo({
-        location: null,
-        ispInfo: null,
-        security: null,
-        error: err instanceof Error ? err.message : '查询失败'
-      })
     } finally {
       setLoading(false)
     }
+  }, [input, addNotification, saveHistory])
+
+  // 页面加载时自动查询当前 IP
+  useEffect(() => {
+    queryIP('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const fetchMyIP = useCallback(async () => {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json')
-      if (!response.ok) throw new Error('获取失败')
-      const data = await response.json()
-      setMyIP(data.ip)
-      fetchIPInfo(data.ip)
-    } catch {
-      console.warn('无法获取当前IP')
-    }
-  }, [fetchIPInfo])
-
-  useEffect(() => {
-    fetchMyIP()
-    try {
-      const saved = localStorage.getItem('weblinux-ip-history')
-      if (saved) {
-        setHistory(JSON.parse(saved))
-      }
-    } catch { /* ignore */ }
-  }, [fetchMyIP])
-
-  const getCountryFlag = (code: string): string => {
-    const flagMap: Record<string, string> = {
-      'CN': '🇨🇳', 'US': '🇺🇸', 'JP': '🇯🇵', 'KR': '🇰🇷', 'GB': '🇬🇧',
-      'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸', 'CA': '🇨🇦',
-      'AU': '🇦🇺', 'RU': '🇷🇺', 'IN': '🇮🇳', 'BR': '🇧🇷', 'MX': '🇲🇽',
-      'SG': '🇸🇬', 'HK': '🇭🇰', 'TW': '🇹🇼', 'TH': '🇹🇭', 'VN': '🇻🇳'
-    }
-    return flagMap[code] || '🌍'
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
+  // IP 输入框回车触发查询
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    fetchIPInfo(inputIP)
+    queryIP()
   }
+
+  // 复制到剪贴板
+  const copyToClipboard = useCallback((text: string, label: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(
+          () => addNotification({ title: 'IP 查询', message: `${label} 已复制`, type: 'success' }),
+          () => addNotification({ title: 'IP 查询', message: '复制失败', type: 'error' })
+        )
+      } else {
+        // 回退方案
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.top = '-1000px'
+        document.body.appendChild(ta)
+        ta.select()
+        try {
+          const success = document.execCommand('copy')
+          if (success) {
+            addNotification({ title: 'IP 查询', message: `${label} 已复制`, type: 'success' })
+          } else {
+            addNotification({ title: 'IP 查询', message: '复制失败', type: 'error' })
+          }
+        } finally {
+          document.body.removeChild(ta)
+        }
+      }
+    } catch {
+      addNotification({ title: 'IP 查询', message: '复制失败', type: 'error' })
+    }
+  }, [addNotification])
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-      padding: '20px',
-      overflow: 'auto'
-    }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ fontSize: '36px', marginBottom: '8px' }}>🌐</div>
-        <h2 style={{ margin: 0, color: '#fff', fontSize: '20px', fontWeight: '600' }}>IP & DNS 查询工具</h2>
-        <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>查询IP地址的详细信息</p>
-      </div>
+    <div className="app-shell" style={{ height: '100%', overflowY: 'auto', padding: 16, background: 'linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)', color: '#fff' }}>
+      {/* 顶部标题 */}
+      <div className="app-card" style={{ padding: 16, marginBottom: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(124, 108, 240, 0.15))', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{ fontSize: 28 }}>🌐</div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>IP 地理位置查询</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+              数据来源：{source || 'ipapi.co'}
+              {lastUpdated && ` · 更新于 ${lastUpdated.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`}
+            </div>
+          </div>
+        </div>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        {/* 查询表单 */}
+        <form onSubmit={onSubmit} style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <input
+            className="app-input"
             type="text"
-            value={inputIP}
-            onChange={(e) => setInputIP(e.target.value)}
-            placeholder="输入IP地址（如 8.8.8.8）"
-            style={{
-              flex: 1,
-              padding: '14px 18px',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: '#fff',
-              fontSize: '14px',
-              outline: 'none'
-            }}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="输入 IP 地址（留空查询当前 IP）"
+            style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 14, outline: 'none' }}
           />
           <button
+            className="app-button-primary"
             type="submit"
             disabled={loading}
-            style={{
-              padding: '14px 24px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              border: 'none',
-              color: '#fff',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              opacity: loading ? 0.6 : 1
-            }}
+            style={{ padding: '10px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #3b82f6, #7c6cf0)', color: '#fff', border: 'none', cursor: loading ? 'wait' : 'pointer', fontSize: 13, fontWeight: 600 }}
           >
             {loading ? '查询中...' : '🔍 查询'}
           </button>
-        </div>
-      </form>
+        </form>
 
-      <div style={{ marginBottom: '24px' }}>
-        <button
-          onClick={fetchMyIP}
-          style={{
-            width: '100%',
-            padding: '12px',
-            borderRadius: '10px',
-            background: 'rgba(59, 130, 246, 0.1)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            color: '#60a5fa',
-            cursor: 'pointer',
-            fontSize: '13px'
-          }}
-        >
-          🌍 查询我的IP地址
-        </button>
-      </div>
-
-      {history.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>历史记录：</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {history.map((ip, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setInputIP(ip)
-                  fetchIPInfo(ip)
-                }}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#cbd5e1',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                {ip}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {loading && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          borderRadius: '16px',
-          padding: '40px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-          <div style={{ color: '#94a3b8', fontSize: '16px' }}>正在查询...</div>
-        </div>
-      )}
-
-      {!loading && ipInfo.error && (
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.1)',
-          borderRadius: '16px',
-          padding: '24px',
-          textAlign: 'center',
-          border: '1px solid rgba(239, 68, 68, 0.3)'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
-          <div style={{ color: '#ef4444', fontSize: '14px' }}>{ipInfo.error}</div>
-        </div>
-      )}
-
-      {!loading && !ipInfo.error && ipInfo.location && (
-        <div>
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
-            borderRadius: '16px',
-            padding: '20px',
-            marginBottom: '20px',
-            border: '1px solid rgba(59, 130, 246, 0.3)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ fontSize: '48px' }}>{getCountryFlag(ipInfo.location.countryCode)}</div>
-              <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>
-                  {ipInfo.location.ip}
-                </div>
-                <div style={{ fontSize: '14px', color: '#94a3b8' }}>
-                  {ipInfo.location.city}, {ipInfo.location.regionName}, {ipInfo.location.country}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>📍 地理位置</div>
-              <div style={{ fontSize: '14px', color: '#fff' }}>
-                <div>城市: {ipInfo.location.city}</div>
-                <div>地区: {ipInfo.location.regionName}</div>
-                <div>国家: {ipInfo.location.country} {getCountryFlag(ipInfo.location.countryCode)}</div>
-                <div>邮编: {ipInfo.location.zip || '-'}</div>
-              </div>
-            </div>
-
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>🌍 坐标信息</div>
-              <div style={{ fontSize: '14px', color: '#fff' }}>
-                <div>纬度: {ipInfo.location.lat.toFixed(4)}</div>
-                <div>经度: {ipInfo.location.lon.toFixed(4)}</div>
-                <div>时区: {ipInfo.location.timezone || '-'}</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>📡 ISP信息</div>
-              <div style={{ fontSize: '14px', color: '#fff' }}>
-                <div>ISP: {ipInfo.location.isp || '-'}</div>
-                <div>组织: {ipInfo.location.org || '-'}</div>
-                <div>AS号: {ipInfo.location.as || '-'}</div>
-              </div>
-            </div>
-
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>🛡️ 安全状态</div>
-              <div style={{ fontSize: '14px', color: '#fff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>{ipInfo.security?.isProxy ? '⚠️' : '✅'}</span>
-                  <span>{ipInfo.security?.isProxy ? '代理服务器' : '普通IP'}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>{ipInfo.security?.isVPN ? '⚠️' : '✅'}</span>
-                  <span>{ipInfo.security?.isVPN ? 'VPN' : '非VPN'}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>{ipInfo.security?.isTor ? '⚠️' : '✅'}</span>
-                  <span>{ipInfo.security?.isTor ? 'Tor网络' : '非Tor'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {ipInfo.location.lat !== 0 && (
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>🗺️ 地图链接</div>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${ipInfo.location.lat},${ipInfo.location.lon}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  background: 'rgba(59, 130, 246, 0.2)',
-                  color: '#60a5fa',
-                  textDecoration: 'none',
-                  fontSize: '13px'
-                }}
-              >
-                在地图上查看位置
-              </a>
-            </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, alignItems: 'center' }}>
+          <button
+            className="app-button"
+            onClick={() => { setInput(''); queryIP('') }}
+            disabled={loading}
+            style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid rgba(59, 130, 246, 0.4)', background: 'rgba(59, 130, 246, 0.12)', color: '#93c5fd', cursor: loading ? 'wait' : 'pointer', fontSize: 12 }}
+          >
+            查询当前 IP
+          </button>
+          {input && (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+              {validateIP(input) ? '✓ 格式有效' : '✗ 格式不正确'}
+            </span>
           )}
         </div>
+      </div>
+
+      {/* 历史记录 */}
+      {history.length > 0 && (
+        <div className="app-card" style={{ padding: 12, marginBottom: 14, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 8 }}>历史记录：</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {history.map((h) => (
+              <button
+                key={h}
+                className="chip"
+                onClick={() => { setInput(h); queryIP(h) }}
+                style={{ padding: '5px 12px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, fontFamily: 'monospace' }}
+              >
+                {h}
+              </button>
+            ))}
+            <button
+              className="app-button"
+              onClick={() => { setHistory([]); saveHistory([]) }}
+              style={{ padding: '5px 10px', borderRadius: 14, background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#fca5a5', cursor: 'pointer', fontSize: 11 }}
+            >
+              清空
+            </button>
+          </div>
+        </div>
       )}
 
-      {!loading && !ipInfo.error && !ipInfo.location && myIP && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          borderRadius: '16px',
-          padding: '32px',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.05)'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌐</div>
-          <div style={{ color: '#94a3b8', fontSize: '16px', marginBottom: '8px' }}>您的IP地址</div>
-          <div style={{ color: '#fff', fontSize: '24px', fontWeight: '600' }}>{myIP}</div>
-          <button
-            onClick={() => {
-              setInputIP(myIP)
-              fetchIPInfo(myIP)
-            }}
-            style={{
-              marginTop: '16px',
-              padding: '10px 24px',
-              borderRadius: '10px',
-              background: 'rgba(59, 130, 246, 0.2)',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
-              color: '#60a5fa',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
-          >
-            查询详细信息
-          </button>
+      {/* 错误提示 */}
+      {error && !loading && (
+        <div className="app-card" style={{ padding: 12, marginBottom: 14, borderRadius: 10, background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5', fontSize: 13 }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Loading 状态 */}
+      {loading && (
+        <div className="app-card" style={{ padding: 28, textAlign: 'center', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: 36, marginBottom: 8, animation: 'spin 1.2s linear infinite' }}>🔍</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>正在查询 IP 信息...</div>
+        </div>
+      )}
+
+      {/* 数据展示 */}
+      {data && !loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* 头部：IP + 国旗 */}
+          <div className="app-card" style={{ padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(124, 108, 240, 0.12))', border: '1px solid rgba(59, 130, 246, 0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ fontSize: 44 }}>{flagFromCountry(data.country)}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', fontFamily: 'monospace', letterSpacing: 0.5 }}>{data.ip}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
+                  {[data.city, data.region, data.country_name || data.country].filter(Boolean).join(' · ')}
+                </div>
+              </div>
+              <button
+                className="app-button"
+                onClick={() => copyToClipboard(data.ip, 'IP 地址')}
+                style={{ padding: '6px 12px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', cursor: 'pointer', fontSize: 12 }}
+              >
+                复制 IP
+              </button>
+            </div>
+          </div>
+
+          {/* 详细信息网格 */}
+          <div className="grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+            <InfoCell icon="🏙️" label="城市" value={data.city} onCopy={() => copyToClipboard(data.city || '', '城市')} />
+            <InfoCell icon="📍" label="行政区 / 州" value={data.region} onCopy={() => copyToClipboard(data.region || '', '行政区')} />
+            <InfoCell icon="🏳️" label="国家" value={data.country_name || data.country} onCopy={() => copyToClipboard(data.country_name || data.country || '', '国家')} />
+            <InfoCell icon="🌍" label="大洲" value={data.continent_code} onCopy={() => copyToClipboard(data.continent_code || '', '大洲')} />
+            <InfoCell icon="🕐" label="时区" value={data.timezone} onCopy={() => copyToClipboard(data.timezone || '', '时区')} />
+            <InfoCell icon="💰" label="货币代码" value={data.currency} onCopy={() => copyToClipboard(data.currency || '', '货币')} />
+            <InfoCell icon="🌐" label="UTC 偏移" value={data.utc_offset} onCopy={() => copyToClipboard(data.utc_offset || '', 'UTC 偏移')} />
+            <InfoCell icon="📮" label="邮政编码" value={data.postal} onCopy={() => copyToClipboard(data.postal || '', '邮政编码')} />
+            <InfoCell icon="📡" label="ISP（运营商）" value={data.isp} onCopy={() => copyToClipboard(data.isp || '', 'ISP')} />
+            <InfoCell icon="🏢" label="组织" value={data.org} onCopy={() => copyToClipboard(data.org || '', '组织')} />
+            <InfoCell icon="🔢" label="ASN" value={data.asn} onCopy={() => copyToClipboard(data.asn || '', 'ASN')} />
+          </div>
+
+          {/* 经纬度 + 地图链接 */}
+          <div className="app-card" style={{ padding: 14, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', marginBottom: 8 }}>📍 坐标信息</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div
+                onClick={() => copyToClipboard(String(data.latitude ?? ''), '纬度')}
+                style={{ padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', cursor: 'pointer', fontSize: 13, fontFamily: 'monospace' }}
+              >
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>纬度 Latitude</div>
+                {data.latitude !== undefined && data.latitude !== null ? data.latitude.toFixed(4) : '—'}
+              </div>
+              <div
+                onClick={() => copyToClipboard(String(data.longitude ?? ''), '经度')}
+                style={{ padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', cursor: 'pointer', fontSize: 13, fontFamily: 'monospace' }}
+              >
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>经度 Longitude</div>
+                {data.longitude !== undefined && data.longitude !== null ? data.longitude.toFixed(4) : '—'}
+              </div>
+            </div>
+            {data.latitude !== undefined && data.longitude !== undefined && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${data.latitude},${data.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-block', marginTop: 12, padding: '7px 14px', borderRadius: 14, background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.4)', color: '#93c5fd', fontSize: 12, textDecoration: 'none' }}
+              >
+                🗺️ 在 Google Maps 中查看
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 空状态 */}
+      {!data && !loading && !error && (
+        <div style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.55)' }}>
+          <div style={{ fontSize: 40, marginBottom: 8 }}>🌐</div>
+          <div style={{ fontSize: 14 }}>输入 IP 地址后点击查询，或直接查询当前 IP</div>
         </div>
       )}
     </div>
   )
-})
+}
 
-export default IPLookup
+// 信息单元格子组件
+function InfoCell({ icon, label, value, onCopy }: { icon: string; label: string; value?: string; onCopy?: () => void }) {
+  const [copied, setCopied] = useState(false)
+  const handleClick = () => {
+    if (!value) return
+    onCopy?.()
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1000)
+  }
+  return (
+    <div
+      onClick={handleClick}
+      className="app-card"
+      style={{
+        padding: 12,
+        borderRadius: 10,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        cursor: value ? 'pointer' : 'default',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => { if (value) e.currentTarget.style.background = 'rgba(255,255,255,0.075)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+    >
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+        {icon} {label}
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', minHeight: 20, wordBreak: 'break-all' }}>
+        {value || '—'}
+      </div>
+      {value && (
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+          {copied ? '✓ 已复制' : '点击复制'}
+        </div>
+      )}
+    </div>
+  )
+}

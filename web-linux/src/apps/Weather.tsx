@@ -1,1027 +1,488 @@
 import { useState, useEffect, useCallback, memo } from 'react'
+import { useStore } from '../store'
 
-interface WeatherData {
+// ==================== 类型定义 ====================
+interface CurrentWeather {
   temperature: number
-  humidity: number
-  weather: string
+  apparentTemperature: number
+  relativeHumidity: number
   windSpeed: number
-  uvIndex: number
-  feelsLike: number
+  windDirection: number
   pressure: number
-  visibility: number
-  forecast: ForecastDay[]
-  hourlyForecast: HourlyForecast[]
-  alerts: WeatherAlert[]
-  airQuality?: AirQuality
-  sunInfo?: SunInfo
+  weatherCode: number
 }
 
-interface AirQuality {
-  aqi: number
-  category: string
-  pm25: number
-  pm10: number
-  o3: number
-  no2: number
-}
-
-interface SunInfo {
-  sunrise: string
-  sunset: string
-  dayLength: string
-}
-
-interface ForecastDay {
-  day: string
+interface DailyForecast {
   date: string
-  high: number
-  low: number
-  condition: string
-  icon: string
-  precipitation: number
+  temperatureMax: number
+  temperatureMin: number
+  weatherCode: number
 }
 
-interface HourlyForecast {
-  time: string
-  temp: number
-  icon: string
-  precipitation: number
-}
-
-interface WeatherAlert {
-  title: string
-  description: string
-  severity: 'low' | 'medium' | 'high'
-}
-
-const weatherConditions: Record<string, { icon: string; description: string }> = {
-  'clear': { icon: '☀️', description: '晴朗' },
-  'sunny': { icon: '🌤️', description: '晴' },
-  'partly-cloudy': { icon: '⛅', description: '多云' },
-  'cloudy': { icon: '☁️', description: '阴天' },
-  'overcast': { icon: '🌥️', description: '阴' },
-  'rain': { icon: '🌧️', description: '雨' },
-  'light-rain': { icon: '🌦️', description: '小雨' },
-  'heavy-rain': { icon: '⛈️', description: '大雨' },
-  'thunderstorm': { icon: '⛈️', description: '雷暴' },
-  'snow': { icon: '🌨️', description: '雪' },
-  'fog': { icon: '🌫️', description: '雾' },
-  'wind': { icon: '💨', description: '大风' },
-}
-
-const popularCities = [
-  { name: '北京', country: '中国', lat: 39.9042, lon: 116.4074 },
-  { name: '上海', country: '中国', lat: 31.2304, lon: 121.4737 },
-  { name: '深圳', country: '中国', lat: 22.5431, lon: 114.0579 },
-  { name: '广州', country: '中国', lat: 23.1291, lon: 113.2644 },
-  { name: '成都', country: '中国', lat: 30.5728, lon: 104.0668 },
-  { name: '杭州', country: '中国', lat: 30.2741, lon: 120.1551 },
-  { name: '武汉', country: '中国', lat: 30.5928, lon: 114.3055 },
-  { name: '西安', country: '中国', lat: 34.3416, lon: 108.9398 },
-  { name: '东京', country: '日本', lat: 35.6762, lon: 139.6503 },
-  { name: '首尔', country: '韩国', lat: 37.5665, lon: 126.9780 },
-  { name: '新加坡', country: '新加坡', lat: 1.3521, lon: 103.8198 },
-  { name: '曼谷', country: '泰国', lat: 13.7563, lon: 100.5018 },
-  { name: '纽约', country: '美国', lat: 40.7128, lon: -74.0060 },
-  { name: '洛杉矶', country: '美国', lat: 34.0522, lon: -118.2437 },
-  { name: '旧金山', country: '美国', lat: 37.7749, lon: -122.4194 },
-  { name: '伦敦', country: '英国', lat: 51.5074, lon: -0.1278 },
-  { name: '巴黎', country: '法国', lat: 48.8566, lon: 2.3522 },
-  { name: '柏林', country: '德国', lat: 52.5200, lon: 13.4050 },
-  { name: '悉尼', country: '澳大利亚', lat: -33.8688, lon: 151.2093 },
-  { name: '迪拜', country: '阿联酋', lat: 25.2048, lon: 55.2708 },
-  { name: '孟买', country: '印度', lat: 19.0760, lon: 72.8777 },
-]
-
-const FALLBACK_WEATHER: WeatherData = {
-  temperature: 22,
-  humidity: 65,
-  weather: 'partly-cloudy',
-  windSpeed: 12,
-  uvIndex: 5,
-  feelsLike: 24,
-  pressure: 1013,
-  visibility: 10,
-  forecast: [
-    { day: '今天', date: '', high: 26, low: 18, condition: 'partly-cloudy', icon: '⛅', precipitation: 10 },
-    { day: '明天', date: '', high: 28, low: 20, condition: 'sunny', icon: '☀️', precipitation: 5 },
-    { day: '周三', date: '', high: 25, low: 19, condition: 'rain', icon: '🌧️', precipitation: 70 },
-    { day: '周四', date: '', high: 23, low: 17, condition: 'cloudy', icon: '☁️', precipitation: 30 },
-    { day: '周五', date: '', high: 27, low: 20, condition: 'sunny', icon: '☀️', precipitation: 0 },
-    { day: '周六', date: '', high: 29, low: 21, condition: 'clear', icon: '☀️', precipitation: 0 },
-    { day: '周日', date: '', high: 28, low: 20, condition: 'partly-cloudy', icon: '⛅', precipitation: 15 },
-  ],
-  hourlyForecast: Array.from({ length: 24 }, (_, i) => ({
-    time: `${i}:00`,
-    temp: 20 + Math.sin(i / 24 * Math.PI) * 8,
-    icon: i >= 6 && i <= 18 ? '☀️' : '🌙',
-    precipitation: Math.floor(Math.random() * 30),
-  })),
-  alerts: [],
-  airQuality: { aqi: 58, category: '良', pm25: 32, pm10: 48, o3: 62, no2: 25 },
-  sunInfo: { sunrise: '06:12', sunset: '19:45', dayLength: '13小时33分钟' },
-}
-
-function getCachedWeather(cityKey: string): WeatherData | null {
-  try {
-    const raw = localStorage.getItem(`weather-cache-${cityKey}`)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    const age = Date.now() - parsed.timestamp
-    if (age < 10 * 60 * 1000) { // 10 分钟缓存
-      return parsed.data
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-function setCachedWeather(cityKey: string, data: WeatherData) {
-  try {
-    localStorage.setItem(`weather-cache-${cityKey}`, JSON.stringify({
-      timestamp: Date.now(),
-      data
-    }))
-  } catch {
-    // ignore storage errors
-  }
-}
-
-function generateSmartAdvice(weather: WeatherData): string[] {
-  const advice: string[] = []
-  const temp = weather.temperature
-  const condition = weather.weather
-
-  // 温度建议
-  if (temp >= 30) advice.push('🔥 天气炎热，建议穿轻便衣物并多喝水')
-  else if (temp >= 25) advice.push('☀️ 温暖舒适，适合户外活动')
-  else if (temp >= 15) advice.push('👕 气温适中，建议穿薄外套或长袖')
-  else if (temp >= 5) advice.push('🧥 天气较冷，建议穿厚外套保暖')
-  else advice.push('❄️ 寒冷天气，请注意保暖和防风')
-
-  // 天气条件建议
-  if (condition.includes('rain') || condition.includes('storm')) advice.push('☔ 记得带伞，注意防雨')
-  if (condition.includes('snow')) advice.push('⛄ 下雪天气，请注意防滑保暖')
-  if (condition.includes('fog')) advice.push('🌫️ 有雾，能见度较低，请小心')
-  if (condition === 'clear' || condition === 'sunny') advice.push('🕶️ 阳光充足，可考虑戴墨镜')
-
-  // 风力
-  if (weather.windSpeed >= 30) advice.push('💨 风力较大，请避免高空作业')
-
-  // UV
-  if (weather.uvIndex >= 8) advice.push('🌞 紫外线强，外出请做好防晒')
-  else if (weather.uvIndex >= 6) advice.push('🌞 紫外线中等，注意防晒')
-
-  // 空气质量
-  if (weather.airQuality) {
-    if (weather.airQuality.aqi >= 150) advice.push('🏭 空气质量较差，敏感人群减少户外活动')
-    else if (weather.airQuality.aqi >= 100) advice.push('🏭 空气质量一般，可考虑佩戴口罩')
-  }
-
-  return advice.slice(0, 4)
-}
-
-interface SearchResult {
+interface CityInfo {
   name: string
   country: string
   admin1?: string
-  lat: number
-  lon: number
+  latitude: number
+  longitude: number
 }
 
+// ==================== 常量 ====================
+const DEFAULT_CITIES: CityInfo[] = [
+  { name: '北京', country: '中国', admin1: '北京市', latitude: 39.9042, longitude: 116.4074 },
+  { name: '上海', country: '中国', admin1: '上海市', latitude: 31.2304, longitude: 121.4737 },
+  { name: '深圳', country: '中国', admin1: '广东省', latitude: 22.5431, longitude: 114.0579 },
+  { name: '东京', country: '日本', latitude: 35.6762, longitude: 139.6503 },
+  { name: '纽约', country: '美国', admin1: '纽约州', latitude: 40.7128, longitude: -74.0060 },
+  { name: '伦敦', country: '英国', latitude: 51.5074, longitude: -0.1278 },
+]
+
+const STORAGE_KEY = 'weblinux-weather-city'
+
+// 根据天气代码返回不同 emoji（图标）
+function getWeatherIcon(code: number, isNight = false): string {
+  if (isNight) {
+    if (code === 0) return '🌙'
+    if (code <= 2) return '🌙'
+    if (code === 3) return '☁️'
+  }
+  if (code === 0) return '☀️'
+  if (code <= 2) return '⛅'
+  if (code === 3) return '☁️'
+  if (code <= 48) return '🌫️'
+  if (code <= 57) return '🌦️'
+  if (code <= 67) return '🌧️'
+  if (code <= 77) return '❄️'
+  if (code <= 82) return '🌧️'
+  if (code <= 86) return '❄️'
+  if (code <= 99) return '⛈️'
+  return '☁️'
+}
+
+function getWeatherDescription(code: number): string {
+  if (code === 0) return '晴朗'
+  if (code <= 2) return '局部多云'
+  if (code === 3) return '阴天'
+  if (code <= 48) return '有雾'
+  if (code <= 57) return '毛毛雨'
+  if (code <= 67) return '小雨'
+  if (code <= 77) return '雪'
+  if (code <= 82) return '阵雨'
+  if (code <= 86) return '阵雪'
+  if (code <= 99) return '雷暴'
+  return '未知'
+}
+
+// 根据风向角度返回方向文字
+function getWindDirectionText(deg: number): string {
+  const dirs = ['北', '东北', '东', '东南', '南', '西南', '西', '西北']
+  const idx = Math.round(((deg % 360) / 45)) % 8
+  return dirs[idx]
+}
+
+// 格式化日期（MM-DD 周X）
+function formatDate(dateStr: string, index: number): string {
+  if (index === 0) return '今天'
+  if (index === 1) return '明天'
+  const date = new Date(dateStr)
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${weekdays[date.getDay()]}`
+}
+
+// ==================== SVG Sparkline 温度趋势 ====================
+function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[] }) {
+  const width = 600
+  const height = 120
+  const padding = 20
+  if (highs.length === 0) return null
+
+  const allVals = [...highs, ...lows]
+  const min = Math.min(...allVals) - 2
+  const max = Math.max(...allVals) + 2
+  const range = max - min || 1
+
+  const stepX = (width - padding * 2) / (highs.length - 1)
+
+  const buildPath = (values: number[]) => values.map((v, i) => {
+    const x = padding + i * stepX
+    const y = height - padding - ((v - min) / range) * (height - padding * 2)
+    return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
+  }).join(' ')
+
+  const highPath = buildPath(highs)
+  const lowPath = buildPath(lows)
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+      {/* 背景网格线 */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <line
+          key={i}
+          x1={padding}
+          x2={width - padding}
+          y1={padding + ((height - padding * 2) / 4) * i}
+          y2={padding + ((height - padding * 2) / 4) * i}
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="1"
+        />
+      ))}
+      {/* 最高温线 */}
+      <path d={highPath} fill="none" stroke="#ff7a59" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* 最低温线 */}
+      <path d={lowPath} fill="none" stroke="#5ac8fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* 最高温节点 */}
+      {highs.map((v, i) => {
+        const x = padding + i * stepX
+        const y = height - padding - ((v - min) / range) * (height - padding * 2)
+        return (
+          <g key={`h-${i}`}>
+            <circle cx={x} cy={y} r="4" fill="#ff7a59" />
+            <text x={x} y={y - 8} fill="#ff7a59" fontSize="11" textAnchor="middle" fontWeight="600">
+              {Math.round(v)}°
+            </text>
+          </g>
+        )
+      })}
+      {/* 最低温节点 */}
+      {lows.map((v, i) => {
+        const x = padding + i * stepX
+        const y = height - padding - ((v - min) / range) * (height - padding * 2)
+        return (
+          <circle key={`l-${i}`} cx={x} cy={y} r="3" fill="#5ac8fa" />
+        )
+      })}
+    </svg>
+  )
+}
+
+// ==================== 主组件 ====================
 const Weather = memo(function Weather() {
-  const [selectedCity, setSelectedCity] = useState(popularCities[0])
-  const [weather, setWeather] = useState<WeatherData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [showCityList, setShowCityList] = useState(false)
-  const [unit, setUnit] = useState<'celsius' | 'fahrenheit'>('celsius')
+  const [cities, setCities] = useState<CityInfo[]>(DEFAULT_CITIES)
+  const [selectedIndex, setSelectedIndex] = useState<number>(0)
+  const [current, setCurrent] = useState<CurrentWeather | null>(null)
+  const [forecast, setForecast] = useState<DailyForecast[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [useGeoLocation, setUseGeoLocation] = useState(false)
-  const [geoStatus, setGeoStatus] = useState<string>('')
+
+  // 搜索状态
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [searchResults, setSearchResults] = useState<CityInfo[]>([])
   const [searching, setSearching] = useState(false)
-  const [favoriteCities, setFavoriteCities] = useState<SearchResult[]>(() => {
+  const [showSearch, setShowSearch] = useState(false)
+
+  const addNotification = useStore((s) => s.addNotification)
+
+  // 从 localStorage 载入默认城市
+  useEffect(() => {
     try {
-      const raw = localStorage.getItem('weblinux-weather-favorites')
-      return raw ? JSON.parse(raw) : []
-    } catch {
-      return []
-    }
-  })
-
-  const fetchWeather = useCallback(async (city: { name: string; country: string; lat: number; lon: number }) => {
-    setLoading(true)
-    setErrorMsg(null)
-
-    // 先尝试使用缓存
-    const cacheKey = `${city.lat.toFixed(2)}-${city.lon.toFixed(2)}`
-    const cached = getCachedWeather(cacheKey)
-    if (cached) {
-      setWeather(cached)
-      setLoading(false)
-      setLastUpdated(new Date())
-    }
-
-    try {
-      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset,uv_index_max&timezone=auto`
-      const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&timezone=auto`
-
-      const [weatherResponse, airQualityResponse] = await Promise.allSettled([
-        fetch(weatherUrl, { cache: 'force-cache', headers: { 'Accept': 'application/json' } }),
-        fetch(airQualityUrl, { cache: 'force-cache', headers: { 'Accept': 'application/json' } }),
-      ])
-
-      if (weatherResponse.status === 'rejected') {
-        throw new Error('无法连接到天气服务')
-      }
-      if (!weatherResponse.value.ok) {
-        throw new Error(`天气服务返回 HTTP ${weatherResponse.value.status}`)
-      }
-
-      const data = await weatherResponse.value.json()
-
-      const weatherCodeMap: Record<number, string> = {
-        0: 'clear', 1: 'sunny', 2: 'partly-cloudy', 3: 'cloudy',
-        45: 'fog', 48: 'fog',
-        51: 'light-rain', 53: 'light-rain', 55: 'light-rain',
-        56: 'light-rain', 57: 'light-rain',
-        61: 'rain', 63: 'rain', 65: 'rain', 66: 'rain', 67: 'rain',
-        71: 'snow', 73: 'snow', 75: 'snow', 77: 'snow',
-        80: 'rain', 81: 'rain', 82: 'heavy-rain',
-        85: 'snow', 86: 'snow',
-        95: 'thunderstorm', 96: 'thunderstorm', 99: 'thunderstorm',
-      }
-      const getConditionFromCode = (code: number): string => weatherCodeMap[code] || 'cloudy'
-
-      const getDayName = (dateStr: string, index: number): string => {
-        if (index === 0) return '今天'
-        if (index === 1) return '明天'
-        const day = new Date(dateStr).getDay()
-        return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][day]
-      }
-
-      const aqiCategory = (aqi: number): string => {
-        if (aqi <= 50) return '优'
-        if (aqi <= 100) return '良'
-        if (aqi <= 150) return '轻度污染'
-        if (aqi <= 200) return '中度污染'
-        if (aqi <= 300) return '重度污染'
-        return '严重污染'
-      }
-
-      let airQualityData: AirQuality = {
-        aqi: 50, category: '优', pm25: 18, pm10: 30, o3: 45, no2: 15,
-      }
-      if (airQualityResponse.status === 'fulfilled' && airQualityResponse.value.ok) {
-        try {
-          const aq = await airQualityResponse.value.json()
-          const aqiVal = Math.round(aq.current?.european_aqi || 50)
-          airQualityData = {
-            aqi: aqiVal,
-            category: aqiCategory(aqiVal),
-            pm25: Math.round(aq.current?.pm2_5 || 20),
-            pm10: Math.round(aq.current?.pm10 || 30),
-            o3: Math.round(aq.current?.ozone || 40),
-            no2: Math.round(aq.current?.nitrogen_dioxide || 20),
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const saved: { name: string; country: string; latitude: number; longitude: number } = JSON.parse(raw)
+        // 在当前 cities 中查找是否存在同名城市
+        const idx = cities.findIndex(
+          (c) => Math.abs(c.latitude - saved.latitude) < 0.1 && Math.abs(c.longitude - saved.longitude) < 0.1
+        )
+        if (idx >= 0) {
+          setSelectedIndex(idx)
+        } else {
+          // 将保存的城市添加到列表
+          const newCity: CityInfo = {
+            name: saved.name,
+            country: saved.country,
+            latitude: saved.latitude,
+            longitude: saved.longitude,
           }
-        } catch {
-          // use fallback
+          setCities((prev) => [newCity, ...prev])
+          setSelectedIndex(0)
         }
       }
-
-      const sunrise = new Date(data.daily.sunrise[0])
-      const sunset = new Date(data.daily.sunset[0])
-      const diffMs = sunset.getTime() - sunrise.getTime()
-      const dayHours = Math.floor(diffMs / (1000 * 60 * 60))
-      const dayMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-
-      const weatherData: WeatherData = {
-        temperature: Math.round(data.current.temperature_2m),
-        humidity: data.current.relative_humidity_2m,
-        weather: getConditionFromCode(data.current.weather_code),
-        windSpeed: Math.round(data.current.wind_speed_10m),
-        uvIndex: (data.daily.uv_index_max?.[0] ?? 0),
-        feelsLike: Math.round(data.current.apparent_temperature),
-        pressure: Math.round(data.current.surface_pressure ?? 1013),
-        visibility: 10,
-        forecast: data.daily.time.slice(0, 7).map((date: string, i: number) => ({
-          day: getDayName(date, i),
-          date: date,
-          high: Math.round(data.daily.temperature_2m_max[i]),
-          low: Math.round(data.daily.temperature_2m_min[i]),
-          condition: getConditionFromCode(data.daily.weather_code[i]),
-          icon: weatherConditions[getConditionFromCode(data.daily.weather_code[i])]?.icon || '🌤️',
-          precipitation: data.daily.precipitation_probability_max?.[i] || 0,
-        })),
-        hourlyForecast: data.hourly.time.slice(0, 24).map((time: string, i: number) => {
-          const date = new Date(time)
-          return {
-            time: date.getHours() + ':00',
-            temp: Math.round(data.hourly.temperature_2m[i]),
-            icon: weatherConditions[getConditionFromCode(data.hourly.weather_code[i])]?.icon || '🌤️',
-            precipitation: data.hourly.precipitation_probability[i] || 0,
-          }
-        }),
-        alerts: [],
-        sunInfo: {
-          sunrise: sunrise.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-          sunset: sunset.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-          dayLength: `${dayHours}小时${dayMinutes}分钟`,
-        },
-        airQuality: airQualityData,
-      }
-
-      setWeather(weatherData)
-      setCachedWeather(cacheKey, weatherData)
-      setLastUpdated(new Date())
-      setErrorMsg(null)
-    } catch (err) {
-      console.error('Weather fetch error:', err)
-      const message = err instanceof Error ? err.message : '未知错误'
-      setErrorMsg(`天气服务暂时不可用（${message}），已显示缓存或模拟数据`)
-      // 使用 ref 检查当前是否有天气数据，避免闭包陷阱
-      setWeather((current) => current || FALLBACK_WEATHER)
-      if (!lastUpdated) setLastUpdated(new Date())
-    } finally {
-      setLoading(false)
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    fetchWeather(selectedCity)
-    const interval = setInterval(() => fetchWeather(selectedCity), 30 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [selectedCity, fetchWeather])
-
-  const searchCity = useCallback(async (query: string) => {
-    if (!query.trim() || query.trim().length < 2) {
-      setSearchResults([])
-      return
-    }
-    setSearching(true)
-    try {
-      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=10&language=zh&format=json`
-      const response = await fetch(url, { cache: 'force-cache' })
-      if (!response.ok) throw new Error('搜索失败')
-      const data = await response.json()
-      const results: SearchResult[] = (data.results || []).map((r: any) => ({
-        name: r.name,
-        country: r.country || '',
-        admin1: r.admin1,
-        lat: r.latitude,
-        lon: r.longitude,
-      }))
-      setSearchResults(results)
-    } catch (err) {
-      console.error('City search error:', err)
-      setSearchResults([])
-    } finally {
-      setSearching(false)
+    } catch {
+      // 忽略存储错误
     }
   }, [])
 
-  // 防抖搜索
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery.trim().length >= 2) {
-        searchCity(searchQuery)
-      } else {
-        setSearchResults([])
-      }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery, searchCity])
-
-  const toggleFavorite = (city: SearchResult) => {
-    const key = `${city.lat.toFixed(2)}-${city.lon.toFixed(2)}`
-    const exists = favoriteCities.find(c => `${c.lat.toFixed(2)}-${c.lon.toFixed(2)}` === key)
-    let next: SearchResult[]
-    if (exists) {
-      next = favoriteCities.filter(c => `${c.lat.toFixed(2)}-${c.lon.toFixed(2)}` !== key)
-    } else {
-      next = [...favoriteCities, city]
-    }
-    setFavoriteCities(next)
+  // 保存默认城市到 localStorage
+  const saveDefaultCity = useCallback((city: CityInfo) => {
     try {
-      localStorage.setItem('weblinux-weather-favorites', JSON.stringify(next))
-    } catch { /* ignore */ }
-  }
-
-  const isFavorite = (city: SearchResult) => {
-    const key = `${city.lat.toFixed(2)}-${city.lon.toFixed(2)}`
-    return favoriteCities.some(c => `${c.lat.toFixed(2)}-${c.lon.toFixed(2)}` === key)
-  }
-
-  const getWeatherInfo = () => {
-    if (!weather) return null
-    const info = weatherConditions[weather.weather]
-    return info || { icon: '🌤️', description: '未知' }
-  }
-
-  const convertTemp = (temp: number): number => {
-    if (unit === 'fahrenheit') {
-      return Math.round(temp * 9/5 + 32)
-    }
-    return temp
-  }
-
-  const handleGeoLocation = () => {
-    setGeoStatus('正在获取位置...')
-    setUseGeoLocation(true)
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newCity = {
-            name: '当前位置',
-            country: `${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`,
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          }
-          setSelectedCity(newCity)
-          setGeoStatus('位置获取成功')
-          setTimeout(() => setGeoStatus(''), 2000)
-        },
-        (error) => {
-          setGeoStatus('无法获取位置: ' + error.message)
-          setTimeout(() => setGeoStatus(''), 3000)
-        },
-        { timeout: 10000 }
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ name: city.name, country: city.country, latitude: city.latitude, longitude: city.longitude })
       )
-    } else {
-      setGeoStatus('浏览器不支持地理定位')
-      setTimeout(() => setGeoStatus(''), 3000)
+    } catch {
+      // 忽略
     }
-  }
+  }, [])
 
-  const smartAdvice = weather ? generateSmartAdvice(weather) : []
+  // 获取真实天气数据（Open-Meteo）
+  const fetchWeather = useCallback(async (city: CityInfo) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const url =
+        `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}` +
+        `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,pressure_msl,weather_code` +
+        `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+        `&timezone=auto&forecast_days=7`
 
-  if (loading && !weather) {
-    return (
-      <div style={{
-        height: '100%',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
-        fontSize: 18
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>⛅</div>
-          <div>加载天气数据...</div>
-        </div>
-      </div>
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+
+      const cur: CurrentWeather = {
+        temperature: data.current?.temperature_2m ?? 0,
+        apparentTemperature: data.current?.apparent_temperature ?? 0,
+        relativeHumidity: data.current?.relative_humidity_2m ?? 0,
+        windSpeed: data.current?.wind_speed_10m ?? 0,
+        windDirection: data.current?.wind_direction_10m ?? 0,
+        pressure: data.current?.pressure_msl ?? 0,
+        weatherCode: data.current?.weather_code ?? 0,
+      }
+
+      const daily: DailyForecast[] = (data.daily?.time ?? []).map((d: string, i: number) => ({
+        date: d,
+        temperatureMax: data.daily?.temperature_2m_max?.[i] ?? 0,
+        temperatureMin: data.daily?.temperature_2m_min?.[i] ?? 0,
+        weatherCode: data.daily?.weather_code?.[i] ?? 0,
+      }))
+
+      setCurrent(cur)
+      setForecast(daily)
+      setLastUpdated(new Date())
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '请求失败'
+      setError(`天气数据获取失败：${msg}`)
+      addNotification({ title: '天气', message: '天气数据获取失败', type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }, [addNotification])
+
+  // 选中城市改变时获取天气
+  useEffect(() => {
+    const city = cities[selectedIndex]
+    if (city) {
+      fetchWeather(city)
+      saveDefaultCity(city)
+    }
+  }, [selectedIndex, cities, fetchWeather, saveDefaultCity])
+
+  // 搜索城市
+  const handleSearch = useCallback(async () => {
+    const q = searchQuery.trim()
+    if (!q) return
+    setSearching(true)
+    setError(null)
+    try {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=zh`
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const results: CityInfo[] = (data.results ?? []).map((r: { name: string; country: string; admin1?: string; latitude: number; longitude: number }) => ({
+        name: r.name,
+        country: r.country || '',
+        admin1: r.admin1,
+        latitude: r.latitude,
+        longitude: r.longitude,
+      }))
+      setSearchResults(results)
+      if (results.length === 0) {
+        setError('未找到匹配的城市')
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '请求失败'
+      setError(`搜索失败：${msg}`)
+    } finally {
+      setSearching(false)
+    }
+  }, [searchQuery])
+
+  const selectCity = useCallback((city: CityInfo, fromSearch = false) => {
+    const existingIdx = cities.findIndex(
+      (c) => Math.abs(c.latitude - city.latitude) < 0.01 && Math.abs(c.longitude - city.longitude) < 0.01
     )
-  }
+    if (existingIdx >= 0) {
+      setSelectedIndex(existingIdx)
+    } else {
+      // 把新城市插入到前面
+      setCities((prev) => [city, ...prev])
+      setSelectedIndex(0)
+    }
+    if (fromSearch) {
+      setShowSearch(false)
+      setSearchQuery('')
+      setSearchResults([])
+    }
+  }, [cities])
+
+  // 温度趋势高低温
+  const highs = forecast.map((f) => f.temperatureMax)
+  const lows = forecast.map((f) => f.temperatureMin)
+
+  const currentCity = cities[selectedIndex]
 
   return (
-    <div style={{
-      height: '100%',
-      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-      overflow: 'auto'
-    }}>
-      <div style={{ padding: 24 }}>
-        {geoStatus && (
-          <div style={{
-            background: 'rgba(255,255,255,0.1)',
-            borderRadius: 8,
-            padding: '8px 16px',
-            marginBottom: 16,
-            color: '#fff',
-            fontSize: 13,
-            textAlign: 'center'
-          }}>
-            {geoStatus}
+    <div className="app-shell" style={{ height: '100%', overflowY: 'auto', padding: 16, background: 'linear-gradient(135deg, #1e1e3c 0%, #2a2a4a 100%)', color: '#fff' }}>
+      {/* 顶部：搜索和城市切换 */}
+      <div className="app-card" style={{ padding: 16, marginBottom: 16, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+          <input
+            className="app-input"
+            type="text"
+            placeholder="🔍 搜索城市（如 Paris / 巴黎 / 东京）"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSearch(true)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
+            style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', outline: 'none', fontSize: 13 }}
+          />
+          <button className="app-button" onClick={handleSearch} disabled={searching} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(124, 108, 240, 0.3)', color: '#fff', border: '1px solid rgba(124, 108, 240, 0.5)', cursor: 'pointer', fontSize: 13 }}>
+            {searching ? '搜索中...' : '搜索'}
+          </button>
+        </div>
+
+        {/* 搜索结果 */}
+        {showSearch && searchResults.length > 0 && (
+          <div style={{ marginBottom: 12, padding: 8, borderRadius: 8, background: 'rgba(0,0,0,0.2)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 6 }}>搜索结果：</div>
+            {searchResults.map((city, i) => (
+              <button
+                key={`sr-${i}`}
+                onClick={() => selectCity(city, true)}
+                style={{ display: 'block', width: '100%', textAlign: 'left', padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 13 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <span style={{ fontWeight: 600 }}>{city.name}</span>
+                {city.admin1 && <span style={{ color: 'rgba(255,255,255,0.6)', marginLeft: 6 }}>{city.admin1}</span>}
+                <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: 6 }}>{city.country}</span>
+              </button>
+            ))}
           </div>
         )}
-        {errorMsg && (
-          <div style={{
-            background: 'rgba(255,152,0,0.3)',
-            borderRadius: 8,
-            padding: '8px 16px',
-            marginBottom: 16,
-            color: '#fff',
-            fontSize: 13,
-            textAlign: 'center'
-          }}>
-            ⚠️ {errorMsg}
-          </div>
-        )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, gap: 12, position: 'relative' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setShowCityList(!showCityList)}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: 'none',
-                  borderRadius: 12,
-                  padding: '8px 16px',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: 24,
-                  fontWeight: 700
-                }}
-                title="选择城市"
-              >
-                📍 {selectedCity.name}
-              </button>
-              <button
-                onClick={handleGeoLocation}
-                style={{
-                  background: useGeoLocation ? 'rgba(76,175,80,0.5)' : 'rgba(255,255,255,0.15)',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: '8px 12px',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: 16,
-                  transition: 'background 0.2s'
-                }}
-                title="使用我的位置"
-              >
-                🎯 定位
-              </button>
-              <button
-                onClick={() => fetchWeather(selectedCity)}
-                disabled={loading}
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: '8px 12px',
-                  color: '#fff',
-                  cursor: loading ? 'wait' : 'pointer',
-                  fontSize: 16,
-                  opacity: loading ? 0.6 : 1,
-                  transition: 'opacity 0.2s'
-                }}
-                title="刷新"
-              >
-                🔄 刷新
-              </button>
-              {showCityList && (
-                <div style={{
-                  position: 'absolute',
-                  top: 70,
-                  left: 24,
-                  right: 24,
-                  background: 'rgba(30, 60, 114, 0.98)',
-                  borderRadius: 16,
-                  padding: 12,
-                  maxHeight: 420,
-                  overflow: 'auto',
-                  zIndex: 1000,
-                  backdropFilter: 'blur(20px)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-                }}>
-                  <div style={{ marginBottom: 12 }}>
-                    <input
-                      type="text"
-                      placeholder="🔍 搜索全球城市（如 Tokyo / 巴黎 / Shanghai）"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      autoFocus
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        background: 'rgba(0,0,0,0.2)',
-                        color: '#fff',
-                        fontSize: 14,
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
 
-                  {searching && (
-                    <div style={{ color: '#fff', fontSize: 13, padding: '8px 12px', opacity: 0.7 }}>
-                      正在搜索...
-                    </div>
-                  )}
+        {/* 多城市切换 chips */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {cities.map((city, i) => (
+            <button
+              key={`${city.name}-${i}`}
+              onClick={() => setSelectedIndex(i)}
+              className="chip"
+              style={{
+                padding: '6px 12px',
+                borderRadius: 20,
+                border: '1px solid ' + (i === selectedIndex ? 'rgba(124, 108, 240, 0.8)' : 'rgba(255,255,255,0.15)'),
+                background: i === selectedIndex ? 'rgba(124, 108, 240, 0.25)' : 'rgba(255,255,255,0.05)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: i === selectedIndex ? 600 : 400,
+              }}
+            >
+              {city.name}
+              {city.admin1 ? ` · ${city.admin1}` : city.country ? ` · ${city.country}` : ''}
+            </button>
+          ))}
+          <button
+            onClick={() => fetchWeather(currentCity)}
+            disabled={loading}
+            className="app-button"
+            style={{ padding: '6px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', cursor: loading ? 'wait' : 'pointer', fontSize: 12 }}
+          >
+            {loading ? '加载中...' : '🔄 刷新'}
+          </button>
+        </div>
+      </div>
 
-                  {searchResults.length > 0 && (
-                    <>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '0 8px 8px 8px', fontWeight: 600 }}>
-                        🔎 搜索结果
-                      </div>
-                      {searchResults.map((city, i) => (
-                        <div
-                          key={`s-${i}-${city.name}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '10px 12px',
-                            borderRadius: 8,
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => {
-                            setSelectedCity({ name: city.name, country: city.admin1 ? `${city.admin1}, ${city.country}` : city.country, lat: city.lat, lon: city.lon })
-                            setShowCityList(false)
-                            setSearchQuery('')
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>{city.name}</div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
-                              {city.admin1 ? `${city.admin1}, ` : ''}{city.country}
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleFavorite(city)
-                            }}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              fontSize: 16,
-                              padding: '4px 8px',
-                              color: isFavorite(city) ? '#ffeb3b' : 'rgba(255,255,255,0.4)'
-                            }}
-                          >
-                            {isFavorite(city) ? '★' : '☆'}
-                          </button>
-                        </div>
-                      ))}
-                    </>
-                  )}
+      {/* 错误提示 */}
+      {error && !loading && (
+        <div className="app-card" style={{ padding: 12, marginBottom: 16, borderRadius: 10, background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5', fontSize: 13 }}>
+          ⚠️ {error}
+        </div>
+      )}
 
-                  {favoriteCities.length > 0 && (
-                    <>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '12px 8px 8px 8px', fontWeight: 600 }}>
-                        ⭐ 我的收藏
-                      </div>
-                      {favoriteCities.map((city, i) => (
-                        <div
-                          key={`f-${i}-${city.name}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '10px 12px',
-                            borderRadius: 8,
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => {
-                            setSelectedCity({ name: city.name, country: city.admin1 ? `${city.admin1}, ${city.country}` : city.country, lat: city.lat, lon: city.lon })
-                            setShowCityList(false)
-                            setSearchQuery('')
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>{city.name}</div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
-                              {city.admin1 ? `${city.admin1}, ` : ''}{city.country}
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleFavorite(city)
-                            }}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              fontSize: 16,
-                              padding: '4px 8px',
-                              color: '#ffeb3b'
-                            }}
-                          >
-                            ★
-                          </button>
-                        </div>
-                      ))}
-                    </>
-                  )}
-
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '12px 8px 8px 8px', fontWeight: 600 }}>
-                    🌍 热门城市
-                  </div>
-                  {popularCities.map((city) => (
-                    <button
-                      key={city.name}
-                      onClick={() => {
-                        setSelectedCity(city)
-                        setShowCityList(false)
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        background: 'transparent',
-                        border: 'none',
-                        borderRadius: 8,
-                        color: '#fff',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontSize: 14,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <span>{city.name}</span>
-                      <span style={{ fontSize: 12, opacity: 0.7 }}>{city.country}</span>
-                    </button>
-                  ))}
+      {/* 当前天气概览 */}
+      {current && currentCity && (
+        <div className="app-card" style={{ padding: 24, marginBottom: 16, borderRadius: 16, background: 'linear-gradient(135deg, rgba(124, 108, 240, 0.25) 0%, rgba(79, 70, 229, 0.15) 100%)', border: '1px solid rgba(124, 108, 240, 0.3)' }}>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>📍 {currentCity.name}{currentCity.country ? `, ${currentCity.country}` : ''}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ fontSize: 72, lineHeight: 1 }}>{getWeatherIcon(current.weatherCode)}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 48, fontWeight: 300, lineHeight: 1.1 }}>{Math.round(current.temperature)}°C</div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>
+                {getWeatherDescription(current.weatherCode)} · 体感 {Math.round(current.apparentTemperature)}°C
+              </div>
+              {lastUpdated && (
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>
+                  更新于 {lastUpdated.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               )}
             </div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>
-              {selectedCity.country}
-            </div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={() => setUnit('celsius')}
-              style={{
-                padding: '6px 12px',
-                background: unit === 'celsius' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
-                border: 'none',
-                borderRadius: 8,
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600
-              }}
-            >
-              °C
-            </button>
-            <button
-              onClick={() => setUnit('fahrenheit')}
-              style={{
-                padding: '6px 12px',
-                background: unit === 'fahrenheit' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
-                border: 'none',
-                borderRadius: 8,
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600
-              }}
-            >
-              °F
-            </button>
+
+          {/* 详细指标卡片 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 20 }}>
+            {[
+              { label: '湿度', value: `${current.relativeHumidity}%`, icon: '💧' },
+              { label: '气压', value: `${Math.round(current.pressure)} hPa`, icon: '🌡️' },
+              { label: '风速', value: `${Math.round(current.windSpeed)} km/h`, icon: '💨' },
+              { label: '风向', value: `${Math.round(current.windDirection)}° · ${getWindDirectionText(current.windDirection)}`, icon: '🧭' },
+              { label: '体感温度', value: `${Math.round(current.apparentTemperature)}°C`, icon: '🌤️' },
+              { label: '当前温度', value: `${Math.round(current.temperature)}°C`, icon: '🌡️' },
+            ].map((item) => (
+              <div key={item.label} className="app-card" style={{ padding: 10, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>{item.icon} {item.label}</div>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>{item.value}</div>
+              </div>
+            ))}
           </div>
         </div>
+      )}
 
-        {weather && (
-          <>
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <div style={{ fontSize: 96, marginBottom: 16 }}>
-                {getWeatherInfo()?.icon}
-              </div>
-              <div style={{
-                fontSize: 72,
-                fontWeight: 200,
-                color: '#fff',
-                marginBottom: 8,
-                textShadow: '0 4px 12px rgba(0,0,0,0.2)'
-              }}>
-                {convertTemp(weather.temperature)}°
-              </div>
-              <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>
-                {getWeatherInfo()?.description}
-              </div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
-                体感温度 {convertTemp(weather.feelsLike)}°
-              </div>
-            </div>
+      {/* 温度趋势 Sparkline */}
+      {forecast.length > 0 && (
+        <div className="app-card" style={{ padding: 16, marginBottom: 16, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>📈 未来 7 天温度趋势</div>
+          <TemperatureSparkline highs={highs} lows={lows} />
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 10, height: 2, background: '#ff7a59', display: 'inline-block' }} />
+              最高温
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 10, height: 2, background: '#5ac8fa', display: 'inline-block' }} />
+              最低温
+            </span>
+          </div>
+        </div>
+      )}
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: 12,
-              marginBottom: 24
-            }}>
-              {[
-                { icon: '💧', label: '湿度', value: `${weather.humidity}%` },
-                { icon: '💨', label: '风速', value: `${weather.windSpeed} km/h` },
-                { icon: '☀️', label: '紫外线', value: weather.uvIndex.toFixed(1) },
-                { icon: '🌡️', label: '气压', value: `${weather.pressure} hPa` },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: 12,
-                    padding: 16,
-                    textAlign: 'center',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                >
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>{item.icon}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginBottom: 4 }}>{item.label}</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>{item.value}</div>
-                </div>
-              ))}
-            </div>
-
-            {weather.sunInfo && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: 12,
-                marginBottom: 24
-              }}>
-                {[
-                  { icon: '🌅', label: '日出', value: weather.sunInfo.sunrise },
-                  { icon: '🌇', label: '日落', value: weather.sunInfo.sunset },
-                  { icon: '⏱️', label: '日照时长', value: weather.sunInfo.dayLength },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: 12,
-                      padding: 16,
-                      textAlign: 'center',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                  >
-                    <div style={{ fontSize: 24, marginBottom: 8 }}>{item.icon}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginBottom: 4 }}>{item.label}</div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>{item.value}</div>
-                  </div>
-                ))}
+      {/* 7 天预报 */}
+      {forecast.length > 0 && (
+        <div className="app-card" style={{ padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>📅 未来 7 天预报</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {forecast.map((day, i) => (
+              <div key={day.date} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 6px', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
+                <div style={{ width: 90, fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{formatDate(day.date, i)}</div>
+                <div style={{ fontSize: 24, width: 32, textAlign: 'center' }}>{getWeatherIcon(day.weatherCode)}</div>
+                <div style={{ flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{getWeatherDescription(day.weatherCode)}</div>
+                <div style={{ fontSize: 13, color: '#5ac8fa', minWidth: 40, textAlign: 'right' }}>{Math.round(day.temperatureMin)}°</div>
+                <div style={{ width: 40, height: 2, background: 'linear-gradient(to right, #5ac8fa, #ff7a59)', borderRadius: 2 }} />
+                <div style={{ fontSize: 13, color: '#ff7a59', minWidth: 40, textAlign: 'right' }}>{Math.round(day.temperatureMax)}°</div>
               </div>
-            )}
+            ))}
+          </div>
+        </div>
+      )}
 
-            {weather.airQuality && (
-              <div style={{
-                marginBottom: 24,
-                background: 'rgba(255,255,255,0.1)',
-                borderRadius: 16,
-                padding: 20,
-                backdropFilter: 'blur(10px)'
-              }}>
-                <h3 style={{ color: '#fff', margin: '0 0 16px 0', fontSize: 16, fontWeight: 600 }}>
-                  🏙️ 空气质量
-                </h3>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 16
-                }}>
-                  <div>
-                    <div style={{ fontSize: 36, fontWeight: 700, color: '#fff' }}>{weather.airQuality.aqi}</div>
-                    <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>{weather.airQuality.category}</div>
-                  </div>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: 12,
-                    flex: 1,
-                    marginLeft: 24
-                  }}>
-                    {[
-                      { label: 'PM2.5', value: weather.airQuality.pm25 },
-                      { label: 'PM10', value: weather.airQuality.pm10 },
-                      { label: 'O3', value: weather.airQuality.o3 },
-                      { label: 'NO2', value: weather.airQuality.no2 },
-                    ].map((item) => (
-                      <div key={item.label} style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>{item.label}</div>
-                        <div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>{item.value} μg/m³</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ marginBottom: 24 }}>
-              <h3 style={{ color: '#fff', margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>
-                Hourly Forecast
-              </h3>
-              <div style={{
-                display: 'flex',
-                gap: 8,
-                overflowX: 'auto',
-                paddingBottom: 8
-              }}>
-                {weather.hourlyForecast.slice(0, 12).map((hour, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      minWidth: 60,
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: 12,
-                      padding: 12,
-                      textAlign: 'center',
-                      backdropFilter: 'blur(10px)'
-                    }}
-                  >
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>
-                      {i === 0 ? '现在' : hour.time}
-                    </div>
-                    <div style={{ fontSize: 24, marginBottom: 8 }}>{hour.icon}</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>
-                      {convertTemp(hour.temp)}°
-                    </div>
-                    {hour.precipitation > 0 && (
-                      <div style={{ fontSize: 10, color: '#60a5fa', marginTop: 4 }}>
-                        {hour.precipitation}%
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 style={{ color: '#fff', margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>
-                7-Day Forecast
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {weather.forecast.map((day, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: 12,
-                      padding: 12,
-                      backdropFilter: 'blur(10px)'
-                    }}
-                  >
-                    <div style={{ minWidth: 60, color: '#fff', fontWeight: 500 }}>{day.day}</div>
-                    <div style={{ fontSize: 24 }}>{day.icon}</div>
-                    <div style={{ minWidth: 60, color: '#fff', fontWeight: 600, textAlign: 'right' }}>
-                      {convertTemp(day.high)}°
-                    </div>
-                    <div style={{ minWidth: 60, color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
-                      {convertTemp(day.low)}°
-                    </div>
-                    {day.precipitation > 0 && (
-                      <div style={{ minWidth: 40, color: '#60a5fa', fontSize: 12, textAlign: 'right' }}>
-                        💧{day.precipitation}%
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {smartAdvice.length > 0 && (
-              <div style={{
-                marginTop: 24,
-                background: 'rgba(255,255,255,0.08)',
-                borderRadius: 16,
-                padding: '20px',
-                border: '1px solid rgba(255,255,255,0.1)'
-              }}>
-                <h3 style={{ color: '#fff', margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>
-                  💡 智能建议
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {smartAdvice.map((advice, idx) => (
-                    <div key={idx} style={{
-                      color: 'rgba(255,255,255,0.85)',
-                      fontSize: 13,
-                      lineHeight: 1.5,
-                      padding: '6px 0'
-                    }}>
-                      {advice}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {lastUpdated && (
-              <div style={{
-                marginTop: 24,
-                padding: 12,
-                background: 'rgba(255,255,255,0.05)',
-                borderRadius: 8,
-                fontSize: 11,
-                color: 'rgba(255,255,255,0.5)',
-                textAlign: 'center'
-              }}>
-                数据更新时间: {lastUpdated.toLocaleTimeString()}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      {/* Loading 空态 */}
+      {loading && !current && (
+        <div style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.5)' }}>
+          <div style={{ fontSize: 48, marginBottom: 12, animation: 'spin 1s linear infinite' }}>⛅</div>
+          <div>正在加载天气数据...</div>
+        </div>
+      )}
     </div>
   )
 })

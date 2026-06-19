@@ -22,6 +22,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [dragOpacity, setDragOpacity] = useState(1)
   const [snapHint, setSnapHint] = useState<string | null>(null)
+  const [showMenu, setShowMenu] = useState(false)
   const stateRef = useRef({
     startX: 0,
     startY: 0,
@@ -422,6 +423,18 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     >
       <div className="window-titlebar">
         <div className="window-titlebar-drag" onMouseDown={handleDragStart} onDoubleClick={handleDoubleClickTitlebar} role="toolbar" aria-label="窗口标题栏">
+          <button
+            className="window-titlebar-button menu"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowMenu((v) => !v)
+            }}
+            aria-label="窗口菜单"
+            title="窗口菜单"
+          >
+            ☰
+          </button>
           <span className="window-titlebar-icon" aria-hidden="true">{app?.icon}</span>
           <span className="window-titlebar-title">{win.title}</span>
         </div>
@@ -474,6 +487,139 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             className="window-resize-handle"
             onMouseDown={(e) => handleResizeStart(e, 'corner')}
           />
+        </>
+      )}
+      {showMenu && (
+        <>
+          <div
+            onClick={() => setShowMenu(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: win.zIndex + 1,
+            }}
+          />
+          <div
+            className="window-menu"
+            style={{
+              position: 'absolute',
+              top: 32,
+              left: 8,
+              background: 'var(--window-bg, #1a1a1a)',
+              border: '1px solid var(--window-border, rgba(255,255,255,0.1))',
+              borderRadius: 8,
+              padding: 4,
+              zIndex: win.zIndex + 2,
+              minWidth: 140,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+              fontSize: 12,
+              color: 'var(--text-primary, #fff)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                handleMinimize()
+                setShowMenu(false)
+              }}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: 'none',
+                background: 'transparent',
+                color: 'inherit',
+                textAlign: 'left',
+                borderRadius: 4,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+              }}
+            >
+              <span>—</span>
+              <span>最小化</span>
+              <span style={{ marginLeft: 'auto', opacity: 0.5 }}>Ctrl+M</span>
+            </button>
+            <button
+              onClick={() => {
+                maximizeWindow(win.id)
+                setShowMenu(false)
+              }}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: 'none',
+                background: 'transparent',
+                color: 'inherit',
+                textAlign: 'left',
+                borderRadius: 4,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+              }}
+            >
+              <span>{win.maximized ? '❐' : '□'}</span>
+              <span>{win.maximized ? '还原' : '最大化'}</span>
+              <span style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                {win.maximized ? 'Esc' : 'Ctrl+Shift+M'}
+              </span>
+            </button>
+            <div
+              style={{
+                height: 1,
+                background: 'var(--window-border, rgba(255,255,255,0.1))',
+                margin: '4px 8px',
+              }}
+            />
+            <button
+              onClick={() => {
+                handleClose()
+                setShowMenu(false)
+              }}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: 'none',
+                background: 'transparent',
+                color: '#ff6b6b',
+                textAlign: 'left',
+                borderRadius: 4,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,107,107,0.1)'
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+              }}
+            >
+              <span>✕</span>
+              <span>关闭</span>
+              <span style={{ marginLeft: 'auto', opacity: 0.5 }}>Ctrl+W</span>
+            </button>
+          </div>
         </>
       )}
       {snapHint && (

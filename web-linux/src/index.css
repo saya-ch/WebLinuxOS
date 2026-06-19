@@ -92,6 +92,16 @@ code, pre, .terminal, .code-editor {
 }
 
 :root {
+  /* ========== 新增：WebLinuxOS 统一语义颜色变量（深色） ========== */
+  --color-primary: #7c6cf0;        /* 主色：品牌强调色 */
+  --color-secondary: #00d6c1;      /* 次色：用于次要强调 */
+  --color-success: #10b981;        /* 成功/完成 */
+  --color-warning: #f59e0b;        /* 警告/待注意 */
+  --color-error: #ef4444;          /* 错误/危险 */
+  --color-surface: #12121f;        /* 面板背景色 */
+  --color-border: rgba(255, 255, 255, 0.08); /* 默认边框色 */
+
+  /* ========== 已有主题变量 ========== */
   --desktop-bg: #08080f;
   --window-bg: rgba(14, 14, 24, 0.95);
   --window-border: rgba(108, 92, 231, 0.35);
@@ -161,6 +171,16 @@ code, pre, .terminal, .code-editor {
 }
 
 :root.light {
+  /* ========== 新增：WebLinuxOS 统一语义颜色变量（浅色） ========== */
+  --color-primary: #5b4cd8;
+  --color-secondary: #0ea5a0;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-surface: #ffffff;
+  --color-border: rgba(0, 0, 0, 0.08);
+
+  /* ========== 已有主题变量 ========== */
   --desktop-bg: #f5f5f7;
   --window-bg: #ffffff;
   --window-border: #d1d1d6;
@@ -4442,3 +4462,181 @@ a:hover {
   margin-top: 12px;
   border: 1px solid rgba(139, 124, 240, 0.3);
 }
+
+/* ====================================================================
+ * WebLinuxOS 通用应用容器与组件样式（新增）
+ * 仅补充不与现有样式冲突的基础类
+ * ==================================================================== */
+
+/* 通用应用容器：最大高度 + 滚动 + 内边距 */
+.app-shell {
+  padding: 16px;
+  max-height: 100%;
+  overflow: auto;
+  background: var(--color-surface);
+  color: var(--text-primary, #f0f0ff);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+/* 通用卡片容器：用于面板/分组 */
+.app-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--window-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 通用按钮基础样式 */
+.app-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary, #f0f0ff);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+  user-select: none;
+  line-height: 1.2;
+}
+.app-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 124, 240, 0.4);
+}
+.app-button:active {
+  transform: translateY(1px);
+}
+.app-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 强调（主色）按钮 */
+.app-button-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+.app-button-primary:hover {
+  background: #8a7af5;
+  border-color: #8a7af5;
+  filter: brightness(1.05);
+}
+.app-button-primary:active {
+  background: #6d5edc;
+}
+
+/* 通用输入框 */
+.app-input {
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary, #f0f0ff);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.4;
+}
+.app-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+.app-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.2);
+}
+
+/* 通用下拉框 */
+.app-select {
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary, #f0f0ff);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.app-select:focus {
+  border-color: var(--color-primary);
+}
+
+/* 通用多行文本框 */
+.app-textarea {
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary, #f0f0ff);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  outline: none;
+  resize: vertical;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.app-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.2);
+}
+
+/* 标签/小 chip：用于状态、标签等 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-primary, #f0f0ff);
+  background: rgba(124, 108, 240, 0.15);
+  border: 1px solid rgba(124, 108, 240, 0.35);
+  border-radius: 999px;
+  cursor: default;
+  user-select: none;
+}
+.chip.chip-success {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+.chip.chip-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.chip.chip-error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+/* 通用响应式网格：auto-fit，最小列宽 220px */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+/* 紧凑网格：用于小内容 */
+.grid.grid-compact {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+/* 两列固定网格 */
+.grid.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 三列固定网格 */
+.grid.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+

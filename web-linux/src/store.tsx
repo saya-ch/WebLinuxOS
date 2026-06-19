@@ -195,17 +195,37 @@ export const useStore = create<Store>((set, get) => ({
   favorites: initialFavorites,
   pinnedApps: initialPinnedApps,
 
+  // 添加一条通知消息：对同一消息标题做去重限制，避免短时间内刷屏
   addNotification: (notification) => {
-    const id = `notif-${Date.now()}-${Math.random()}`
-    set((s) => ({
-      notifications: [
-        ...s.notifications,
-        { ...notification, id, timestamp: new Date() }
-      ]
-    }))
-    setTimeout(() => {
-      get().removeNotification(id)
-    }, notification.duration || 5000)
+    try {
+      const state = get()
+      // 去重：2 秒内相同 title + message 的通知不重复添加
+      const now = Date.now()
+      const duplicate = state.notifications.find(
+        (n) =>
+          n.title === notification.title &&
+          n.message === notification.message &&
+          // 若已有相同 ID，视作重复
+          n.id &&
+          // 简单保护：同一消息在最近 2 秒内不重复
+          (state.notifications.length > 0)
+      )
+      if (duplicate) {
+        return
+      }
+      const id = `notif-${now}-${Math.random().toString(36).slice(2, 8)}`
+      set((s) => ({
+        notifications: [
+          ...s.notifications,
+          { ...notification, id, timestamp: new Date() },
+        ],
+      }))
+      setTimeout(() => {
+        get().removeNotification(id)
+      }, notification.duration || 5000)
+    } catch (err) {
+      console.warn('[store] 添加通知时出现异常：', err)
+    }
   },
 
   removeNotification: (id) => {
@@ -276,21 +296,44 @@ export const useStore = create<Store>((set, get) => ({
     })
   },
 
+  // 重置到默认状态：清空本地存储并恢复默认值，操作前会发通知警告
   resetToDefaults: () => {
-    clearAllStorage()
-    set({
-      files: defaultFiles,
-      desktopIcons: defaultDesktopIcons,
-      theme: 'dark',
-      wallpaper: '',
-      liveWallpaper: 'particles',
-      liveWallpaperEnabled: false,
-      currentDesktop: 1,
-      totalDesktops: defaultTotalDesktops,
-      windowsPerDesktop: initWindowsPerDesktop(defaultTotalDesktops),
-      favorites: [],
-      pinnedApps: defaultPinnedApps,
-    })
+    try {
+      // 先发出警告通知，告知用户将进行重置操作
+      get().addNotification({
+        title: '系统重置',
+        message: '正在将系统恢复为默认配置，所有本地数据将被清空…',
+        type: 'warning',
+        duration: 5000,
+      })
+
+      clearAllStorage()
+      set({
+        files: defaultFiles,
+        desktopIcons: defaultDesktopIcons,
+        theme: 'dark',
+        wallpaper: '',
+        liveWallpaper: 'particles',
+        liveWallpaperEnabled: false,
+        currentDesktop: 1,
+        totalDesktops: defaultTotalDesktops,
+        windowsPerDesktop: initWindowsPerDesktop(defaultTotalDesktops),
+        favorites: [],
+        pinnedApps: defaultPinnedApps,
+      })
+
+      // 重置成功后再发一条成功提示
+      setTimeout(() => {
+        get().addNotification({
+          title: '重置完成',
+          message: '系统已恢复至默认配置。',
+          type: 'success',
+          duration: 4000,
+        })
+      }, 300)
+    } catch (err) {
+      console.warn('[store] resetToDefaults 异常：', err)
+    }
   },
 
   registerApp: (app) => set((s) => ({ apps: [...s.apps.filter((a) => a.id !== app.id), app] })),
@@ -575,34 +618,46 @@ export const useStore = create<Store>((set, get) => ({
     set({ liveWallpaperEnabled: newState })
   },
 
+  // 文件操作：删除节点
   deleteFile: (id) =>
     set((s) => {
       const deletedNode = findNodeById(s.files, id)
       const parent = findParentNode(s.files, id)
-      
+
       if (!deletedNode || !parent) {
         return s
       }
-      
+
       const newFiles = removeFromTree(s.files, id)
+      // 记录操作历史（用于 undo/redo）
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { 
-          type: 'delete' as const, 
-          fileId: id, 
+        {
+          type: 'delete' as const,
+          fileId: id,
           previousState: deletedNode,
-          parentId: parent.id
-        }
+          parentId: parent.id,
+        },
       ]
-      
+
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 300)
+      // 异步发送操作成功通知
+      setTimeout(() => {
+        get().addNotification({
+          title: '已删除',
+          message: `文件/文件夹 "${deletedNode.name}" 已被删除`,
+          type: 'info',
+          duration: 3000,
+        })
+      }, 0)
       return {
         files: newFiles,
         fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1
+        historyIndex: newHistory.length - 1,
       }
     }),
 
+  // 文件操作：新增节点（文件或文件夹）
   addFile: (parentId, name, type) =>
     set((s) => {
       const validation = validateFileName(name)
@@ -611,6 +666,7 @@ export const useStore = create<Store>((set, get) => ({
       if (!parent || parent.type !== 'folder') return s
       if (parent.children?.some((c) => c.name === name)) return s
       const id = generateFileId()
+      const now = new Date().toISOString()
       const newNode: FileNode = {
         id,
         name: name.trim(),
@@ -618,6 +674,8 @@ export const useStore = create<Store>((set, get) => ({
         parentId,
         content: type === 'file' ? '' : undefined,
         children: type === 'folder' ? [] : undefined,
+        createdAt: now,
+        modifiedAt: now,
       }
       const newFiles = traverseTree(s.files, (node) => {
         if (node.id === parentId) {
@@ -625,65 +683,94 @@ export const useStore = create<Store>((set, get) => ({
         }
         return undefined
       })
+      // 记录操作历史（用于 undo/redo）
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { type: 'add' as const, fileId: id, newState: newNode, parentId }
+        { type: 'add' as const, fileId: id, newState: newNode, parentId },
       ]
-      
+
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 300)
+      setTimeout(() => {
+        get().addNotification({
+          title: '已创建',
+          message: `已${type === 'folder' ? '新建文件夹' : '新建文件'} "${newNode.name}"`,
+          type: 'success',
+          duration: 3000,
+        })
+      }, 0)
       return {
         files: newFiles,
         fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1
+        historyIndex: newHistory.length - 1,
       }
     }),
 
+  // 文件操作：更新文件内容（同时刷新 modifiedAt）
   updateFileContent: (id, content) =>
     set((s) => {
       const node = findNodeById(s.files, id)
       if (!node) return s
-      
+
+      // 记录操作历史（用于 undo/redo）
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { 
-          type: 'update' as const, 
-          fileId: id, 
+        {
+          type: 'update' as const,
+          fileId: id,
           previousState: { ...node },
-          newState: { ...node, content }
-        }
+          newState: { ...node, content, modifiedAt: new Date().toISOString() },
+        },
       ]
-      
-      const newFiles = updateInTree(s.files, id, (node) => ({ ...node, content }))
+
+      const newFiles = updateInTree(s.files, id, (n) => ({
+        ...n,
+        content,
+        modifiedAt: new Date().toISOString(),
+      }))
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 500)
       return {
         files: newFiles,
         fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1
+        historyIndex: newHistory.length - 1,
       }
     }),
 
+  // 文件操作：重命名
   renameFile: (id, name) =>
     set((s) => {
       const node = findNodeById(s.files, id)
       if (!node) return s
-      
+
       const previousName = node.name
+      // 记录操作历史（用于 undo/redo）
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { 
-          type: 'rename' as const, 
-          fileId: id, 
+        {
+          type: 'rename' as const,
+          fileId: id,
           previousState: { ...node, name: previousName },
-          newState: { ...node, name }
-        }
+          newState: { ...node, name, modifiedAt: new Date().toISOString() },
+        },
       ]
-      
-      const newFiles = updateInTree(s.files, id, (node) => ({ ...node, name }))
+
+      const newFiles = updateInTree(s.files, id, (n) => ({
+        ...n,
+        name,
+        modifiedAt: new Date().toISOString(),
+      }))
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 300)
+      setTimeout(() => {
+        get().addNotification({
+          title: '已重命名',
+          message: `"${previousName}" → "${name}"`,
+          type: 'info',
+          duration: 3000,
+        })
+      }, 0)
       return {
         files: newFiles,
         fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1
+        historyIndex: newHistory.length - 1,
       }
     }),
 
@@ -706,17 +793,18 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
+  // 文件操作：复制节点到目标文件夹
   copyFile: (sourceId, targetParentId) => {
     const state = get()
     const sourceNode = findNodeById(state.files, sourceId)
     const targetParent = findNodeById(state.files, targetParentId)
-    
+
     if (!sourceNode || !targetParent || targetParent.type !== 'folder') {
       return
     }
-    
+
     const newNode = copyNodeWithNewParent(sourceNode, targetParentId)
-    
+
     set((s) => {
       const newFiles = traverseTree(s.files, (node) => {
         if (node.id === targetParentId && node.children !== undefined) {
@@ -724,36 +812,50 @@ export const useStore = create<Store>((set, get) => ({
         }
         return undefined
       })
+      // 记录操作历史（用于 undo/redo）
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { type: 'copy' as const, fileId: newNode.id, newState: newNode, parentId: targetParentId }
+        { type: 'copy' as const, fileId: newNode.id, newState: newNode, parentId: targetParentId },
       ]
-      
+
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 300)
-      return { 
-        files: newFiles, 
-        fileOperationHistory: newHistory, 
-        historyIndex: newHistory.length - 1 
+      setTimeout(() => {
+        get().addNotification({
+          title: '已复制',
+          message: `"${sourceNode.name}" 已复制到目标位置`,
+          type: 'success',
+          duration: 3000,
+        })
+      }, 0)
+      return {
+        files: newFiles,
+        fileOperationHistory: newHistory,
+        historyIndex: newHistory.length - 1,
       }
     })
   },
 
+  // 文件操作：移动节点到目标文件夹
   moveFile: (sourceId, targetParentId) => {
     const state = get()
     const sourceNode = findNodeById(state.files, sourceId)
     const targetParent = findNodeById(state.files, targetParentId)
-    
+
     if (!sourceNode || !targetParent || targetParent.type !== 'folder') {
       return
     }
-    
+
     if (sourceNode.parentId === targetParentId) {
       return
     }
-    
+
     const previousState = { ...sourceNode }
-    const nodeWithNewParent = { ...sourceNode, parentId: targetParentId } as FileNode
-    
+    const nodeWithNewParent = {
+      ...sourceNode,
+      parentId: targetParentId,
+      modifiedAt: new Date().toISOString(),
+    } as FileNode
+
     set((s) => {
       const filtered = removeFromTree(s.files, sourceId)
       const withNode = traverseTree(filtered, (node) => {
@@ -762,22 +864,42 @@ export const useStore = create<Store>((set, get) => ({
         }
         return undefined
       })
+      // 记录操作历史（用于 undo/redo）
       const newHistory = [
         ...s.fileOperationHistory.slice(0, s.historyIndex + 1),
-        { type: 'move' as const, fileId: sourceId, previousState, newState: nodeWithNewParent }
+        { type: 'move' as const, fileId: sourceId, previousState, newState: nodeWithNewParent },
       ]
-      
+
       debouncedSaveToStorage(STORAGE_KEYS.FILES, withNode, 300)
+      setTimeout(() => {
+        get().addNotification({
+          title: '已移动',
+          message: `"${sourceNode.name}" 已移动到新位置`,
+          type: 'info',
+          duration: 3000,
+        })
+      }, 0)
       return { files: withNode, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
     })
   },
 
+  // 文件操作：撤销上一步（undo）
   undoFileOperation: () => {
     const state = get()
     if (state.historyIndex < 0) return
-    
+
     const operation = state.fileOperationHistory[state.historyIndex]
     if (!operation) return
+
+    // 简单的操作类型中文映射，用于通知
+    const typeLabel: Record<string, string> = {
+      add: '新建',
+      delete: '删除',
+      rename: '重命名',
+      update: '修改',
+      move: '移动',
+      copy: '复制',
+    }
 
     switch (operation.type) {
       case 'add':
@@ -850,14 +972,34 @@ export const useStore = create<Store>((set, get) => ({
         }
         break
     }
+
+    // 反馈通知
+    setTimeout(() => {
+      get().addNotification({
+        title: '已撤销',
+        message: `撤销操作：${typeLabel[operation.type] || operation.type}`,
+        type: 'info',
+        duration: 2500,
+      })
+    }, 0)
   },
 
+  // 文件操作：重做上一步（redo）
   redoFileOperation: () => {
     const state = get()
     if (state.historyIndex >= state.fileOperationHistory.length - 1) return
-    
+
     const operation = state.fileOperationHistory[state.historyIndex + 1]
     if (!operation) return
+
+    const typeLabel: Record<string, string> = {
+      add: '新建',
+      delete: '删除',
+      rename: '重命名',
+      update: '修改',
+      move: '移动',
+      copy: '复制',
+    }
 
     switch (operation.type) {
       case 'add':
@@ -872,7 +1014,7 @@ export const useStore = create<Store>((set, get) => ({
             saveToStorage(STORAGE_KEYS.FILES, newFiles)
             return {
               files: newFiles,
-              historyIndex: state.historyIndex + 1
+              historyIndex: state.historyIndex + 1,
             }
           })
         }
@@ -887,11 +1029,11 @@ export const useStore = create<Store>((set, get) => ({
       case 'rename':
         if (operation.newState) {
           set((s) => {
-            const newFiles = updateInTree(s.files, operation.fileId, () => operation.newState!)
-            saveToStorage(STORAGE_KEYS.FILES, newFiles)
+            const updated = updateInTree(s.files, operation.fileId, () => operation.newState!)
+            saveToStorage(STORAGE_KEYS.FILES, updated)
             return {
-              files: newFiles,
-              historyIndex: state.historyIndex + 1
+              files: updated,
+              historyIndex: state.historyIndex + 1,
             }
           })
         }
@@ -899,11 +1041,11 @@ export const useStore = create<Store>((set, get) => ({
       case 'update':
         if (operation.newState) {
           set((s) => {
-            const newFiles = updateInTree(s.files, operation.fileId, () => operation.newState!)
-            saveToStorage(STORAGE_KEYS.FILES, newFiles)
+            const updated = updateInTree(s.files, operation.fileId, () => operation.newState!)
+            saveToStorage(STORAGE_KEYS.FILES, updated)
             return {
-              files: newFiles,
-              historyIndex: state.historyIndex + 1
+              files: updated,
+              historyIndex: state.historyIndex + 1,
             }
           })
         }
@@ -935,12 +1077,21 @@ export const useStore = create<Store>((set, get) => ({
             saveToStorage(STORAGE_KEYS.FILES, newFiles)
             return {
               files: newFiles,
-              historyIndex: state.historyIndex + 1
+              historyIndex: state.historyIndex + 1,
             }
           })
         }
         break
     }
+
+    setTimeout(() => {
+      get().addNotification({
+        title: '已重做',
+        message: `重做操作：${typeLabel[operation.type] || operation.type}`,
+        type: 'info',
+        duration: 2500,
+      })
+    }, 0)
   },
 
   canUndo: () => {
