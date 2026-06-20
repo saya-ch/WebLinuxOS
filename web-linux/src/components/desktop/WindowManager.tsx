@@ -239,6 +239,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   MarkdownEditorPro: () => import('../../apps/MarkdownEditorPro'),
   SystemMonitorPro: () => import('../../apps/SystemMonitorPro'),
   PomodoroPro: () => import('../../apps/PomodoroPro'),
+  // === 新增创新应用 ===
+  AIProgrammingAssistantPro: () => import('../../apps/AIProgrammingAssistantPro'),
+  RealTimeDataDashboard: () => import('../../apps/RealTimeDataDashboard'),
+  CollaborativeWhiteboardEnhanced: () => import('../../apps/CollaborativeWhiteboardEnhanced'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
