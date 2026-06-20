@@ -5,10 +5,10 @@ import {
   PackageIcon, ShoppingCartIcon, HardDriveIcon, ListTodoIcon, ServerIcon,
   WifiIcon, ShieldIcon, UserIcon, CameraIcon, PaintIcon, GridIcon,
   PresentationIcon, MailIcon, MessageIcon, ContactsIcon, CheckListIcon,
-  LockIcon, BackupIcon, ZipIcon, FileIcon, FileSearchIcon, TypeIcon,
+  LockIcon, BackupIcon, ZipIcon, FileSearchIcon, TypeIcon,
   BookIcon, LanguagesIcon, MapPinIcon, VideoRecorderIcon, MicIcon,
   BluetoothIcon, BatteryIcon, InfoIcon, HelpIcon, CommandIcon,
-  PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon
+  PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon, GlobeIcon, ToolIcon
 } from './icons'
 import type { AppDefinition } from './types'
 
@@ -69,4 +69,8 @@ export const appRegistry: AppDefinition[] = [
   { id: 'magnifier', name: '放大镜', icon: <MagnifierIcon />, component: 'Magnifier', category: 'utilities', defaultWidth: 400, defaultHeight: 350, minWidth: 300, minHeight: 250, resizable: false, multiple: false },
   { id: 'game-snake', name: '贪吃蛇', icon: <SnakeIcon />, component: 'GameSnake', category: 'games', defaultWidth: 400, defaultHeight: 450, minWidth: 350, minHeight: 400, resizable: false, multiple: false },
   { id: 'game-tetris', name: '俄罗斯方块', icon: <TetrisIcon />, component: 'GameTetris', category: 'games', defaultWidth: 400, defaultHeight: 520, minWidth: 300, minHeight: 450, resizable: false, multiple: false },
+  { id: 'currency-converter', name: '汇率转换器', icon: <CalculatorIcon />, component: 'CurrencyConverter', category: 'utilities', defaultWidth: 500, defaultHeight: 550, minWidth: 400, minHeight: 400, resizable: true, multiple: false },
+  { id: 'ip-lookup', name: 'IP查询', icon: <GlobeIcon />, component: 'IPLookup', category: 'utilities', defaultWidth: 500, defaultHeight: 600, minWidth: 400, minHeight: 450, resizable: true, multiple: false },
+  { id: 'news-reader', name: '新闻阅读器', icon: <BookIcon />, component: 'NewsReader', category: 'internet', defaultWidth: 600, defaultHeight: 550, minWidth: 450, minHeight: 400, resizable: true, multiple: false },
+  { id: 'dev-toolbox', name: '开发者工具箱', icon: <ToolIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 550, defaultHeight: 500, minWidth: 400, minHeight: 350, resizable: true, multiple: false },
 ]

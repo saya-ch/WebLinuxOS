@@ -1,5 +1,3 @@
-import React from 'react'
-
 export const FolderIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H12L10 5H5C3.89543 5 3 5.89543 3 7Z" fill="currentColor" opacity="0.2"/>
@@ -465,5 +463,21 @@ export const TetrisIcon = ({ className = 'w-6 h-6' }: { className?: string }) =>
     <rect x="5" y="13" width="4" height="4" fill="currentColor" opacity="0.4"/>
     <rect x="9" y="13" width="4" height="4" fill="currentColor" opacity="0.6"/>
     <rect x="13" y="13" width="4" height="4" fill="currentColor" opacity="0.3"/>
+  </svg>
+)
+
+export const GlobeIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+    <path d="M2 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M12 2C14.5 4.5 16 8 16 12C16 16 14.5 19.5 12 22C9.5 19.5 8 16 8 12C8 8 9.5 4.5 12 2Z" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+)
+
+export const ToolIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.7 6.3C14.5168 6.1137 14.2951 5.9662 14.0495 5.86816C13.8039 5.77011 13.5396 5.72316 13.2749 5.73134C13.0102 5.73952 12.7514 5.80262 12.5141 5.91816C12.2768 6.0337 12.0663 6.19988 11.895 6.406L6.4 12.6L4.5 17.5L9.4 15.6L15.6 10.1C15.8061 9.92871 15.9723 9.71822 16.0878 9.4809C16.2034 9.24358 16.2665 8.98482 16.2747 8.72014C16.2828 8.45545 16.2359 8.19114 16.1378 7.94554C16.0398 7.69994 15.8923 7.47824 15.706 7.295L14.7 6.3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6.4 12.6L4.5 17.5L9.4 15.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.7 6.3L15.7 7.3L17.7 5.3C17.9 5.1 18 4.8 18 4.5C18 4.2 17.9 3.9 17.7 3.7L16.3 2.3C16.1 2.1 15.8 2 15.5 2C15.2 2 14.9 2.1 14.7 2.3L12.7 4.3L13.7 5.3L14.7 6.3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
