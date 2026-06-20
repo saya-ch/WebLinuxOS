@@ -1,10 +1,10 @@
 # WebLinuxOS
 
-一个完全运行在浏览器中的 Linux 桌面环境，提供完整的窗口管理、虚拟文件系统、终端仿真器和超过 200 个实用应用程序。
+一个完全运行在浏览器中的 Linux 桌面环境，提供完整的窗口管理、虚拟文件系统、终端仿真器和 200+ 个实用应用程序。最新版本 v3.2.0 新增 3 个高价值工具：JWT 解码、配色方案提取、密码强度分析。
 
 ## 在线体验
 
-访问 https://saya-ch.github.io/WebLinuxOS/ 即可在浏览器中体验完整的 WebLinuxOS 桌面环境，无需任何安装。
+访问 https://saya-ch.github.io/WebLinuxOS/ 即可在浏览器中体验完整的 WebLinuxOS 桌面环境，无需任何安装。GitHub Pages 自动部署，刷新即可获取最新版本。
 
 ## 核心亮点
 
@@ -42,6 +42,9 @@
 - 代码编辑器 — 基础代码编辑和语法高亮
 - AI 编程助手 Pro — 智能代码生成、解释、优化、代码片段库（新增）
 - 开发者工具箱 Pro — Base64/URL/JSON/正则/UUID/时间戳/颜色（7 合 1）
+- JWT 解码与验证 — Header/Payload/Signature 解析、exp/nbf/iat 校验、alg 安全提醒（新增）
+- 配色方案提取器 — 上传图片提取主色，WCAG 对比度检查，多格式导出（CSS/SCSS/JSON/Tailwind）（新增）
+- 密码强度分析 — 字符集熵、理论破解时间、随机强密码生成、公开泄露库（HIBP k-anonymity）在线校验（新增）
 - JSON 格式化器 — 美化和压缩 JSON
 - 正则表达式测试器 — 实时匹配高亮
 - API 测试器 — HTTP 请求测试
@@ -86,6 +89,7 @@
 - 实时汇率数据（Frankfurter.app，免费）
 - IP 地理位置查询（ipapi.co，免费）
 - 新闻资讯（HN Algolia API，免费）
+- 公开泄露密码库查询（Have I Been Pwned / pwnedpasswords.com，免费，仅发送 SHA-1 前 5 位）
 - 所有 API 均通过 HTTPS 调用，无认证需求
 
 ## 技术栈
@@ -309,6 +313,7 @@ MIT License — 详见 LICENSE 文件。
 - [Frankfurter.app](https://www.frankfurter.app/) — 免费汇率数据
 - [ipapi.co](https://ipapi.co/) — IP 地理信息
 - [HN Algolia](https://hn.algolia.com/api) — Hacker News 搜索 API
+- [Have I Been Pwned](https://haveibeenpwned.com/Passwords) — 公开泄露密码查询（k-anonymity 协议）
 - [React](https://react.dev/) — 前端框架
 - [Vite](https://vitejs.dev/) — 构建工具
 - [Zustand](https://github.com/pmndrs/zustand) — 状态管理

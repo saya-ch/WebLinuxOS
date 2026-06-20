@@ -243,6 +243,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIProgrammingAssistantPro: () => import('../../apps/AIProgrammingAssistantPro'),
   RealTimeDataDashboard: () => import('../../apps/RealTimeDataDashboard'),
   CollaborativeWhiteboardEnhanced: () => import('../../apps/CollaborativeWhiteboardEnhanced'),
+  // === v3.2.0 新增应用（显式注册以优化打包） ===
+  JwtDecoder: () => import('../../apps/JwtDecoder'),
+  ColorPaletteExtractor: () => import('../../apps/ColorPaletteExtractor'),
+  PasswordStrength: () => import('../../apps/PasswordStrength'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
