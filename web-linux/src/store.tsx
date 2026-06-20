@@ -199,16 +199,14 @@ export const useStore = create<Store>((set, get) => ({
   addNotification: (notification) => {
     try {
       const state = get()
-      // 去重：2 秒内相同 title + message 的通知不重复添加
       const now = Date.now()
+      // 去重：2 秒内相同 title + message 的通知不重复添加
       const duplicate = state.notifications.find(
         (n) =>
           n.title === notification.title &&
           n.message === notification.message &&
-          // 若已有相同 ID，视作重复
-          n.id &&
-          // 简单保护：同一消息在最近 2 秒内不重复
-          (state.notifications.length > 0)
+          n.timestamp &&
+          (now - new Date(n.timestamp).getTime()) < 2000
       )
       if (duplicate) {
         return
