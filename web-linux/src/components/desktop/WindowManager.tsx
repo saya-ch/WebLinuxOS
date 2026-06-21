@@ -247,6 +247,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   JwtDecoder: () => import('../../apps/JwtDecoder'),
   ColorPaletteExtractor: () => import('../../apps/ColorPaletteExtractor'),
   PasswordStrength: () => import('../../apps/PasswordStrength'),
+  // === v5.0.0 新增创新应用 ===
+  NetworkToolkit: () => import('../../apps/NetworkToolkit'),
+  CodeLab: () => import('../../apps/CodeLab'),
+  SmartCodeAssistant: () => import('../../apps/SmartCodeAssistant'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
