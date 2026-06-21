@@ -55,15 +55,19 @@ if (typeof window !== 'undefined') {
     const cspMeta = document.createElement('meta')
     cspMeta.httpEquiv = 'Content-Security-Policy'
     // 允许同域资源、内联样式与脚本；严格限制外部脚本与 unsafe-eval
+    // 注意：此处仅作为浏览器端策略提示；生产环境应主要依赖服务器响应头
+    // 对于 WebLinuxOS，需要：
+    // - 允许 https: 连接，以便天气/新闻/汇率/AI 等应用调用合规公开 API
+    // - 保留 data: 与 blob: 以便应用内可渲染内容
     cspMeta.content = [
-      "default-src 'self'",
+      "default-src 'self' https:",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
+      "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' wss: ws:",
-      "media-src 'self' blob:",
-      "frame-src 'self'",
+      "connect-src 'self' https: wss: ws:",
+      "media-src 'self' blob: https:",
+      "frame-src 'self' https: data:",
       "object-src 'none'",
       "base-uri 'self'",
     ].join('; ')

@@ -94,10 +94,15 @@ const GlobalSearch = memo(function GlobalSearch({ isOpen, onClose }: GlobalSearc
       })
     }
 
-    if (/^\d+[\s+\-*/]\d+/.test(query)) {
+    // 安全的简易表达式计算器：仅允许数字、空格、+ - * / ( ) . 百分号
+    if (/^[\d+\-*/().%\s×÷]+$/.test(query) && /[+\-*/%]/.test(query)) {
       try {
-        const result = eval(query.replace(/×/g, '*').replace(/÷/g, '/'))
-        if (!isNaN(result)) {
+        const safeExpression = query
+          .replace(/×/g, '*')
+          .replace(/÷/g, '/')
+          .replace(/\s+/g, '')
+        const result = Function('"use strict"; return (' + safeExpression + ')')()
+        if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
           searchResults.push({
             type: 'command',
             id: 'calculation',
@@ -105,10 +110,16 @@ const GlobalSearch = memo(function GlobalSearch({ isOpen, onClose }: GlobalSearc
             description: '计算结果',
             icon: <span>🧮</span>,
             score: 30,
-            action: () => addNotification({ title: '计算结果', message: `${query} = ${result}`, type: 'info' }),
+            action: () =>
+              addNotification({
+                title: '计算结果',
+                message: `${query} = ${result}`,
+                type: 'info',
+              }),
           })
         }
       } catch {
+        // 忽略计算错误
       }
     }
 

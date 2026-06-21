@@ -49,9 +49,31 @@ function evaluateFormula(formula: string, cells: Record<string, CellData>): stri
   }
   if (upper.startsWith('=') && upper.length > 1) {
     const ref = upper.slice(1)
-    if (cells[ref]) {
+    // 优先匹配：单元格引用 + 简单算术运算（例如 =A1+B1、=100*5）
+    if (/^[A-J]\d+$/.test(ref) && cells[ref]) {
       const v = parseFloat(cells[ref].value)
       return isNaN(v) ? cells[ref].value : v.toString()
+    }
+    // 安全计算：A-J 列引用、数字、空格、加减乘除、括号
+    if (/^[\sA-J\d+\-*/().,\s]+$/.test(ref)) {
+      try {
+        const expanded = ref.replace(/([A-J])(\d+)/g, (_m, col, row) => {
+          const key = col + row
+          const cell = cells[key]
+          if (!cell) return '0'
+          const cellValue = cell.value.startsWith('=')
+            ? evaluateFormula(cell.value, cells)
+            : cell.value
+          const n = parseFloat(cellValue)
+          return isNaN(n) ? '0' : n.toString()
+        })
+        const result = Function('"use strict"; return (' + expanded + ')')()
+        if (typeof result === 'number' && isFinite(result)) {
+          return Number(result.toFixed(8)).toString()
+        }
+      } catch {
+        // 静默失败，返回原表达式
+      }
     }
   }
 
