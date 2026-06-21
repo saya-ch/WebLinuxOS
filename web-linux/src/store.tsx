@@ -15,6 +15,7 @@ import {
   countNodes,
   searchFiles,
   sortNodes,
+  invalidateCache,
 } from './store/fileUtils'
 import {
   STORAGE_KEYS,
@@ -305,6 +306,7 @@ export const useStore = create<Store>((set, get) => ({
         duration: 5000,
       })
 
+      invalidateCache()
       clearAllStorage()
       set({
         files: defaultFiles,

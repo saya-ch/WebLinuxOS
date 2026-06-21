@@ -23,6 +23,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const [dragOpacity, setDragOpacity] = useState(1)
   const [snapHint, setSnapHint] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState(false)
+  
   const stateRef = useRef({
     startX: 0,
     startY: 0,
@@ -33,6 +34,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   })
   const dragStartPos = useRef({ x: 0, y: 0 })
   const hasDragged = useRef(false)
+  const resizeRafRef = useRef<number | null>(null)
+  const dragRafRef = useRef<number | null>(null)
 
   const app = apps.find((a) => a.id === win.appId)
 
@@ -137,14 +140,13 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const handleDragStart = useCallback(
     (e: React.MouseEvent) => {
       if (win.maximized) {
-        // 从最大化状态拖动时，先还原窗口，并基于鼠标位置智能还原
         const newW = Math.min(win.width, window.innerWidth - 80)
         const newH = Math.min(win.height, window.innerHeight - 80)
         const newX = Math.max(8, Math.min(window.innerWidth - newW - 8, e.clientX - newW / 2))
         const newY = Math.max(8, Math.min(window.innerHeight - newH - 48, e.clientY - 20))
         updateWindowPosition(win.id, newX, newY)
         updateWindowSize(win.id, newW, newH)
-        maximizeWindow(win.id) // 切换回非最大化
+        maximizeWindow(win.id)
         stateRef.current = {
           startX: e.clientX,
           startY: e.clientY,
@@ -205,7 +207,6 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     const thirdWidth = screenW / 3
     const twoThirdsWidth = (screenW * 2) / 3
 
-    // 检查边缘吸附
     if (mouseX < EDGE_THRESHOLD) {
       if (mouseY < EDGE_THRESHOLD) {
         return { x: 0, y: 0, width: halfWidth, height: halfHeight, snap: 'TOP-LEFT' }
@@ -251,7 +252,6 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   useEffect(() => {
     if (!dragging && !resizing) return
 
-    let rafId: number | null = null
     let lastUpdateTime = 0
     let snapLayout: ReturnType<typeof handleSnapLayout> | null = null
 
@@ -260,93 +260,99 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       if (now - lastUpdateTime < 16) return
       lastUpdateTime = now
 
-      if (rafId) cancelAnimationFrame(rafId)
-
-      rafId = requestAnimationFrame(() => {
-        const ref = stateRef.current
+      const ref = stateRef.current
+      
+      if (dragging) {
+        snapLayout = handleSnapLayout(e)
         
-        if (dragging) {
-          // 检查分屏吸附布局
-          snapLayout = handleSnapLayout(e)
-          
-          if (snapLayout) {
-            setSnapHint(snapLayout.snap)
-            return
-          }
-
-          const dx = e.clientX - ref.startX
-          const dy = e.clientY - ref.startY
-
-          if (!hasDragged.current && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-            hasDragged.current = true
-          }
-
-          const screenW = window.innerWidth
-          const screenH = window.innerHeight
-          let newX = ref.startWindowX + dx
-          let newY = ref.startWindowY + dy
-
-          const SNAP_THRESHOLD = 20
-          const w = ref.startWidth
-          const h = ref.startHeight
-
-          let newSnap: string | null = null
-
-          if (Math.abs(newX) < SNAP_THRESHOLD) { newX = 0; newSnap = 'LEFT' }
-          else if (Math.abs(newX + w - screenW) < SNAP_THRESHOLD) { newX = screenW - w; newSnap = 'RIGHT' }
-
-          if (Math.abs(newY) < SNAP_THRESHOLD) { newY = 0; newSnap = newSnap ? newSnap + '+TOP' : 'TOP' }
-          else if (Math.abs(newY + h - (screenH - 40)) < SNAP_THRESHOLD) { newY = screenH - h - 40; newSnap = newSnap ? newSnap + '+BOTTOM' : 'BOTTOM' }
-
-          if (dragging && e.clientY < 8) {
-            newSnap = 'MAXIMIZE'
-          }
-
-          newX = Math.max(-w + 80, Math.min(newX, screenW - 80))
-          newY = Math.max(0, Math.min(newY, screenH - 40 - 40))
-
-          setSnapHint(newSnap)
-          updateWindowPosition(win.id, newX, newY)
+        if (snapLayout) {
+          setSnapHint(snapLayout.snap)
+          return
         }
-        if (resizing) {
-          const dx = e.clientX - ref.startX
-          const dy = e.clientY - ref.startY
-          let newWidth = ref.startWidth
-          let newHeight = ref.startHeight
-          let newX = ref.startWindowX
-          const newY = ref.startWindowY
-          const maxW = window.innerWidth - newX - 8
-          const maxH = window.innerHeight - 40 - newY - 8
-          const minW = Math.max(win.minWidth || 320, win.minWidth)
-          const minH = Math.max(win.minHeight || 240, win.minHeight)
 
-          if (resizing === 'right' || resizing === 'corner') {
-            newWidth = Math.max(minW, Math.min(ref.startWidth + dx, maxW))
-          }
-          if (resizing === 'left') {
-            const rawWidth = ref.startWidth - dx
-            newWidth = Math.max(minW, Math.min(rawWidth, ref.startWindowX + ref.startWidth - 8))
-            if (newWidth === minW && dx > 0) {
-              newX = ref.startWindowX + ref.startWidth - minW
-            } else {
-              newX = ref.startWindowX + (ref.startWidth - newWidth)
-            }
-            newX = Math.max(8, newX)
-          }
-          if (resizing === 'bottom' || resizing === 'corner') {
-            newHeight = Math.max(minH, Math.min(ref.startHeight + dy, maxH))
-          }
+        const dx = e.clientX - ref.startX
+        const dy = e.clientY - ref.startY
 
+        if (!hasDragged.current && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+          hasDragged.current = true
+        }
+
+        const screenW = window.innerWidth
+        const screenH = window.innerHeight
+        let newX = ref.startWindowX + dx
+        let newY = ref.startWindowY + dy
+
+        const SNAP_THRESHOLD = 20
+        const w = ref.startWidth
+        const h = ref.startHeight
+
+        let newSnap: string | null = null
+
+        if (Math.abs(newX) < SNAP_THRESHOLD) { newX = 0; newSnap = 'LEFT' }
+        else if (Math.abs(newX + w - screenW) < SNAP_THRESHOLD) { newX = screenW - w; newSnap = 'RIGHT' }
+
+        if (Math.abs(newY) < SNAP_THRESHOLD) { newY = 0; newSnap = newSnap ? newSnap + '+TOP' : 'TOP' }
+        else if (Math.abs(newY + h - (screenH - 40)) < SNAP_THRESHOLD) { newY = screenH - h - 40; newSnap = newSnap ? newSnap + '+BOTTOM' : 'BOTTOM' }
+
+        if (dragging && e.clientY < 8) {
+          newSnap = 'MAXIMIZE'
+        }
+
+        newX = Math.max(-w + 80, Math.min(newX, screenW - 80))
+        newY = Math.max(0, Math.min(newY, screenH - 40 - 40))
+
+        setSnapHint(newSnap)
+        
+        if (dragRafRef.current) cancelAnimationFrame(dragRafRef.current)
+        dragRafRef.current = requestAnimationFrame(() => {
+          updateWindowPosition(win.id, newX, newY)
+        })
+      }
+      if (resizing) {
+        const dx = e.clientX - ref.startX
+        const dy = e.clientY - ref.startY
+        let newWidth = ref.startWidth
+        let newHeight = ref.startHeight
+        let newX = ref.startWindowX
+        const newY = ref.startWindowY
+        const maxW = window.innerWidth - newX - 8
+        const maxH = window.innerHeight - 40 - newY - 8
+        const minW = Math.max(win.minWidth || 320, win.minWidth)
+        const minH = Math.max(win.minHeight || 240, win.minHeight)
+
+        if (resizing === 'right' || resizing === 'corner') {
+          newWidth = Math.max(minW, Math.min(ref.startWidth + dx, maxW))
+        }
+        if (resizing === 'left') {
+          const rawWidth = ref.startWidth - dx
+          newWidth = Math.max(minW, Math.min(rawWidth, ref.startWindowX + ref.startWidth - 8))
+          if (newWidth === minW && dx > 0) {
+            newX = ref.startWindowX + ref.startWidth - minW
+          } else {
+            newX = ref.startWindowX + (ref.startWidth - newWidth)
+          }
+          newX = Math.max(8, newX)
+        }
+        if (resizing === 'bottom' || resizing === 'corner') {
+          newHeight = Math.max(minH, Math.min(ref.startHeight + dy, maxH))
+        }
+
+        if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current)
+        resizeRafRef.current = requestAnimationFrame(() => {
           updateWindowPosition(win.id, newX, newY)
           updateWindowSize(win.id, newWidth, newHeight)
-        }
-      })
+        })
+      }
     }
 
     const handleMouseUp = (e: MouseEvent) => {
-      if (rafId) {
-        cancelAnimationFrame(rafId)
-        rafId = null
+      if (dragRafRef.current) {
+        cancelAnimationFrame(dragRafRef.current)
+        dragRafRef.current = null
+      }
+      if (resizeRafRef.current) {
+        cancelAnimationFrame(resizeRafRef.current)
+        resizeRafRef.current = null
       }
 
       if (dragging && snapLayout) {
@@ -365,7 +371,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     document.addEventListener('mousemove', handleMouseMove, { passive: true })
     document.addEventListener('mouseup', handleMouseUp, { passive: true })
     return () => {
-      if (rafId) cancelAnimationFrame(rafId)
+      if (dragRafRef.current) cancelAnimationFrame(dragRafRef.current)
+      if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current)
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
