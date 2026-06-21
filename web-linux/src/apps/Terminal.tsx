@@ -175,7 +175,7 @@ const COMMANDS = [
   'calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev',
   'cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'starwars', 'asciiart', 'matrix', 'figlet', 'banner', 'lolcat', 'bacon', 'jq', 'whois', 'host', 'fetch',
   'json', 'urlencode', 'urldecode', 'uuid', 'password', 'color', 'currency', 'units', 'timeconv',
-  'joke', 'advice', 'flip', 'rps',
+  'joke', 'advice', 'flip', 'rps', 'timestamp', 'tsconvert',
   'chmod', 'chown', 'ln', 'stat', 'du', 'last', 'who', 'w', 'id', 'groups', 'users', 'uptime', 'free', 'vmstat', 'iostat',
   'htop', 'htop-sim', 'systemctl-list', 'cron', 'at', 'watch', 'nc', 'nmap', 'traceroute', 'nslookup', 'dig', 'tcpdump',
   'bc', 'expr', 'seq', 'yes', 'printf', 'tty', 'wall', 'write', 'mesg', 'talk', 'strace', 'ltrace',
@@ -470,7 +470,7 @@ export default function Terminal() {
   加密工具: base64, unbase64, hash, rev, openssl, ssh-keygen - 文本编码解码工具
   数学工具: calc, prime, factor, roman, bc, expr, seq - 计算器和数学工具
   视觉效果: matrix, figlet, lolcat, cowthink, banner - ASCII艺术
-  实用工具: password, uuid, color, currency, units, timeconv, json, urlencode, urldecode
+  实用工具: password, uuid, color, currency, units, timeconv, json, urlencode, urldecode, timestamp, tsconvert
 
 快捷键:
   Ctrl+Shift+L - 切换启动器
@@ -1780,6 +1780,63 @@ export default function Terminal() {
           }
         }
         break
+      case 'timestamp': {
+        const now = Date.now()
+        output = [
+          `⏰ 当前时间戳`,
+          ``,
+          `Unix时间戳 (毫秒): ${now}`,
+          `Unix时间戳 (秒):   ${Math.floor(now / 1000)}`,
+          `ISO格式:          ${new Date().toISOString()}`,
+          `本地时间:         ${new Date().toLocaleString()}`,
+          `UTC时间:          ${new Date().toUTCString()}`,
+        ].join('\n')
+        break
+      }
+      case 'tsconvert': {
+        if (args.length === 0) {
+          output = [
+            `🕐 时间戳转换工具`,
+            ``,
+            `用法: tsconvert <时间戳>`,
+            `       tsconvert <日期字符串>`,
+            ``,
+            `示例:`,
+            `  tsconvert 1716633600000`,
+            `  tsconvert 1716633600`,
+            `  tsconvert "2024-05-25 10:00:00"`,
+            ``,
+            `💡 支持毫秒和秒级时间戳，以及日期字符串`,
+          ].join('\n')
+        } else {
+          const input = args.join(' ')
+          const num = parseFloat(input)
+          
+          let date: Date
+          if (!isNaN(num)) {
+            date = new Date(num.toString().length >= 13 ? num : num * 1000)
+          } else {
+            date = new Date(input)
+          }
+          
+          if (isNaN(date.getTime())) {
+            output = `tsconvert: 无法解析输入 "${input}"`
+          } else {
+            output = [
+              `🕐 时间戳转换结果`,
+              ``,
+              `输入:             ${input}`,
+              `Unix时间戳(毫秒): ${date.getTime()}`,
+              `Unix时间戳(秒):   ${Math.floor(date.getTime() / 1000)}`,
+              `ISO格式:          ${date.toISOString()}`,
+              `本地时间:         ${date.toLocaleString()}`,
+              `UTC时间:          ${date.toUTCString()}`,
+              `时间戳(十六进制): 0x${date.getTime().toString(16).toUpperCase()}`,
+            ].join('\n')
+          }
+        }
+        break
+      }
       case 'joke': {
         const jokes = [
           { q: '为什么程序员不喜欢户外野餐？', a: '因为有太多bug！🐛' },
