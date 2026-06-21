@@ -251,6 +251,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   NetworkToolkit: () => import('../../apps/NetworkToolkit'),
   CodeLab: () => import('../../apps/CodeLab'),
   SmartCodeAssistant: () => import('../../apps/SmartCodeAssistant'),
+  // === v6.4.0 新增应用 ===
+  KnowledgeGarden: () => import('../../apps/KnowledgeGarden'),
+  WebClipper: () => import('../../apps/WebClipper'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
