@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
+import { TerminalIcon, SearchIcon, WifiIcon, Volume2, VolumeX, BatteryIcon, BellIcon, SettingsIcon, MoonIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, PinIcon, BluetoothIcon, GlobeIcon, Sun as SunIcon2, Zap } from '../../icons'
 
 interface WindowContextMenuProps {
   winId: string
@@ -69,7 +70,7 @@ const WindowContextMenu = memo(function WindowContextMenu({
           onClose()
         }}
       >
-        <span>🔄</span>
+        <span><RefreshCwIcon size={14} /></span>
         <span>还原</span>
       </div>
       <div
@@ -80,7 +81,7 @@ const WindowContextMenu = memo(function WindowContextMenu({
           onClose()
         }}
       >
-        <span>➖</span>
+        <span><MinusIcon size={14} /></span>
         <span>最小化</span>
       </div>
       <div
@@ -91,7 +92,7 @@ const WindowContextMenu = memo(function WindowContextMenu({
           onClose()
         }}
       >
-        <span>⬛</span>
+        <span><SquareIcon size={14} /></span>
         <span>{win?.maximized ? '还原' : '最大化'}</span>
       </div>
       <div
@@ -102,7 +103,7 @@ const WindowContextMenu = memo(function WindowContextMenu({
           onClose()
         }}
       >
-        <span>✖</span>
+        <span><XIcon size={14} /></span>
         <span>关闭</span>
       </div>
     </div>
@@ -164,7 +165,7 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
   return (
     <div style={style} onClick={(e) => e.stopPropagation()}>
       <div style={itemStyle} {...hoverHandlers} onClick={() => setShowSettings(!showSettings)}>
-        <span>⚙️</span>
+        <span><SettingsIcon size={14} /></span>
         <span>任务栏设置</span>
       </div>
       {showSettings && (
@@ -177,7 +178,7 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
             {...hoverHandlers}
             onClick={(e) => e.stopPropagation()}
           >
-            <span>📍</span>
+            <span><PinIcon size={12} /></span>
             <span>位置：底部</span>
           </div>
           <div
@@ -185,7 +186,7 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
             {...hoverHandlers}
             onClick={(e) => e.stopPropagation()}
           >
-            <span>📌</span>
+            <span><PinIcon size={12} /></span>
             <span>显示已固定应用</span>
           </div>
           <div
@@ -193,7 +194,7 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
             {...hoverHandlers}
             onClick={(e) => e.stopPropagation()}
           >
-            <span>🔔</span>
+            <span><BellIcon size={12} /></span>
             <span>显示通知</span>
           </div>
         </div>
@@ -255,7 +256,7 @@ const NotificationCenter = memo(function NotificationCenter({ onClose }: Notific
           justifyContent: 'space-between',
         }}
       >
-        <span>🔔 通知中心</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><BellIcon size={14} /> 通知中心</span>
         <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 400 }}>
           {notifications.length} 条
         </span>
@@ -422,16 +423,16 @@ const Taskbar = memo(function Taskbar() {
   }
 
   const getBatteryIcon = () => {
-    if (isCharging) return '⚡'
-    if (battery <= 10) return '🪫'
-    if (battery <= 30) return '🔋'
-    return '🔋'
+    if (isCharging) return <PowerIcon size={14} />
+    if (battery <= 10) return <BatteryIcon size={14} />
+    if (battery <= 30) return <BatteryIcon size={14} />
+    return <BatteryIcon size={14} />
   }
 
   const getVolumeIcon = () => {
-    if (volume === 0) return '🔇'
-    if (volume < 50) return '🔉'
-    return '🔊'
+    if (volume === 0) return <VolumeX size={14} />
+    if (volume < 50) return <Volume2 size={14} />
+    return <Volume2 size={14} />
   }
 
   const handleDesktopSwitch = useCallback(
@@ -464,7 +465,7 @@ const Taskbar = memo(function Taskbar() {
           onClick={toggleLauncher}
           title="启动器 (Ctrl+Shift+L)"
         >
-          🐧
+          <TerminalIcon size={18} />
         </div>
 
         <div style={{ width: '1px', height: '24px', background: 'var(--window-border)', margin: '0 4px' }} />
@@ -565,7 +566,7 @@ const Taskbar = memo(function Taskbar() {
           }}
           style={{ cursor: 'pointer' }}
         >
-          🔍
+          <SearchIcon size={14} />
         </div>
         <div
           className="taskbar-tray-item"
@@ -576,7 +577,7 @@ const Taskbar = memo(function Taskbar() {
           }}
           style={{ cursor: 'pointer' }}
         >
-          ⚡
+          <PowerIcon size={14} />
         </div>
         <div
           className="taskbar-tray-item"
@@ -584,7 +585,7 @@ const Taskbar = memo(function Taskbar() {
           onClick={() => openApp('network-monitor')}
           style={{ cursor: 'pointer' }}
         >
-          {wifiEnabled ? '📶' : '📵'}
+          {wifiEnabled ? <WifiIcon size={14} /> : <WifiOffIcon size={14} />}
         </div>
         <div
           className="taskbar-tray-item"
@@ -611,7 +612,7 @@ const Taskbar = memo(function Taskbar() {
           }}
           style={{ cursor: 'pointer', position: 'relative' }}
         >
-          🔔
+          <BellIcon size={14} />
           {notifications.length > 0 && (
             <span
               style={{
@@ -727,14 +728,14 @@ const Taskbar = memo(function Taskbar() {
               onClick={() => setWifiEnabled(!wifiEnabled)}
               title="Wi-Fi"
             >
-              📶
+              <WifiIcon size={16} />
             </div>
             <div
               className={`quick-settings-item ${bluetoothEnabled ? 'active' : ''}`}
               onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
               title="蓝牙"
             >
-              🔵
+              <BluetoothIcon size={16} />
             </div>
             <div
               className={`quick-settings-item ${nightMode ? 'active' : ''}`}
@@ -744,21 +745,21 @@ const Taskbar = memo(function Taskbar() {
               }}
               title="夜间模式"
             >
-              🌙
+              {nightMode ? <SunIcon size={16} /> : <MoonIcon size={16} />}
             </div>
             <div className="quick-settings-item" onClick={() => openApp('network-monitor')} title="网络设置">
-              🌐
+              <GlobeIcon size={16} />
             </div>
             <div className="quick-settings-item" onClick={() => openApp('settings')} title="系统设置">
-              ⚙️
+              <SettingsIcon size={16} />
             </div>
             <div className="quick-settings-item" onClick={() => openApp('power-manager')} title="电源管理">
-              ⚡
+              <PowerIcon size={16} />
             </div>
           </div>
 
           <div className="quick-settings-slider">
-            <span>🔊</span>
+            <Volume2 size={14} />
             <input
               type="range"
               min="0"
@@ -770,7 +771,7 @@ const Taskbar = memo(function Taskbar() {
           </div>
 
           <div className="quick-settings-slider">
-            <span>💡</span>
+            <SunIcon2 size={14} />
             <input
               type="range"
               min="30"
@@ -782,7 +783,7 @@ const Taskbar = memo(function Taskbar() {
           </div>
 
           <div className="quick-settings-slider">
-            <span>🔋</span>
+            <BatteryIcon size={14} />
             <input
               type="range"
               min="0"

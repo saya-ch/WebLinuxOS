@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
 import { useStore } from '../../store'
+import { TerminalIcon, FolderIcon, GlobeIcon, SettingsIcon, InfoIcon, CalculatorIcon, StickyNoteIcon, ImageIcon, SparklesIcon, PaletteIcon, HelpIcon, CodeIcon } from '../../icons'
 
 interface Particle {
   id: number
@@ -84,7 +85,7 @@ const DesktopIcon = memo(function DesktopIcon({
 
 interface MenuItem {
   label: string
-  icon: string
+  icon: React.ReactNode
   action: () => void
 }
 
@@ -379,20 +380,20 @@ const Desktop = memo(function Desktop() {
   }, [liveWallpaper, setLiveWallpaper])
 
   const menuItems: MenuEntry[] = useMemo(() => [
-    { label: '打开终端', icon: '💻', action: () => openApp('terminal') },
-    { label: '打开文件管理器', icon: '📁', action: () => openApp('files') },
-    { label: '打开浏览器', icon: '🌐', action: () => openApp('browser') },
+    { label: '打开终端', icon: <TerminalIcon size={16} />, action: () => openApp('terminal') },
+    { label: '打开文件管理器', icon: <FolderIcon size={16} />, action: () => openApp('files') },
+    { label: '打开浏览器', icon: <GlobeIcon size={16} />, action: () => openApp('browser') },
     { type: 'separator' as const },
-    { label: '更换壁纸', icon: '🖼️', action: handleWallpaperChange },
-    { label: liveWallpaperEnabled ? '关闭动态壁纸' : '开启动态壁纸', icon: '✨', action: toggleLiveWallpaper },
-    { label: '切换动态壁纸', icon: '🎨', action: cycleLiveWallpaper },
-    { label: '显示设置', icon: '⚙️', action: () => openApp('settings') },
+    { label: '更换壁纸', icon: <ImageIcon size={16} />, action: handleWallpaperChange },
+    { label: liveWallpaperEnabled ? '关闭动态壁纸' : '开启动态壁纸', icon: <SparklesIcon size={16} />, action: toggleLiveWallpaper },
+    { label: '切换动态壁纸', icon: <PaletteIcon size={16} />, action: cycleLiveWallpaper },
+    { label: '显示设置', icon: <SettingsIcon size={16} />, action: () => openApp('settings') },
     { type: 'separator' as const },
-    { label: '打开计算器', icon: '🔢', action: () => openApp('calculator') },
-    { label: '打开记事本', icon: '📝', action: () => openApp('notepad') },
+    { label: '打开计算器', icon: <CalculatorIcon size={16} />, action: () => openApp('calculator') },
+    { label: '打开记事本', icon: <StickyNoteIcon size={16} />, action: () => openApp('notepad') },
     { type: 'separator' as const },
-    { label: '系统信息', icon: 'ℹ️', action: () => openApp('about') },
-    { label: '帮助', icon: '❓', action: () => openApp('help') },
+    { label: '系统信息', icon: <InfoIcon size={16} />, action: () => openApp('about') },
+    { label: '帮助', icon: <HelpIcon size={16} />, action: () => openApp('help') },
   ], [openApp, handleWallpaperChange, liveWallpaperEnabled, toggleLiveWallpaper, cycleLiveWallpaper])
 
   const wallpaperStyle = wallpaper
@@ -412,7 +413,7 @@ const Desktop = memo(function Desktop() {
         </div>
         
         <div className="splash-logo">
-          🐧
+          <TerminalIcon size={48} />
         </div>
         <div className="splash-title">
           WebLinuxOS

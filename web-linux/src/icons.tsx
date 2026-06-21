@@ -7,7 +7,9 @@ import {
   Blocks, MessageCircle, ClipboardList, Zap, Timer, Heart, Wallpaper, GitBranch, StickyNote, Atom, Pencil, RefreshCw, ChevronRight,
   ChevronDown, Minus, Square, X, Plus, Volume2, VolumeX, Moon, FileImage, FileJson, FileCode,
   PlayCircle, Gamepad2, Sparkles, Wand2, Keyboard, Mic2, GraduationCap, Wrench, Cpu,
-  File as FileIconL, AppWindow, Network
+  File as FileIconL, AppWindow, Network, Pin, PinOff, Trash2, Copy, GripVertical,
+  ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
+  Flame, Coffee, Database, Link, Link2, Terminal2, Bug, Binary, Hash, TypeOutline, Bell
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -91,6 +93,41 @@ export const FileIcon = FileIconL
 export const AppIcon = AppWindow
 export const ChartIcon = Blocks
 export const ApiLabIcon = Network
+export const BellIcon = Bell
+
+// Additional icons for UI (replacing emojis)
+export const PinIcon = Pin
+export const PinOffIcon = PinOff
+export const TrashIcon = Trash2
+export const CopyIcon = Copy
+export const GripIcon = GripVertical
+export const ChevronUpIcon = ChevronUp
+export const ChevronLeftIcon = ChevronLeft
+export const ExternalLinkIcon = ExternalLink
+export const DownloadIcon = Download
+export const UploadIcon = Upload
+export const EyeIcon = Eye
+export const EyeOffIcon = EyeOff
+export const CheckIcon = Check
+export const AlertIcon = AlertTriangle
+export const FlameIcon = Flame
+export const CoffeeIcon = Coffee
+export const DatabaseIcon = Database
+export const LinkIcon = Link
+export const Link2Icon = Link2
+export const Terminal2Icon = Terminal2
+export const BugIcon = Bug
+export const BinaryIcon = Binary
+export const HashIcon = Hash
+export const TypeOutlineIcon = TypeOutline
+export const LinuxIcon = Terminal
+export const MenuIcon = ListTodo
+export const FileManagerIcon = Folder
+export const MonitorIcon = AppWindow
+export const PowerIcon = Zap
+export const NetworkIcon = Network
+export const NotificationIcon = Bell
+export const BellIcon = Bell
 
 export { ChevronRight, ChevronDown, Minus, Square, X, Plus, Volume2, VolumeX, Moon, Sun as SunIcon }
 

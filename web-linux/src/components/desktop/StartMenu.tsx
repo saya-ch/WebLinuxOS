@@ -1,22 +1,23 @@
 import { useState, useMemo, memo } from 'react'
 import { useStore } from '../../store'
+import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, Gamepad2 } from '../../icons'
 
 interface CategoryDef {
   id: string
   name: string
-  icon: string
+  icon: React.ReactNode
 }
 
 const categories: CategoryDef[] = [
-  { id: 'pinned', name: '已固定', icon: '📌' },
-  { id: 'all', name: '全部应用', icon: '📋' },
-  { id: 'system', name: '系统', icon: '⚙️' },
-  { id: 'office', name: '办公', icon: '📄' },
-  { id: 'internet', name: '互联网', icon: '🌐' },
-  { id: 'multimedia', name: '多媒体', icon: '🎵' },
-  { id: 'utilities', name: '工具', icon: '🔧' },
-  { id: 'development', name: '开发', icon: '💻' },
-  { id: 'games', name: '游戏', icon: '🎮' },
+  { id: 'pinned', name: '已固定', icon: <PinIcon size={16} /> },
+  { id: 'all', name: '全部应用', icon: <ListTodoIcon size={16} /> },
+  { id: 'system', name: '系统', icon: <SettingsIcon size={16} /> },
+  { id: 'office', name: '办公', icon: <FileTextIcon size={16} /> },
+  { id: 'internet', name: '互联网', icon: <GlobeIcon size={16} /> },
+  { id: 'multimedia', name: '多媒体', icon: <MusicIcon size={16} /> },
+  { id: 'utilities', name: '工具', icon: <WrenchIcon size={16} /> },
+  { id: 'development', name: '开发', icon: <CodeIcon size={16} /> },
+  { id: 'games', name: '游戏', icon: <Gamepad2 size={16} /> },
 ]
 
 const StartMenu = memo(function StartMenu() {
@@ -107,7 +108,7 @@ const StartMenu = memo(function StartMenu() {
                 closeLauncher()
               }}
             >
-              <span>ℹ️</span>
+              <span><InfoIcon size={16} /></span>
               <span>系统信息</span>
             </div>
             <div
@@ -117,7 +118,7 @@ const StartMenu = memo(function StartMenu() {
                 closeLauncher()
               }}
             >
-              <span>⚙️</span>
+              <span><SettingsIcon size={16} /></span>
               <span>设置</span>
             </div>
             <div
@@ -127,7 +128,7 @@ const StartMenu = memo(function StartMenu() {
                 closeLauncher()
               }}
             >
-              <span>📖</span>
+              <span><BookIcon size={16} /></span>
               <span>关于</span>
             </div>
           </div>
@@ -160,7 +161,7 @@ const StartMenu = memo(function StartMenu() {
                 pointerEvents: 'none',
               }}
             >
-              🔍
+              <SearchIcon size={14} />
             </span>
             {search && (
               <span
@@ -175,7 +176,7 @@ const StartMenu = memo(function StartMenu() {
                   color: 'var(--text-secondary)',
                 }}
               >
-                ✖
+                X
               </span>
             )}
           </div>
@@ -192,7 +193,9 @@ const StartMenu = memo(function StartMenu() {
                 justifyContent: 'space-between',
               }}
             >
-              <span>📌 快速启动（{pinnedAppObjects.length}）</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <PinIcon size={12} /> 快速启动（{pinnedAppObjects.length}）
+              </span>
               {pinnedAppObjects.length === 0 && (
                 <span style={{ fontSize: '10px' }}>点击应用旁的图标可固定</span>
               )}
@@ -244,7 +247,7 @@ const StartMenu = memo(function StartMenu() {
                       borderRadius: '4px',
                     }}
                   >
-                    {isPinned ? '📌' : '📍'}
+                    {isPinned ? <PinIcon size={12} /> : <PinOffIcon size={12} />}
                   </span>
                 </div>
               )
@@ -264,7 +267,7 @@ const StartMenu = memo(function StartMenu() {
                   gap: '8px',
                 }}
               >
-                <span style={{ fontSize: '32px' }}>🔍</span>
+                <SearchIcon size={32} />
                 <span>
                   {activeCategory === 'pinned' ? '暂无固定应用' : '未找到匹配的应用'}
                 </span>
