@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
 import { useStore } from '../../store'
-import { TerminalIcon, FolderIcon, GlobeIcon, SettingsIcon, InfoIcon, CalculatorIcon, StickyNoteIcon, ImageIcon, SparklesIcon, PaletteIcon, HelpIcon, CodeIcon } from '../../icons'
+import { TerminalIcon, FolderIcon, GlobeIcon, SettingsIcon, InfoIcon, CalculatorIcon, StickyNoteIcon, ImageIcon, SparklesIcon, PaletteIcon, HelpIcon } from '../../icons'
 
 interface Particle {
   id: number

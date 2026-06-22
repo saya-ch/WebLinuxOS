@@ -1,15 +1,15 @@
 import {
   Folder, Terminal, FileText, Globe, Calculator, Calendar, Clock, CloudRain, Activity, Settings,
   Image, Music, Video, Code, Package, ShoppingCart, HardDrive,
-  ListTodo, Server, Wifi, Shield, User, Camera, Palette, LayoutGrid, Presentation, Mail, MessageSquare,
+  ListTodo, Server, Wifi, WifiOff, Shield, User, Camera, Palette, LayoutGrid, Presentation, Mail, MessageSquare,
   Users, CheckSquare, Lock, CloudBackup, Archive, Search, Sun, Type, BookOpen, Languages, MapPin,
   Mic, Bluetooth, Battery, Info, HelpCircle, Command, Pipette,
   Blocks, MessageCircle, ClipboardList, Zap, Timer, Heart, Wallpaper, GitBranch, StickyNote, Atom, Pencil, RefreshCw, ChevronRight,
   ChevronDown, Minus, Square, X, Plus, Volume2, VolumeX, Moon, FileImage, FileJson, FileCode,
-  PlayCircle, Gamepad2, Sparkles, Wand2, Keyboard, Mic2, GraduationCap, Wrench, Cpu,
+  PlayCircle, Gamepad2, Gamepad, Sparkles, Wand2, Keyboard, Mic2, GraduationCap, Wrench, Cpu,
   File as FileIconL, AppWindow, Network, Pin, PinOff, Trash2, Copy, GripVertical,
   ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
-  Flame, Coffee, Database, Link, Link2, Terminal2, Bug, Binary, Hash, TypeOutline, Bell
+  Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -34,6 +34,7 @@ export const HardDriveIcon = HardDrive
 export const ListTodoIcon = ListTodo
 export const ServerIcon = Server
 export const WifiIcon = Wifi
+export const WifiOffIcon = WifiOff
 export const ShieldIcon = Shield
 export const UserIcon = User
 export const CameraIcon = Camera
@@ -64,6 +65,7 @@ export const CommandIcon = Command
 export const ColorPickerIcon = Pipette
 export const MagnifierIcon = Search
 export const SnakeIcon = Gamepad2
+export const GamepadIcon = Gamepad
 export const TetrisIcon = Blocks
 export const ChatIcon = MessageCircle
 export const BoardIcon = LayoutGrid
@@ -75,6 +77,7 @@ export const PetIcon = Heart
 export const WallpaperIcon = Wallpaper
 export const MindMapIcon = GitBranch
 export const StickyNotesIcon = StickyNote
+export const StickyNoteIcon = StickyNote
 export const ParticleIcon = Atom
 export const WhiteboardIcon = Pencil
 export const AutomationIcon = RefreshCw
@@ -115,7 +118,6 @@ export const CoffeeIcon = Coffee
 export const DatabaseIcon = Database
 export const LinkIcon = Link
 export const Link2Icon = Link2
-export const Terminal2Icon = Terminal2
 export const BugIcon = Bug
 export const BinaryIcon = Binary
 export const HashIcon = Hash
@@ -127,9 +129,15 @@ export const MonitorIcon = AppWindow
 export const PowerIcon = Zap
 export const NetworkIcon = Network
 export const NotificationIcon = Bell
-export const BellIcon = Bell
+export const MinusIcon = Minus
+export const SquareIcon = Square
+export const XIcon = X
+export const RefreshCwIcon = RefreshCw
+export const MoonIcon = Moon
+export const SunIcon = Sun
+export const ZapIcon = Zap
 
-export { ChevronRight, ChevronDown, Minus, Square, X, Plus, Volume2, VolumeX, Moon, Sun as SunIcon }
+export { ChevronRight, ChevronDown, Plus, Volume2, VolumeX }
 
 export default {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,

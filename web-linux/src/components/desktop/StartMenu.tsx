@@ -1,6 +1,6 @@
 import { useState, useMemo, memo } from 'react'
 import { useStore } from '../../store'
-import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, Gamepad2 } from '../../icons'
+import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, GamepadIcon } from '../../icons'
 
 interface CategoryDef {
   id: string
@@ -17,7 +17,7 @@ const categories: CategoryDef[] = [
   { id: 'multimedia', name: '多媒体', icon: <MusicIcon size={16} /> },
   { id: 'utilities', name: '工具', icon: <WrenchIcon size={16} /> },
   { id: 'development', name: '开发', icon: <CodeIcon size={16} /> },
-  { id: 'games', name: '游戏', icon: <Gamepad2 size={16} /> },
+  { id: 'games', name: '游戏', icon: <GamepadIcon size={16} /> },
 ]
 
 const StartMenu = memo(function StartMenu() {
