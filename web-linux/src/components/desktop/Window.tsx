@@ -298,8 +298,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           newSnap = 'MAXIMIZE'
         }
 
-        newX = Math.max(-w + 80, Math.min(newX, screenW - 80))
-        newY = Math.max(0, Math.min(newY, screenH - 40 - 40))
+        newX = Math.max(-w + 80, Math.min(newX, screenW - 8))
+        newY = Math.max(0, Math.min(newY, screenH - 48))
 
         setSnapHint(newSnap)
         
@@ -317,8 +317,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         const newY = ref.startWindowY
         const maxW = window.innerWidth - newX - 8
         const maxH = window.innerHeight - 40 - newY - 8
-        const minW = Math.max(win.minWidth || 320, win.minWidth)
-        const minH = Math.max(win.minHeight || 240, win.minHeight)
+        const minW = win.minWidth || 320
+        const minH = win.minHeight || 240
 
         if (resizing === 'right' || resizing === 'corner') {
           newWidth = Math.max(minW, Math.min(ref.startWidth + dx, maxW))

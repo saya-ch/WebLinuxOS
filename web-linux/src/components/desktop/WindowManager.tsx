@@ -257,12 +257,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
+const preloadedComponents = new Set<string>()
 
-/**
- * 根据应用组件名加载对应的 React 组件。
- * 优先从 componentMap 中查找，找不到时回退到动态路径加载，
- * 再找不到时返回一个友好的错误提示组件。
- */
 function loadComponent(name: string): React.LazyExoticComponent<React.ComponentType<any>> {
   if (componentCache[name]) {
     return componentCache[name]
@@ -323,9 +319,6 @@ function loadComponent(name: string): React.LazyExoticComponent<React.ComponentT
   return componentCache[name]
 }
 
-/**
- * 预加载一些高频使用的核心组件，以提升首次点击时的体验。
- */
 function preloadComponents() {
   if (typeof window === 'undefined') return
 
@@ -340,24 +333,51 @@ function preloadComponents() {
     'Weather',
   ]
 
-  const loadNext = (index: number) => {
-    if (index >= criticalComponents.length) return
-    try {
-      loadComponent(criticalComponents[index])
-    } catch {
-      // 静默忽略预加载错误，不影响主流程
-    }
-    if (index < criticalComponents.length - 1) {
-      if ('requestIdleCallback' in window) {
-        ;(window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(
-          () => loadNext(index + 1),
-        )
-      } else {
-        setTimeout(() => loadNext(index + 1), 200)
+  const secondaryComponents = [
+    'Notes',
+    'CodeEditor',
+    'WebBrowser',
+    'MusicPlayer',
+    'ImageViewer',
+    'PDFViewer',
+    'TaskManager',
+    'PasswordManager',
+  ]
+
+  const loadWithPriority = (components: string[], delay: number) => {
+    components.forEach((name, index) => {
+      if (preloadedComponents.has(name)) return
+      preloadedComponents.add(name)
+      
+      const loadFn = () => {
+        try {
+          loadComponent(name)
+        } catch {
+          // 静默忽略预加载错误
+        }
       }
-    }
+
+      if ('requestIdleCallback' in window) {
+        const idleCallback = (window as unknown as { 
+          requestIdleCallback: (cb: () => void, options?: { timeout?: number }) => void 
+        }).requestIdleCallback
+        idleCallback(loadFn, { timeout: delay + index * 100 })
+      } else {
+        setTimeout(loadFn, delay + index * 150)
+      }
+    })
   }
-  loadNext(0)
+
+  loadWithPriority(criticalComponents, 500)
+  
+  if ('requestIdleCallback' in window) {
+    const idleCallback = (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback
+    idleCallback(() => {
+      loadWithPriority(secondaryComponents, 0)
+    })
+  } else {
+    setTimeout(() => loadWithPriority(secondaryComponents, 0), 2000)
+  }
 }
 
 const LoadingFallback = memo(function LoadingFallback() {

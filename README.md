@@ -1,272 +1,255 @@
 # WebLinuxOS
 
-一个完全运行在浏览器中的 Linux 桌面环境，提供完整的窗口管理、虚拟文件系统、终端仿真器和 200+ 个实用应用程序。
+A fully functional Linux desktop environment running entirely in the browser, featuring complete window management, virtual file system, terminal emulator, and over 200 utility applications.
 
-## 最新动态
+## Overview
 
-### v6.4.0 — 知识管理与内容收藏
-- **知识花园** — 受 Obsidian / Roam 启发的个人 Wiki，用 `[[双向链接]]` 串联笔记，标签、全文检索、Canvas 力导向图谱展示笔记关系
-- **网页剪藏** — 通过 CORS 代理抓取任意网页正文，提取标题/作者/发布时间，五色高亮注释与批注，一键导出 Markdown
-- 修复 PWA manifest 绝对路径在 GitHub Pages 子路径下无法解析的问题
-- 类型与构建优化
+WebLinuxOS is not just a "desktop simulation" - it's a practical in-browser workspace designed for real productivity. It provides developers with instant access to essential tools, information, and utilities without any installation or backend dependencies.
 
-### 历史版本亮点
-- v6.x：智能代码助手、代码实验室、网络工具站
-- v5.x：Pyodide 真实 Python 运行时、Terminal 200+ 命令
-- v3.2：JWT 解码、配色提取、密码强度分析
-- v3.0：多桌面工作区、实时数据仪表板
+## Live Demo
 
-## 在线体验
+Visit [WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/) to experience the complete desktop environment in your browser.
 
-访问 [WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/) 即可在浏览器中体验完整的桌面环境，无需任何安装。
+## Key Differentiators
 
-## 核心价值
+Unlike many similar projects that use iframes or link to external sites, WebLinuxOS takes a different approach:
 
-WebLinuxOS 不仅仅是一个"操作系统模拟"，它致力于提供一个具有实际使用价值的浏览器内工作环境：
+- **Native browser implementation** - Terminal, file manager, code editor, paint, media players, and collaborative whiteboard are all built from scratch
+- **Real functionality** - 200+ terminal commands, actual Python runtime via Pyodide, real API integrations
+- **Engineering focus** - Complete window management, multi-desktop support, error boundaries, performance optimization, CSP security
+- **Practical use cases** - Developer Swiss Army knife, temporary workspace, cross-device neutral environment
 
-- **开发者随身工具箱** — 随时随地访问 Base64、JSON、正则、UUID、时间戳等工具
-- **信息获取中心** — 天气、汇率、新闻、IP 等信息一站式查询
-- **生产力工具集** — Markdown 编辑、番茄钟、笔记、任务管理、知识花园
-- **教学和演示平台** — 终端教学、代码运行、数据可视化
-- **完全本地化与可移植** — 所有数据保存在浏览器 localStorage，无需后端、可导出备份
+## Core Features
 
-## 与"桌面模拟"项目的区别
+### Desktop Environment
+- Modern Linux-style interface with dark/light theme support
+- Complete multi-window management system (z-index layering)
+- Window snap layouts (left/right/top/bottom half, quarter, thirds)
+- Smooth window animations (open, close, minimize, maximize)
+- Enhanced taskbar with app pinning, window switching, and preview tooltips
+- Start menu with categorized app list, search, and system shortcuts
+- Global search (Ctrl + K or Ctrl + Space)
+- Multi-desktop workspaces (Ctrl + Alt + arrow keys)
+- Notification center system
+- Professional SVG icon system (Lucide Icons)
 
-许多类似项目只是用 iframe 拼一个仿 Linux 桌面，里面装些跳到外部网站的"假应用"。WebLinuxOS 走的是完全不同的路线：
+### Built-in Applications (200+)
 
-- **真正运行在浏览器内** — 终端、文件管理器、代码编辑器、画图、播放器、协作白板等都是原生实现
-- **不假装能做的事** — 真实可用的终端（200+ 命令），真实的 Python 运行时（Pyodide），真实的 API 集成
-- **注重工程而非像素** — 完整的窗口管理、多桌面、错误边界、性能优化、CSP 安全
-- **服务真实场景** — 当作开发的瑞士军刀、临时的工作台、跨设备的"中性"环境
+**System Tools**
+- File Manager - Browse, create, edit virtual file system
+- Terminal Emulator - Command line with Python runtime (Pyodide), 200+ commands including timestamp utilities
+- System Monitor Pro - Real-time CPU/FPS/memory/network/storage metrics
+- System Settings - Theme, wallpaper, multi-desktop, notification settings
+- Task Manager - View and manage running application windows
 
-## 核心特性
+**Developer Tools**
+- Code Lab - HTML/CSS/JS live preview, sandbox execution, template library, export to HTML
+- Smart Code Assistant - 6 analysis modes (explain/review/optimize/security/document/translate)
+- AI Programming Assistant Pro - Intelligent code generation, explanation, optimization, snippets library
+- Developer Toolbox Pro - Base64/URL/JSON/Regex/UUID/timestamp/color utilities (7-in-1)
+- JWT Decoder - Header/Payload/Signature parsing, time validation, algorithm security warnings
+- Color Palette Extractor - Image color extraction, WCAG contrast check, multi-format export
+- JSON Formatter - Prettify and minify JSON
+- Regex Tester - Real-time match highlighting
+- API Tester - HTTP request testing
 
-### 桌面环境
-- 现代化 Linux 风格界面，支持暗色/亮色主题
-- 完整的多窗口管理系统（层级 z-index）
-- 窗口分屏吸附功能（左/右/上/下半屏、四分之一屏、三分之一屏）
-- 窗口动画效果（打开、关闭、最小化、最大化）
-- 增强任务栏：应用固定、窗口切换、预览 tooltip
-- 开始菜单：分类应用列表、搜索、系统快捷入口
-- 全局搜索（Ctrl + K 或 Ctrl + Space）
-- 多桌面工作区（Ctrl + Alt + 方向键切换）
-- 通知中心系统
-- 专业级 SVG 图标系统（基于 Lucide Icons）
+**Data & Information**
+- Real-time Dashboard - Weather, exchange rates, cryptocurrency, tech news aggregation
+- Weather App - Open-Meteo API integration, city search, 7-day forecast, temperature charts
+- Currency Converter - Frankfurter.app real-time rates, bidirectional conversion, historical trends
+- IP Lookup - ipapi.co integration, geolocation, ISP, timezone, currency info
+- News Reader - HN Algolia API, real-time tech news, categories, search
 
-### 内置应用（200+）
+**Productivity**
+- Markdown Editor Pro - Split view, toolbar, export HTML/Markdown, word count
+- Knowledge Garden - Bidirectional link personal Wiki, `[[title]]` linking, tags, full-text search, Canvas force-directed graph visualization
+- Web Clipper - CORS proxy web scraping, content extraction, 5-color highlight annotations, Markdown export
+- Collaborative Whiteboard - Multi-tool drawing, grid, undo/redo, PNG export
+- Spreadsheet - Basic table calculations
+- Presentation - Simple slide creation
+- Calendar - Schedule management
 
-**系统工具**
-- 文件管理器 — 浏览、创建、编辑虚拟文件系统
-- 终端模拟器 — 支持命令行，内置 Python 运行时（Pyodide），200+ 命令（含 `timestamp` 时间戳显示、`tsconvert` 时间戳转换工具）
-- 系统监视器 Pro — 实时 CPU/FPS/内存/网络/存储指标
-- 系统设置 — 主题、壁纸、多桌面、通知设置
-- 任务管理器 — 查看和管理运行中的应用窗口
+**Utilities**
+- Network Toolkit - IP geolocation / DNS over HTTPS lookup / HTTP status codes / URL status check / speed test
+- Password Generator - Configurable strong password generator
+- Unit Converter - Length/weight/temperature/volume and more
+- Pomodoro Pro - Focus/rest modes, circular progress animation, Web Audio notifications
 
-**开发工具**
-- 代码实验室 — HTML/CSS/JS 实时预览、沙箱运行、模板库、导出独立 HTML
-- 智能代码助手 — 6 种代码分析模式（解释/审查/优化/安全/文档/语言转换）
-- AI 编程助手 Pro — 智能代码生成、解释、优化、代码片段库
-- 开发者工具箱 Pro — Base64/URL/JSON/正则/UUID/时间戳/颜色（7 合 1）
-- JWT 解码与验证 — Header/Payload/Signature 解析、时间校验、算法安全提醒
-- 配色方案提取器 — 图片主色提取、WCAG 对比度检查、多格式导出
-- JSON 格式化器 — 美化和压缩 JSON
-- 正则表达式测试器 — 实时匹配高亮
-- API 测试器 — HTTP 请求测试
+**Multimedia**
+- Music Player - Local file playback
+- Video Player - Local video playback
+- Image Viewer - Image browsing
+- Paint Tool - Canvas drawing
 
-**数据与信息**
-- 实时数据仪表板 — 天气、汇率、加密货币、技术新闻聚合
-- 天气应用 — 集成 Open-Meteo API，支持城市搜索、7 天预报、温度趋势图
-- 汇率转换器 — 集成 Frankfurter.app 实时汇率，支持双向转换、历史趋势
-- IP 地址查询 — 集成 ipapi.co，地理定位、ISP、时区、货币信息
-- 新闻阅读器 — 集成 HN Algolia API，实时技术新闻、分类、搜索
+**Games**
+- Snake - Classic arcade game
+- Tetris - Classic puzzle game
 
-**办公应用**
-- Markdown 编辑器 Pro — 左右分栏、工具栏、导出 HTML/Markdown、字数统计
-- 知识花园（v6.4 新增）— 双向链接个人 Wiki，`[[标题]]` 串联笔记，标签、全文检索、可视化关系图谱（Canvas 力导向布局）
-- 网页剪藏（v6.4 新增）— 通过 CORS 代理抓取任意网页，提取正文与元数据，五色高亮注释，导出 Markdown
-- 在线协作白板 — 多工具绘图、网格、撤销/重做、导出 PNG
-- 电子表格 — 基础表格计算
-- 演示文稿 — 简易幻灯片制作
-- 日历 — 日程管理
+### Online Service Integrations
+- Real-time weather data (Open-Meteo API - free, no API key required)
+- Real-time exchange rates (Frankfurter.app - free)
+- IP geolocation (ipapi.co - free)
+- DNS over HTTPS resolution (Cloudflare 1.1.1.1 - free)
+- News (HN Algolia API - free)
+- Password breach lookup (Have I Been Pwned - k-anonymity protocol)
 
-**实用工具**
-- 网络工具站 — IP 地理定位 / DNS over HTTPS 查询 / HTTP 状态码参考 / URL 状态检查 / 网络速度测试
-- 密码生成器 — 可配置的强密码生成器
-- 单位转换器 — 长度/重量/温度/体积等
-- 番茄钟 Pro — 专注/休息模式、圆形进度动画、Web Audio 提示音
+## Technical Stack
 
-**多媒体**
-- 音乐播放器 — 本地文件播放
-- 视频播放器 — 本地视频播放
-- 图片查看器 — 图片浏览
-- 画图工具 — 画布绘图
+- **Frontend Framework**: React 19 (Hooks + Suspense + React.lazy)
+- **Type System**: TypeScript 6.x (strict mode)
+- **State Management**: Zustand (lightweight, minimal API)
+- **Build Tool**: Vite 8.x (fast HMR, code splitting)
+- **Icon System**: Lucide React
+- **Markdown Rendering**: marked.js
+- **Python Runtime**: Pyodide
 
-**游戏**
-- 贪吃蛇 — 经典小游戏
-- 俄罗斯方块 — 经典小游戏
+## Quick Start
 
-### 在线服务集成
-- 实时天气数据（Open-Meteo API，免费、无需 API key）
-- 实时汇率数据（Frankfurter.app，免费）
-- IP 地理位置查询（ipapi.co，免费）
-- DNS over HTTPS 解析（Cloudflare 1.1.1.1，免费）
-- 新闻资讯（HN Algolia API，免费）
-- 公开泄露密码库查询（Have I Been Pwned，k-anonymity 协议）
-
-## 技术栈
-
-- **前端框架**: React 19（Hooks + Suspense + React.lazy）
-- **类型系统**: TypeScript 6.x（严格模式）
-- **状态管理**: Zustand（轻量、极简 API）
-- **构建工具**: Vite 8.x（快速热更新、代码分割）
-- **图标系统**: Lucide React
-- **Markdown 渲染**: marked.js
-- **Python 运行时**: Pyodide
-
-## 快速开始
-
-### 安装依赖
+### Installation
 
 ```bash
 cd web-linux
 npm install
 ```
 
-### 开发模式
+### Development
 
 ```bash
 npm run dev
 ```
 
-访问 http://localhost:5173
+Visit http://localhost:5173
 
-### 构建生产版本
+### Production Build
 
 ```bash
 npm run build
 ```
 
-构建产物输出到仓库根目录。
+Build output goes to repository root directory.
 
-### 预览生产版本
+### Preview Production
 
 ```bash
 npm run preview
 ```
 
-### 类型检查
+### Type Checking
 
 ```bash
 npm run typecheck
 ```
 
-## 快捷键
+## Keyboard Shortcuts
 
-| 快捷键 | 功能 |
-|--------|------|
-| `Ctrl + K` / `Ctrl + Space` | 打开全局搜索 |
-| `Ctrl + P` | 打开命令面板 |
-| `Ctrl + T` | 打开终端 |
-| `Ctrl + E` | 打开文件管理器 |
-| `Ctrl + B` | 打开浏览器 |
-| `Ctrl + ,` | 打开设置 |
-| `Ctrl + W` | 关闭当前窗口 |
-| `Ctrl + M` | 最小化当前窗口 |
-| `Alt + Tab` | 切换窗口 |
-| `Ctrl + Alt + ←/→` | 切换桌面 |
-| `Ctrl + Alt + 1-9` | 跳转到指定桌面 |
-| `PrintScreen` | 截图 |
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + K` / `Ctrl + Space` | Open global search |
+| `Ctrl + P` | Open command palette |
+| `Ctrl + T` | Open terminal |
+| `Ctrl + E` | Open file manager |
+| `Ctrl + B` | Open browser |
+| `Ctrl + ,` | Open settings |
+| `Ctrl + W` | Close current window |
+| `Ctrl + M` | Minimize current window |
+| `Alt + Tab` | Switch windows |
+| `Ctrl + Alt + ←/→` | Switch desktop |
+| `Ctrl + Alt + 1-9` | Go to specific desktop |
+| `PrintScreen` | Screenshot |
 
-## 项目结构
+## Project Structure
 
 ```
 web-linux/
 ├── src/
-│   ├── apps/              # 200+ 应用组件
+│   ├── apps/              # 200+ application components
 │   ├── components/
-│   │   └── desktop/       # 桌面组件（窗口、任务栏、开始菜单等）
-│   ├── store/             # 状态管理工具
-│   ├── icons.tsx          # 图标组件集合
-│   ├── apps.tsx           # 应用注册表
-│   ├── store.tsx          # 全局状态管理（Zustand）
-│   ├── types.ts           # 类型定义
-│   ├── index.css          # 全局样式
-│   ├── App.tsx            # 主应用组件
-│   └── main.tsx           # 入口文件
-├── public/                # 静态资源
-├── index.html             # HTML 模板
-├── vite.config.ts         # Vite 配置
-├── tsconfig.json          # TypeScript 配置
-└── package.json           # 项目配置
+│   │   └── desktop/       # Desktop components (windows, taskbar, start menu)
+│   ├── store/             # State management utilities
+│   ├── icons.tsx          # Icon component collection
+│   ├── apps.tsx           # Application registry
+│   ├── store.tsx          # Global state management (Zustand)
+│   ├── types.ts           # Type definitions
+│   ├── index.css          # Global styles
+│   ├── App.tsx            # Main application component
+│   └── main.tsx           # Entry point
+├── public/                # Static assets
+├── index.html             # HTML template
+├── vite.config.ts         # Vite configuration
+├── tsconfig.json          # TypeScript configuration
+└── package.json           # Project configuration
 ```
 
-## 浏览器兼容性
+## Browser Compatibility
 
-| 浏览器 | 版本要求 | 状态 |
-|--------|---------|------|
-| Chrome / Chromium | 100+ | ✅ 完全支持 |
-| Firefox | 100+ | ✅ 完全支持 |
-| Safari | 15+ | ✅ 完全支持 |
-| Edge | 100+ | ✅ 完全支持 |
+| Browser | Minimum Version | Status |
+|---------|-----------------|--------|
+| Chrome / Chromium | 100+ | ✅ Fully supported |
+| Firefox | 100+ | ✅ Fully supported |
+| Safari | 15+ | ✅ Fully supported |
+| Edge | 100+ | ✅ Fully supported |
 
-## 部署
+## Deployment
 
 ### GitHub Pages
 
-项目已配置为支持 GitHub Pages 直接部署：
+The project is configured for direct GitHub Pages deployment:
 
-1. 构建产物输出到仓库根目录
-2. 根目录已包含 `.nojekyll` 文件
-3. 在仓库 Settings → Pages 中选择 `Deploy from a branch`，分支选择 `main`，目录选择 `/ (root)`
+1. Build output goes to repository root
+2. Root directory contains `.nojekyll` file
+3. In repository Settings → Pages, select `Deploy from a branch`, branch `main`, directory `/ (root)`
 
-### 自定义部署
+### Custom Deployment
 
 ```bash
 cd web-linux
-npm run build:local  # 使用 / 作为 base path
-# 将 ../ 目录部署到任意静态托管服务
+npm run build:local  # Uses / as base path
+# Deploy ../ directory to any static hosting service
 ```
 
-## 性能优化
+## Performance Optimization
 
-- **代码分割**: 每个应用独立打包为单独 chunk，按需懒加载
-- **React.lazy + Suspense**: 应用按需加载，提供加载骨架
-- **CSS 变量**: 主题切换无需重新渲染整个应用
-- **Zustand 选择性订阅**: 只有依赖的状态变更时才触发组件重渲染
-- **生产构建压缩**: Terser 压缩 + CSS 压缩
+- **Code Splitting**: Each application bundled as separate chunk, lazy loaded on demand
+- **React.lazy + Suspense**: On-demand app loading with loading skeletons
+- **CSS Variables**: Theme switching without full app re-render
+- **Zustand Selective Subscription**: Components only re-render when dependent state changes
+- **Production Compression**: Terser minification + CSS compression
+- **Critical Component Preloading**: High-frequency apps preloaded during idle time
 
-## 安全
+## Security
 
-- 全局 CSP（Content-Security-Policy）meta 标签
-- 全局错误处理（window.onerror + unhandledrejection）
-- localStorage 操作带 try/catch 降级处理
+- Global CSP (Content-Security-Policy) meta tag
+- Global error handling (window.onerror + unhandledrejection)
+- localStorage operations with try/catch fallback
+- Error boundaries for component isolation
+- XSS protection through React's built-in escaping
 
-## 贡献
+## Contributing
 
-欢迎贡献代码！请遵循以下步骤：
+Contributions are welcome! Please follow these steps:
 
-1. Fork 本项目
-2. 创建功能分支（`git checkout -b feature/AmazingFeature`）
-3. 提交更改（`git commit -m 'Add some AmazingFeature'`）
-4. 推送到分支（`git push origin feature/AmazingFeature`）
-5. 开启 Pull Request
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 许可证
+## License
 
 MIT License
 
-## 致谢
+## Acknowledgments
 
-感谢以下开源项目和服务：
+Special thanks to the following open source projects and services:
 
-- [Open-Meteo API](https://open-meteo.com/) — 免费天气数据
-- [Frankfurter.app](https://www.frankfurter.app/) — 免费汇率数据
-- [ipapi.co](https://ipapi.co/) — IP 地理信息
-- [HN Algolia](https://hn.algolia.com/api) — Hacker News 搜索 API
-- [Have I Been Pwned](https://haveibeenpwned.com/Passwords) — 密码泄露查询
-- [React](https://react.dev/) — 前端框架
-- [Vite](https://vitejs.dev/) — 构建工具
-- [Zustand](https://github.com/pmndrs/zustand) — 状态管理
-- [Pyodide](https://pyodide.org/) — 浏览器内 Python 运行时
-- [marked](https://github.com/markedjs/marked) — Markdown 渲染
-- [Lucide Icons](https://lucide.dev/) — 图标库
+- [Open-Meteo API](https://open-meteo.com/) — Free weather data
+- [Frankfurter.app](https://www.frankfurter.app/) — Free exchange rate data
+- [ipapi.co](https://ipapi.co/) — IP geolocation
+- [HN Algolia](https://hn.algolia.com/api) — Hacker News search API
+- [Have I Been Pwned](https://haveibeenpwned.com/Passwords) — Password breach lookup
+- [React](https://react.dev/) — Frontend framework
+- [Vite](https://vitejs.dev/) — Build tool
+- [Zustand](https://github.com/pmndrs/zustand) — State management
+- [Pyodide](https://pyodide.org/) — In-browser Python runtime
+- [marked](https://github.com/markedjs/marked) — Markdown rendering
+- [Lucide Icons](https://lucide.dev/) — Icon library
