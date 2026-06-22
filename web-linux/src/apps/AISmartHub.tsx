@@ -1,6 +1,6 @@
 import { useState, useCallback, memo, useEffect, useRef } from 'react'
 import { useStore } from '../store'
-import { SparklesIcon, CodeIcon, FileTextIcon, LanguagesIcon, CalculatorIcon, SearchIcon, LightbulbIcon, BookOpenIcon } from '../icons'
+import { SparklesIcon, CodeIcon, FileTextIcon, LanguagesIcon, CalculatorIcon, SearchIcon, FlameIcon, BookIcon } from '../icons'
 
 // AI智能中心 - 集成多种AI能力的统一入口
 interface AIProvider {
@@ -58,7 +58,7 @@ const AI_PROVIDERS: AIProvider[] = [
     id: 'idea-generator',
     name: '创意生成',
     description: '创意想法与灵感激发',
-    icon: <LightbulbIcon />,
+    icon: <FlameIcon />,
     capabilities: ['创意生成', '灵感激发', '头脑风暴', '方案设计'],
     free: true
   },
@@ -66,7 +66,7 @@ const AI_PROVIDERS: AIProvider[] = [
     id: 'learning-assistant',
     name: '学习助手',
     description: '个性化学习辅导',
-    icon: <BookOpenIcon />,
+    icon: <BookIcon />,
     capabilities: ['知识点讲解', '习题解答', '学习计划', '复习建议'],
     free: true
   }

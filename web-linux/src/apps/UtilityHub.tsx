@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, memo } from 'react'
+import { useState, memo } from 'react'
 import { useStore } from '../store'
 
 // 实用工具聚合中心 - 集成多种实用在线工具
@@ -143,7 +143,7 @@ function UtilityHub() {
     for (const line of lines) {
       const match = line.match(/^(\s*)([^:]+):\s*(.*)$/)
       if (match) {
-        const [, spaces, key, value] = match
+        const [, , key, value] = match
         if (value) {
           result[key.trim()] = value.trim()
         }
@@ -358,7 +358,7 @@ function UtilityHub() {
       return
     }
     // 简单的哈希计算（实际应用中应使用crypto API）
-    const simpleHash = (str: string, algorithm: string) => {
+    const simpleHash = (str: string, _algorithm: string) => {
       let hash = 0
       for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i)
@@ -760,7 +760,7 @@ function UtilityHub() {
       height: '100%',
       gap: '16px',
       padding: '16px',
-      background: 'var(--bg-secondary)'
+      background: 'var(--window-bg)'
     }}>
       {/* 左侧：工具分类 */}
       <div style={{
@@ -771,12 +771,15 @@ function UtilityHub() {
       }}>
         <div style={{
           padding: '12px',
-          background: 'var(--bg-primary)',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
           borderRadius: '8px',
           fontSize: '14px',
-          fontWeight: 600
+          fontWeight: 600,
+          color: 'var(--text-primary)'
         }}>
-          🛠️ 实用工具聚合中心
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" style={{marginRight: '8px', verticalAlign: 'middle'}}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          实用工具聚合中心
         </div>
         
         {categories.map(cat => (
@@ -793,12 +796,13 @@ function UtilityHub() {
               alignItems: 'center',
               gap: '12px',
               padding: '12px',
-              background: activeCategory === cat.id ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              background: activeCategory === cat.id ? 'var(--accent-bg)' : 'var(--glass-bg)',
+              border: activeCategory === cat.id ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
               borderRadius: '8px',
-              border: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              color: activeCategory === cat.id ? 'white' : 'var(--text-primary)'
+              color: activeCategory === cat.id ? 'var(--accent)' : 'var(--text-primary)',
+              textAlign: 'left'
             }}
           >
             <span style={{ fontSize: '18px' }}>{cat.icon}</span>
@@ -828,12 +832,13 @@ function UtilityHub() {
               alignItems: 'center',
               gap: '12px',
               padding: '12px',
-              background: activeTool === tool.id ? 'var(--accent-secondary)' : 'var(--bg-primary)',
+              background: activeTool === tool.id ? 'var(--accent-bg)' : 'var(--glass-bg)',
+              border: activeTool === tool.id ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
               borderRadius: '8px',
-              border: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              color: 'var(--text-primary)'
+              color: 'var(--text-primary)',
+              textAlign: 'left'
             }}
           >
             <span style={{ fontSize: '16px' }}>{tool.icon}</span>
@@ -856,10 +861,11 @@ function UtilityHub() {
           <>
             <div style={{
               padding: '16px',
-              background: 'var(--bg-primary)',
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border)',
               borderRadius: '8px'
             }}>
-              <div style={{ fontSize: '16px', fontWeight: 600 }}>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {currentTool.icon} {currentTool.name}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
@@ -875,13 +881,14 @@ function UtilityHub() {
             }}>
               <div style={{
                 padding: '12px',
-                background: 'var(--bg-primary)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '8px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px'
               }}>
-                <span style={{ fontSize: '12px', fontWeight: 500 }}>输入</span>
+                <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>输入</span>
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -890,7 +897,7 @@ function UtilityHub() {
                     width: '100%',
                     minHeight: '100px',
                     padding: '12px',
-                    background: 'var(--bg-secondary)',
+                    background: 'var(--window-bg)',
                     border: '1px solid var(--border-color)',
                     borderRadius: '6px',
                     fontSize: '13px',
@@ -903,7 +910,7 @@ function UtilityHub() {
                   onClick={currentTool.action}
                   style={{
                     padding: '10px 24px',
-                    background: 'var(--accent-primary)',
+                    background: 'var(--accent-gradient)',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
@@ -920,7 +927,8 @@ function UtilityHub() {
               <div style={{
                 flex: 1,
                 padding: '12px',
-                background: 'var(--bg-primary)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '8px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -931,7 +939,7 @@ function UtilityHub() {
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
-                  <span style={{ fontSize: '12px', fontWeight: 500 }}>输出</span>
+                  <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>输出</span>
                   <button
                     onClick={() => {
                       if (output) {
@@ -943,8 +951,8 @@ function UtilityHub() {
                     style={{
                       fontSize: '10px',
                       padding: '4px 12px',
-                      background: 'var(--bg-secondary)',
-                      border: 'none',
+                      background: 'var(--window-bg)',
+                      border: '1px solid var(--border-color)',
                       borderRadius: '4px',
                       cursor: output ? 'pointer' : 'not-allowed',
                       color: 'var(--text-secondary)',
@@ -957,7 +965,8 @@ function UtilityHub() {
                 <div style={{
                   flex: 1,
                   padding: '12px',
-                  background: 'var(--bg-secondary)',
+                  background: 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '6px',
                   overflow: 'auto',
                   fontSize: '13px',
@@ -977,7 +986,8 @@ function UtilityHub() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'var(--bg-primary)',
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
             borderRadius: '8px',
             color: 'var(--text-secondary)'
           }}>
