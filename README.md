@@ -48,6 +48,8 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - AI Programming Assistant Pro - Intelligent code generation, explanation, optimization, snippets library
 - Developer Toolbox Pro - Base64/URL/JSON/Regex/UUID/timestamp/color utilities (7-in-1)
 - JWT Decoder - Header/Payload/Signature parsing, time validation, algorithm security warnings
+- **NEW: AI Smart Hub** - Unified AI assistant center with code, text, translation, math, knowledge, creativity, and learning capabilities
+- **NEW: Utility Hub** - Comprehensive tool aggregation center with converters, generators, formatters, validators, and encoders
 - Color Palette Extractor - Image color extraction, WCAG contrast check, multi-format export
 - JSON Formatter - Prettify and minify JSON
 - Regex Tester - Real-time match highlighting
