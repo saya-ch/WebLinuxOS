@@ -73,4 +73,10 @@ export const appRegistry: AppDefinition[] = [
   { id: 'ip-lookup', name: 'IP查询', icon: <GlobeIcon />, component: 'IPLookup', category: 'utilities', defaultWidth: 500, defaultHeight: 600, minWidth: 400, minHeight: 450, resizable: true, multiple: false },
   { id: 'news-reader', name: '新闻阅读器', icon: <BookIcon />, component: 'NewsReader', category: 'internet', defaultWidth: 600, defaultHeight: 550, minWidth: 450, minHeight: 400, resizable: true, multiple: false },
   { id: 'dev-toolbox', name: '开发者工具箱', icon: <ToolIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 550, defaultHeight: 500, minWidth: 400, minHeight: 350, resizable: true, multiple: false },
+  // New enhanced applications
+  { id: 'qr-generator', name: '二维码生成器', icon: <GridIcon />, component: 'QRCodeGenerator', category: 'utilities', defaultWidth: 500, defaultHeight: 550, minWidth: 400, minHeight: 450, resizable: true, multiple: false },
+  { id: 'pomodoro', name: '番茄钟', icon: <ClockIcon />, component: 'PomodoroTimer', category: 'utilities', defaultWidth: 400, defaultHeight: 550, minWidth: 350, minHeight: 450, resizable: false, multiple: false },
+  { id: 'json-formatter', name: 'JSON格式化', icon: <CodeIcon />, component: 'JSONFormatter', category: 'development', defaultWidth: 800, defaultHeight: 550, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
+  { id: 'markdown-pro', name: 'Markdown编辑器Pro', icon: <FileTextIcon />, component: 'MarkdownEditorEnhanced', category: 'office', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: true },
+  { id: 'code-editor-pro', name: '代码编辑器Pro', icon: <CodeIcon />, component: 'CodeEditorEnhanced', category: 'development', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: true },
 ]
