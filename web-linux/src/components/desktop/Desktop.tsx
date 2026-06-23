@@ -415,7 +415,12 @@ const Desktop = memo(function Desktop() {
     ? wallpaper.startsWith('linear-gradient')
       ? { background: wallpaper }
       : { backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' as const }
-    : undefined
+    : {
+        background: 'radial-gradient(ellipse at 10% 20%, rgba(139, 124, 240, 0.3) 0%, transparent 50%), ' +
+          'radial-gradient(ellipse at 90% 80%, rgba(0, 206, 201, 0.25) 0%, transparent 50%), ' +
+          'radial-gradient(ellipse at 50% 50%, rgba(255, 107, 107, 0.12) 0%, transparent 60%), ' +
+          'linear-gradient(135deg, #0a0a18 0%, #161630 30%, #0f0f23 70%, #161630 100%)'
+      }
 
   if (showSplash) {
     return (
@@ -452,14 +457,7 @@ const Desktop = memo(function Desktop() {
       onContextMenu={handleContextMenu}
       onClick={handleDesktopClick}
       onMouseMove={handleMouseMove}
-      style={{
-        ...wallpaperStyle,
-        background: wallpaper ? (wallpaper.startsWith('linear-gradient') ? wallpaper : undefined) : 
-          'radial-gradient(ellipse at 10% 20%, rgba(139, 124, 240, 0.3) 0%, transparent 50%), ' +
-          'radial-gradient(ellipse at 90% 80%, rgba(0, 206, 201, 0.25) 0%, transparent 50%), ' +
-          'radial-gradient(ellipse at 50% 50%, rgba(255, 107, 107, 0.12) 0%, transparent 60%), ' +
-          'linear-gradient(135deg, #0a0a18 0%, #161630 30%, #0f0f23 70%, #161630 100%)'
-      }}
+      style={wallpaperStyle}
       role="application"
       aria-label="桌面环境"
       tabIndex={-1}
