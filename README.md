@@ -2,13 +2,18 @@
 
 A fully functional Linux desktop environment running entirely in the browser, featuring complete window management, virtual file system, terminal emulator, and over 200 utility applications.
 
+[Live Demo](https://saya-ch.github.io/WebLinuxOS/) | [Features](#core-features) | [Quick Start](#quick-start) | [Technical Stack](#technical-stack)
+
 ## Overview
 
 WebLinuxOS is not just a "desktop simulation" - it's a practical in-browser workspace designed for real productivity. It provides developers with instant access to essential tools, information, and utilities without any installation or backend dependencies.
 
-## Live Demo
-
-Visit [WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/) to experience the complete desktop environment in your browser.
+**Why WebLinuxOS?**
+- Zero installation - runs entirely in browser
+- Cross-platform - works on any device with a modern browser
+- Privacy-first - no data collection, all processing happens locally
+- Developer-focused - built by developers, for developers
+- Extensible - modular architecture allows easy addition of new apps
 
 ## Key Differentiators
 
@@ -61,6 +66,8 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - Currency Converter - Frankfurter.app real-time rates, bidirectional conversion, historical trends
 - IP Lookup - ipapi.co integration, geolocation, ISP, timezone, currency info
 - News Reader - HN Algolia API, real-time tech news, categories, search
+- **NEW: World Clock** - Global time zones, 15 major cities, day/night indicator, favorites system
+- **NEW: API Explorer** - 11 free public APIs catalog with documentation and examples
 
 **Productivity**
 - Markdown Editor Pro - Split view, toolbar, export HTML/Markdown, word count

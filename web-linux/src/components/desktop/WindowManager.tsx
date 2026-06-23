@@ -254,6 +254,13 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v6.4.0 新增应用 ===
   KnowledgeGarden: () => import('../../apps/KnowledgeGarden'),
   WebClipper: () => import('../../apps/WebClipper'),
+  // === v7.0.0 新增应用 ===
+  AISmartHub: () => import('../../apps/AISmartHub'),
+  UtilityHub: () => import('../../apps/UtilityHub'),
+  APIPlaybook: () => import('../../apps/APIPlaybook'),
+  IconGallery: () => import('../../apps/IconGallery'),
+  WorldClock: () => import('../../apps/WorldClock'),
+  APIExplorer: () => import('../../apps/APIExplorer'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
