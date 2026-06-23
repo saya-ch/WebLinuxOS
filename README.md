@@ -25,6 +25,7 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - **Real functionality** - 200+ terminal commands, actual Python runtime via Pyodide, real API integrations
 - **Engineering focus** - Complete window management, multi-desktop support, error boundaries, performance optimization, CSP security
 - **Practical use cases** - Developer Swiss Army knife, temporary workspace, cross-device neutral environment
+- **New in v3.0** - Network speed test, stock market tracker, multi-language code runner with live preview
 
 ---
 
@@ -84,6 +85,9 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 
 **Utilities**
 - Network Toolkit - IP geolocation, DNS lookup, speed test
+- Speed Test - Network bandwidth testing, latency/jitter measurement
+- Stock Tracker - Real-time stock monitoring, watchlist management
+- Online Code Runner - Multi-language code execution (JS/TS/Python/HTML/CSS/JSON/Markdown)
 - Password Generator - Configurable strong password generator
 - Unit Converter - Length/weight/temperature/volume
 - Pomodoro Pro - Focus/rest modes, Web Audio notifications
