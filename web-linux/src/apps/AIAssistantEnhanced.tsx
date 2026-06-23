@@ -106,8 +106,7 @@ const AIAssistantEnhanced = memo(function AIAssistantEnhanced() {
   function generateMathResponse(query: string): string {
     try {
       if (/^[\d\s+\-*/.()]+$/.test(query)) {
-        // eslint-disable-next-line no-eval
-        const result = eval(query)
+        const result = new Function('return ' + query)()
         return '**计算结果**\n\n表达式: ' + query + '\n\n结果: **' + result + '**\n\n---\n\n**计算步骤**:\n1. 解析表达式\n2. 按运算优先级计算\n3. 得出最终结果'
       }
     } catch {

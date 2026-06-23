@@ -39,8 +39,11 @@ jobs:
         working-directory: ./web-linux
         run: npm run deploy
 
-      - name: Ensure .nojekyll and fallback 404
+      - name: Move build output to root
         run: |
+          if [ -d ./web-linux/dist ]; then
+            cp -r ./web-linux/dist/* ./
+          fi
           touch ./.nojekyll
           if [ ! -f ./404.html ] && [ -f ./index.html ]; then
             cp ./index.html ./404.html

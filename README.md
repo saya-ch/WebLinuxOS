@@ -4,18 +4,20 @@ A fully functional Linux desktop environment running entirely in the browser, fe
 
 [Live Demo](https://saya-ch.github.io/WebLinuxOS/) | [Features](#core-features) | [Quick Start](#quick-start) | [Technical Stack](#technical-stack)
 
+---
+
 ## Overview
 
-WebLinuxOS is not just a "desktop simulation" - it's a practical in-browser workspace designed for real productivity. It provides developers with instant access to essential tools, information, and utilities without any installation or backend dependencies.
+WebLinuxOS is a practical in-browser workspace designed for real productivity. It provides developers with instant access to essential tools, information, and utilities without any installation or backend dependencies.
 
-**Why WebLinuxOS?**
+**Key Advantages:**
 - Zero installation - runs entirely in browser
 - Cross-platform - works on any device with a modern browser
 - Privacy-first - no data collection, all processing happens locally
 - Developer-focused - built by developers, for developers
 - Extensible - modular architecture allows easy addition of new apps
 
-## Key Differentiators
+## What Makes WebLinuxOS Different
 
 Unlike many similar projects that use iframes or link to external sites, WebLinuxOS takes a different approach:
 
@@ -24,11 +26,13 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - **Engineering focus** - Complete window management, multi-desktop support, error boundaries, performance optimization, CSP security
 - **Practical use cases** - Developer Swiss Army knife, temporary workspace, cross-device neutral environment
 
+---
+
 ## Core Features
 
 ### Desktop Environment
 - Modern Linux-style interface with dark/light theme support
-- Complete multi-window management system (z-index layering)
+- Complete multi-window management system with z-index layering
 - Window snap layouts (left/right/top/bottom half, quarter, thirds)
 - Smooth window animations (open, close, minimize, maximize)
 - Enhanced taskbar with app pinning, window switching, and preview tooltips
@@ -56,8 +60,8 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - JWT Decoder - Header/Payload/Signature parsing, time validation
 - AI Smart Hub - Unified AI assistant center
 - Utility Hub - Comprehensive tool aggregation center
-- **NEW: Developer Hub** - Integrated dev tools (JSON, Base64, Hash, UUID, Timestamp, Regex, Diff)
-- **NEW: Public API Explorer** - Explore and test 10+ free public APIs directly
+- Developer Hub - Integrated dev tools (JSON, Base64, Hash, UUID, Timestamp, Regex, Diff)
+- Public API Explorer - Explore and test 10+ free public APIs directly
 
 **Data & Information**
 - Real-time Dashboard - Weather, exchange rates, cryptocurrency, tech news
@@ -76,7 +80,7 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - Spreadsheet - Basic table calculations
 - Presentation - Slide creation
 - Calendar - Schedule management
-- **NEW: AI Assistant Enhanced** - Multi-mode AI assistant (chat, code, translate, summarize, math, creative, learn)
+- AI Assistant Enhanced - Multi-mode AI assistant (chat, code, translate, summarize, math, creative, learn)
 
 **Utilities**
 - Network Toolkit - IP geolocation, DNS lookup, speed test
@@ -110,6 +114,8 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - Dog images (dog.ceo - free)
 - Activity suggestions (boredapi.com - free)
 
+---
+
 ## Technical Stack
 
 - **Frontend Framework**: React 19 (Hooks + Suspense + React.lazy)
@@ -119,6 +125,8 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - **Icon System**: Lucide React
 - **Markdown Rendering**: marked.js
 - **Python Runtime**: Pyodide
+
+---
 
 ## Quick Start
 
@@ -143,7 +151,7 @@ Visit http://localhost:5173/WebLinuxOS/
 npm run build
 ```
 
-Build output goes to repository root directory.
+Build output goes to `../dist` directory.
 
 ### Preview Production
 
@@ -156,6 +164,8 @@ npm run preview
 ```bash
 npm run typecheck
 ```
+
+---
 
 ## Keyboard Shortcuts
 
@@ -174,6 +184,8 @@ npm run typecheck
 | `Ctrl + Alt + 1-9` | Go to specific desktop |
 | `PrintScreen` | Screenshot |
 
+---
+
 ## Project Structure
 
 ```
@@ -181,7 +193,7 @@ web-linux/
 ├── src/
 │   ├── apps/              # 200+ application components
 │   ├── components/
-│   │   └── desktop/       # Desktop components
+│   │   └── desktop/       # Desktop components (Window, Taskbar, StartMenu)
 │   ├── store/             # State management utilities
 │   ├── icons.tsx          # Icon component collection
 │   ├── apps.tsx           # Application registry

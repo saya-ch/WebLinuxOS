@@ -4,7 +4,7 @@ import { copyFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
 export default defineConfig(() => {
-  const outDir = process.env.OUTPUT_DIR || '../'
+  const outDir = process.env.OUTPUT_DIR || '../dist'
   const targetPublicDir = resolve(__dirname, outDir, 'public')
 
   if (!existsSync(targetPublicDir)) {
@@ -25,7 +25,7 @@ export default defineConfig(() => {
     base: process.env.VITE_BASE_PATH || '/WebLinuxOS/',
     build: {
       outDir,
-      emptyOutDir: false,
+      emptyOutDir: true,
       publicDir: false,
       sourcemap: false,
       minify: 'terser',
@@ -69,7 +69,6 @@ export default defineConfig(() => {
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',
-          compact: true,
         },
       },
     },
@@ -77,9 +76,6 @@ export default defineConfig(() => {
       include: ['react', 'react-dom', 'zustand'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
-      esbuildOptions: {
-        target: 'es2022',
-      },
     },
     server: {
       port: 5173,
