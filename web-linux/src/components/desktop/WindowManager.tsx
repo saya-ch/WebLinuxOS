@@ -261,6 +261,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   IconGallery: () => import('../../apps/IconGallery'),
   WorldClock: () => import('../../apps/WorldClock'),
   APIExplorer: () => import('../../apps/APIExplorer'),
+  // === v8.0.0 新增应用 ===
+  DevHub: () => import('../../apps/DevHub'),
+  AIAssistantEnhanced: () => import('../../apps/AIAssistantEnhanced'),
+  APIExplorerEnhanced: () => import('../../apps/APIExplorerEnhanced'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
