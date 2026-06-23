@@ -3811,13 +3811,95 @@ a:hover {
 }
 
 @keyframes particlePulse {
-  0%, 100% { 
+  0%, 100% {
     opacity: 0.8;
     transform: scale(1);
   }
-  50% { 
+  50% {
     opacity: 1;
     transform: scale(1.2);
+  }
+}
+
+/* Nebula Effect for Live Wallpaper */
+.desktop-nebula-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.desktop-nebula-cloud {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: nebulaDrift 30s ease-in-out infinite;
+}
+
+.desktop-nebula-cloud-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  left: -10%;
+  top: -20%;
+  animation-delay: 0s;
+}
+
+.desktop-nebula-cloud-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+  right: -5%;
+  top: 10%;
+  animation-delay: -10s;
+}
+
+.desktop-nebula-cloud-3 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(ellipse, rgba(236, 72, 153, 0.1) 0%, transparent 70%);
+  left: 30%;
+  bottom: -30%;
+  animation-delay: -20s;
+}
+
+.desktop-nebula-stars {
+  position: absolute;
+  inset: 0;
+}
+
+.desktop-nebula-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+
+@keyframes nebulaDrift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translate(20px, -15px) scale(1.05);
+    opacity: 1;
+  }
+  66% {
+    transform: translate(-15px, 10px) scale(0.95);
+    opacity: 0.9;
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
   }
 }
 

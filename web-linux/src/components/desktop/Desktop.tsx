@@ -40,6 +40,10 @@ const wallpapers = [
   'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
   'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
   'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+  'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #2a1a3e 100%)',
+  'linear-gradient(135deg, #1a2a3a 0%, #2a4a5a 50%, #1a3a4a 100%)',
+  'linear-gradient(135deg, #2d1b4e 0%, #1a2a4e 50%, #0a1a3e 100%)',
+  'linear-gradient(135deg, #0f1a2a 0%, #1a2a3a 50%, #0a2a4a 100%)',
 ]
 
 const DesktopIcon = memo(function DesktopIcon({ 
@@ -163,6 +167,17 @@ const Desktop = memo(function Desktop() {
   const liveWallpaperRef = useRef(liveWallpaper)
   const liveWallpaperEnabledRef = useRef(liveWallpaperEnabled)
 
+  // 使用useMemo生成星星位置，避免每次渲染时重新生成
+  const nebulaStars = useMemo(() =>
+    Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 3,
+      opacity: Math.random() * 0.7 + 0.3,
+    })), []
+  )
+
   useEffect(() => {
     liveWallpaperRef.current = liveWallpaper
   }, [liveWallpaper])
@@ -172,13 +187,13 @@ const Desktop = memo(function Desktop() {
   }, [liveWallpaperEnabled])
 
   const initializeParticles = useCallback(() => {
-    const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
+    const newParticles: Particle[] = Array.from({ length: 60 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: Math.random() * 6 + 2,
       speed: Math.random() * 0.3 + 0.1,
-      color: Math.random() > 0.5 ? 'rgba(139, 124, 240, 0.5)' : 'rgba(0, 206, 201, 0.4)',
+      color: Math.random() > 0.5 ? 'rgba(139, 124, 240, 0.6)' : 'rgba(0, 206, 201, 0.5)',
       vx: (Math.random() - 0.5) * 0.2,
       vy: (Math.random() - 0.5) * 0.2
     }))
@@ -373,7 +388,7 @@ const Desktop = memo(function Desktop() {
   }, [wallpaper, setWallpaper])
 
   const cycleLiveWallpaper = useCallback(() => {
-    const types = ['particles', 'interactive', 'waves']
+    const types = ['particles', 'interactive', 'waves', 'nebula']
     const idx = types.indexOf(liveWallpaper)
     const next = types[(idx + 1) % types.length]
     setLiveWallpaper(next)
@@ -465,41 +480,67 @@ const Desktop = memo(function Desktop() {
       {/* Live wallpaper particles */}
       {liveWallpaperEnabled && (
         <>
-          {particles.map(p => (
-            <div
-              key={p.id}
-              className="desktop-live-particle"
-              style={{
-                left: `${p.x}%`,
-                top: `${p.y}%`,
-                width: p.size,
-                height: p.size,
-                background: p.color,
-                boxShadow: `0 0 ${p.size * 6}px ${p.color}, 0 0 ${p.size * 12}px ${p.color}`,
-              }}
-            />
-          ))}
-          
-          {/* Connecting lines for particles (waves/network effect) */}
-          {liveWallpaper !== 'particles' && (
-            <svg className="desktop-particle-connections">
-              {connections.map((conn, idx) => {
-                const p1 = particles[conn.from]
-                const p2 = particles[conn.to]
-                if (!p1 || !p2) return null
-                return (
-                  <line
-                    key={idx}
-                    x1={`${p1.x}%`}
-                    y1={`${p1.y}%`}
-                    x2={`${p2.x}%`}
-                    y2={`${p2.y}%`}
-                    stroke={`rgba(139, 124, 240, ${conn.opacity})`}
-                    strokeWidth={1}
-                  />
-                )
-              })}
-            </svg>
+          {liveWallpaper === 'nebula' ? (
+            <>
+              <div className="desktop-nebula-layer">
+                <div className="desktop-nebula-cloud desktop-nebula-cloud-1" />
+                <div className="desktop-nebula-cloud desktop-nebula-cloud-2" />
+                <div className="desktop-nebula-cloud desktop-nebula-cloud-3" />
+                <div className="desktop-nebula-stars">
+                  {nebulaStars.map(star => (
+                    <div
+                      key={star.id}
+                      className="desktop-nebula-star"
+                      style={{
+                        left: `${star.left}%`,
+                        top: `${star.top}%`,
+                        animationDelay: `${star.delay}s`,
+                        opacity: star.opacity,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {particles.map(p => (
+                <div
+                  key={p.id}
+                  className="desktop-live-particle"
+                  style={{
+                    left: `${p.x}%`,
+                    top: `${p.y}%`,
+                    width: p.size,
+                    height: p.size,
+                    background: p.color,
+                    boxShadow: `0 0 ${p.size * 6}px ${p.color}, 0 0 ${p.size * 12}px ${p.color}`,
+                  }}
+                />
+              ))}
+
+              {/* Connecting lines for particles (waves/network effect) */}
+              {liveWallpaper !== 'particles' && (
+                <svg className="desktop-particle-connections">
+                  {connections.map((conn, idx) => {
+                    const p1 = particles[conn.from]
+                    const p2 = particles[conn.to]
+                    if (!p1 || !p2) return null
+                    return (
+                      <line
+                        key={idx}
+                        x1={`${p1.x}%`}
+                        y1={`${p1.y}%`}
+                        x2={`${p2.x}%`}
+                        y2={`${p2.y}%`}
+                        stroke={`rgba(139, 124, 240, ${conn.opacity})`}
+                        strokeWidth={1}
+                      />
+                    )
+                  })}
+                </svg>
+              )}
+            </>
           )}
         </>
       )}
