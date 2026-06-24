@@ -336,3 +336,169 @@ registerCommand('ping', {
   usage: 'ping [主机名]',
   examples: ['ping google.com']
 })
+
+registerCommand('ipinfo', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const ip = args[0]
+
+    if (!ip) {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json')
+        const data = await response.json()
+        const userIp = data.ip || '未知'
+        
+        const geoResponse = await fetch(`https://ip-api.com/json/${userIp}`)
+        const geoData = await geoResponse.json()
+
+        if (geoData.status === 'success') {
+          return {
+            output: [
+              '🌐 您的网络信息',
+              '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+              `IP 地址: ${geoData.query}`,
+              `国家: ${geoData.country} (${geoData.countryCode})`,
+              `地区: ${geoData.regionName}`,
+              `城市: ${geoData.city}`,
+              `运营商: ${geoData.isp}`,
+              `经纬度: ${geoData.lat}, ${geoData.lon}`,
+              `时区: ${geoData.timezone}`,
+              '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            ].join('\n')
+          }
+        }
+      } catch {
+        // Fallback
+      }
+
+      return {
+        output: [
+          '🌐 IP 信息查询',
+          '',
+          '用法: ipinfo [IP地址]',
+          '',
+          '示例:',
+          '  ipinfo',
+          '  ipinfo 8.8.8.8',
+          '',
+          '💡 当前无法获取网络信息',
+        ].join('\n')
+      }
+    }
+
+    try {
+      const response = await fetch(`https://ip-api.com/json/${ip}`)
+      const data = await response.json()
+
+      if (data.status === 'success') {
+        return {
+          output: [
+            `🌐 IP 信息: ${ip}`,
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            `状态: ${data.status}`,
+            `国家: ${data.country} (${data.countryCode})`,
+            `地区: ${data.regionName}`,
+            `城市: ${data.city}`,
+            `邮政编码: ${data.zip}`,
+            `运营商: ${data.isp}`,
+            `组织: ${data.org}`,
+            `经纬度: ${data.lat}, ${data.lon}`,
+            `时区: ${data.timezone}`,
+            `ASN: ${data.as}`,
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          ].join('\n')
+        }
+      } else {
+        return { output: `❌ 无法查询 IP: ${ip}\n错误: ${data.message || '未知错误'}` }
+      }
+    } catch {
+      return { output: `❌ 查询失败，请检查网络连接或输入的IP地址` }
+    }
+  },
+  description: '查询IP地址信息',
+  usage: 'ipinfo [IP地址]',
+  examples: ['ipinfo', 'ipinfo 8.8.8.8']
+})
+
+registerCommand('time', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    
+    const output = [
+      '🕐 当前时间',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `本地时间: ${now.toLocaleString('zh-CN')}`,
+      `UTC 时间: ${now.toISOString()}`,
+      `时区: ${timeZone}`,
+      `星期: ${['日', '一', '二', '三', '四', '五', '六'][now.getDay()]}`,
+      `年份: ${now.getFullYear()}`,
+      `月份: ${now.getMonth() + 1}`,
+      `日期: ${now.getDate()}`,
+      `小时: ${String(now.getHours()).padStart(2, '0')}`,
+      `分钟: ${String(now.getMinutes()).padStart(2, '0')}`,
+      `秒: ${String(now.getSeconds()).padStart(2, '0')}`,
+      `毫秒: ${String(now.getMilliseconds()).padStart(3, '0')}`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    ].join('\n')
+
+    return { output }
+  },
+  description: '显示当前时间信息',
+  usage: 'time',
+  examples: ['time']
+})
+
+registerCommand('worldtime', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const city = args.join(' ') || 'Shanghai'
+
+    const timezones: Record<string, { tz: string; name: string }> = {
+      'beijing': { tz: 'Asia/Shanghai', name: '北京' },
+      'shanghai': { tz: 'Asia/Shanghai', name: '上海' },
+      'tokyo': { tz: 'Asia/Tokyo', name: '东京' },
+      'seoul': { tz: 'Asia/Seoul', name: '首尔' },
+      'london': { tz: 'Europe/London', name: '伦敦' },
+      'paris': { tz: 'Europe/Paris', name: '巴黎' },
+      'newyork': { tz: 'America/New_York', name: '纽约' },
+      'losangeles': { tz: 'America/Los_Angeles', name: '洛杉矶' },
+      'sydney': { tz: 'Australia/Sydney', name: '悉尼' },
+      'dubai': { tz: 'Asia/Dubai', name: '迪拜' },
+      'singapore': { tz: 'Asia/Singapore', name: '新加坡' },
+      'moscow': { tz: 'Europe/Moscow', name: '莫斯科' },
+    }
+
+    const tz = timezones[city.toLowerCase()] || { tz: 'Asia/Shanghai', name: city }
+
+    const now = new Date()
+    const formatter = new Intl.DateTimeFormat('zh-CN', {
+      timeZone: tz.tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      weekday: 'short',
+    })
+
+    const output = [
+      `🌍 ${tz.name} 时间`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `时区: ${tz.tz}`,
+      `时间: ${formatter.format(now)}`,
+      '',
+      '支持的城市:',
+      '  beijing, shanghai, tokyo, seoul, london',
+      '  paris, newyork, losangeles, sydney',
+      '  dubai, singapore, moscow',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    ].join('\n')
+
+    return { output }
+  },
+  description: '查询世界各城市时间',
+  usage: 'worldtime [城市名]',
+  examples: ['worldtime', 'worldtime tokyo', 'worldtime newyork']
+})
