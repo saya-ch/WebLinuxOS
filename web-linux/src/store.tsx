@@ -115,6 +115,7 @@ interface Store {
   registerApp: (app: AppDefinition) => void
   openApp: (appId: string) => void
   closeWindow: (id: string) => void
+  clearWindows: () => void
   minimizeWindow: (id: string) => void
   maximizeWindow: (id: string) => void
   focusWindow: (id: string) => void
@@ -434,6 +435,13 @@ export const useStore = create<Store>((set, get) => ({
     return {
       windows: s.windows.filter((w) => w.id !== id),
       windowsPerDesktop: newWindowsPerDesktop
+    }
+  }),
+
+  clearWindows: () => set(() => {
+    return {
+      windows: [],
+      windowsPerDesktop: initWindowsPerDesktop(get().totalDesktops)
     }
   }),
 

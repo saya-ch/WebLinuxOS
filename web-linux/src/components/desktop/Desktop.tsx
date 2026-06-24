@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
 import { useStore } from '../../store'
-import { TerminalIcon, FolderIcon, GlobeIcon, SettingsIcon, InfoIcon, CalculatorIcon, StickyNoteIcon, ImageIcon, SparklesIcon, PaletteIcon, HelpIcon } from '../../icons'
+import { TerminalIcon, FolderIcon, GlobeIcon, SettingsIcon, InfoIcon, CalculatorIcon, StickyNoteIcon, ImageIcon, SparklesIcon, PaletteIcon, HelpIcon, SearchIcon, CommandIcon, TrashIcon } from '../../icons'
 
 interface Particle {
   id: number
@@ -399,6 +399,15 @@ const Desktop = memo(function Desktop() {
     { label: '打开文件管理器', icon: <FolderIcon size={16} />, action: () => openApp('files') },
     { label: '打开浏览器', icon: <GlobeIcon size={16} />, action: () => openApp('browser') },
     { type: 'separator' as const },
+    { label: '全局搜索', icon: <SearchIcon size={16} />, action: () => {
+      const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true })
+      window.dispatchEvent(event)
+    }},
+    { label: '命令面板', icon: <CommandIcon size={16} />, action: () => {
+      const event = new KeyboardEvent('keydown', { key: 'p', metaKey: true, bubbles: true })
+      window.dispatchEvent(event)
+    }},
+    { type: 'separator' as const },
     { label: '更换壁纸', icon: <ImageIcon size={16} />, action: handleWallpaperChange },
     { label: liveWallpaperEnabled ? '关闭动态壁纸' : '开启动态壁纸', icon: <SparklesIcon size={16} />, action: toggleLiveWallpaper },
     { label: '切换动态壁纸', icon: <PaletteIcon size={16} />, action: cycleLiveWallpaper },
@@ -406,6 +415,11 @@ const Desktop = memo(function Desktop() {
     { type: 'separator' as const },
     { label: '打开计算器', icon: <CalculatorIcon size={16} />, action: () => openApp('calculator') },
     { label: '打开记事本', icon: <StickyNoteIcon size={16} />, action: () => openApp('notepad') },
+    { type: 'separator' as const },
+    { label: '清理所有窗口', icon: <TrashIcon size={16} />, action: () => {
+      const windows = useStore.getState().windows
+      windows.forEach(w => useStore.getState().closeWindow(w.id))
+    }},
     { type: 'separator' as const },
     { label: '系统信息', icon: <InfoIcon size={16} />, action: () => openApp('about') },
     { label: '帮助', icon: <HelpIcon size={16} />, action: () => openApp('help') },

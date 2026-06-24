@@ -36,15 +36,155 @@ const categories = [
   { id: 'about', name: '关于', icon: 'ℹ️' },
 ]
 
+function PowerConfirmationDialog({ title, message, confirmText, onConfirm, onCancel, isDestructive = false }: {
+  title: string;
+  message: string;
+  confirmText: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isDestructive?: boolean;
+}) {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.6)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+    }}>
+      <div style={{
+        background: 'var(--window-bg)',
+        border: '1px solid var(--window-border)',
+        borderRadius: 12,
+        padding: 24,
+        maxWidth: 360,
+        width: '90%',
+        boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+      }}>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: 18, color: 'var(--text-primary)' }}>{title}</h3>
+        <p style={{ margin: '0 0 20px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{message}</p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 6,
+              border: '1px solid var(--window-border)',
+              background: 'transparent',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            取消
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 6,
+              border: 'none',
+              background: isDestructive ? '#ef4444' : 'var(--accent)',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: 14,
+              fontWeight: 500,
+            }}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Settings() {
   const theme = useStore((s) => s.theme)
   const setTheme = useStore((s) => s.setTheme)
   const wallpaper = useStore((s) => s.wallpaper)
   const setWallpaper = useStore((s) => s.setWallpaper)
+  const clearWindows = useStore((s) => s.clearWindows)
 
   const [activeCategory, setActiveCategory] = useState('appearance')
   const [wifiEnabled, setWifiEnabled] = useState(true)
   const [volume, setVolume] = useState(80)
+  const [powerDialog, setPowerDialog] = useState<{ type: string; title: string; message: string; confirmText: string; isDestructive: boolean } | null>(null)
+
+  const handlePowerAction = (action: string) => {
+    switch (action) {
+      case 'sleep':
+        setPowerDialog({
+          type: action,
+          title: '进入休眠',
+          message: '系统将保存当前状态并进入低功耗模式。确定要继续吗？',
+          confirmText: '休眠',
+          isDestructive: false,
+        })
+        break
+      case 'restart':
+        setPowerDialog({
+          type: action,
+          title: '重启系统',
+          message: '所有未保存的工作将会丢失。确定要重启吗？',
+          confirmText: '重启',
+          isDestructive: true,
+        })
+        break
+      case 'shutdown':
+        setPowerDialog({
+          type: action,
+          title: '关闭系统',
+          message: '系统将会关闭，所有未保存的工作将会丢失。确定要关闭吗？',
+          confirmText: '关机',
+          isDestructive: true,
+        })
+        break
+    }
+  }
+
+  const confirmPowerAction = () => {
+    if (!powerDialog) return
+
+    switch (powerDialog.type) {
+      case 'sleep':
+        useStore.getState().addNotification({
+          title: '系统休眠',
+          message: '系统已进入休眠模式',
+          type: 'info',
+          duration: 3000,
+        })
+        break
+      case 'restart':
+        clearWindows()
+        setTimeout(() => {
+          useStore.getState().addNotification({
+            title: '系统重启',
+            message: '系统已重新启动',
+            type: 'success',
+            duration: 3000,
+          })
+        }, 500)
+        break
+      case 'shutdown':
+        clearWindows()
+        setTimeout(() => {
+          useStore.getState().addNotification({
+            title: '系统关闭',
+            message: '感谢使用 WebLinuxOS',
+            type: 'info',
+            duration: 5000,
+          })
+        }, 500)
+        break
+    }
+    setPowerDialog(null)
+  }
 
   return (
     <div className="app-container app-settings" style={{ flexDirection: 'row', padding: 0 }}>
@@ -224,6 +364,7 @@ export default function Settings() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <button
                 className="app-settings-power-btn"
+                onClick={() => handlePowerAction('sleep')}
                 style={{
                   padding: '14px 20px',
                   borderRadius: 8,
@@ -235,6 +376,15 @@ export default function Settings() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#3d3d3d'
+                  e.currentTarget.style.borderColor = 'var(--accent)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#2d2d2d'
+                  e.currentTarget.style.borderColor = '#555'
                 }}
               >
                 <span style={{ fontSize: 20 }}>😴</span>
@@ -245,6 +395,7 @@ export default function Settings() {
               </button>
               <button
                 className="app-settings-power-btn"
+                onClick={() => handlePowerAction('restart')}
                 style={{
                   padding: '14px 20px',
                   borderRadius: 8,
@@ -256,6 +407,15 @@ export default function Settings() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#3d3d3d'
+                  e.currentTarget.style.borderColor = 'var(--accent)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#2d2d2d'
+                  e.currentTarget.style.borderColor = '#555'
                 }}
               >
                 <span style={{ fontSize: 20 }}>🔄</span>
@@ -266,6 +426,7 @@ export default function Settings() {
               </button>
               <button
                 className="app-settings-power-btn"
+                onClick={() => handlePowerAction('shutdown')}
                 style={{
                   padding: '14px 20px',
                   borderRadius: 8,
@@ -277,6 +438,13 @@ export default function Settings() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(244,71,71,0.25)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(244,71,71,0.15)'
                 }}
               >
                 <span style={{ fontSize: 20 }}>⏻</span>
@@ -318,6 +486,17 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {powerDialog && (
+        <PowerConfirmationDialog
+          title={powerDialog.title}
+          message={powerDialog.message}
+          confirmText={powerDialog.confirmText}
+          isDestructive={powerDialog.isDestructive}
+          onConfirm={confirmPowerAction}
+          onCancel={() => setPowerDialog(null)}
+        />
+      )}
     </div>
   )
 }
