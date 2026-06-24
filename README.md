@@ -1,6 +1,6 @@
 # WebLinuxOS
 
-A fully functional Linux desktop environment running entirely in the browser, featuring complete window management, virtual file system, terminal emulator, and over 200 utility applications.
+A fully functional Linux desktop environment running entirely in the browser, featuring complete window management, virtual file system, terminal emulator, and 240+ utility applications.
 
 [Live Demo](https://saya-ch.github.io/WebLinuxOS/) | [Features](#core-features) | [Quick Start](#quick-start) | [Technical Stack](#technical-stack)
 
@@ -10,7 +10,7 @@ A fully functional Linux desktop environment running entirely in the browser, fe
 
 WebLinuxOS is a practical in-browser workspace designed for real productivity. It provides developers with instant access to essential tools, information, and utilities without any installation or backend dependencies.
 
-**Key Advantages:**
+Key advantages:
 - Zero installation - runs entirely in browser
 - Cross-platform - works on any device with a modern browser
 - Privacy-first - no data collection, all processing happens locally
@@ -22,10 +22,10 @@ WebLinuxOS is a practical in-browser workspace designed for real productivity. I
 Unlike many similar projects that use iframes or link to external sites, WebLinuxOS takes a different approach:
 
 - **Native browser implementation** - Terminal, file manager, code editor, paint, media players, and collaborative whiteboard are all built from scratch
-- **Real functionality** - 200+ terminal commands, actual Python runtime via Pyodide, real API integrations
+- **Real functionality** - 200+ terminal commands, actual Python runtime via Pyodide, real API integrations (NASA, GitHub, Open Library, Open-Meteo, etc.)
 - **Engineering focus** - Complete window management, multi-desktop support, error boundaries, performance optimization, CSP security
 - **Practical use cases** - Developer Swiss Army knife, temporary workspace, cross-device neutral environment
-- **New in v3.0** - Network speed test, stock market tracker, multi-language code runner with live preview
+- **New in v8.1** - Astronomy Picture of the Day, Reading List, GitHub Profile Viewer
 
 ---
 
@@ -72,6 +72,9 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - News Reader - HN Algolia API, real-time tech news
 - World Clock - Global time zones, 15 major cities
 - API Explorer - Free public APIs catalog
+- Astronomy Picture of the Day - Browse the daily NASA APOD, save favorites
+- Reading List - Open Library integration, manage want/reading/done shelf with notes
+- GitHub Profile Viewer - View public profile, repos, languages, recent activity
 
 **Productivity**
 - Markdown Editor Pro - Split view, toolbar, export HTML/Markdown
@@ -117,6 +120,9 @@ Unlike many similar projects that use iframes or link to external sites, WebLinu
 - Cat facts (catfact.ninja - free)
 - Dog images (dog.ceo - free)
 - Activity suggestions (boredapi.com - free)
+- NASA Astronomy Picture of the Day (api.nasa.gov)
+- Open Library (openlibrary.org - 20M+ public-domain books)
+- GitHub REST API (developer.github.com)
 
 ---
 
@@ -276,6 +282,9 @@ MIT License
 - [ipapi.co](https://ipapi.co/) - IP geolocation
 - [HN Algolia](https://hn.algolia.com/api) - Hacker News API
 - [Have I Been Pwned](https://haveibeenpwned.com/Passwords) - Password breach lookup
+- [NASA APOD](https://apod.nasa.gov/apod/astropix.html) - Astronomy Picture of the Day
+- [Open Library](https://openlibrary.org/) - Public-domain book catalog
+- [GitHub REST API](https://docs.github.com/en/rest) - Public user and repository data
 - [React](https://react.dev/) - Frontend framework
 - [Vite](https://vitejs.dev/) - Build tool
 - [Zustand](https://github.com/pmndrs/zustand) - State management

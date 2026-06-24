@@ -265,6 +265,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevHub: () => import('../../apps/DevHub'),
   AIAssistantEnhanced: () => import('../../apps/AIAssistantEnhanced'),
   APIExplorerEnhanced: () => import('../../apps/APIExplorerEnhanced'),
+  // === v8.1.0 新增公共 API 集成应用 ===
+  AstroDaily: () => import('../../apps/AstroDaily'),
+  ReadingList: () => import('../../apps/ReadingList'),
+  GitHubProfile: () => import('../../apps/GitHubProfile'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
