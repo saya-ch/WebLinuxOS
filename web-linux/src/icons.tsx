@@ -9,7 +9,7 @@ import {
   PlayCircle, Gamepad2, Gamepad, Sparkles, Wand2, Keyboard, Mic2, GraduationCap, Wrench, Cpu,
   File as FileIconL, AppWindow, Network, Pin, PinOff, Trash2, Copy, GripVertical,
   ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
-  Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell,
+  Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -92,6 +92,7 @@ export const VoiceIcon = Mic2
 export const GraduationCapIcon = GraduationCap
 export const WrenchIcon = Wrench
 export const CpuIcon = Cpu
+export const Code2Icon = Code2
 export const FileIcon = FileIconL
 export const AppIcon = AppWindow
 export const ChartIcon = Blocks

@@ -537,3 +537,206 @@ registerCommand('password', {
   usage: 'password [长度]',
   examples: ['password', 'password 20']
 })
+
+registerCommand('weather', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const city = args.join(' ') || 'Beijing'
+    
+    const weatherData: Record<string, { temp: number; desc: string; humidity: number; wind: string }> = {
+      'beijing': { temp: 28, desc: '晴朗', humidity: 45, wind: '东北风 3级' },
+      'shanghai': { temp: 32, desc: '多云', humidity: 65, wind: '东南风 4级' },
+      'guangzhou': { temp: 35, desc: '雷阵雨', humidity: 80, wind: '南风 2级' },
+      'shenzhen': { temp: 33, desc: '多云转晴', humidity: 70, wind: '东风 3级' },
+      'chengdu': { temp: 25, desc: '阴', humidity: 75, wind: '微风' },
+      'hangzhou': { temp: 30, desc: '晴', humidity: 55, wind: '西北风 2级' },
+    }
+    
+    const lowerCity = city.toLowerCase()
+    const data = weatherData[lowerCity] || { temp: Math.floor(Math.random() * 20) + 20, desc: '晴', humidity: Math.floor(Math.random() * 40) + 40, wind: '微风' }
+    
+    return {
+      output: [
+        `🌤️  ${city} 天气`,
+        '',
+        `温度: ${data.temp}°C`,
+        `天气: ${data.desc}`,
+        `湿度: ${data.humidity}%`,
+        `风力: ${data.wind}`,
+        '',
+        '💡 提示: 使用 weather <城市名> 查询其他城市天气',
+      ].join('\n')
+    }
+  },
+  description: '查询天气',
+  usage: 'weather [城市名]',
+  examples: ['weather', 'weather Beijing', 'weather Shanghai']
+})
+
+registerCommand('quote', {
+  handler: (): CommandResult => {
+    const quotes = [
+      { text: '生活不止眼前的苟且，还有诗和远方。', author: '高晓松' },
+      { text: '不要等待机会，而要创造机会。', author: '林肯' },
+      { text: '成功不是将来才有的，而是从决定去做的那一刻起，持续累积而成。', author: '俞敏洪' },
+      { text: '人生最大的挑战是发现自己是谁，而第二大的挑战是对所发现的感到满意。', author: '罗杰·塞尔夫' },
+      { text: '生命中最美好的事物都是免费的：微笑、拥抱、朋友、爱与美好的回忆。', author: '佚名' },
+      { text: '每一天都是一个新的开始，你可以选择如何度过它。', author: '佚名' },
+      { text: '成功的秘诀在于始终如一地坚持目标。', author: '佚名' },
+      { text: '知识是人生旅途中最好的行囊。', author: '佚名' },
+    ]
+    
+    const quote = quotes[Math.floor(Math.random() * quotes.length)]
+    
+    return {
+      output: [
+        '📖 今日名言',
+        '',
+        `"${quote.text}"`,
+        '',
+        `—— ${quote.author}`,
+      ].join('\n')
+    }
+  },
+  description: '显示随机名言',
+  usage: 'quote',
+  examples: ['quote']
+})
+
+registerCommand('timer', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const seconds = parseInt(args[0])
+    
+    if (isNaN(seconds) || seconds <= 0) {
+      return {
+        output: [
+          '⏱️  倒计时器',
+          '',
+          '用法: timer <秒数>',
+          '',
+          '示例:',
+          '  timer 60',
+          '  timer 120',
+        ].join('\n')
+      }
+    }
+    
+    let output = `⏱️  倒计时开始: ${seconds} 秒\n\n`
+    
+    for (let remaining = seconds; remaining > 0; remaining--) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (remaining <= 5) {
+        output += `${remaining}... `
+      }
+    }
+    
+    output += '\n🎉 时间到！'
+    
+    return { output }
+  },
+  description: '倒计时器',
+  usage: 'timer <秒数>',
+  examples: ['timer 60', 'timer 120']
+})
+
+registerCommand('motd', {
+  handler: (): CommandResult => {
+    const hours = new Date().getHours()
+    let greeting = ''
+    
+    if (hours < 6) greeting = '夜深了，注意休息 🌙'
+    else if (hours < 12) greeting = '早上好！☀️'
+    else if (hours < 14) greeting = '中午好！🌤️'
+    else if (hours < 18) greeting = '下午好！🌥️'
+    else greeting = '晚上好！🌙'
+    
+    const uptime = Math.floor(Math.random() * 100) + 10
+    const users = Math.floor(Math.random() * 10) + 1
+    
+    return {
+      output: [
+        '========================================',
+        '        WebLinuxOS 欢迎您！',
+        '========================================',
+        '',
+        greeting,
+        '',
+        `系统运行时间: ${uptime} 小时`,
+        `当前在线用户: ${users} 人`,
+        '',
+        '输入 `help` 查看可用命令',
+        '输入 `apps` 查看所有应用',
+        '',
+        '========================================',
+      ].join('\n')
+    }
+  },
+  description: '显示欢迎信息',
+  usage: 'motd',
+  examples: ['motd']
+})
+
+registerCommand('help', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    const commands: Record<string, { desc: string; usage: string }> = {
+      'ls': { desc: '列出目录内容', usage: 'ls [路径]' },
+      'cd': { desc: '切换目录', usage: 'cd <路径>' },
+      'pwd': { desc: '显示当前目录', usage: 'pwd' },
+      'mkdir': { desc: '创建目录', usage: 'mkdir <目录名>' },
+      'rm': { desc: '删除文件或目录', usage: 'rm <路径>' },
+      'cp': { desc: '复制文件', usage: 'cp <源> <目标>' },
+      'mv': { desc: '移动/重命名文件', usage: 'mv <源> <目标>' },
+      'cat': { desc: '查看文件内容', usage: 'cat <文件>' },
+      'touch': { desc: '创建空文件', usage: 'touch <文件名>' },
+      'echo': { desc: '输出文本', usage: 'echo <文本>' },
+      'whoami': { desc: '显示当前用户', usage: 'whoami' },
+      'date': { desc: '显示日期时间', usage: 'date' },
+      'calc': { desc: '数学计算器', usage: 'calc <表达式>' },
+      'weather': { desc: '查询天气', usage: 'weather [城市]' },
+      'quote': { desc: '随机名言', usage: 'quote' },
+      'password': { desc: '生成密码', usage: 'password [长度]' },
+      'uuid': { desc: '生成UUID', usage: 'uuid' },
+      'base64': { desc: 'Base64编码', usage: 'base64 <文本>' },
+      'unbase64': { desc: 'Base64解码', usage: 'unbase64 <文本>' },
+      'urlencode': { desc: 'URL编码', usage: 'urlencode <文本>' },
+      'urldecode': { desc: 'URL解码', usage: 'urldecode <文本>' },
+      'json': { desc: 'JSON格式化', usage: 'json <JSON>' },
+      'hash': { desc: '计算哈希', usage: 'hash <文本>' },
+      'rev': { desc: '反转文本', usage: 'rev <文本>' },
+      'prime': { desc: '质数检测', usage: 'prime <数字>' },
+      'factor': { desc: '质因数分解', usage: 'factor <数字>' },
+      'roman': { desc: '罗马数字转换', usage: 'roman <数字>' },
+      'timer': { desc: '倒计时器', usage: 'timer <秒数>' },
+      'motd': { desc: '显示欢迎信息', usage: 'motd' },
+      'apps': { desc: '列出所有应用', usage: 'apps' },
+      'clear': { desc: '清空屏幕', usage: 'clear' },
+      'help': { desc: '显示此帮助信息', usage: 'help [命令]' },
+    }
+    
+    if (args.length > 0) {
+      const cmd = args[0].toLowerCase()
+      if (commands[cmd]) {
+        return {
+          output: [
+            `命令: ${cmd}`,
+            `描述: ${commands[cmd].desc}`,
+            `用法: ${commands[cmd].usage}`,
+          ].join('\n')
+        }
+      }
+      return { output: `help: 未知命令 '${cmd}'` }
+    }
+    
+    const output = ['📖 可用命令:', '', ...Object.entries(commands).map(([cmd, info]) => 
+      `  ${cmd.padEnd(12)} - ${info.desc}`
+    ), '', '使用 help <命令> 查看详细用法']
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示帮助信息',
+  usage: 'help [命令]',
+  examples: ['help', 'help ls']
+})
