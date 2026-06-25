@@ -179,16 +179,39 @@ npm run preview
 
 ## 键盘快捷键
 
+### 全局快捷键
 | 快捷键 | 功能 |
 |--------|------|
 | `Ctrl + Shift + L` | 切换应用启动器 |
-| `Ctrl + Shift + S` | 打开设置 |
-| `Ctrl + Shift + F` | 打开文件管理器 |
-| `Ctrl + Shift + T` | 打开终端 |
-| `Ctrl + N` | 新建终端窗口 |
+| `Ctrl + Shift + K` | 全局搜索 |
+| `Ctrl + Shift + P` | 命令面板 |
+| `Ctrl + Alt + 1-9` | 切换桌面 |
+| `Ctrl + Alt + ←/→` | 上/下一个桌面 |
+| `Alt + Tab` | 切换窗口 |
 | `Ctrl + W` | 关闭当前窗口 |
 | `Ctrl + M` | 最小化窗口 |
 | `F11` | 全屏切换 |
+
+### 应用快捷键
+| 快捷键 | 应用 |
+|--------|------|
+| `Ctrl + T` | 终端 |
+| `Ctrl + E` | 文件管理器 |
+| `Ctrl + B` | 浏览器 |
+| `Ctrl + ,` | 设置 |
+| `Ctrl + Shift + C` | 计算器 |
+| `Ctrl + Shift + D` | 日历 |
+| `Ctrl + Shift + W` | 天气 |
+| `Ctrl + Shift + M` | 音乐播放器 |
+| `Ctrl + Shift + N` | 笔记 |
+| `Ctrl + Shift + O` | 密码管理器 |
+| `Ctrl + G` | 代码编辑器 |
+| `Ctrl + D` | 系统监视器 |
+| `Ctrl + I` | 图片查看器 |
+| `Ctrl + P` | 画图 |
+| `Ctrl + H` | 帮助 |
+| `Ctrl + Shift + K` | 相机 |
+| `Ctrl + 1-9` | 快速启动应用 1-9 |
 
 ## 项目结构
 
