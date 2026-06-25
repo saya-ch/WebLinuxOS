@@ -271,6 +271,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   GitHubProfile: () => import('../../apps/GitHubProfile'),
   // === v8.2.0 新增实用工具 ===
   HashGenerator: () => import('../../apps/HashGenerator'),
+  // === v9.0.0 新增创新应用 ===
+  AICodeAnalyzer: () => import('../../apps/AICodeAnalyzer'),
+  NetworkStatusDashboard: () => import('../../apps/NetworkStatusDashboard'),
+  SystemOptimizer: () => import('../../apps/SystemOptimizer'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
