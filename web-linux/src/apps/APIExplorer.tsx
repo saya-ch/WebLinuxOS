@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react'
+import { useState, useCallback, memo, useEffect } from 'react'
 import { useStore } from '../store'
 
 // API探索器 - 浏览常用公开API文档和示例
@@ -19,7 +19,16 @@ interface APIExample {
   path: string
   description: string
   params: string[]
+  requestBody?: string
   responseExample: string
+}
+
+interface RequestState {
+  loading: boolean
+  response: string
+  status: number | null
+  responseTime: number | null
+  error: string | null
 }
 
 const API_CATALOG: APIEndpoint[] = [
@@ -338,6 +347,15 @@ const APIExplorer = memo(function APIExplorer() {
   const [selectedAPI, setSelectedAPI] = useState<APIEndpoint | null>(null)
   const [selectedExample, setSelectedExample] = useState<APIExample | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [paramValues, setParamValues] = useState<Record<string, string>>({})
+  const [requestState, setRequestState] = useState<RequestState>({
+    loading: false,
+    response: '',
+    status: null,
+    responseTime: null,
+    error: null,
+  })
+  const [customBody, setCustomBody] = useState('')
   const addNotification = useStore((s) => s.addNotification)
 
   const categories = ['all', ...new Set(API_CATALOG.map(api => api.category))]
@@ -354,7 +372,13 @@ const APIExplorer = memo(function APIExplorer() {
   })
 
   const handleCopyUrl = useCallback((baseUrl: string, path: string) => {
-    const fullUrl = baseUrl + path
+    let fullUrl = baseUrl + path
+    if (selectedExample) {
+      selectedExample.params.forEach(param => {
+        const value = paramValues[param] || ''
+        fullUrl = fullUrl.replace(`{${param}}`, value)
+      })
+    }
     navigator.clipboard.writeText(fullUrl)
     addNotification({
       title: '已复制',
@@ -362,7 +386,7 @@ const APIExplorer = memo(function APIExplorer() {
       type: 'success',
       duration: 2000
     })
-  }, [addNotification])
+  }, [addNotification, selectedExample, paramValues])
 
   const handleOpenDocs = useCallback((url: string) => {
     window.open(url, '_blank')
@@ -373,6 +397,107 @@ const APIExplorer = memo(function APIExplorer() {
       duration: 2000
     })
   }, [addNotification])
+
+  const handleSendRequest = useCallback(async () => {
+    if (!selectedAPI || !selectedExample) return
+
+    setRequestState({ loading: true, response: '', status: null, responseTime: null, error: null })
+
+    const startTime = Date.now()
+
+    let fullUrl = selectedAPI.baseUrl + selectedExample.path
+    selectedExample.params.forEach(param => {
+      const value = paramValues[param] || ''
+      fullUrl = fullUrl.replace(`{${param}}`, encodeURIComponent(value))
+    })
+
+    try {
+      const requestOptions: RequestInit = {
+        method: selectedExample.method,
+        headers: { 'Content-Type': 'application/json' },
+      }
+
+      if (selectedExample.method !== 'GET' && (customBody || selectedExample.requestBody)) {
+        requestOptions.body = customBody || selectedExample.requestBody
+      }
+
+      const response = await fetch(fullUrl, requestOptions)
+      const endTime = Date.now()
+
+      const text = await response.text()
+      let formattedResponse = text
+      try {
+        const json = JSON.parse(text)
+        formattedResponse = JSON.stringify(json, null, 2)
+      } catch {
+        formattedResponse = text
+      }
+
+      setRequestState({
+        loading: false,
+        response: formattedResponse,
+        status: response.status,
+        responseTime: endTime - startTime,
+        error: null,
+      })
+
+      if (response.ok) {
+        addNotification({
+          title: '请求成功',
+          message: `HTTP ${response.status} · ${endTime - startTime}ms`,
+          type: 'success',
+          duration: 3000
+        })
+      } else {
+        addNotification({
+          title: '请求完成',
+          message: `HTTP ${response.status}`,
+          type: 'info',
+          duration: 3000
+        })
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setRequestState({
+        loading: false,
+        response: '',
+        status: null,
+        responseTime: null,
+        error: errorMessage,
+      })
+      addNotification({
+        title: '请求失败',
+        message: errorMessage,
+        type: 'error',
+        duration: 3000
+      })
+    }
+  }, [selectedAPI, selectedExample, paramValues, customBody, addNotification])
+
+  const handleClearResponse = useCallback(() => {
+    setRequestState({ loading: false, response: '', status: null, responseTime: null, error: null })
+  }, [])
+
+  const handleParamChange = useCallback((param: string, value: string) => {
+    setParamValues(prev => ({ ...prev, [param]: value }))
+  }, [])
+
+  useEffect(() => {
+    if (selectedExample) {
+      const defaultParams: Record<string, string> = {}
+      selectedExample.params.forEach(param => {
+        if (param === 'city' || param === 'name') defaultParams[param] = 'Beijing'
+        else if (param === 'query') defaultParams[param] = 'python'
+        else if (param === 'id') defaultParams[param] = '1'
+        else if (param === 'ip') defaultParams[param] = '8.8.8.8'
+        else if (param === 'lat' || param === 'latitude') defaultParams[param] = '39.9'
+        else if (param === 'lon' || param === 'longitude') defaultParams[param] = '116.4'
+        else defaultParams[param] = ''
+      })
+      setParamValues(defaultParams)
+      setCustomBody(selectedExample.requestBody || '')
+    }
+  }, [selectedExample])
 
   return (
     <div style={{
@@ -609,40 +734,216 @@ const APIExplorer = memo(function APIExplorer() {
               </div>
             </div>
 
-            {/* 响应示例 */}
+            {/* API测试面板 */}
             {selectedExample && (
               <div style={{ marginTop: 16 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>响应示例</div>
-                <pre style={{
-                  padding: 12,
-                  borderRadius: 8,
-                  background: 'rgba(0,0,0,0.3)',
-                  fontSize: 12,
-                  color: '#e0e0e8',
-                  overflow: 'auto',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all'
-                }}>
-                  {selectedExample.responseExample}
-                </pre>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(selectedExample.responseExample)
-                    addNotification({ title: '已复制', message: '响应示例已复制', type: 'success', duration: 2000 })
-                  }}
-                  style={{
-                    marginTop: 8,
-                    padding: '6px 12px',
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
+                  ⚡ API 测试
+                </div>
+
+                {/* 参数输入 */}
+                {selectedExample.params.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>
+                      参数值
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+                      {selectedExample.params.map(param => (
+                        <div key={param}>
+                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>{param}</div>
+                          <input
+                            type="text"
+                            value={paramValues[param] || ''}
+                            onChange={(e) => handleParamChange(param, e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px 10px',
+                              borderRadius: 6,
+                              background: 'rgba(0,0,0,0.2)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              color: '#e0e0e8',
+                              fontSize: 12,
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 请求体 */}
+                {selectedExample.method !== 'GET' && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>
+                      请求体 (JSON)
+                    </div>
+                    <textarea
+                      value={customBody}
+                      onChange={(e) => setCustomBody(e.target.value)}
+                      placeholder='{"key": "value"}'
+                      style={{
+                        width: '100%',
+                        minHeight: '80px',
+                        padding: '10px',
+                        borderRadius: 6,
+                        background: 'rgba(0,0,0,0.2)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#e0e0e8',
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        outline: 'none',
+                        resize: 'vertical'
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* 完整URL预览 */}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 6 }}>
+                    请求 URL
+                  </div>
+                  <div style={{
+                    padding: 10,
                     borderRadius: 6,
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    color: '#e0e0e8',
-                    cursor: 'pointer',
-                    fontSize: 12
-                  }}
-                >
-                  复制响应示例
-                </button>
+                    background: 'rgba(0,0,0,0.3)',
+                    fontSize: 12,
+                    color: '#7c6cf0',
+                    overflow: 'auto'
+                  }}>
+                    {(() => {
+                      let url = selectedAPI.baseUrl + selectedExample.path
+                      selectedExample.params.forEach(param => {
+                        const value = paramValues[param] || `{${param}}`
+                        url = url.replace(`{${param}}`, encodeURIComponent(value))
+                      })
+                      return url
+                    })()}
+                  </div>
+                </div>
+
+                {/* 操作按钮 */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                  <button
+                    onClick={handleSendRequest}
+                    disabled={requestState.loading}
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: 8,
+                      background: requestState.loading 
+                        ? 'rgba(124,108,240,0.3)' 
+                        : 'rgba(124,108,240,0.5)',
+                      border: '1px solid rgba(124,108,240,0.5)',
+                      color: '#e0e0e8',
+                      cursor: requestState.loading ? 'not-allowed' : 'pointer',
+                      fontSize: 13,
+                      fontWeight: 600
+                    }}
+                  >
+                    {requestState.loading ? '发送中...' : '🚀 发送请求'}
+                  </button>
+                  <button
+                    onClick={handleClearResponse}
+                    disabled={!requestState.response && !requestState.error}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: 8,
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: '#e0e0e8',
+                      cursor: (!requestState.response && !requestState.error) ? 'not-allowed' : 'pointer',
+                      fontSize: 12,
+                      opacity: (!requestState.response && !requestState.error) ? 0.5 : 1
+                    }}
+                  >
+                    清除响应
+                  </button>
+                </div>
+
+                {/* 响应结果 */}
+                {(requestState.response || requestState.error || requestState.status) && (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e8' }}>响应结果</div>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
+                        {requestState.status && (
+                          <span style={{ 
+                            color: requestState.status >= 200 && requestState.status < 300 ? '#22c55e' : '#f59e0b'
+                          }}>
+                            HTTP {requestState.status}
+                          </span>
+                        )}
+                        {requestState.responseTime && (
+                          <span style={{ color: '#93c5fd' }}>
+                            {requestState.responseTime}ms
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {requestState.error ? (
+                      <div style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        background: 'rgba(239,68,68,0.15)',
+                        fontSize: 12,
+                        color: '#ef4444'
+                      }}>
+                        {requestState.error}
+                      </div>
+                    ) : (
+                      <pre style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        background: 'rgba(0,0,0,0.3)',
+                        fontSize: 12,
+                        color: '#a6e3a1',
+                        overflow: 'auto',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-all',
+                        maxHeight: '300px'
+                      }}>
+                        {requestState.response}
+                      </pre>
+                    )}
+                  </div>
+                )}
+
+                {/* 响应示例 */}
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>📖 响应示例</div>
+                  <pre style={{
+                    padding: 12,
+                    borderRadius: 8,
+                    background: 'rgba(0,0,0,0.2)',
+                    fontSize: 12,
+                    color: '#9ca3af',
+                    overflow: 'auto',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all',
+                    opacity: 0.7
+                  }}>
+                    {selectedExample.responseExample}
+                  </pre>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedExample.responseExample)
+                      addNotification({ title: '已复制', message: '响应示例已复制', type: 'success', duration: 2000 })
+                    }}
+                    style={{
+                      marginTop: 8,
+                      padding: '6px 12px',
+                      borderRadius: 6,
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: '#e0e0e8',
+                      cursor: 'pointer',
+                      fontSize: 12
+                    }}
+                  >
+                    复制响应示例
+                  </button>
+                </div>
               </div>
             )}
           </div>

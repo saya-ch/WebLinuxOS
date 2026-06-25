@@ -463,7 +463,7 @@ export default function Settings() {
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <div style={{ fontSize: 64, marginBottom: 8 }}>🐧</div>
               <div style={{ fontSize: 24, fontWeight: 600 }}>Web Linux</div>
-              <div style={{ fontSize: 14, color: '#888', marginTop: 4 }}>版本 4.3.0</div>
+              <div style={{ fontSize: 14, color: '#888', marginTop: 4 }}>版本 8.2.1</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div style={{ padding: 12, background: '#2d2d2d', borderRadius: 8 }}>
