@@ -114,23 +114,61 @@ registerCommand('weather', {
 })
 
 registerCommand('news', {
-  handler: async (): Promise<CommandResult> => {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const category = args[0] || 'general'
+    
+    const categories = ['general', 'technology', 'business', 'science', 'health', 'entertainment', 'sports']
+    
+    if (!categories.includes(category.toLowerCase())) {
+      return {
+        output: [
+          '📰 新闻查询',
+          '',
+          '用法: news [分类]',
+          '',
+          '支持的分类:',
+          '  general     - 综合新闻',
+          '  technology  - 科技新闻',
+          '  business    - 商业新闻',
+          '  science     - 科学新闻',
+          '  health      - 健康新闻',
+          '  entertainment - 娱乐新闻',
+          '  sports      - 体育新闻',
+          '',
+          '示例:',
+          '  news',
+          '  news technology',
+          '  news business',
+        ].join('\n')
+      }
+    }
+    
     try {
-      const response = await fetch('https://newsapi.org/v2/top-headlines?country=cn&apiKey=demo')
+      const response = await fetch(
+        `https://gnews.io/api/v4/top-headlines?category=${category}&lang=zh&country=cn&max=5&apikey=87e394a2e53750712970235575f416bc`
+      )
       const data = await response.json()
       
       if (data.articles && data.articles.length > 0) {
         const newsItems = data.articles.slice(0, 5).map((article: any, index: number) => {
-          return `${index + 1}. ${article.title}\n   ${article.source.name} - ${article.publishedAt.slice(0, 10)}\n`
+          const date = article.publishedAt ? article.publishedAt.slice(0, 10) : '未知日期'
+          return `${index + 1}. ${article.title}\n   ${article.source.name || '未知来源'} - ${date}`
         })
         
         return {
           output: [
-            '📰 最新新闻',
+            `📰 ${category === 'general' ? '综合' : 
+              category === 'technology' ? '科技' :
+              category === 'business' ? '商业' :
+              category === 'science' ? '科学' :
+              category === 'health' ? '健康' :
+              category === 'entertainment' ? '娱乐' : '体育'}新闻`,
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
             ...newsItems,
+            '',
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-            '💡 数据来源: NewsAPI',
+            '💡 数据来源: GNews',
           ].join('\n')
         }
       }
@@ -138,27 +176,78 @@ registerCommand('news', {
       // Fallback to mock data
     }
     
-    const mockNews = [
-      '1. WebLinuxOS 2.9 版本发布，新增多项功能',
-      '2. React 19 正式发布，带来全新特性',
-      '3. 人工智能技术持续突破，创新应用不断涌现',
-      '4. 全球科技巨头加大AI研发投入',
-      '5. 开源社区活跃度持续提升',
-    ]
+    const mockNews = {
+      'general': [
+        '1. WebLinuxOS 2.9 版本发布，新增多项功能',
+        '2. React 19 正式发布，带来全新特性',
+        '3. 人工智能技术持续突破，创新应用不断涌现',
+        '4. 全球科技巨头加大AI研发投入',
+        '5. 开源社区活跃度持续提升',
+      ],
+      'technology': [
+        '1. AI大模型性能再创新高',
+        '2. WebAssembly技术获得广泛应用',
+        '3. 量子计算取得新突破',
+        '4. 5G网络覆盖持续扩展',
+        '5. 边缘计算成为技术热点',
+      ],
+      'business': [
+        '1. 全球股市波动加剧',
+        '2. 新能源产业迎来发展机遇',
+        '3. 数字化转型加速推进',
+        '4. 跨境电商持续增长',
+        '5. 金融科技创新不断',
+      ],
+      'science': [
+        '1. 太空探索取得新进展',
+        '2. 基因编辑技术突破',
+        '3. 新材料研究取得成果',
+        '4. 气候变化研究深入',
+        '5. 医学研究新发现',
+      ],
+      'health': [
+        '1. 健康生活方式倡导',
+        '2. 疫苗研发新动态',
+        '3. 心理健康关注提升',
+        '4. 营养科学新研究',
+        '5. 运动健康普及',
+      ],
+      'entertainment': [
+        '1. 热门电影上映',
+        '2. 音乐节精彩纷呈',
+        '3. 综艺新节目上线',
+        '4. 文化展览举办',
+        '5. 明星动态追踪',
+      ],
+      'sports': [
+        '1. 足球联赛激烈进行',
+        '2. 篮球比赛精彩对决',
+        '3. 奥运会筹备进展',
+        '4. 网球赛事亮点',
+        '5. 全民健身热潮',
+      ],
+    }
     
+    const newsItems = (mockNews as Record<string, string[]>)[category.toLowerCase()] || mockNews['general']
     return {
       output: [
-        '📰 最新新闻',
+        `📰 ${category === 'general' ? '综合' : 
+          category === 'technology' ? '科技' :
+          category === 'business' ? '商业' :
+          category === 'science' ? '科学' :
+          category === 'health' ? '健康' :
+          category === 'entertainment' ? '娱乐' : '体育'}新闻`,
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        ...mockNews,
+        ...newsItems,
+        '',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        '💡 新闻数据仅供展示',
+        '💡 当前无法获取实时新闻数据',
       ].join('\n')
     }
   },
-  description: '获取最新新闻',
-  usage: 'news',
-  examples: ['news']
+  description: '获取最新新闻（支持分类）',
+  usage: 'news [分类]',
+  examples: ['news', 'news technology', 'news business']
 })
 
 registerCommand('crypto', {
@@ -263,7 +352,7 @@ registerCommand('search', {
 })
 
 registerCommand('translate', {
-  handler: (context: CommandContext): CommandResult => {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     
     if (args.length === 0) {
@@ -272,49 +361,106 @@ registerCommand('translate', {
           '🌐 翻译工具',
           '',
           '用法: translate <文本>',
+          '       translate <源语言>:<目标语言> <文本>',
+          '',
+          '支持的语言代码:',
+          '  en - 英语',
+          '  zh - 中文',
+          '  ja - 日语',
+          '  ko - 韩语',
+          '  fr - 法语',
+          '  de - 德语',
+          '  es - 西班牙语',
           '',
           '示例:',
           '  translate Hello',
-          '  translate Bonjour',
+          '  translate en:zh Hello World',
+          '  translate fr:zh Bonjour',
           '',
-          '💡 这是一个简单的词典翻译工具',
+          '💡 默认自动检测源语言，目标语言为中文',
         ].join('\n')
       }
     }
     
-    const commonPhrases: Record<string, string> = {
-      'hello': '你好 (中文) / こんにちは (日语) / 안녕하세요 (韩语)',
-      'goodbye': '再见 (中文) / さようなら (日语) / 안녕히 가세요 (韩语)',
-      'thank you': '谢谢 (中文) / ありがとう (日语) / 감사합니다 (韩语)',
-      'yes': '是 (中文) / はい (日语) / 네 (韩语)',
-      'no': '否 (中文) / いいえ (日语) / 아니요 (韩语)',
-      'good morning': '早上好 (中文) / おはよう (日语) / 좋은 아침 (韩语)',
-      'good night': '晚安 (中文) / おやすみ (日语) / 잘 자요 (韩语)',
-      'i love you': '我爱你 (中文) / 愛してる (日语) / 사랑해요 (韩语)',
-      'how are you': '你好吗 (中文) / 元気ですか (日语) / 어떻게 지내요 (韩语)',
-      'welcome': '欢迎 (中文) / ようこそ (日语) / 환영합니다 (韩语)',
+    let sourceLang = 'auto'
+    let targetLang = 'zh'
+    let text = args.join(' ')
+    
+    const langMatch = text.match(/^([a-z]{2}):([a-z]{2})\s+(.+)$/i)
+    if (langMatch) {
+      sourceLang = langMatch[1].toLowerCase()
+      targetLang = langMatch[2].toLowerCase()
+      text = langMatch[3]
     }
     
-    const phrase = args.join(' ').toLowerCase()
+    try {
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`
+      )
+      const data = await response.json()
+      
+      if (data.responseData && data.responseData.translatedText) {
+        const translated = data.responseData.translatedText
+        const match = data.responseData.match || 0
+        
+        const output = [
+          `🌐 翻译结果`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          `原文: ${text}`,
+          `翻译: ${translated}`,
+          `匹配度: ${(match * 100).toFixed(0)}%`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ].join('\n')
+        
+        return { output }
+      }
+    } catch {
+      // Fallback to local phrases
+    }
+    
+    const commonPhrases: Record<string, string> = {
+      'hello': '你好',
+      'goodbye': '再见',
+      'thank you': '谢谢',
+      'yes': '是',
+      'no': '否',
+      'good morning': '早上好',
+      'good night': '晚安',
+      'i love you': '我爱你',
+      'how are you': '你好吗',
+      'welcome': '欢迎',
+      'sorry': '对不起',
+      'please': '请',
+      'help': '帮助',
+      'happy': '快乐',
+      'sad': '悲伤',
+      'friend': '朋友',
+      'family': '家庭',
+      'love': '爱',
+      'peace': '和平',
+      'hope': '希望',
+    }
+    
+    const phrase = text.toLowerCase()
     
     if (commonPhrases[phrase]) {
-      return { output: `🌐 "${args.join(' ')}" 的多语言翻译:\n\n${commonPhrases[phrase]}` }
+      return { output: `🌐 "${text}" 的翻译:\n\n${commonPhrases[phrase]}` }
     }
     
     return {
       output: [
-        `🌐 "${args.join(' ')}"`,
+        `🌐 "${text}"`,
         '',
-        '📝 常见短语翻译示例:',
-        ...Object.entries(commonPhrases).map(([k, v]) => `  • ${k}: ${v.split(' (')[0]}`),
+        '📝 常见短语翻译:',
+        ...Object.entries(commonPhrases).map(([k, v]) => `  • ${k}: ${v}`),
         '',
-        '💡 提示: 尝试搜索常见短语',
+        '💡 当前无法连接翻译服务，显示常用短语',
       ].join('\n')
     }
   },
-  description: '简单翻译工具',
-  usage: 'translate <文本>',
-  examples: ['translate hello', 'translate thank you']
+  description: '在线翻译工具（支持多语言）',
+  usage: 'translate <文本> 或 translate <源语言>:<目标语言> <文本>',
+  examples: ['translate Hello', 'translate en:zh Hello World']
 })
 
 registerCommand('ping', {

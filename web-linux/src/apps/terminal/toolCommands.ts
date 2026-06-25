@@ -370,36 +370,81 @@ registerCommand('unbase64', {
   examples: ['unbase64 SGVsbG8gV29ybGQ=']
 })
 
+async function computeHash(text: string, algorithm: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(text)
+  const hashBuffer = await crypto.subtle.digest(algorithm, data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 registerCommand('hash', {
-  handler: (context: CommandContext): CommandResult => {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
-    const text = args.join(' ')
     
-    if (!text) {
+    if (args.length === 0) {
       return {
         output: [
           '🔑 哈希计算',
           '',
-          '用法: hash <文本>',
+          '用法: hash <算法> <文本>',
+          '',
+          '支持的算法:',
+          '  md5    - MD5 哈希',
+          '  sha1   - SHA-1 哈希',
+          '  sha256 - SHA-256 哈希',
+          '  sha512 - SHA-512 哈希',
           '',
           '示例:',
-          '  hash password123',
+          '  hash sha256 password123',
+          '  hash md5 hello world',
+          '  hash sha1 test',
+          '',
+          '💡 不指定算法时默认使用 SHA-256',
         ].join('\n')
       }
     }
     
-    let hash = 0
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
-      hash = hash & hash
+    let algorithm = 'SHA-256'
+    let text = args.join(' ')
+    
+    const knownAlgorithms: Record<string, string> = {
+      'md5': 'MD5',
+      'sha1': 'SHA-1',
+      'sha256': 'SHA-256',
+      'sha512': 'SHA-512',
     }
     
-    return { output: `MD5-like: ${Math.abs(hash).toString(16).padStart(32, '0')}` }
+    const firstArg = args[0]?.toLowerCase() || ''
+    if (firstArg && knownAlgorithms[firstArg]) {
+      algorithm = knownAlgorithms[firstArg]
+      text = args.slice(1).join(' ')
+    }
+    
+    if (!text) {
+      return { output: 'hash: 请提供要计算哈希的文本' }
+    }
+    
+    try {
+      const hash = await computeHash(text, algorithm)
+      
+      return {
+        output: [
+          `🔑 ${algorithm} 哈希`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          `原文: ${text}`,
+          `哈希: ${hash}`,
+          `长度: ${hash.length} 字符`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ].join('\n')
+      }
+    } catch {
+      return { output: `hash: 无法计算 ${algorithm} 哈希` }
+    }
   },
-  description: '计算文本哈希值',
-  usage: 'hash <文本>',
-  examples: ['hash password123']
+  description: '计算文本哈希值（支持MD5/SHA1/SHA256/SHA512）',
+  usage: 'hash [算法] <文本>',
+  examples: ['hash sha256 password123', 'hash md5 hello']
 })
 
 registerCommand('rev', {

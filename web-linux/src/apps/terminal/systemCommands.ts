@@ -20,12 +20,48 @@ registerCommand('hostname', {
 })
 
 registerCommand('date', {
-  handler: (): CommandResult => {
-    return { output: new Date().toString() }
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const now = new Date()
+    
+    const formats: Record<string, string> = {
+      '+%Y': now.getFullYear().toString(),
+      '+%m': String(now.getMonth() + 1).padStart(2, '0'),
+      '+%d': String(now.getDate()).padStart(2, '0'),
+      '+%H': String(now.getHours()).padStart(2, '0'),
+      '+%M': String(now.getMinutes()).padStart(2, '0'),
+      '+%S': String(now.getSeconds()).padStart(2, '0'),
+      '+%A': ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][now.getDay()],
+      '+%a': ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()],
+      '+%B': ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'][now.getMonth()],
+      '+%b': ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'][now.getMonth()],
+      '+%j': String(Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))).padStart(3, '0'),
+      '+%w': now.getDay().toString(),
+      '+%Z': Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }
+    
+    if (args.length > 0) {
+      let result = args.join(' ')
+      for (const [format, value] of Object.entries(formats)) {
+        result = result.replace(format, value)
+      }
+      return { output: result }
+    }
+    
+    return {
+      output: [
+        `当前时间: ${now.toLocaleString('zh-CN')}`,
+        `UTC时间: ${now.toISOString()}`,
+        `日期: ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+        `时间: ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`,
+        `星期: ${['日', '一', '二', '三', '四', '五', '六'][now.getDay()]}`,
+        `时区: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+      ].join('\n')
+    }
   },
   description: '显示当前日期和时间',
-  usage: 'date',
-  examples: ['date']
+  usage: 'date [格式]',
+  examples: ['date', 'date +%Y-%m-%d', 'date +%H:%M:%S']
 })
 
 registerCommand('uname', {

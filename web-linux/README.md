@@ -1,228 +1,187 @@
 # WebLinuxOS
 
-一个功能完整的基于 Web 的 Linux 桌面环境，完全在浏览器中运行。无需后端支持，所有功能均在客户端运行，支持持久化存储。
+A feature-complete Linux desktop environment running entirely in the browser. No backend required, all functionality runs client-side with persistent storage.
 
-**在线演示**: https://saya-ch.github.io/WebLinuxOS/
+**Live Demo**: https://saya-ch.github.io/WebLinuxOS/
 
----
+## Features
 
-## 简介
+### Desktop Environment
+- Multi-window management with minimize, maximize, and close controls
+- Virtual desktops with custom wallpaper support
+- Smart app launcher with fuzzy search
+- System tray with network, volume, and battery indicators
+- Global search across all apps and files
+- Command palette for quick system operations
+- Dark/light theme switching
+- Dynamic particle wallpaper effects
 
-WebLinuxOS 将完整的 Linux 桌面体验带到您的浏览器中。与传统操作系统不同，一切都在您的浏览器标签页中运行——无需安装，无需设置，即可即时访问一个功能丰富的桌面环境，包含超过 200 个应用程序和 90+ 终端命令。
+### Development Tools
+- Code editor with syntax highlighting for 20+ languages
+- REST API tester with request builder
+- JSON formatter and validator
+- Interactive regex builder and tester
+- GitHub trending repositories viewer
+- Python REPL (via Pyodide)
+- Full-featured terminal with 90+ commands
+- Code snippet manager with import/export
+- CSS toolbox with gradient, shadow, and layout generators
 
----
+### Productivity Suite
+- Markdown editor with live preview
+- Spreadsheet with formula support
+- Calendar and event manager
+- Todo list with completion tracking
+- Kanban board with drag-and-drop
+- Mind map tool
+- Presentation creator
+- Smart schedule assistant
 
-## 核心特性
+### Utilities
+- Scientific calculator with advanced functions
+- Password manager with encryption
+- Pomodoro timer
+- Color picker supporting multiple formats
+- Real-time translation
+- Clipboard manager with history
+- Weather app (real-time data from Open-Meteo)
+- Online API hub (NASA, news, cryptocurrency)
 
-### 桌面环境
-- 多窗口管理，支持最小化、最大化和关闭控制
-- 虚拟桌面，支持自定义壁纸
-- 智能应用启动器，支持模糊搜索
-- 系统托盘，显示网络、音量和电池指示器
-- 全局搜索，跨所有应用和文件
-- 命令面板，用于快速系统操作
-- 深色/浅色主题切换
-- 动态粒子壁纸效果
+### Multimedia & Entertainment
+- Music player with playlist support
+- Drawing application
+- Camera access for video capture
+- Classic games (Snake, Tetris, 2048, Memory)
 
-### 开发工具
-- 代码编辑器，支持 20+ 语言语法高亮
-- REST API 测试器，带请求构建器
-- JSON 格式化和验证器
-- 交互式正则表达式构建器和测试器
-- GitHub 热门仓库查看器
-- Python REPL（通过 Pyodide）
-- 功能全面的终端，支持 90+ 命令
-- 代码片段管理器，支持导入/导出
-- CSS 工具箱，含渐变、阴影和布局生成器
+## Terminal Commands
 
-### 生产力套件
-- Markdown 编辑器，带实时预览
-- 电子表格，支持公式
-- 日历和事件管理器
-- 待办事项列表，带完成跟踪
-- 看板，支持拖放
-- 思维导图工具
-- 演示文稿创建器
-- 智能日程助手
+**File Operations**: `ls`, `cd`, `pwd`, `cat`, `head`, `tail`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `write`, `tee`, `append`
 
-### 实用工具
-- 科学计算器，带高级功能
-- 密码管理器，带加密
-- Pomodoro 计时器
-- 颜色选择器，支持多种格式
-- 实时翻译
-- 剪贴板管理器，带历史记录
-- 天气应用（基于 Open-Meteo 实时数据）
-- 在线 API 中心（NASA、新闻、加密货币）
+**System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `neofetch`, `version`, `time`, `worldtime`
 
-### 多媒体与娱乐
-- 音乐播放器，支持播放列表
-- 画图应用
-- 摄像头访问，用于视频捕获
-- 经典游戏（贪吃蛇、俄罗斯方块、2048、记忆游戏）
+**System Monitoring**: `top`, `cpu-info`, `memory-info`, `disk-usage`, `network-stats`, `process-list`
 
----
+**Network Tools**: `ping`, `weather`, `news`, `crypto`, `translate`, `ipinfo`
 
-## 终端命令
+**Utilities**: `echo`, `calc`, `prime`, `factor`, `roman`, `base64`, `unbase64`, `hash`, `rev`, `json`, `urlencode`, `urldecode`, `uuid`, `password`, `search`
 
-**文件操作**: `ls`, `cd`, `pwd`, `cat`, `head`, `tail`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `du`, `write`, `tee`, `append`
+**Fun Commands**: `cowsay`, `cowthink`, `dog`, `fortune`, `sl`, `banner`, `lolcat`, `starwars`, `matrix`, `asciiart`, `joke`, `advice`, `flip`, `rps`
 
-**系统信息**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `neofetch`, `version`, `time`, `worldtime`
-
-**系统监控**: `top`, `cpu-info`, `memory-info`, `disk-usage`, `network-stats`, `process-list`
-
-**网络工具**: `ping`, `curl`, `host`, `nslookup`, `ipinfo`, `weather`, `news`, `crypto`, `translate`
-
-**实用工具**: `echo`, `find`, `grep`, `env`, `export`, `which`, `calc`, `prime`, `factor`, `roman`, `base64`, `unbase64`, `hash`, `rev`, `json`, `urlencode`, `urldecode`, `uuid`, `password`, `search`
-
-**趣味命令**: `quote`, `joke`, `fortune`, `cowsay`, `cowthink`, `dog`, `sl`, `banner`, `lolcat`, `starwars`, `matrix`, `asciiart`, `advice`, `flip`, `rps`
-
----
-
-## 快速开始
+## Quick Start
 
 ```bash
-# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 
-# 安装依赖
 npm install
 
-# 开发服务器
 npm run dev
 
-# 生产构建
 npm run build
 
-# 部署到 GitHub Pages
 npm run deploy
 ```
 
----
+## Keyboard Shortcuts
 
-## 键盘快捷键
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+Shift+L | Open launcher |
+| Ctrl+K | Global search |
+| Ctrl+P | Command palette |
+| Alt+Tab | Window switch |
+| Ctrl+Q | Close window |
+| Ctrl+C | Copy |
+| Ctrl+V | Paste |
+| Ctrl+1-9 | Switch desktop |
+| Ctrl+Alt+Arrow | Switch desktop |
 
-| 快捷键 | 功能 |
-|--------|------|
-| Ctrl+Shift+L | 打开启动器 |
-| Ctrl+K | 全局搜索 |
-| Ctrl+P | 命令面板 |
-| Alt+Tab | 窗口切换 |
-| Ctrl+Q | 关闭窗口 |
-| Ctrl+C | 复制 |
-| Ctrl+V | 粘贴 |
-| Ctrl+1-9 | 切换桌面 |
-| Ctrl+Alt+Arrow | 切换桌面 |
+## Tech Stack
 
----
+- **React 19** - UI framework with Hooks and Suspense
+- **TypeScript 6** - Type-safe development
+- **Zustand 5** - Lightweight state management
+- **Vite 8** - Optimized build tool
+- **Pyodide** - Python runtime in browser
+- **Lucide React** - Icon library
+- **IndexedDB** - Persistent local storage
 
-## 技术栈
+## Architecture
 
-- **React 19** - UI 框架，使用 Hooks 和 Suspense
-- **TypeScript 6** - 类型安全开发
-- **Zustand 5** - 轻量级状态管理
-- **Vite 8** - 优化的构建工具
-- **Pyodide** - 浏览器中的 Python 运行时
-- **Lucide React** - 图标库
-- **IndexedDB** - 持久化本地存储
-
----
-
-## 架构
-
-WebLinuxOS 采用模块化架构，关注点分离：
+WebLinuxOS uses a modular architecture with separation of concerns:
 
 ```
 src/
-  apps/              # 各个应用（200+）
+  apps/              # Individual applications (200+)
   components/
-    desktop/         # 桌面环境组件
-    common/          # 共享 UI 组件
-  store/             # Zustand 状态管理
-  utils/             # 工具函数
-  types.ts           # TypeScript 定义
-  icons.tsx          # 图标导出
+    desktop/         # Desktop environment components
+    common/          # Shared UI components
+  store/             # Zustand state management
+  utils/             # Utility functions
+  types.ts           # TypeScript definitions
+  icons.tsx          # Icon exports
 ```
 
----
+## Performance Optimizations
 
-## 性能优化
+- Code splitting with dynamic imports
+- Lazy loading of applications
+- Memoization for expensive computations
+- GPU-accelerated animations
+- Efficient drag and resize handling
 
-- 代码分割，使用动态导入
-- 应用懒加载
-- 昂贵计算的记忆化
-- GPU 加速动画
-- 高效的拖拽和调整大小处理
-
----
-
-## 浏览器支持
+## Browser Support
 
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
----
+## Contributing
 
-## 贡献指南
+Contributions are welcome. Please follow these steps:
 
-欢迎贡献代码。请遵循以下步骤：
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes
+4. Build and test: `npm run build`
+5. Submit a Pull Request
 
-1. Fork 仓库
-2. 创建功能分支：`git checkout -b feature-name`
-3. 进行更改
-4. 构建测试：`npm run build`
-5. 提交 Pull Request
+## Creating New Apps
 
----
+To add a new application:
+1. Create a file in `src/apps/` (e.g., `MyApp.tsx`)
+2. Export a default React component
+3. Register it in `src/apps.tsx`
+4. Add icons and metadata
+5. Test thoroughly
 
-## 创建新应用
+## Statistics
 
-要添加新应用：
-1. 在 `src/apps/` 中创建文件（如 `MyApp.tsx`）
-2. 导出默认 React 组件
-3. 在 `src/apps.tsx` 中注册
-4. 添加图标和元数据
-5. 彻底测试
+- 200+ applications
+- 90+ terminal commands
+- 200+ source files
+- 50+ keyboard shortcuts
 
----
+## Use Cases
 
-## 统计数据
+- Learning programming concepts
+- Demonstrating web capabilities
+- Cross-platform tool access
+- Lightweight online workspace
+- Teaching system administration
+- Rapid prototyping
 
-- 200+ 应用程序
-- 90+ 终端命令
-- 200+ 源文件
-- 50+ 键盘快捷键
+## Roadmap
 
----
+- Enhanced mobile responsive design
+- PWA installation support
+- Cloud synchronization
+- Plugin system architecture
+- Real-time collaboration
 
-## 使用场景
+## License
 
-- 学习编程概念
-- 演示 Web 能力
-- 跨平台访问工具
-- 轻量级在线工作空间
-- 教学系统管理
-- 快速原型开发
+MIT License - Free for personal or commercial use.
 
----
-
-## 路线图
-
-- 增强移动响应式设计
-- PWA 安装支持
-- 云同步
-- 插件系统架构
-- 实时协作
-
----
-
-## 许可证
-
-MIT 许可证 - 个人或商业使用免费。
-
----
-
-版本: 7.0.0 | 最后更新: 2026
+Version: 7.0.0 | Last Updated: 2026

@@ -1,5 +1,5 @@
 import { registerCommand } from './commands'
-import type { CommandResult } from './commands'
+import type { CommandContext, CommandResult } from './commands'
 
 registerCommand('disk-usage', {
   handler: (): CommandResult => {
@@ -129,21 +129,97 @@ registerCommand('cpu-info', {
   examples: ['cpu-info']
 })
 
+let bootTime = Date.now()
+
 registerCommand('uptime', {
   handler: (): CommandResult => {
-    const uptimeHours = Math.floor(Math.random() * 99 + 1)
-    const uptimeMinutes = Math.floor(Math.random() * 60)
+    const now = Date.now()
+    const uptimeMs = now - bootTime
+    
+    const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((uptimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((uptimeMs % (1000 * 60)) / 1000)
+    
+    let uptimeStr = ''
+    if (days > 0) uptimeStr += `${days}天`
+    if (hours > 0 || days > 0) uptimeStr += `${hours}小时`
+    uptimeStr += `${minutes}分${seconds}秒`
+    
+    const loadAvg = [
+      (0.1 + Math.random() * 0.5).toFixed(2),
+      (0.1 + Math.random() * 0.4).toFixed(2),
+      (0.1 + Math.random() * 0.3).toFixed(2),
+    ]
     
     return {
       output: [
-        `系统运行时间: ${uptimeHours}小时${uptimeMinutes}分钟`,
-        `当前时间: ${new Date().toLocaleString()}`,
+        `系统运行时间: ${uptimeStr}`,
+        `当前时间: ${new Date().toLocaleString('zh-CN')}`,
+        `平均负载: ${loadAvg.join(' ')}`,
       ].join('\n')
     }
   },
   description: '显示系统运行时间',
   usage: 'uptime',
   examples: ['uptime']
+})
+
+registerCommand('cal', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    const now = new Date()
+    let year = now.getFullYear()
+    let month = now.getMonth()
+    
+    if (args.length >= 2) {
+      year = parseInt(args[1]) || year
+      month = (parseInt(args[0]) || month + 1) - 1
+    } else if (args.length === 1) {
+      month = (parseInt(args[0]) || month + 1) - 1
+    }
+    
+    if (year < 1 || year > 9999) {
+      return { output: 'cal: 年份必须在 1-9999 之间' }
+    }
+    
+    if (month < 0 || month > 11) {
+      return { output: 'cal: 月份必须在 1-12 之间' }
+    }
+    
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    
+    const today = now.getDate()
+    const isCurrentMonth = year === now.getFullYear() && month === now.getMonth()
+    
+    let output = [`    ${monthNames[month]} ${year}`, ' 日 一 二 三 四 五 六']
+    
+    let line = ''
+    for (let i = 0; i < firstDay; i++) {
+      line += '   '
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayStr = isCurrentMonth && day === today 
+        ? `\x1b[7m${String(day).padStart(2, ' ')}\x1b[0m` 
+        : String(day).padStart(2, ' ')
+      line += ` ${dayStr}`
+      
+      if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
+        output.push(line)
+        line = ''
+      }
+    }
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示日历',
+  usage: 'cal [月份] [年份]',
+  examples: ['cal', 'cal 12', 'cal 12 2024']
 })
 
 registerCommand('free', {
