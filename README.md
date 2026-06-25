@@ -1,298 +1,239 @@
 # WebLinuxOS
 
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![Build Status](https://img.shields.io/badge/Build-Success-brightgreen)
-![Last Commit](https://img.shields.io/badge/Last%20Commit-June%202025-orange)
-![Version](https://img.shields.io/badge/Version-8.2.1-purple)
+一个基于 React + TypeScript 构建的完整 Web Linux 操作系统模拟器，提供真实的桌面体验和丰富的应用程序生态。
 
-A fully functional Linux desktop environment running entirely in the browser, featuring complete window management, virtual file system, terminal emulator, and 240+ utility applications.
+## 特性
 
-[Live Demo](https://saya-ch.github.io/WebLinuxOS/) | [Features](#core-features) | [Quick Start](#quick-start) | [Technical Stack](#technical-stack)
+### 桌面环境
 
----
+- 完整的窗口管理系统：支持拖拽、缩放、最小化、最大化、关闭
+- 任务栏：快速启动、窗口切换、系统托盘、时钟显示
+- 开始菜单：应用分类、搜索功能、快捷访问
+- 多主题支持：亮色/暗色主题，多种壁纸选择
+- 键盘快捷键：全局快捷键支持
 
-## Overview
+### 应用程序 (200+)
 
-WebLinuxOS is a practical in-browser workspace designed for real productivity. It provides developers with instant access to essential tools, information, and utilities without any installation or backend dependencies.
+**系统工具**
+- 文件管理器：完整的文件树浏览、搜索、拖拽上传、批量操作
+- 终端：真实终端模拟，支持 50+ 命令，包括文件操作、系统信息、网络工具
+- 系统监视器：实时 CPU、内存、网络监控
+- 代码编辑器：语法高亮、Python/JS 代码执行、多标签支持
 
-Key advantages:
-- Zero installation - runs entirely in browser
-- Cross-platform - works on any device with a modern browser
-- Privacy-first - no data collection, all processing happens locally
-- Developer-focused - built by developers, for developers
-- Extensible - modular architecture allows easy addition of new apps
+**开发工具**
+- REST 客户端：完整的 API 测试工具
+- JSON/YAML 格式化与转换
+- 正则表达式测试器与构建器
+- Base64/URL 编解码工具
+- JWT 解码与验证
+- Hash 生成器 (MD5, SHA-1, SHA-256, SHA-512)
+- Cron 表达式生成器
 
-## What Makes WebLinuxOS Different
+**实用工具**
+- 计算器：科学计算、汇率转换、进制转换
+- 天气：实时天气数据 (Open-Meteo API)、7 天预报、温度趋势图
+- 番茄钟：专注工作计时器
+- 密码生成器与强度分析
+- QR 码生成器
+- 颜色选择器与配色方案生成
+- 单位转换器
+- 世界时钟
 
-Unlike many similar projects that use iframes or link to external sites, WebLinuxOS takes a different approach:
+**办公应用**
+- Markdown 编辑器与预览器
+- 笔记应用：标签、搜索、星标功能
+- 待办事项与任务看板
+- 日历
+- 思维导图
+- 白板：绘图、协作
 
-- **Native browser implementation** - Terminal, file manager, code editor, paint, media players, and collaborative whiteboard are all built from scratch
-- **Real functionality** - 200+ terminal commands, actual Python runtime via Pyodide, real API integrations (NASA, GitHub, Open Library, Open-Meteo, etc.)
-- **Engineering focus** - Complete window management, multi-desktop support, error boundaries, performance optimization, CSP security
-- **Practical use cases** - Developer Swiss Army knife, temporary workspace, cross-device neutral environment
-- **New in v8.1** - Astronomy Picture of the Day, Reading List, GitHub Profile Viewer
+**多媒体**
+- 图片查看器与优化器
+- 音乐播放器与可视化
+- 视频播放器
+- 截图工具
+- 屏幕录制器
 
----
+**网络与信息**
+- 浏览器：内置 Web 浏览
+- 新闻阅读器：RSS 支持
+- GitHub 热门与资料查看
+- Hacker News 阅读
+- 翻译器
+- 维基百科阅读器
 
-## Core Features
+**游戏**
+- 贪吃蛇
+- 俄罗斯方块
+- 2048
+- 记忆翻牌
+- 弹球游戏
 
-### Desktop Environment
-- Modern Linux-style interface with dark/light theme support
-- Complete multi-window management system with z-index layering
-- Window snap layouts (left/right/top/bottom half, quarter, thirds)
-- Smooth window animations (open, close, minimize, maximize)
-- Enhanced taskbar with app pinning, window switching, and preview tooltips
-- Start menu with categorized app list, search, and system shortcuts
-- Global search (Ctrl + K or Ctrl + Space)
-- Multi-desktop workspaces (Ctrl + Alt + arrow keys)
-- Notification center system
-- Professional SVG icon system (Lucide Icons)
-- Live animated wallpapers (particles, nebula, interactive)
+**AI 功能**
+- AI 聊天助手集成
+- 智能代码生成器
+- AI 提示词库
 
-### Built-in Applications (200+)
+### 技术亮点
 
-**System Tools**
-- File Manager - Browse, create, edit virtual file system
-- Terminal Emulator - Command line with Python runtime (Pyodide), 200+ commands
-- System Monitor Pro - Real-time CPU/FPS/memory/network/storage metrics
-- System Settings - Theme, wallpaper, multi-desktop, notification settings
-- Task Manager - View and manage running application windows
+- 真实文件系统模拟：完整的文件树结构，支持创建、删除、复制、移动、重命名
+- 终端命令系统：50+ 命令，包括 `ls`, `cd`, `cat`, `grep`, `mkdir`, `rm`, `curl`, `weather`, `news` 等
+- 实时 API 集成：天气数据、汇率转换、新闻订阅
+- Python 代码执行：集成 Pyodide，支持在浏览器中运行 Python
+- 本地存储持久化：应用状态、文件内容、用户设置自动保存
 
-**Developer Tools**
-- Code Lab - HTML/CSS/JS live preview, sandbox execution, template library
-- Smart Code Assistant - 6 analysis modes (explain/review/optimize/security/document/translate)
-- AI Programming Assistant Pro - Intelligent code generation, explanation, optimization
-- Developer Toolbox Pro - Base64/URL/JSON/Regex/UUID/timestamp/color utilities
-- JWT Decoder - Header/Payload/Signature parsing, time validation
-- AI Smart Hub - Unified AI assistant center
-- Utility Hub - Comprehensive tool aggregation center
-- Developer Hub - Integrated dev tools (JSON, Base64, Hash, UUID, Timestamp, Regex, Diff)
-- Public API Explorer - Explore and test 10+ free public APIs directly
+## 快速开始
 
-**Data & Information**
-- Real-time Dashboard - Weather, exchange rates, cryptocurrency, tech news
-- Weather App - Open-Meteo API integration, 7-day forecast, temperature charts
-- Currency Converter - Frankfurter.app real-time rates
-- IP Lookup - ipapi.co integration, geolocation, ISP info
-- News Reader - HN Algolia API, real-time tech news
-- World Clock - Global time zones, 15 major cities
-- API Explorer - Free public APIs catalog
-- Astronomy Picture of the Day - Browse the daily NASA APOD, save favorites
-- Reading List - Open Library integration, manage want/reading/done shelf with notes
-- GitHub Profile Viewer - View public profile, repos, languages, recent activity
+### 在线体验
 
-**Productivity**
-- Markdown Editor Pro - Split view, toolbar, export HTML/Markdown
-- Knowledge Garden - Bidirectional link personal Wiki
-- Web Clipper - Web scraping, content extraction, Markdown export
-- Collaborative Whiteboard - Multi-tool drawing, PNG export
-- Spreadsheet - Basic table calculations
-- Presentation - Slide creation
-- Calendar - Schedule management
-- AI Assistant Enhanced - Multi-mode AI assistant (chat, code, translate, summarize, math, creative, learn)
+访问 [GitHub Pages](https://saya-ch.github.io/WebLinuxOS/) 立即体验。
 
-**Utilities**
-- Network Toolkit - IP geolocation, DNS lookup, speed test
-- Speed Test - Network bandwidth testing, latency/jitter measurement
-- Stock Tracker - Real-time stock monitoring, watchlist management
-- Online Code Runner - Multi-language code execution (JS/TS/Python/HTML/CSS/JSON/Markdown)
-- Password Generator - Configurable strong password generator
-- Unit Converter - Length/weight/temperature/volume
-- Pomodoro Pro - Focus/rest modes, Web Audio notifications
-
-**Multimedia**
-- Music Player - Local file playback
-- Video Player - Local video playback
-- Image Viewer - Image browsing
-- Paint Tool - Canvas drawing
-
-**Games**
-- Snake - Classic arcade game
-- Tetris - Classic puzzle game
-- 2048 - Number puzzle
-- Memory Match - Card matching game
-- Breakout - Ball bouncing game
-
-### Online Service Integrations
-- Real-time weather data (Open-Meteo API - free, no API key)
-- Real-time exchange rates (Frankfurter.app - free)
-- IP geolocation (ipapi.co - free)
-- DNS over HTTPS resolution (Cloudflare 1.1.1.1 - free)
-- News (HN Algolia API - free)
-- Password breach lookup (Have I Been Pwned - k-anonymity)
-- Random user data (randomuser.me - free)
-- Programming jokes (JokeAPI - free)
-- Cat facts (catfact.ninja - free)
-- Dog images (dog.ceo - free)
-- Activity suggestions (boredapi.com - free)
-- NASA Astronomy Picture of the Day (api.nasa.gov)
-- Open Library (openlibrary.org - 20M+ public-domain books)
-- GitHub REST API (developer.github.com)
-
----
-
-## Technical Stack
-
-- **Frontend Framework**: React 19 (Hooks + Suspense + React.lazy)
-- **Type System**: TypeScript 6.x (strict mode)
-- **State Management**: Zustand (lightweight, minimal API)
-- **Build Tool**: Vite 8.x (fast HMR, code splitting)
-- **Icon System**: Lucide React
-- **Markdown Rendering**: marked.js
-- **Python Runtime**: Pyodide
-
----
-
-## Quick Start
-
-### Installation
+### 本地开发
 
 ```bash
-cd web-linux
+# 克隆仓库
+git clone https://github.com/saya-ch/WebLinuxOS.git
+
+# 进入项目目录
+cd WebLinuxOS/web-linux
+
+# 安装依赖
 npm install
-```
 
-### Development
-
-```bash
+# 启动开发服务器
 npm run dev
 ```
 
-Visit http://localhost:5173/WebLinuxOS/
-
-### Production Build
+### 构建部署
 
 ```bash
+# 构建生产版本
 npm run build
-```
 
-Build output goes to `../dist` directory.
-
-### Preview Production
-
-```bash
+# 预览构建结果
 npm run preview
 ```
 
-### Type Checking
-
-```bash
-npm run typecheck
-```
-
----
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl + K` | Open global search |
-| `Ctrl + P` | Open command palette |
-| `Ctrl + T` | Open terminal |
-| `Ctrl + E` | Open file manager |
-| `Ctrl + B` | Open browser |
-| `Ctrl + ,` | Open settings |
-| `Ctrl + W` | Close current window |
-| `Ctrl + M` | Minimize current window |
-| `Alt + Tab` | Switch windows |
-| `Ctrl + Alt + ←/→` | Switch desktop |
-| `Ctrl + Alt + 1-9` | Go to specific desktop |
-| `PrintScreen` | Screenshot |
-
----
-
-## Project Structure
+## 项目结构
 
 ```
-web-linux/
-├── src/
-│   ├── apps/              # 200+ application components
-│   ├── components/
-│   │   └── desktop/       # Desktop components (Window, Taskbar, StartMenu)
-│   ├── store/             # State management utilities
-│   ├── icons.tsx          # Icon component collection
-│   ├── apps.tsx           # Application registry
-│   ├── store.tsx          # Global state (Zustand)
-│   ├── types.ts           # Type definitions
-│   ├── App.tsx            # Main application
-│   └── main.tsx           # Entry point
-├── public/                # Static assets
-├── index.html             # HTML template
-├── vite.config.ts         # Vite configuration
-└── package.json           # Project configuration
+WebLinuxOS/
+├── web-linux/                 # 主应用目录
+│   ├── src/
+│   │   ├── apps/              # 应用组件 (200+)
+│   │   ├── components/        # 桌面组件
+│   │   │   ├── desktop/       # 桌面、窗口管理、任务栏
+│   │   │   └── system/        # 系统组件
+│   │   ├── store/             # Zustand 状态管理
+│   │   ├── types/             # TypeScript 类型定义
+│   │   ├── apps.tsx           # 应用注册表
+│   │   ├── App.tsx            # 主应用入口
+│   │   └── icons.tsx          # 图标组件
+│   ├── public/                # 静态资源
+│   └── package.json           # 项目配置
+└──── README.md                # 项目文档
 ```
 
-## Browser Compatibility
+## 技术栈
 
-| Browser | Minimum Version | Status |
-|---------|-----------------|--------|
-| Chrome / Chromium | 100+ | Fully supported |
-| Firefox | 100+ | Fully supported |
-| Safari | 15+ | Fully supported |
-| Edge | 100+ | Fully supported |
+- **前端框架**: React 18 + TypeScript
+- **状态管理**: Zustand
+- **样式**: CSS-in-JS (内联样式)
+- **构建工具**: Vite
+- **代码执行**: Pyodide (Python in Browser)
+- **API 集成**: Open-Meteo (天气), Open Exchange Rates (汇率)
 
-## Deployment
+## 终端命令参考
 
-### GitHub Pages
+### 文件操作
+| 命令 | 描述 |
+|------|------|
+| `ls` | 列出目录内容 |
+| `cd` | 切换目录 |
+| `pwd` | 显示当前目录 |
+| `cat` | 查看文件内容 |
+| `mkdir` | 创建目录 |
+| `touch` | 创建文件 |
+| `rm` | 删除文件 |
+| `cp` | 复制文件 |
+| `mv` | 移动文件 |
+| `tree` | 显示目录树 |
 
-The project is configured for direct GitHub Pages deployment:
+### 系统信息
+| 命令 | 描述 |
+|------|------|
+| `whoami` | 显示用户名 |
+| `hostname` | 显示主机名 |
+| `date` | 显示日期时间 |
+| `uptime` | 显示系统运行时间 |
+| `neofetch` | 系统信息展示 |
+| `ps` | 进程列表 |
+| `top` | 系统监控 |
 
-1. Build output goes to repository root
-2. Root directory contains `.nojekyll` file
-3. In Settings → Pages, select `Deploy from a branch`, branch `main`, directory `/ (root)`
+### 网络工具
+| 命令 | 描述 |
+|------|------|
+| `weather [城市]` | 获取天气信息 |
+| `news` | 获取新闻头条 |
+| `crypto` | 加密货币价格 |
+| `ipinfo` | IP 地址信息 |
+| `translate <文本>` | 翻译文本 |
 
-### Custom Deployment
+### 实用工具
+| 命令 | 描述 |
+|------|------|
+| `calc <表达式>` | 计算器 |
+| `base64 <文本>` | Base64 编码 |
+| `hash <文本>` | 生成 Hash |
+| `uuid` | 生成 UUID |
+| `password` | 生成密码 |
 
-```bash
-cd web-linux
-npm run build:local
-# Deploy ../ directory to any static hosting
-```
+### 趣味命令
+| 命令 | 描述 |
+|------|------|
+| `cowsay <文本>` | 牛说笑话 |
+| `fortune` | 随机名言 |
+| `matrix` | 矩阵效果 |
+| `joke` | 随机笑话 |
 
-## Performance Optimization
+## 键盘快捷键
 
-- **Code Splitting**: Each app bundled as separate chunk, lazy loaded
-- **React.lazy + Suspense**: On-demand loading with loading skeletons
-- **CSS Variables**: Theme switching without full re-render
-- **Zustand Selective Subscription**: Optimized state updates
-- **Production Compression**: Terser minification + CSS compression
-- **Critical Component Preloading**: High-frequency apps preloaded
+| 快捷键 | 功能 |
+|--------|------|
+| `Ctrl + Shift + L` | 切换应用启动器 |
+| `Ctrl + Shift + S` | 打开设置 |
+| `Ctrl + Shift + F` | 打开文件管理器 |
+| `Ctrl + Shift + T` | 打开终端 |
+| `Ctrl + N` | 新建终端窗口 |
+| `Ctrl + W` | 关闭当前窗口 |
+| `Ctrl + M` | 最小化窗口 |
+| `F11` | 全屏/还原窗口 |
 
-## Security
+## 开发计划
 
-- Global CSP (Content-Security-Policy) meta tag
-- Global error handling (window.onerror + unhandledrejection)
-- localStorage operations with try/catch fallback
-- Error boundaries for component isolation
-- XSS protection through React's built-in escaping
+- [ ] 更多公共 API 集成
+- [ ] 实时协作功能
+- [ ] 更多游戏应用
+- [ ] AI 功能增强
+- [ ] 移动端适配优化
 
-## Contributing
+## 贡献指南
 
-Contributions welcome:
+欢迎提交 Issue 和 Pull Request。请确保：
 
-1. Fork the project
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. 代码符合项目风格
+2. 新应用需在 `apps.tsx` 中注册
+3. 组件文件放置在 `src/apps/` 目录
 
-## License
+## 许可证
 
 MIT License
 
-## Acknowledgments
+## 致谢
 
-- [Open-Meteo API](https://open-meteo.com/) - Free weather data
-- [Frankfurter.app](https://www.frankfurter.app/) - Free exchange rates
-- [ipapi.co](https://ipapi.co/) - IP geolocation
-- [HN Algolia](https://hn.algolia.com/api) - Hacker News API
-- [Have I Been Pwned](https://haveibeenpwned.com/Passwords) - Password breach lookup
-- [NASA APOD](https://apod.nasa.gov/apod/astropix.html) - Astronomy Picture of the Day
-- [Open Library](https://openlibrary.org/) - Public-domain book catalog
-- [GitHub REST API](https://docs.github.com/en/rest) - Public user and repository data
-- [React](https://react.dev/) - Frontend framework
-- [Vite](https://vitejs.dev/) - Build tool
-- [Zustand](https://github.com/pmndrs/zustand) - State management
-- [Pyodide](https://pyodide.org/) - In-browser Python runtime
-- [marked](https://github.com/markedjs/marked) - Markdown rendering
-- [Lucide Icons](https://lucide.dev/) - Icon library
+- [React](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [Zustand](https://github.com/pmndrs/zustand)
+- [Pyodide](https://pyodide.org/)
+- [Open-Meteo](https://open-meteo.com/)
+- [Lucide Icons](https://lucide.dev/)
