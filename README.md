@@ -1,5 +1,10 @@
 # WebLinuxOS
 
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+![Build Status](https://img.shields.io/badge/Build-Success-brightgreen)
+![Last Commit](https://img.shields.io/badge/Last%20Commit-June%202025-orange)
+![Version](https://img.shields.io/badge/Version-8.2.1-purple)
+
 A fully functional Linux desktop environment running entirely in the browser, featuring complete window management, virtual file system, terminal emulator, and 240+ utility applications.
 
 [Live Demo](https://saya-ch.github.io/WebLinuxOS/) | [Features](#core-features) | [Quick Start](#quick-start) | [Technical Stack](#technical-stack)
