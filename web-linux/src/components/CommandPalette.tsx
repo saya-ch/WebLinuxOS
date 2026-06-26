@@ -111,17 +111,49 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   }, [openApp, setTheme, theme, windows, focusWindow, windowsPerDesktop, currentDesktop, switchDesktop, addDesktop, removeDesktop, totalDesktops])
 
   const filteredCommands = useMemo(() => {
-    if (!searchQuery) return commands
+    if (!searchQuery) {
+      return commands.sort((a, b) => {
+        const aPriority = a.priority || 0
+        const bPriority = b.priority || 0
+        if (aPriority !== bPriority) return bPriority - aPriority
+        return a.name.localeCompare(b.name)
+      })
+    }
     const query = searchQuery.toLowerCase()
-    return commands.filter(cmd => 
-      cmd.name.toLowerCase().includes(query) ||
-      cmd.description.toLowerCase().includes(query) ||
-      cmd.category.toLowerCase().includes(query)
-    ).sort((a, b) => {
-      const aPriority = a.priority || 0
-      const bPriority = b.priority || 0
-      return bPriority - aPriority
-    })
+    const queryWords = query.split(/\s+/).filter(Boolean)
+    
+    const matchesQuery = (cmd: Command): { score: number; matches: boolean } => {
+      const name = cmd.name.toLowerCase()
+      const desc = cmd.description.toLowerCase()
+      const cat = cmd.category.toLowerCase()
+      
+      let score = 0
+      const fullText = `${name} ${desc} ${cat}`
+      
+      for (const word of queryWords) {
+        if (name === word) score += 100
+        else if (name.startsWith(word)) score += 50
+        else if (name.includes(word)) score += 30
+        else if (desc.includes(word)) score += 15
+        else if (cat.includes(word)) score += 10
+        else if (fullText.includes(word)) score += 5
+        else return { score: 0, matches: false }
+      }
+      
+      return { score, matches: true }
+    }
+    
+    return commands
+      .map(cmd => ({ cmd, ...matchesQuery(cmd) }))
+      .filter(item => item.matches)
+      .sort((a, b) => {
+        const aPriority = a.cmd.priority || 0
+        const bPriority = b.cmd.priority || 0
+        if (aPriority !== bPriority) return bPriority - aPriority
+        if (a.score !== b.score) return a.score - b.score
+        return a.cmd.name.localeCompare(b.cmd.name)
+      })
+      .map(item => item.cmd)
   }, [commands, searchQuery])
 
   useEffect(() => {

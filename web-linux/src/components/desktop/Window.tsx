@@ -386,8 +386,12 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     maximizeWindow(win.id)
   }, [win.id, maximizeWindow])
 
+  // 使用useMemo优化窗口样式计算，减少重新渲染
   const windowStyle = useMemo((): React.CSSProperties => {
-    const baseStyle: React.CSSProperties = {
+    const isActive = win.focused && !win.maximized
+    const isDraggingOrResizing = dragging || resizing
+    
+    return {
       left: win.maximized ? 0 : win.x,
       top: win.maximized ? 0 : win.y,
       width: win.maximized ? '100%' : win.width,
@@ -397,23 +401,24 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       backdropFilter: 'blur(20px) saturate(180%)',
       border: win.focused ? '1px solid rgba(139, 124, 240, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
       transform: 'translateZ(0)',
-      willChange: dragging || resizing ? 'transform, opacity' : 'auto',
+      willChange: isDraggingOrResizing ? 'transform, opacity' : 'auto',
       contain: 'strict',
       backfaceVisibility: 'hidden',
       perspective: '1000px',
       opacity: dragOpacity,
-      transition: dragging || resizing ? 'opacity 0.15s ease' : 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: isDraggingOrResizing 
+        ? 'opacity 0.15s ease' 
+        : win.maximized 
+          ? 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' 
+          : 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      boxShadow: isActive
+        ? (isHovered 
+            ? '0 12px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 124, 240, 0.5), 0 16px 60px rgba(139, 124, 240, 0.3)'
+            : '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 124, 240, 0.4), 0 12px 40px rgba(139, 124, 240, 0.25)')
+        : (!win.maximized 
+            ? '0 6px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
+            : 'none')
     }
-
-    if (win.focused && !win.maximized) {
-      baseStyle.boxShadow = isHovered
-        ? '0 12px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 124, 240, 0.5), 0 16px 60px rgba(139, 124, 240, 0.3)'
-        : '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 124, 240, 0.4), 0 12px 40px rgba(139, 124, 240, 0.25)'
-    } else if (!win.maximized) {
-      baseStyle.boxShadow = '0 6px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
-    }
-
-    return baseStyle
   }, [win, isHovered, dragging, resizing, dragOpacity])
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../store'
 
 interface Todo {
@@ -6,21 +6,42 @@ interface Todo {
   text: string
   completed: boolean
   createdAt: string
+  priority?: 'low' | 'medium' | 'high'
 }
+
+const STORAGE_KEY = 'weblinux-todos'
 
 export default function TodoList() {
   const { theme } = useStore()
   const isDark = theme === 'dark'
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: '1', text: '完成项目开发文档', completed: true, createdAt: '2025-01-15' },
-    { id: '2', text: '修复登录页面的样式问题', completed: false, createdAt: '2025-01-15' },
-    { id: '3', text: '编写单元测试用例', completed: false, createdAt: '2025-01-14' },
-    { id: '4', text: '代码审查与合并', completed: false, createdAt: '2025-01-14' },
-    { id: '5', text: '更新依赖包版本', completed: true, createdAt: '2025-01-13' },
-    { id: '6', text: '准备下周 demo 演示', completed: false, createdAt: '2025-01-13' },
-  ])
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {}
+    return [
+      { id: '1', text: '完成项目开发文档', completed: true, createdAt: '2025-01-15' },
+      { id: '2', text: '修复登录页面的样式问题', completed: false, createdAt: '2025-01-15' },
+      { id: '3', text: '编写单元测试用例', completed: false, createdAt: '2025-01-14' },
+      { id: '4', text: '代码审查与合并', completed: false, createdAt: '2025-01-14' },
+      { id: '5', text: '更新依赖包版本', completed: true, createdAt: '2025-01-13' },
+      { id: '6', text: '准备下周 demo 演示', completed: false, createdAt: '2025-01-13' },
+    ]
+  })
   const [inputText, setInputText] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+  
+  // 持久化到 localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+    } catch {}
+  }, [todos])
 
   const bg = isDark ? '#1a1a2e' : '#f5f5f5'
   const textColor = isDark ? '#e0e0e0' : '#333'
