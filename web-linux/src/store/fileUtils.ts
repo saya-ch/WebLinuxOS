@@ -1,7 +1,9 @@
 import type { FileNode } from '../types'
 
 const NODE_CACHE = new Map<string, { node: FileNode; timestamp: number }>()
+const PATH_CACHE = new Map<string, { node: FileNode; timestamp: number }>()
 const CACHE_TTL = 5000
+const MAX_CACHE_SIZE = 200
 
 function getCachedNode(id: string): FileNode | undefined {
   const cached = NODE_CACHE.get(id)
@@ -12,11 +14,32 @@ function getCachedNode(id: string): FileNode | undefined {
 }
 
 function setCachedNode(id: string, node: FileNode): void {
+  if (NODE_CACHE.size >= MAX_CACHE_SIZE) {
+    const oldestKey = NODE_CACHE.keys().next().value
+    if (oldestKey) NODE_CACHE.delete(oldestKey)
+  }
   NODE_CACHE.set(id, { node, timestamp: Date.now() })
+}
+
+function getCachedPath(path: string): FileNode | undefined {
+  const cached = PATH_CACHE.get(path)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.node
+  }
+  return undefined
+}
+
+function setCachedPath(path: string, node: FileNode): void {
+  if (PATH_CACHE.size >= MAX_CACHE_SIZE) {
+    const oldestKey = PATH_CACHE.keys().next().value
+    if (oldestKey) PATH_CACHE.delete(oldestKey)
+  }
+  PATH_CACHE.set(path, { node, timestamp: Date.now() })
 }
 
 export function invalidateCache(): void {
   NODE_CACHE.clear()
+  PATH_CACHE.clear()
 }
 
 export function findNodeById(nodes: FileNode[], id: string): FileNode | null {
@@ -66,19 +89,42 @@ export function findParentNode(nodes: FileNode[], childId: string): FileNode | n
 
 export function findNodeByPath(files: FileNode[], path: string): FileNode | null {
   if (!files || files.length === 0) return null
-  if (path === '/' || path === '' || path === undefined) {
-    return files[0] || null
+  
+  const normalizedPath = path.replace(/\/+/g, '/').replace(/\/$/, '') || '/'
+  
+  const cached = getCachedPath(normalizedPath)
+  if (cached) return cached
+  
+  if (normalizedPath === '/') {
+    const root = files[0] || null
+    if (root) setCachedPath('/', root)
+    return root
   }
-  const parts = path.replace(/^\/+/, '').split('/').filter(Boolean)
-  if (parts.length === 0) return files[0] || null
+  
+  const parts = normalizedPath.slice(1).split('/').filter(Boolean)
+  if (parts.length === 0) {
+    const root = files[0] || null
+    if (root) setCachedPath('/', root)
+    return root
+  }
   
   let current: FileNode | null = files[0] || null
+  let accumulatedPath = ''
+  
   for (const part of parts) {
-    if (!current || current.type !== 'folder' || !current.children) return null
+    accumulatedPath += `/${part}`
+    if (!current || current.type !== 'folder' || !current.children) {
+      const cachedParent = getCachedPath(accumulatedPath)
+      if (cachedParent) return cachedParent
+      return null
+    }
     const next: FileNode | undefined = current.children.find((c) => c && c.name === part)
     if (!next) return null
     current = next
+    setCachedPath(accumulatedPath, current)
+    setCachedNode(current.id, current)
   }
+  
   return current
 }
 
@@ -254,19 +300,21 @@ export function countNodes(nodes: FileNode[]): { files: number; folders: number;
 export function searchFiles(
   nodes: FileNode[],
   query: string,
-  options: { caseSensitive?: boolean; content?: boolean } = {}
+  options: { caseSensitive?: boolean; content?: boolean; limit?: number } = {}
 ): FileNode[] {
   const results: FileNode[] = []
   const searchTerm = options.caseSensitive ? query : query.toLowerCase()
+  const limit = options.limit || 100
   
   const stack: FileNode[] = [...nodes]
-  while (stack.length > 0) {
+  while (stack.length > 0 && results.length < limit) {
     const node = stack.pop()
     if (!node) continue
     
     const nameMatch = options.caseSensitive ? node.name : node.name.toLowerCase()
     if (nameMatch.includes(searchTerm)) {
       results.push(node)
+      if (results.length >= limit) break
     }
     
     if (options.content && node.type === 'file' && node.content) {
@@ -275,6 +323,7 @@ export function searchFiles(
         : node.content.toLowerCase()
       if (contentMatch.includes(searchTerm) && !results.includes(node)) {
         results.push(node)
+        if (results.length >= limit) break
       }
     }
     
@@ -283,7 +332,11 @@ export function searchFiles(
     }
   }
   
-  return results
+  return results.sort((a, b) => {
+    const aMatch = (options.caseSensitive ? a.name : a.name.toLowerCase()).indexOf(searchTerm)
+    const bMatch = (options.caseSensitive ? b.name : b.name.toLowerCase()).indexOf(searchTerm)
+    return aMatch - bMatch
+  })
 }
 
 export function validateFileName(name: string): { valid: boolean; error?: string } {

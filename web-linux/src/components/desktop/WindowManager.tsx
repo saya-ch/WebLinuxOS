@@ -279,6 +279,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
 const preloadedComponents = new Set<string>()
+const loadingStates = new Map<string, 'loading' | 'loaded' | 'error'>()
 
 function loadComponent(name: string): React.LazyExoticComponent<React.ComponentType<any>> {
   if (componentCache[name]) {
@@ -286,56 +287,69 @@ function loadComponent(name: string): React.LazyExoticComponent<React.ComponentT
   }
 
   if (componentMap[name]) {
+    loadingStates.set(name, 'loading')
     componentCache[name] = lazy(componentMap[name])
+    componentMap[name]().then(() => {
+      loadingStates.set(name, 'loaded')
+    }).catch(() => {
+      loadingStates.set(name, 'error')
+    })
     return componentCache[name]
   }
 
+  loadingStates.set(name, 'loading')
   componentCache[name] = lazy(() =>
     import(`../../apps/${name}.tsx`)
-      .then((module) => ({ default: module.default }))
-      .catch(() => ({
-        default: () => (
-          <div
-            style={{
-              padding: 40,
-              color: 'var(--text-secondary)',
-              textAlign: 'center',
-              fontSize: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              flexDirection: 'column',
-              gap: 12,
-            }}
-          >
-            <span style={{ fontSize: 48 }}>⚠️</span>
-            <div>
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{name}</span>
-              {' '}
-              - 应用加载失败
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>
-              组件文件可能缺失或已重命名，请检查应用配置。
-            </div>
-            <button
-              onClick={() => window.location.reload()}
+      .then((module) => {
+        loadingStates.set(name, 'loaded')
+        return { default: module.default }
+      })
+      .catch(() => {
+        loadingStates.set(name, 'error')
+        return {
+          default: () => (
+            <div
               style={{
-                padding: '8px 16px',
-                borderRadius: 6,
-                border: 'none',
-                background: 'var(--accent)',
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: 12,
-                transition: 'background 0.2s',
+                padding: 40,
+                color: 'var(--text-secondary)',
+                textAlign: 'center',
+                fontSize: 14,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                flexDirection: 'column',
+                gap: 12,
               }}
             >
-              重新加载页面
-            </button>
-          </div>
-        ),
-      })),
+              <span style={{ fontSize: 48 }}>⚠️</span>
+              <div>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{name}</span>
+                {' '}
+                - 应用加载失败
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>
+                组件文件可能缺失或已重命名，请检查应用配置。
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  transition: 'background 0.2s',
+                }}
+              >
+                重新加载页面
+              </button>
+            </div>
+          ),
+        }
+      }),
   )
   return componentCache[name]
 }
@@ -363,6 +377,16 @@ function preloadComponents() {
     'PDFViewer',
     'TaskManager',
     'PasswordManager',
+  ]
+
+  const developmentComponents = [
+    'CodeRunner',
+    'JSONFormatter',
+    'RegexTester',
+    'Base64Tools',
+    'UnitConverter',
+    'RESTClient',
+    'DevToolbox',
   ]
 
   const loadWithPriority = (components: string[], delay: number) => {
@@ -396,17 +420,42 @@ function preloadComponents() {
     idleCallback(() => {
       loadWithPriority(secondaryComponents, 0)
     })
+    idleCallback(() => {
+      loadWithPriority(developmentComponents, 0)
+    })
   } else {
     setTimeout(() => loadWithPriority(secondaryComponents, 0), 2000)
+    setTimeout(() => loadWithPriority(developmentComponents, 0), 3500)
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && preloadedComponents.size < 40) {
+      setTimeout(() => {
+        const additionalComponents = [
+          'TextEditor',
+          'Paint',
+          'Translator',
+          'ChatAI',
+          'MarkdownEditor',
+          'KanbanBoard',
+        ]
+        loadWithPriority(additionalComponents.filter(c => !preloadedComponents.has(c)), 0)
+      }, 1000)
+    }
+  })
 }
 
 const LoadingFallback = memo(function LoadingFallback() {
   const [showSlowMsg, setShowSlowMsg] = useState(false)
+  const [showRetry, setShowRetry] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSlowMsg(true), 1500)
-    return () => clearTimeout(timer)
+    const slowTimer = setTimeout(() => setShowSlowMsg(true), 1500)
+    const retryTimer = setTimeout(() => setShowRetry(true), 8000)
+    return () => {
+      clearTimeout(slowTimer)
+      clearTimeout(retryTimer)
+    }
   }, [])
 
   return (
@@ -416,7 +465,7 @@ const LoadingFallback = memo(function LoadingFallback() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 12,
+        gap: 16,
         color: 'var(--text-secondary)',
         fontSize: 13,
         padding: 40,
@@ -426,18 +475,66 @@ const LoadingFallback = memo(function LoadingFallback() {
     >
       <div
         style={{
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
           border: '3px solid var(--window-border)',
           borderTopColor: 'var(--accent)',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
+          boxShadow: '0 0 20px var(--accent-glow)',
         }}
       />
-      <span>正在加载应用…</span>
-      {showSlowMsg && (
-        <span style={{ fontSize: 11, opacity: 0.6 }}>首次加载可能需要一些时间</span>
-      )}
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <span>正在加载应用…</span>
+        {showSlowMsg && (
+          <span style={{ fontSize: 11, opacity: 0.6 }}>首次加载可能需要一些时间，请稍候</span>
+        )}
+        {showRetry && (
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 6,
+              border: '1px solid var(--window-border)',
+              background: 'var(--window-bg)',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              fontSize: 12,
+              marginTop: 8,
+              transition: 'all 0.2s',
+              alignSelf: 'center',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent)'
+              e.currentTarget.style.background = 'var(--accent-bg)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--window-border)'
+              e.currentTarget.style.background = 'var(--window-bg)'
+            }}
+          >
+            加载超时，点击重试
+          </button>
+        )}
+      </div>
+      <div
+        style={{
+          width: 200,
+          height: 4,
+          background: 'var(--window-border)',
+          borderRadius: 2,
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            width: '50%',
+            height: '100%',
+            background: 'var(--accent-gradient)',
+            animation: 'shimmer 1.5s ease-in-out infinite',
+          }}
+        />
+      </div>
     </div>
   )
 })
