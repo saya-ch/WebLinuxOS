@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { findNodeByPath, resolvePath } from '../../store'
 
 function safeEval(expression: string): number {
   const trimmed = expression.trim()
@@ -618,6 +619,187 @@ registerCommand('weather', {
   examples: ['weather', 'weather Beijing', 'weather Shanghai']
 })
 
+registerCommand('news', {
+  handler: (): CommandResult => {
+    const newsItems = [
+      { category: '科技', title: 'AI技术持续突破，大模型应用场景不断扩展', source: '科技日报' },
+      { category: '财经', title: '全球股市震荡，投资者寻求避险资产', source: '财经时报' },
+      { category: '体育', title: '世界杯预选赛激战正酣，各队争夺出线名额', source: '体育新闻' },
+      { category: '娱乐', title: '年度热门电影上映，票房突破十亿大关', source: '娱乐周刊' },
+      { category: '健康', title: '专家提醒：夏季高温需注意防暑降温', source: '健康报' },
+      { category: '教育', title: '新学年即将开始，教育政策有新调整', source: '教育新闻' },
+    ]
+    
+    const output = [
+      '📰 今日新闻头条',
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      ...newsItems.map((item, index) => `[${index + 1}] ${item.category.padEnd(4)} | ${item.title}`),
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      '💡 提示: 新闻数据每小时更新一次',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示新闻头条',
+  usage: 'news',
+  examples: ['news']
+})
+
+registerCommand('crypto', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const cryptoData: Record<string, { price: number; change: number; symbol: string }> = {
+      'btc': { price: 67523.50, change: 2.35, symbol: 'BTC' },
+      'eth': { price: 3421.80, change: 1.82, symbol: 'ETH' },
+      'usdt': { price: 1.00, change: 0.01, symbol: 'USDT' },
+      'sol': { price: 178.45, change: 5.62, symbol: 'SOL' },
+      'bnb': { price: 612.30, change: -0.85, symbol: 'BNB' },
+      'xrp': { price: 0.6235, change: 1.24, symbol: 'XRP' },
+    }
+    
+    if (args.length > 0) {
+      const symbol = args[0].toLowerCase()
+      const data = cryptoData[symbol]
+      if (data) {
+        return {
+          output: [
+            `💰 ${data.symbol} 价格信息`,
+            '',
+            `当前价格: $${data.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+            `24h涨跌: ${data.change >= 0 ? '+' : ''}${data.change}%`,
+          ].join('\n')
+        }
+      }
+      return { output: `crypto: 未知加密货币 '${symbol}'` }
+    }
+    
+    const output = [
+      '💰 加密货币行情',
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      `${'币种'.padEnd(6)} ${'价格 (USD)'.padEnd(16)} ${'24h涨跌'.padEnd(10)}`,
+      ...Object.entries(cryptoData).map(([, data]) => 
+        `${data.symbol.padEnd(6)} $${data.price.toLocaleString('en-US', { minimumFractionDigits: 2 }).padEnd(15)} ${(data.change >= 0 ? '+' : '') + data.change + '%'}`
+      ),
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      '用法: crypto <币种> (btc, eth, sol, bnb, xrp)',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '查询加密货币价格',
+  usage: 'crypto [币种]',
+  examples: ['crypto', 'crypto btc', 'crypto eth']
+})
+
+registerCommand('ipinfo', {
+  handler: (): CommandResult => {
+    const ipInfo = {
+      ip: '192.168.1.100',
+      hostname: 'web-linux.local',
+      city: 'Beijing',
+      region: 'Beijing',
+      country: 'CN',
+      loc: '39.9042,116.4074',
+      org: 'WebLinuxOS',
+      timezone: 'Asia/Shanghai',
+    }
+    
+    const output = [
+      '🌐 IP地址信息',
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      `IP地址: ${ipInfo.ip}`,
+      `主机名: ${ipInfo.hostname}`,
+      `城市: ${ipInfo.city}`,
+      `地区: ${ipInfo.region}`,
+      `国家: ${ipInfo.country}`,
+      `坐标: ${ipInfo.loc}`,
+      `运营商: ${ipInfo.org}`,
+      `时区: ${ipInfo.timezone}`,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示IP地址信息',
+  usage: 'ipinfo',
+  examples: ['ipinfo']
+})
+
+registerCommand('translate', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🌍 翻译工具',
+          '',
+          '用法: translate <文本>',
+          '',
+          '示例:',
+          '  translate Hello World',
+          '  translate 你好世界',
+          '',
+          '支持自动检测语言并翻译成中文/英文',
+        ].join('\n')
+      }
+    }
+    
+    const text = args.join(' ')
+    const isChinese = /[\u4e00-\u9fa5]/.test(text)
+    
+    const translations: Record<string, string> = {
+      'hello': '你好',
+      'world': '世界',
+      'hello world': '你好世界',
+      'welcome': '欢迎',
+      'thank you': '谢谢',
+      'goodbye': '再见',
+      'yes': '是',
+      'no': '不',
+      'please': '请',
+      'sorry': '抱歉',
+      '你好': 'Hello',
+      '世界': 'World',
+      '你好世界': 'Hello World',
+      '欢迎': 'Welcome',
+      '谢谢': 'Thank you',
+      '再见': 'Goodbye',
+      '是': 'Yes',
+      '不': 'No',
+      '请': 'Please',
+      '抱歉': 'Sorry',
+    }
+    
+    const result = translations[text.toLowerCase()] || (isChinese ? 'Translation...' : '翻译中...')
+    
+    return {
+      output: [
+        `🌍 翻译结果`,
+        '',
+        `原文: ${text}`,
+        `译文: ${result}`,
+        '',
+        `语言: ${isChinese ? '中文 -> 英文' : '英文 -> 中文'}`,
+      ].join('\n')
+    }
+  },
+  description: '翻译文本',
+  usage: 'translate <文本>',
+  examples: ['translate Hello World', 'translate 你好世界']
+})
+
 registerCommand('quote', {
   handler: (): CommandResult => {
     const quotes = [
@@ -722,6 +904,140 @@ registerCommand('motd', {
   examples: ['motd']
 })
 
+registerCommand('echo', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    return { output: args.join(' ') }
+  },
+  description: '输出文本',
+  usage: 'echo <文本>',
+  examples: ['echo Hello World', 'echo $PATH']
+})
+
+registerCommand('grep', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🔍 grep 文本搜索',
+          '',
+          '用法: grep <模式> <文件>',
+          '',
+          '示例:',
+          '  grep hello file.txt',
+          '  grep -i hello file.txt',
+          '',
+          '选项:',
+          '  -i 忽略大小写',
+        ].join('\n')
+      }
+    }
+    
+    const ignoreCase = args.includes('-i')
+    const patternIndex = args.includes('-i') ? 1 : 0
+    const pattern = args[patternIndex]
+    const filePath = args[patternIndex + 1]
+    
+    const resolved = resolvePath(cwd, filePath)
+    const node = findNodeByPath(files, resolved)
+    
+    if (!node || node.type !== 'file') {
+      return { output: `grep: ${filePath}: 没有那个文件或目录` }
+    }
+    
+    const content = node.content || ''
+    const lines = content.split('\n')
+    const matches = lines.filter(line => {
+      const target = ignoreCase ? line.toLowerCase() : line
+      const searchPattern = ignoreCase ? pattern.toLowerCase() : pattern
+      return target.includes(searchPattern)
+    })
+    
+    return { output: matches.join('\n') || '' }
+  },
+  description: '在文件中搜索文本',
+  usage: 'grep [-i] <模式> <文件>',
+  examples: ['grep hello file.txt', 'grep -i error log.txt']
+})
+
+registerCommand('sort', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📊 sort 排序',
+          '',
+          '用法: sort <文件>',
+          '',
+          '示例:',
+          '  sort names.txt',
+        ].join('\n')
+      }
+    }
+    
+    const resolved = resolvePath(cwd, args[0])
+    const node = findNodeByPath(files, resolved)
+    
+    if (!node || node.type !== 'file') {
+      return { output: `sort: ${args[0]}: 没有那个文件或目录` }
+    }
+    
+    const content = node.content || ''
+    const lines = content.split('\n').filter(line => line.trim())
+    lines.sort()
+    
+    return { output: lines.join('\n') }
+  },
+  description: '排序文件内容',
+  usage: 'sort <文件>',
+  examples: ['sort names.txt']
+})
+
+registerCommand('uniq', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔄 uniq 去重',
+          '',
+          '用法: uniq <文件>',
+          '',
+          '示例:',
+          '  uniq duplicates.txt',
+        ].join('\n')
+      }
+    }
+    
+    const resolved = resolvePath(cwd, args[0])
+    const node = findNodeByPath(files, resolved)
+    
+    if (!node || node.type !== 'file') {
+      return { output: `uniq: ${args[0]}: 没有那个文件或目录` }
+    }
+    
+    const content = node.content || ''
+    const lines = content.split('\n').filter(line => line.trim())
+    const unique: string[] = []
+    
+    for (const line of lines) {
+      if (line !== unique[unique.length - 1]) {
+        unique.push(line)
+      }
+    }
+    
+    return { output: unique.join('\n') }
+  },
+  description: '去除重复行',
+  usage: 'uniq <文件>',
+  examples: ['uniq duplicates.txt']
+})
+
 registerCommand('help', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
@@ -737,10 +1053,23 @@ registerCommand('help', {
       'cat': { desc: '查看文件内容', usage: 'cat <文件>' },
       'touch': { desc: '创建空文件', usage: 'touch <文件名>' },
       'echo': { desc: '输出文本', usage: 'echo <文本>' },
+      'grep': { desc: '在文件中搜索文本', usage: 'grep <模式> <文件>' },
+      'sort': { desc: '排序文件内容', usage: 'sort <文件>' },
+      'uniq': { desc: '去除重复行', usage: 'uniq <文件>' },
+      'wc': { desc: '统计行数/字数/字符数', usage: 'wc <文件>' },
+      'head': { desc: '显示文件开头', usage: 'head <文件>' },
+      'tail': { desc: '显示文件末尾', usage: 'tail <文件>' },
       'whoami': { desc: '显示当前用户', usage: 'whoami' },
       'date': { desc: '显示日期时间', usage: 'date' },
+      'uptime': { desc: '显示系统运行时间', usage: 'uptime' },
+      'ps': { desc: '显示进程列表', usage: 'ps' },
+      'top': { desc: '系统进程监控', usage: 'top' },
       'calc': { desc: '数学计算器', usage: 'calc <表达式>' },
       'weather': { desc: '查询天气', usage: 'weather [城市]' },
+      'news': { desc: '显示新闻头条', usage: 'news' },
+      'crypto': { desc: '加密货币行情', usage: 'crypto [币种]' },
+      'ipinfo': { desc: 'IP地址信息', usage: 'ipinfo' },
+      'translate': { desc: '翻译文本', usage: 'translate <文本>' },
       'quote': { desc: '随机名言', usage: 'quote' },
       'password': { desc: '生成密码', usage: 'password [长度]' },
       'uuid': { desc: '生成UUID', usage: 'uuid' },

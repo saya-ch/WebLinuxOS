@@ -33,8 +33,7 @@ export default function TodoList() {
   })
   const [inputText, setInputText] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editText, setEditText] = useState('')
+  
   
   // 持久化到 localStorage
   useEffect(() => {

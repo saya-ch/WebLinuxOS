@@ -182,6 +182,88 @@ registerCommand('about', {
   examples: ['about']
 })
 
+registerCommand('uptime', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    const start = new Date(now.getTime() - Math.floor(Math.random() * 86400000 * 7))
+    
+    const diff = now.getTime() - start.getTime()
+    const days = Math.floor(diff / 86400000)
+    const hours = Math.floor((diff % 86400000) / 3600000)
+    const minutes = Math.floor((diff % 3600000) / 60000)
+    
+    return {
+      output: [
+        `系统运行时间: ${days > 0 ? `${days}天 ` : ''}${hours}小时${minutes}分钟`,
+        `当前时间: ${now.toLocaleTimeString('zh-CN')}`,
+        `登录用户: ${Math.floor(Math.random() * 5) + 1}`,
+      ].join('\n')
+    }
+  },
+  description: '显示系统运行时间',
+  usage: 'uptime',
+  examples: ['uptime']
+})
+
+registerCommand('ps', {
+  handler: (): CommandResult => {
+    const processes = [
+      { pid: 1, tty: '?', time: '00:00:01', cmd: 'init' },
+      { pid: 2, tty: '?', time: '00:00:00', cmd: 'kthreadd' },
+      { pid: 100, tty: 'pts/0', time: '00:00:02', cmd: 'bash' },
+      { pid: 101, tty: 'pts/0', time: '00:00:01', cmd: 'terminal' },
+      { pid: 200, tty: '?', time: '00:00:03', cmd: 'window-manager' },
+      { pid: 201, tty: '?', time: '00:00:02', cmd: 'desktop' },
+      { pid: 300, tty: '?', time: '00:00:01', cmd: 'file-manager' },
+      { pid: 400, tty: '?', time: '00:00:00', cmd: 'code-editor' },
+    ]
+    
+    const output = [
+      '  PID TTY          TIME CMD',
+      ...processes.map(p => `${p.pid.toString().padStart(5)} ${p.tty.padEnd(8)} ${p.time.padEnd(10)} ${p.cmd}`),
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示进程列表',
+  usage: 'ps',
+  examples: ['ps']
+})
+
+registerCommand('top', {
+  handler: (): CommandResult => {
+    const processes = [
+      { pid: 100, user: 'user', cpu: 2.3, mem: 1.2, cmd: 'terminal' },
+      { pid: 200, user: 'root', cpu: 1.8, mem: 2.5, cmd: 'window-manager' },
+      { pid: 201, user: 'root', cpu: 1.5, mem: 1.8, cmd: 'desktop' },
+      { pid: 300, user: 'user', cpu: 1.2, mem: 3.2, cmd: 'file-manager' },
+      { pid: 400, user: 'user', cpu: 0.8, mem: 4.5, cmd: 'code-editor' },
+      { pid: 500, user: 'user', cpu: 0.5, mem: 2.1, cmd: 'browser' },
+      { pid: 600, user: 'user', cpu: 0.3, mem: 1.5, cmd: 'music-player' },
+      { pid: 1, user: 'root', cpu: 0.1, mem: 0.5, cmd: 'init' },
+    ]
+    
+    const totalCpu = processes.reduce((sum, p) => sum + p.cpu, 0)
+    const totalMem = processes.reduce((sum, p) => sum + p.mem, 0)
+    
+    const output = [
+      `top - ${new Date().toLocaleTimeString('zh-CN')} up ${Math.floor(Math.random() * 24)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')},  1 user,  load average: 0.15, 0.20, 0.18`,
+      '',
+      'Tasks: 15 total,   1 running,  14 sleeping,   0 stopped,   0 zombie',
+      `%Cpu(s): ${totalCpu.toFixed(1)} us,  2.0 sy,  0.0 ni, ${(100 - totalCpu - 2).toFixed(1)} id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st`,
+      `MiB Mem :   16384.0 total,    ${(16384 - totalMem * 100).toFixed(1)} free,    ${totalMem * 100} used,    2048.0 buff/cache`,
+      '',
+      '  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND',
+      ...processes.map(p => `${p.pid.toString().padStart(6)} ${p.user.padEnd(8)}  20   0 ${(p.mem * 100).toFixed(0).padStart(8)} ${(p.mem * 50).toFixed(0).padStart(8)} ${(p.mem * 30).toFixed(0).padStart(8)} S  ${p.cpu.toString().padStart(5)} ${p.mem.toString().padStart(5)} 00:00:${String(Math.floor(Math.random() * 30)).padStart(2, '0')} ${p.cmd}`),
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示系统进程和资源使用情况',
+  usage: 'top',
+  examples: ['top']
+})
+
 registerCommand('credits', {
   handler: (): CommandResult => {
     const output = [
