@@ -7,13 +7,13 @@ let pyodide: unknown = null
 async function loadPyodide() {
   if (pyodide) return pyodide
   const script = document.createElement('script')
-  script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js'
+  script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js'
   document.head.appendChild(script)
   await new Promise<void>((resolve, reject) => {
     script.onload = () => resolve()
     script.onerror = () => reject(new Error('Failed to load Pyodide'))
   })
-  pyodide = await (window as unknown as { loadPyodide: (options: { indexURL: string }) => Promise<unknown> }).loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/' })
+  pyodide = await (window as unknown as { loadPyodide: (options: { indexURL: string }) => Promise<unknown> }).loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/' })
   return pyodide
 }
 
