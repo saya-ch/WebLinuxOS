@@ -1,18 +1,67 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { useStore } from '../../store'
+import { countNodes } from '../../store/fileUtils'
+
+let bootTime = Date.now()
+
+function getRealMemoryInfo(): { total: number; used: number; free: number } {
+  const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+  const total = deviceMemory ? deviceMemory * 1024 : 16384
+  const used = Math.floor(total * (0.3 + Math.random() * 0.3))
+  return { total, used, free: total - used }
+}
+
+function getRealCPUInfo(): { cores: number; usage: number } {
+  const cores = navigator.hardwareConcurrency || 4
+  const usage = Math.min(100, Math.floor(Math.random() * 30 + 10))
+  return { cores, usage }
+}
+
+function getProcessList(): Array<{ pid: number; name: string; cpu: number; mem: number }> {
+  const windows = useStore.getState().windows
+  const processes = [
+    { pid: 1, name: 'init', cpu: 0.1, mem: 0.5 },
+    { pid: 2, name: 'kthreadd', cpu: 0.0, mem: 0.2 },
+  ]
+  
+  windows.forEach((win, index) => {
+    processes.push({
+      pid: 100 + index,
+      name: win.appId,
+      cpu: Math.floor(Math.random() * 5 + 0.5) / 10,
+      mem: Math.floor(Math.random() * 5 + 1),
+    })
+  })
+  
+  processes.push(
+    { pid: 997, name: 'terminal', cpu: 0.5, mem: 2.0 },
+    { pid: 998, name: 'window-manager', cpu: 1.2, mem: 3.5 },
+    { pid: 999, name: 'desktop', cpu: 0.8, mem: 2.5 },
+  )
+  
+  return processes.sort((a, b) => b.cpu - a.cpu)
+}
 
 registerCommand('disk-usage', {
   handler: (): CommandResult => {
+    const files = useStore.getState().files
+    const { files: fileCount, folders, totalSize } = countNodes(files)
+    
+    const totalSpace = 52428800
+    const usedSpace = Math.floor(totalSize / 1024) + Math.floor(Math.random() * 1000000)
+    const freeSpace = Math.max(0, totalSpace - usedSpace)
+    const usagePercent = Math.floor((usedSpace / totalSpace) * 100)
+    
     const output = [
       '╔════════════════════════════════════════════════════════╗',
       '║              磁盘使用情况                             ║',
       '╠════════════════════════════════════════════════════════╣',
       '║  文件系统        大小      已用      可用    使用%    ║',
-      '║  /dev/sda1      50GB     12GB      38GB     24%     ║',
+      `║  /dev/sda1      50GB     ${(usedSpace / 1024 / 1024).toFixed(0)}GB      ${(freeSpace / 1024 / 1024).toFixed(0)}GB     ${usagePercent}%     ║`,
       '║  tmpfs          3.9GB    1.2MB     3.9GB     1%     ║',
-      '║  /dev/sda2      20GB     8GB       12GB     40%     ║',
       '╠════════════════════════════════════════════════════════╣',
-      '║  总计: 73.9GB    已用: 20GB    可用: 53.9GB           ║',
+      `║  文件数: ${fileCount}    文件夹数: ${folders}    总大小: ${(totalSize / 1024).toFixed(2)}KB           ║`,
       '╚════════════════════════════════════════════════════════╝',
     ].join('\n')
     
@@ -25,21 +74,20 @@ registerCommand('disk-usage', {
 
 registerCommand('process-list', {
   handler: (): CommandResult => {
+    const processes = getProcessList()
+    
     const output = [
       '╔════════════════════════════════════════════════════════╗',
       '║              进程列表                                 ║',
       '╠═══════════╦════════╦══════════╦══════════════════╣',
       '║  PID    │ 用户   │  CPU   │ 内存    │ 进程名           ║',
       '╠═════════╬════════╬════════╬═════════╬════════════════╣',
-      '║    1    │ root   │  0.0%  │  12MB   │ systemd          ║',
-      '║  234    │ user   │  0.1%  │  45MB   │ terminal         ║',
-      '║  567    │ user   │  1.2%  │ 156MB   │ browser          ║',
-      '║  890    │ user   │  0.3%  │  89MB   │ file-manager     ║',
-      '║ 1023    │ user   │  0.5%  │  67MB   │ code-editor      ║',
-      '║ 1156    │ user   │  0.2%  │  34MB   │ music-player     ║',
+      ...processes.slice(0, 6).map(p => 
+        `║ ${p.pid.toString().padStart(5)} │ user   │ ${p.cpu.toFixed(1).padEnd(5)}% │ ${p.mem.toFixed(0).padStart(5)}MB │ ${p.name.padEnd(15)} ║`
+      ),
       '╚═════════╩════════╩════════╩═════════╩════════════════╝',
       '',
-      `总进程数: ${Math.floor(Math.random() * 50 + 100)}`,
+      `总进程数: ${processes.length}`,
     ].join('\n')
     
     return { output }
@@ -51,18 +99,21 @@ registerCommand('process-list', {
 
 registerCommand('network-stats', {
   handler: (): CommandResult => {
+    const bytesReceived = Math.floor(Math.random() * 10000000 + 1000000)
+    const bytesSent = Math.floor(Math.random() * 5000000 + 500000)
+    
     const output = [
       '╔════════════════════════════════════════════════════════╗',
       '║              网络统计                                 ║',
       '╠════════════════════════════════════════════════════════╣',
       '║  接口     │ 状态    │  接收      │  发送            ║',
       '╠══════════╬═════════╬═══════════╬═══════════════════╣',
-      '║  eth0    │ UP      │ 12.3MB    │ 4.5MB            ║',
+      `║  eth0    │ UP      │ ${(bytesReceived / 1024 / 1024).toFixed(2)}MB    │ ${(bytesSent / 1024 / 1024).toFixed(2)}MB            ║`,
       '║  lo      │ UP      │ 234KB     │ 234KB            ║',
-      '║  wlan0   │ DOWN    │   -       │   -              ║',
+      '║  wlan0   │ UP      │ 1.2MB     │ 856KB            ║',
       '╠════════════════════════════════════════════════════════╣',
-      `║  TCP连接数: ${Math.floor(Math.random() * 50 + 10)}    │  UDP连接数: ${Math.floor(Math.random() * 30 + 5)}        ║`,
-      '║  总接收: 12.5MB        │  总发送: 4.7MB              ║',
+      `║  TCP连接数: ${Math.floor(Math.random() * 20 + 5)}    │  UDP连接数: ${Math.floor(Math.random() * 10 + 3)}        ║`,
+      `║  总接收: ${(bytesReceived / 1024 / 1024).toFixed(2)}MB        │  总发送: ${(bytesSent / 1024 / 1024).toFixed(2)}MB              ║`,
       '╚════════════════════════════════════════════════════════╝',
     ].join('\n')
     
@@ -75,21 +126,19 @@ registerCommand('network-stats', {
 
 registerCommand('memory-info', {
   handler: (): CommandResult => {
-    const memTotal = 16384
-    const memUsed = Math.floor(memTotal * (0.3 + Math.random() * 0.3))
-    const memFree = memTotal - memUsed
-    const memBuffers = Math.floor(memUsed * 0.3)
-    const memCached = Math.floor(memUsed * 0.4)
+    const { total, used, free } = getRealMemoryInfo()
+    const buffers = Math.floor(used * 0.3)
+    const cached = Math.floor(used * 0.4)
     
     const output = [
       '╔════════════════════════════════════════════════════════╗',
       '║              内存信息                                 ║',
       '╠════════════════════════════════════════════════════════╣',
-      `║  总内存:    ${(memTotal / 1024).toFixed(0).padEnd(35)}MB║`,
-      `║  已用:     ${(memUsed / 1024).toFixed(0).padEnd(35)}MB║`,
-      `║  空闲:     ${(memFree / 1024).toFixed(0).padEnd(35)}MB║`,
-      `║  缓冲:     ${(memBuffers / 1024).toFixed(0).padEnd(35)}MB║`,
-      `║  缓存:     ${(memCached / 1024).toFixed(0).padEnd(35)}MB║`,
+      `║  总内存:    ${(total / 1024).toFixed(0).padEnd(35)}GB║`,
+      `║  已用:     ${(used / 1024).toFixed(0).padEnd(35)}GB║`,
+      `║  空闲:     ${(free / 1024).toFixed(0).padEnd(35)}GB║`,
+      `║  缓冲:     ${(buffers / 1024).toFixed(0).padEnd(35)}GB║`,
+      `║  缓存:     ${(cached / 1024).toFixed(0).padEnd(35)}GB║`,
       '╠════════════════════════════════════════════════════════╣',
       `║  交换空间:  ${Math.floor(Math.random() * 2000 + 1000).toString().padEnd(35)}MB║`,
       '║  虚拟内存:  已启用                                   ║',
@@ -105,20 +154,22 @@ registerCommand('memory-info', {
 
 registerCommand('cpu-info', {
   handler: (): CommandResult => {
+    const { cores, usage } = getRealCPUInfo()
+    
     const output = [
       '╔════════════════════════════════════════════════════════╗',
       '║              CPU信息                                  ║',
       '╠════════════════════════════════════════════════════════╣',
       '║  型号:     WebAssembly Virtual CPU                     ║',
       '║  架构:     x86_64                                     ║',
-      `║  核心数:   ${Math.floor(Math.random() * 4 + 4)} 核心                              ║`,
+      `║  核心数:   ${cores} 核心                              ║`,
       `║  频率:     ${Math.floor(Math.random() * 1000 + 2000)} MHz (动态)                    ║`,
       '║  缓存:     L1: 32KB  L2: 256KB  L3: 8MB              ║',
       '╠════════════════════════════════════════════════════════╣',
-      `║  CPU使用率: ${Math.floor(Math.random() * 30 + 10)}%                              ║`,
-      `║  用户空间:  ${Math.floor(Math.random() * 15 + 5)}%                              ║`,
-      `║  系统空间:  ${Math.floor(Math.random() * 5 + 1)}%                               ║`,
-      `║  空闲:     ${Math.floor(Math.random() * 60 + 30)}%                              ║`,
+      `║  CPU使用率: ${usage}%                              ║`,
+      `║  用户空间:  ${Math.floor(usage * 0.6)}%                              ║`,
+      `║  系统空间:  ${Math.floor(usage * 0.2)}%                               ║`,
+      `║  空闲:     ${Math.floor(100 - usage)}%                              ║`,
       '╚════════════════════════════════════════════════════════╝',
     ].join('\n')
     
@@ -128,8 +179,6 @@ registerCommand('cpu-info', {
   usage: 'cpu-info',
   examples: ['cpu-info']
 })
-
-let bootTime = Date.now()
 
 registerCommand('uptime', {
   handler: (): CommandResult => {
@@ -224,13 +273,11 @@ registerCommand('cal', {
 
 registerCommand('free', {
   handler: (): CommandResult => {
-    const memTotal = 16384
-    const memUsed = Math.floor(memTotal * (0.3 + Math.random() * 0.3))
-    const memFree = memTotal - memUsed
+    const { total, used, free } = getRealMemoryInfo()
     
     const output = [
       '              total        used        free      shared  buff/cache   available',
-      `Mem:          ${(memTotal / 1024).toFixed(0)}Gi       ${(memUsed / 1024).toFixed(0)}Gi       ${(memFree / 1024).toFixed(0)}Gi       128Mi       2.5Gi       ${((memFree + 2560) / 1024).toFixed(1)}Gi`,
+      `Mem:          ${(total / 1024).toFixed(0)}Gi       ${(used / 1024).toFixed(0)}Gi       ${(free / 1024).toFixed(0)}Gi       128Mi       2.5Gi       ${((free + 2560) / 1024).toFixed(1)}Gi`,
       `Swap:         ${Math.floor(Math.random() * 4 + 2)}Gi       ${Math.floor(Math.random() * 512)}Mi       ${Math.floor(Math.random() * 3 + 1)}Gi`,
     ].join('\n')
     
@@ -243,9 +290,17 @@ registerCommand('free', {
 
 registerCommand('df', {
   handler: (): CommandResult => {
+    const files = useStore.getState().files
+    const { totalSize } = countNodes(files)
+    
+    const usedSpace = Math.floor(totalSize / 1024) + Math.floor(Math.random() * 1000000)
+    const totalSpace = 52428800
+    const freeSpace = Math.max(0, totalSpace - usedSpace)
+    const usagePercent = Math.floor((usedSpace / totalSpace) * 100)
+    
     const output = [
       '文件系统        1K-blocks     已用      可用     已用% 挂载点',
-      '/dev/sda1        52428800  12582912  39845888      24% /',
+      `/dev/sda1        ${totalSpace}  ${usedSpace}  ${freeSpace}      ${usagePercent}% /`,
       'tmpfs             4082948        12    4082936       1% /dev/shm',
       '/dev/sda2        20971520   8388608  12582912      40% /home',
     ].join('\n')
@@ -255,4 +310,54 @@ registerCommand('df', {
   description: '显示磁盘空间使用情况',
   usage: 'df',
   examples: ['df']
+})
+
+registerCommand('time', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    
+    const output = [
+      '当前时间:',
+      `  本地时间: ${now.toLocaleString('zh-CN')}`,
+      `  UTC时间:  ${now.toISOString()}`,
+      `  Unix时间戳: ${Math.floor(now.getTime() / 1000)}`,
+      `  时区: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+    ].join('\n')
+    
+    return { output }
+  },
+  description: '显示详细时间信息',
+  usage: 'time',
+  examples: ['time']
+})
+
+registerCommand('worldtime', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    const timezones = [
+      { name: '北京', tz: 'Asia/Shanghai', offset: '+08:00' },
+      { name: '东京', tz: 'Asia/Tokyo', offset: '+09:00' },
+      { name: '纽约', tz: 'America/New_York', offset: '-04:00' },
+      { name: '伦敦', tz: 'Europe/London', offset: '+01:00' },
+      { name: '巴黎', tz: 'Europe/Paris', offset: '+02:00' },
+      { name: '悉尼', tz: 'Australia/Sydney', offset: '+10:00' },
+    ]
+    
+    const output = [
+      '🌍 世界时间',
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      `${'城市'.padEnd(6)} ${'时区'.padEnd(16)} ${'时间'}`,
+      ...timezones.map(tz => {
+        const time = now.toLocaleString('zh-CN', { timeZone: tz.tz })
+        return `${tz.name.padEnd(6)} ${tz.offset.padEnd(16)} ${time}`
+      }),
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示世界各时区时间',
+  usage: 'worldtime',
+  examples: ['worldtime']
 })

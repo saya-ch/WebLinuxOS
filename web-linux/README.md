@@ -1,12 +1,17 @@
 # WebLinuxOS
 
-A feature-complete Linux desktop environment running entirely in the browser. No backend required, all functionality runs client-side with persistent storage.
+A fully functional Linux desktop environment running entirely in the browser. No backend required, all functionality runs client-side with persistent storage.
 
 **Live Demo**: https://saya-ch.github.io/WebLinuxOS/
+
+## Overview
+
+WebLinuxOS is a web-based operating system that brings the familiar Linux desktop experience to your browser. It features a complete windowing system, file management, terminal, and hundreds of applications - all running locally with no server dependencies.
 
 ## Features
 
 ### Desktop Environment
+
 - Multi-window management with minimize, maximize, and close controls
 - Virtual desktops with custom wallpaper support
 - Smart app launcher with fuzzy search
@@ -17,6 +22,7 @@ A feature-complete Linux desktop environment running entirely in the browser. No
 - Dynamic particle wallpaper effects
 
 ### Development Tools
+
 - Code editor with syntax highlighting for 20+ languages
 - REST API tester with request builder
 - JSON formatter and validator
@@ -28,6 +34,7 @@ A feature-complete Linux desktop environment running entirely in the browser. No
 - CSS toolbox with gradient, shadow, and layout generators
 
 ### Productivity Suite
+
 - Markdown editor with live preview
 - Spreadsheet with formula support
 - Calendar and event manager
@@ -38,6 +45,7 @@ A feature-complete Linux desktop environment running entirely in the browser. No
 - Smart schedule assistant
 
 ### Utilities
+
 - Scientific calculator with advanced functions
 - Password manager with encryption
 - Pomodoro timer
@@ -48,6 +56,7 @@ A feature-complete Linux desktop environment running entirely in the browser. No
 - Online API hub (NASA, news, cryptocurrency)
 
 ### Multimedia & Entertainment
+
 - Music player with playlist support
 - Drawing application
 - Camera access for video capture

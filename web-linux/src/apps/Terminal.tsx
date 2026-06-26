@@ -416,6 +416,12 @@ export default function Terminal() {
         theme,
         args,
         prevCwd,
+        addFile,
+        deleteFile,
+        updateFileContent,
+        renameFile,
+        copyFile,
+        moveFile,
       }
 
       try {

@@ -8,6 +8,12 @@ export type CommandContext = {
   theme: 'dark' | 'light'
   args: string[]
   prevCwd: string | null
+  addFile?: (parentId: string, name: string, type: 'file' | 'folder') => void
+  deleteFile?: (id: string) => void
+  updateFileContent?: (id: string, content: string) => void
+  renameFile?: (id: string, name: string) => void
+  copyFile?: (sourceId: string, targetParentId: string) => void
+  moveFile?: (sourceId: string, targetParentId: string) => void
 }
 
 export type CommandResult = {

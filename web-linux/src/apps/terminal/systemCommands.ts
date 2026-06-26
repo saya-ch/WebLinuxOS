@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { useStore } from '../../store'
 
 registerCommand('whoami', {
   handler: (context: CommandContext): CommandResult => {
@@ -207,15 +208,18 @@ registerCommand('uptime', {
 
 registerCommand('ps', {
   handler: (): CommandResult => {
+    const windows = useStore.getState().windows
     const processes = [
       { pid: 1, tty: '?', time: '00:00:01', cmd: 'init' },
       { pid: 2, tty: '?', time: '00:00:00', cmd: 'kthreadd' },
       { pid: 100, tty: 'pts/0', time: '00:00:02', cmd: 'bash' },
       { pid: 101, tty: 'pts/0', time: '00:00:01', cmd: 'terminal' },
-      { pid: 200, tty: '?', time: '00:00:03', cmd: 'window-manager' },
-      { pid: 201, tty: '?', time: '00:00:02', cmd: 'desktop' },
-      { pid: 300, tty: '?', time: '00:00:01', cmd: 'file-manager' },
-      { pid: 400, tty: '?', time: '00:00:00', cmd: 'code-editor' },
+      ...windows.map((win, index) => ({
+        pid: 200 + index,
+        tty: '?',
+        time: `00:00:${String(Math.floor(Math.random() * 30)).padStart(2, '0')}`,
+        cmd: win.appId,
+      })),
     ]
     
     const output = [
@@ -232,29 +236,35 @@ registerCommand('ps', {
 
 registerCommand('top', {
   handler: (): CommandResult => {
+    const windows = useStore.getState().windows
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+    const totalMemory = deviceMemory ? deviceMemory * 1024 : 16384
+    
     const processes = [
-      { pid: 100, user: 'user', cpu: 2.3, mem: 1.2, cmd: 'terminal' },
-      { pid: 200, user: 'root', cpu: 1.8, mem: 2.5, cmd: 'window-manager' },
-      { pid: 201, user: 'root', cpu: 1.5, mem: 1.8, cmd: 'desktop' },
-      { pid: 300, user: 'user', cpu: 1.2, mem: 3.2, cmd: 'file-manager' },
-      { pid: 400, user: 'user', cpu: 0.8, mem: 4.5, cmd: 'code-editor' },
-      { pid: 500, user: 'user', cpu: 0.5, mem: 2.1, cmd: 'browser' },
-      { pid: 600, user: 'user', cpu: 0.3, mem: 1.5, cmd: 'music-player' },
       { pid: 1, user: 'root', cpu: 0.1, mem: 0.5, cmd: 'init' },
-    ]
+      ...windows.map((win, index) => ({
+        pid: 100 + index,
+        user: 'user',
+        cpu: Math.min(100, Math.floor(Math.random() * 10 + 0.5)),
+        mem: Math.min(100, Math.floor(Math.random() * 5 + 1)),
+        cmd: win.appId,
+      })),
+      { pid: 998, user: 'root', cpu: 1.5, mem: 3.0, cmd: 'window-manager' },
+      { pid: 999, user: 'root', cpu: 0.8, mem: 2.0, cmd: 'desktop' },
+    ].sort((a, b) => b.cpu - a.cpu)
     
     const totalCpu = processes.reduce((sum, p) => sum + p.cpu, 0)
     const totalMem = processes.reduce((sum, p) => sum + p.mem, 0)
     
     const output = [
-      `top - ${new Date().toLocaleTimeString('zh-CN')} up ${Math.floor(Math.random() * 24)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')},  1 user,  load average: 0.15, 0.20, 0.18`,
+      `top - ${new Date().toLocaleTimeString('zh-CN')} up ${Math.floor(Math.random() * 24)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')},  1 user,  load average: ${(0.1 + Math.random() * 0.5).toFixed(2)}, ${(0.1 + Math.random() * 0.4).toFixed(2)}, ${(0.1 + Math.random() * 0.3).toFixed(2)}`,
       '',
-      'Tasks: 15 total,   1 running,  14 sleeping,   0 stopped,   0 zombie',
+      `Tasks: ${processes.length} total,   1 running,  ${processes.length - 1} sleeping,   0 stopped,   0 zombie`,
       `%Cpu(s): ${totalCpu.toFixed(1)} us,  2.0 sy,  0.0 ni, ${(100 - totalCpu - 2).toFixed(1)} id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st`,
-      `MiB Mem :   16384.0 total,    ${(16384 - totalMem * 100).toFixed(1)} free,    ${totalMem * 100} used,    2048.0 buff/cache`,
+      `MiB Mem :   ${totalMemory}.0 total,    ${(totalMemory - totalMem * 50).toFixed(1)} free,    ${totalMem * 50} used,    2048.0 buff/cache`,
       '',
       '  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND',
-      ...processes.map(p => `${p.pid.toString().padStart(6)} ${p.user.padEnd(8)}  20   0 ${(p.mem * 100).toFixed(0).padStart(8)} ${(p.mem * 50).toFixed(0).padStart(8)} ${(p.mem * 30).toFixed(0).padStart(8)} S  ${p.cpu.toString().padStart(5)} ${p.mem.toString().padStart(5)} 00:00:${String(Math.floor(Math.random() * 30)).padStart(2, '0')} ${p.cmd}`),
+      ...processes.slice(0, 8).map(p => `${p.pid.toString().padStart(6)} ${p.user.padEnd(8)}  20   0 ${(p.mem * 100).toFixed(0).padStart(8)} ${(p.mem * 50).toFixed(0).padStart(8)} ${(p.mem * 30).toFixed(0).padStart(8)} S  ${p.cpu.toString().padStart(5)} ${p.mem.toString().padStart(5)} 00:00:${String(Math.floor(Math.random() * 30)).padStart(2, '0')} ${p.cmd}`),
     ]
     
     return { output: output.join('\n') }
