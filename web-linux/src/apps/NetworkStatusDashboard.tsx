@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useCallback } from 'react'
-import useStore from '../store'
+import { useStore } from '../store'
 
 interface NetworkMetrics {
   bandwidth: { download: number; upload: number }
@@ -189,7 +189,7 @@ const NetworkStatusDashboard = memo(function NetworkStatusDashboard() {
         background: isDark ? '#181825' : '#f1f5f9',
         borderRadius: '8px',
       }}>
-        {bandwidthHistory.download.map((val, i) => (
+        {bandwidthHistory.download.map((_, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px', height: '100%' }}>
             <div
               style={{

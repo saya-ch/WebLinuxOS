@@ -233,7 +233,7 @@ export default function AICodeAnalyzer() {
       if (/for\s*\([^)]*\.\s*length/.test(code)) {
         issues.push({
           id: 'length-in-loop',
-          type: 'performance',
+          type: 'warning',
           severity: 'low',
           line: lines.findIndex(l => /for\s*\([^)]*\.\s*length/.test(l)) + 1,
           title: '循环中访问 .length',

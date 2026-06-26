@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../store'
+import { Droplets, Gauge, Wind, Compass, Thermometer } from 'lucide-react'
 
 // ==================== 类型定义 ====================
 interface CurrentWeather {
@@ -423,15 +424,15 @@ const Weather = memo(function Weather() {
           {/* 详细指标卡片 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 20 }}>
             {[
-              { label: '湿度', value: `${current.relativeHumidity}%`, icon: '💧' },
-              { label: '气压', value: `${Math.round(current.pressure)} hPa`, icon: '🌡️' },
-              { label: '风速', value: `${Math.round(current.windSpeed)} km/h`, icon: '💨' },
-              { label: '风向', value: `${Math.round(current.windDirection)}° · ${getWindDirectionText(current.windDirection)}`, icon: '🧭' },
-              { label: '体感温度', value: `${Math.round(current.apparentTemperature)}°C`, icon: '🌤️' },
-              { label: '当前温度', value: `${Math.round(current.temperature)}°C`, icon: '🌡️' },
+              { label: '湿度', value: `${current.relativeHumidity}%`, icon: <Droplets size={14} /> },
+              { label: '气压', value: `${Math.round(current.pressure)} hPa`, icon: <Gauge size={14} /> },
+              { label: '风速', value: `${Math.round(current.windSpeed)} km/h`, icon: <Wind size={14} /> },
+              { label: '风向', value: `${Math.round(current.windDirection)}° ${getWindDirectionText(current.windDirection)}`, icon: <Compass size={14} /> },
+              { label: '体感温度', value: `${Math.round(current.apparentTemperature)}°C`, icon: <Thermometer size={14} /> },
+              { label: '当前温度', value: `${Math.round(current.temperature)}°C`, icon: <Thermometer size={14} /> },
             ].map((item) => (
               <div key={item.label} className="app-card" style={{ padding: 10, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>{item.icon} {item.label}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>{item.icon} {item.label}</div>
                 <div style={{ fontSize: 15, fontWeight: 600 }}>{item.value}</div>
               </div>
             ))}

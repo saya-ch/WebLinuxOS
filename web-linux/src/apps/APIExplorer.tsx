@@ -1,5 +1,6 @@
-import { useState, useCallback, memo, useEffect } from 'react'
+import React, { useState, useCallback, memo, useEffect } from 'react'
 import { useStore } from '../store'
+import { Cloud, DollarSign, Globe, Newspaper, BookOpen, FlaskConical, Code, MapPin, ExternalLink, Link, Zap, Rocket, FileText } from 'lucide-react'
 
 // API探索器 - 浏览常用公开API文档和示例
 interface APIEndpoint {
@@ -331,15 +332,15 @@ const CATEGORY_NAMES: Record<string, string> = {
   geocoding: '地理编码'
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  weather: '🌤️',
-  finance: '💰',
-  network: '🌐',
-  news: '📰',
-  reference: '📚',
-  testing: '🧪',
-  development: '💻',
-  geocoding: '📍'
+const CATEGORY_ICONS: Record<string, React.ReactElement> = {
+  weather: <Cloud size={14} />,
+  finance: <DollarSign size={14} />,
+  network: <Globe size={14} />,
+  news: <Newspaper size={14} />,
+  reference: <BookOpen size={14} />,
+  testing: <FlaskConical size={14} />,
+  development: <Code size={14} />,
+  geocoding: <MapPin size={14} />
 }
 
 const APIExplorer = memo(function APIExplorer() {
@@ -546,7 +547,7 @@ const APIExplorer = memo(function APIExplorer() {
                 fontWeight: selectedCategory === cat ? 600 : 400
               }}
             >
-              {cat === 'all' ? '全部' : `${CATEGORY_ICONS[cat] || ''} ${CATEGORY_NAMES[cat] || cat}`}
+              {cat === 'all' ? '全部' : <><span style={{ marginRight: 4 }}>{CATEGORY_ICONS[cat]}</span> {CATEGORY_NAMES[cat] || cat}</>}
             </button>
           ))}
         </div>
@@ -636,10 +637,13 @@ const APIExplorer = memo(function APIExplorer() {
                     border: '1px solid rgba(124,108,240,0.5)',
                     color: '#e0e0e8',
                     cursor: 'pointer',
-                    fontSize: 13
+                    fontSize: 13,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
                   }}
                 >
-                  📖 打开官方文档
+                  <ExternalLink size={14} /> 打开官方文档
                 </button>
                 <button
                   onClick={() => handleCopyUrl(selectedAPI.baseUrl, '')}
@@ -650,10 +654,13 @@ const APIExplorer = memo(function APIExplorer() {
                     border: '1px solid rgba(255,255,255,0.15)',
                     color: '#e0e0e8',
                     cursor: 'pointer',
-                    fontSize: 13
+                    fontSize: 13,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
                   }}
                 >
-                  🔗 复制Base URL
+                  <Link size={14} /> 复制Base URL
                 </button>
               </div>
 
@@ -737,8 +744,8 @@ const APIExplorer = memo(function APIExplorer() {
             {/* API测试面板 */}
             {selectedExample && (
               <div style={{ marginTop: 16 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
-                  ⚡ API 测试
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Zap size={16} /> API 测试
                 </div>
 
                 {/* 参数输入 */}
@@ -841,7 +848,7 @@ const APIExplorer = memo(function APIExplorer() {
                       fontWeight: 600
                     }}
                   >
-                    {requestState.loading ? '发送中...' : '🚀 发送请求'}
+                    {requestState.loading ? '发送中...' : <><Rocket size={14} style={{ marginRight: 6 }} />发送请求</>}
                   </button>
                   <button
                     onClick={handleClearResponse}
@@ -911,7 +918,7 @@ const APIExplorer = memo(function APIExplorer() {
 
                 {/* 响应示例 */}
                 <div style={{ marginTop: 16 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>📖 响应示例</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={14} /> 响应示例</div>
                   <pre style={{
                     padding: 12,
                     borderRadius: 8,
