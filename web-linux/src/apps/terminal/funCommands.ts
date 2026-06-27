@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { listCommands, getCommand } from './commands'
 
 registerCommand('cowsay', {
   handler: (context: CommandContext): CommandResult => {
@@ -444,4 +445,217 @@ registerCommand('welcome', {
   description: '显示新手指南',
   usage: 'welcome',
   examples: ['welcome']
+})
+
+registerCommand('help', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const allCommands = listCommands()
+    
+    if (args.length > 0) {
+      const cmdName = args[0].toLowerCase()
+      const cmd = getCommand(cmdName)
+      if (cmd) {
+        const output = [
+          `命令: ${cmdName}`,
+          `描述: ${cmd.description}`,
+          cmd.usage ? `用法: ${cmd.usage}` : '',
+          cmd.examples && cmd.examples.length > 0 ? `示例:\n  ${cmd.examples.join('\n  ')}` : '',
+        ].filter(Boolean).join('\n')
+        return { output }
+      } else {
+        return { output: `命令 "${cmdName}" 不存在` }
+      }
+    }
+    
+    const categories: Record<string, string[]> = {
+      '文件操作': ['ls', 'cd', 'pwd', 'cat', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'grep', 'find', 'stat', 'ln', 'chmod', 'head', 'tail', 'less', 'wc', 'diff'],
+      '系统信息': ['whoami', 'hostname', 'date', 'uname', 'lsb_release', 'neofetch', 'version', 'uptime', 'ps', 'top', 'cpu-info', 'memory-info', 'system-info', 'credits', 'about'],
+      '网络命令': ['curl', 'fetch', 'ip', 'ping', 'news', 'weather', 'netstat', 'dnslookup', 'iplookup'],
+      '实用工具': ['calc', 'base64', 'hash', 'uuid', 'password', 'qrcode', 'color', 'timer', 'stopwatch', 'convert'],
+      '趣味命令': ['cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'banner', 'lolcat', 'starwars', 'matrix', 'asciiart', 'joke', 'advice', 'flip', 'rps', 'bacon'],
+      '应用启动': ['terminal', 'files', 'browser', 'settings', 'calculator', 'editor', 'dashboard', 'launcher'],
+      '开发工具': ['python', 'run', 'api', 'json', 'yaml', 'regex'],
+    }
+    
+    const maxCmdLen = Math.max(...allCommands.map(c => c.length))
+    
+    const lines: string[] = [
+      '╔══════════════════════════════════════════════════════════════╗',
+      '║                     WebLinuxOS 终端帮助                      ║',
+      '╚══════════════════════════════════════════════════════════════╝',
+      '',
+      `总计: ${allCommands.length} 个可用命令`,
+      '',
+      '使用 "help <命令>" 查看详细用法',
+      '',
+    ]
+    
+    for (const [category, cmds] of Object.entries(categories)) {
+      lines.push(`━━━ ${category} ━━━`)
+      for (const cmd of cmds.sort()) {
+        if (allCommands.includes(cmd)) {
+          const def = getCommand(cmd)
+          if (def) {
+            const padding = ' '.repeat(maxCmdLen - cmd.length)
+            lines.push(`  ${cmd}${padding}  ${def.description}`)
+          }
+        }
+      }
+      lines.push('')
+    }
+    
+    return { output: lines.join('\n') }
+  },
+  description: '显示帮助信息',
+  usage: 'help [命令]',
+  examples: ['help', 'help curl', 'help weather']
+})
+
+registerCommand('timer', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const seconds = parseInt(args[0]) || 60
+    
+    if (seconds <= 0 || seconds > 3600) {
+      return { output: '请输入 1-3600 秒之间的值' }
+    }
+    
+    return { 
+      output: `⏱️ 计时器已设置: ${seconds} 秒\n计时开始... (实际计时需要前端交互支持)` 
+    }
+  },
+  description: '设置计时器（秒）',
+  usage: 'timer <秒数>',
+  examples: ['timer 60', 'timer 300']
+})
+
+registerCommand('stopwatch', {
+  handler: (): CommandResult => {
+    return { output: '⏱️ 秒表已启动 (实际计时需要前端交互支持)' }
+  },
+  description: '启动秒表',
+  usage: 'stopwatch',
+  examples: ['stopwatch']
+})
+
+registerCommand('convert', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 3) {
+      return {
+        output: [
+          '🔄 单位转换器',
+          '',
+          '用法: convert <数值> <单位1> <单位2>',
+          '',
+          '支持单位:',
+          '  长度: m, cm, mm, km, in, ft, yd, mi',
+          '  重量: kg, g, mg, lb, oz',
+          '  温度: C, F, K',
+          '  数据: B, KB, MB, GB, TB',
+          '',
+          '示例:',
+          '  convert 100 km mi',
+          '  convert 32 C F',
+          '  convert 1 GB MB',
+        ].join('\n')
+      }
+    }
+    
+    const value = parseFloat(args[0])
+    const from = args[1].toLowerCase()
+    const to = args[2].toLowerCase()
+    
+    if (isNaN(value)) {
+      return { output: '无效的数值' }
+    }
+    
+    const conversions: Record<string, Record<string, number>> = {
+      m: { cm: 100, mm: 1000, km: 0.001, in: 39.3701, ft: 3.28084, yd: 1.09361, mi: 0.000621371 },
+      cm: { m: 0.01, mm: 10, km: 0.00001, in: 0.393701, ft: 0.0328084, yd: 0.0109361, mi: 0.00000621371 },
+      kg: { g: 1000, mg: 1000000, lb: 2.20462, oz: 35.274 },
+      g: { kg: 0.001, mg: 1000, lb: 0.00220462, oz: 0.035274 },
+      b: { kb: 0.0009765625, mb: 0.00000095367, gb: 0.00000000093132, tb: 0.00000000000090949 },
+      kb: { b: 1024, mb: 0.0009765625, gb: 0.00000095367, tb: 0.00000000093132 },
+      mb: { b: 1048576, kb: 1024, gb: 0.0009765625, tb: 0.00000095367 },
+      gb: { b: 1073741824, kb: 1048576, mb: 1024, tb: 0.0009765625 },
+      tb: { b: 1099511627776, kb: 1073741824, mb: 1048576, gb: 1024 },
+    }
+    
+    let result: number
+    
+    if (from === to) {
+      result = value
+    } else if (from === 'c' && to === 'f') {
+      result = value * 9/5 + 32
+    } else if (from === 'f' && to === 'c') {
+      result = (value - 32) * 5/9
+    } else if (from === 'c' && to === 'k') {
+      result = value + 273.15
+    } else if (from === 'k' && to === 'c') {
+      result = value - 273.15
+    } else if (from === 'f' && to === 'k') {
+      result = (value - 32) * 5/9 + 273.15
+    } else if (from === 'k' && to === 'f') {
+      result = (value - 273.15) * 9/5 + 32
+    } else if (conversions[from] && conversions[from][to]) {
+      result = value * conversions[from][to]
+    } else {
+      return { output: `不支持的转换: ${from} -> ${to}` }
+    }
+    
+    return { output: `${value} ${from} = ${result.toFixed(6).replace(/\.?0+$/, '')} ${to}` }
+  },
+  description: '单位转换',
+  usage: 'convert <数值> <单位1> <单位2>',
+  examples: ['convert 100 km mi', 'convert 32 C F', 'convert 1 GB MB']
+})
+
+registerCommand('shortcuts', {
+  handler: (): CommandResult => {
+    const output = [
+      '⌨️  WebLinuxOS 键盘快捷键',
+      '',
+      '━━━ 系统级快捷键 ━━━',
+      '  Ctrl+Shift+L       打开应用启动器',
+      '  Ctrl+Shift+K       全局搜索',
+      '  Ctrl+Shift+P       命令面板',
+      '  Ctrl+Alt+1-9       切换桌面 1-9',
+      '  Ctrl+Alt+←/→       上一个/下一个桌面',
+      '  Ctrl+Shift+Alt+1-9 移动窗口到桌面',
+      '  Alt+Tab            窗口循环切换',
+      '  Ctrl+W             关闭聚焦窗口',
+      '  Ctrl+M             最小化窗口',
+      '  F11                切换全屏',
+      '',
+      '━━━ 应用快速启动 ━━━',
+      '  Ctrl+T             终端',
+      '  Ctrl+E             文件管理器',
+      '  Ctrl+B             Web 浏览器',
+      '  Ctrl+,             系统设置',
+      '  Ctrl+G             代码编辑器',
+      '  Ctrl+D             系统监视器',
+      '  Ctrl+Shift+C        计算器',
+      '  Ctrl+Shift+N        笔记',
+      '  Ctrl+Shift+W        天气',
+      '  Ctrl+Shift+M        音乐播放器',
+      '',
+      '━━━ 终端内快捷键 ━━━',
+      '  Ctrl+L             清空终端',
+      '  ↑/↓               命令历史',
+      '  Tab                自动补全',
+      '  Ctrl+C             中断命令',
+      '  Ctrl+A             行首',
+      '  Ctrl+E             行尾',
+      '  Ctrl+U             删除整行',
+      '  Ctrl+K             删除光标后字符',
+    ].join('\n')
+    
+    return { output }
+  },
+  description: '显示键盘快捷键',
+  usage: 'shortcuts',
+  examples: ['shortcuts']
 })
