@@ -430,6 +430,18 @@ function RealTimeDashboardEnhancedIcon() {
   )
 }
 
+function AICodeAssistantIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="10" strokeDasharray="3 2" />
+      <path d="M8 12 L10 12 L10 8 L14 8 L14 12 L16 12" />
+      <circle cx="9" cy="16" r="1" fill="currentColor" />
+      <circle cx="15" cy="16" r="1" fill="currentColor" />
+      <path d="M7 8 Q12 4 17 8" />
+    </svg>
+  )
+}
+
 function SmartNewsReaderIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1003,6 +1015,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'component-sandbox', name: '组件开发沙盒', icon: <ComponentSandboxIcon />, component: 'ComponentSandbox', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'realtime-dashboard', name: '实时数据仪表盘', icon: <RealTimeDashboardIcon />, component: 'RealTimeDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'realtime-dashboard-enhanced', name: '实时数据仪表盘 Pro', icon: <RealTimeDashboardEnhancedIcon />, component: 'RealTimeDashboardEnhanced', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
+  { id: 'ai-code-assistant', name: 'AI 编程助手', icon: <AICodeAssistantIcon />, component: 'AICodeAssistant', category: 'development', defaultWidth: 1400, defaultHeight: 850, minWidth: 1000, minHeight: 650, resizable: true, multiple: false },
   { id: 'smart-news-reader', name: '智能新闻阅读器', icon: <SmartNewsReaderIcon />, component: 'SmartNewsReader', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'wikipedia-reader', name: '维基百科阅读器', icon: <WikipediaReaderIcon />, component: 'WikipediaReader', category: 'internet', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'advanced-data-viz', name: '高级数据可视化', icon: <AdvancedDataVizIcon />, component: 'AdvancedDataViz', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },

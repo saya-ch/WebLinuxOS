@@ -1,627 +1,913 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useStore } from '../store'
 
-interface CodeSnippet {
+interface Message {
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: Date
+}
+
+interface ChatSession {
   id: string
   title: string
-  code: string
-  language: string
-  createdAt: number
+  messages: Message[]
+  createdAt: Date
 }
 
-interface ChatMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: number
-}
+export default function AICodeAssistant() {
+  const theme = useStore((s) => s.theme)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sessions, setSessions] = useState<ChatSession[]>([])
+  const [currentSessionId, setCurrentSessionId] = useState<string>('')
+  const [selectedModel, setSelectedModel] = useState<'code' | 'chat' | 'explain'>('chat')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
-const LANGUAGES = [
-  'JavaScript', 'TypeScript', 'Python', 'HTML', 'CSS',
-  'React', 'Vue', 'Node.js', 'SQL', 'Java', 'C++', 'C#'
-]
+  // Initialize with welcome message
+  useEffect(() => {
+    const welcomeMessage: Message = {
+      role: 'assistant',
+      content: `👋 欢迎使用 AI 编程助手！
 
-const TEMPLATES = [
-  {
-    title: 'React 组件',
-    code: `import React, { useState } from 'react'
+这是一个集成了多种 AI 能力的智能助手，可以帮助您：
 
-export function MyComponent() {
-  const [count, setCount] = useState(0)
+• 代码生成与补全 - 栓写函数、类、算法等代码片段
+• 代码解释 - 详细解释复杂代码的工作原理
+• Bug 修复 - 分析和修复代码中的错误
+• 代码优化 - 提出性能和可读性改进建议
+• 文档生成 - 自动生成代码注释和文档
+
+使用方式：
+1. 选择模式（编程助手/代码解释/聊天对话）
+2. 输入您的需求或问题
+3. AI 将实时分析和响应
+
+注意：此应用使用本地模拟的 AI 响应来展示功能。您可以集成真实的 AI API（如 OpenAI、Anthropic Claude 等）来获得实际的 AI 能力。
+
+请输入您的问题开始使用！`,
+      timestamp: new Date()
+    }
+    setMessages([welcomeMessage])
+    
+    const sessionId = Date.now().toString()
+    setCurrentSessionId(sessionId)
+    setSessions([{
+      id: sessionId,
+      title: '新对话',
+      messages: [welcomeMessage],
+      createdAt: new Date()
+    }])
+  }, [])
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  // Generate AI response (simulated for demonstration)
+  const generateResponse = useCallback(async (userMessage: string): Promise<string> => {
+    // Simulate AI thinking delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+    
+    // Pattern matching for different types of queries
+    const patterns = {
+      code: [
+        { pattern: /function|函数|方法/i, response: generateCodeResponse },
+        { pattern: /class|类|对象/i, response: generateClassResponse },
+        { pattern: /algorithm|算法|sort|排序|search|搜索/i, response: generateAlgorithmResponse },
+        { pattern: /bug|error|错误|fix|修复/i, response: generateBugFixResponse },
+        { pattern: /optimize|优化|performance|性能/i, response: generateOptimizationResponse }
+      ],
+      explain: [
+        { pattern: /explain|解释|what|什么|how|如何|why|为什么/i, response: generateExplanationResponse }
+      ],
+      chat: [
+        { pattern: /hello|hi|你好|您好/i, response: generateGreetingResponse },
+        { pattern: /help|帮助|usage|使用/i, response: generateHelpResponse },
+        { pattern: /thanks|thank|谢谢|感谢/i, response: generateThanksResponse }
+      ]
+    }
+    
+    const modelPatterns = patterns[selectedModel] || patterns.chat
+    
+    for (const { pattern, response } of modelPatterns) {
+      if (pattern.test(userMessage)) {
+        return response(userMessage, selectedModel)
+      }
+    }
+    
+    // Default response based on mode
+    return generateDefaultResponse(userMessage, selectedModel)
+  }, [selectedModel])
+
+  // Response generators
+  function generateCodeResponse(query: string, mode: string): string {
+    const codeExamples = [
+      {
+        title: 'JavaScript 异步函数示例',
+        code: `async function fetchData(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(\`HTTP error! status: \${response.status}\`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
+}`
+      },
+      {
+        title: 'Python 快速排序算法',
+        code: `def quicksort(arr):
+    """
+    快速排序算法实现
+    时间复杂度: O(n log n)
+    """
+    if len(arr) <= 1:
+        return arr
+    
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    
+    return quicksort(left) + middle + quicksort(right)`
+      },
+      {
+        title: 'React 组件示例',
+        code: `import React, { useState, useEffect } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    document.title = \`Count: \${count}\`;
+  }, [count]);
   
   return (
     <div>
-      <h1>Hello World</h1>
       <p>Count: {count}</p>
       <button onClick={() => setCount(count + 1)}>
         Increment
       </button>
     </div>
-  )
-}`,
-    language: 'React'
-  },
-  {
-    title: 'Python 爬虫',
-    code: `import requests
-from bs4 import BeautifulSoup
-
-def scrape_website(url):
-    """简单的网页爬虫示例"""
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+  );
+}`
+      }
+    ]
     
-    # 提取所有链接
-    links = [a['href'] for a in soup.find_all('a', href=True)]
-    return links
+    const example = codeExamples[Math.floor(Math.random() * codeExamples.length)]
+    return `📝 **${example.title}**
 
-if __name__ == '__main__':
-    url = 'https://example.com'
-    print(scrape_website(url))`,
-    language: 'Python'
-  },
-  {
-    title: 'Node.js API',
-    code: `const express = require('express')
-const app = express()
-const PORT = 3000
+根据您的需求，这是一个代码示例：
 
-app.use(express.json())
+\`\`\`${example.title.includes('Python') ? 'python' : example.title.includes('React') ? 'jsx' : 'javascript'}
+${example.code}
+\`\`\`
 
-// 简单的用户API
-app.get('/api/users', (req, res) => {
-  res.json([
-    { id: 1, name: '张三' },
-    { id: 2, name: '李四' }
-  ])
-})
+**说明：**
+• 此代码经过优化，具有良好的错误处理
+• 支持异步操作和性能优化
+• 可根据您的具体需求进行调整
 
-app.post('/api/users', (req, res) => {
-  const user = req.body
-  res.status(201).json(user)
-})
-
-app.listen(PORT, () => {
-  console.log(\`Server running on http://localhost:\${PORT}\`)
-})`,
-    language: 'Node.js'
-  },
-  {
-    title: 'CSS 动画',
-    code: `/* 优雅的CSS动画示例 */
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+您可以复制此代码到项目中使用，或让我根据您的具体需求进行修改。`
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  function generateClassResponse(query: string, mode: string): string {
+    return `🏗️ **类设计示例**
+
+根据您的需求，这里是一个类的设计方案：
+
+\`\`\`typescript
+class UserManager {
+  private users: Map<string, User>;
+  private logger: Logger;
+  
+  constructor(logger: Logger) {
+    this.users = new Map();
+    this.logger = logger;
+  }
+  
+  addUser(user: User): boolean {
+    if (this.users.has(user.id)) {
+      this.logger.warn(\`User \${user.id} already exists\`);
+      return false;
+    }
+    this.users.set(user.id, user);
+    this.logger.info(\`Added user \${user.id}\`);
+    return true;
+  }
+  
+  getUser(id: string): User | undefined {
+    return this.users.get(id);
+  }
+  
+  removeUser(id: string): boolean {
+    const exists = this.users.delete(id);
+    if (exists) {
+      this.logger.info(\`Removed user \${id}\`);
+    }
+    return exists;
+  }
+  
+  getAllUsers(): User[] {
+    return Array.from(this.users.values());
   }
 }
+\`\`\`
 
-.glow {
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
-  animation: glow 2s ease-in-out infinite alternate;
+**设计要点：**
+• 使用 Map 存储用户数据，提高查找效率
+• 集成日志系统，便于调试和监控
+• 提供完整的 CRUD 操作方法
+• 类型安全，防止运行时错误
+
+如需调整设计，请告诉我具体需求！`
+  }
+
+  function generateAlgorithmResponse(query: string, mode: string): string {
+    const algorithms = [
+      {
+        name: '二分查找',
+        complexity: 'O(log n)',
+        code: `def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    
+    while left <= right:
+        mid = (left + right) // 2
+        
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    
+    return -1`
+      },
+      {
+        name: '深度优先搜索 (DFS)',
+        complexity: 'O(V + E)',
+        code: `def dfs(graph, start, visited=None):
+    if visited is None:
+        visited = set()
+    
+    visited.add(start)
+    print(start)
+    
+    for neighbor in graph[start]:
+        if neighbor not in visited:
+            dfs(graph, neighbor, visited)
+    
+    return visited`
+      }
+    ]
+    
+    const algo = algorithms[Math.floor(Math.random() * algorithms.length)]
+    return `🧮 **${algo.name}算法**
+
+时间复杂度: **${algo.complexity}**
+
+\`\`\`python
+${algo.code}
+\`\`\`
+
+**算法特点：**
+• 高效的数据查找/遍历策略
+• 适用于大规模数据处理
+• 空间复杂度优化
+• 可扩展性好
+
+想要其他算法或优化建议吗？`
+  }
+
+  function generateBugFixResponse(query: string, mode: string): string {
+    return `🔍 **Bug 分析与修复建议**
+
+根据您描述的问题，可能的原因包括：
+
+**常见 Bug 类型：**
+1. **内存泄漏** - 未正确释放资源
+2. **类型错误** - 类型转换或匹配问题
+3. **异步问题** - race condition 或回调处理不当
+4. **边界条件** - 未处理空值或极端情况
+5. **状态管理** - 状态更新不及时或不一致
+
+**调试步骤建议：**
+\`\`\`javascript
+// 1. 添加详细日志
+console.log('Debug:', variable);
+
+// 2. 使用断点调试
+debugger;
+
+// 3. 检查类型
+if (typeof variable !== 'expectedType') {
+  console.error('Type mismatch');
 }
 
-@keyframes glow {
-  from { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
-  to { box-shadow: 0 0 40px rgba(74, 222, 128, 0.8); }
-}`,
-    language: 'CSS'
-  }
-]
+// 4. 异步错误处理
+try {
+  await asyncOperation();
+} catch (error) {
+  console.error('Async error:', error);
+}
+\`\`\`
 
-export default function AICodeAssistant() {
-  const [code, setCode] = useState('')
-  const [language, setLanguage] = useState('JavaScript')
-  const [snippets, setSnippets] = useState<CodeSnippet[]>(() => {
-    const saved = localStorage.getItem('weblinux_snippets')
-    return saved ? JSON.parse(saved) : []
-  })
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      id: '1',
-      role: 'assistant',
-      content: '你好！我是AI代码助手。我可以帮你：\n\n1. 生成代码模板\n2. 解释代码\n3. 修复bug\n4. 优化代码\n\n有什么我可以帮助你的吗？',
-      timestamp: Date.now()
-    }
-  ])
-  const [input, setInput] = useState('')
-  const [activeTab, setActiveTab] = useState<'editor' | 'chat' | 'snippets'>('editor')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+**最佳实践：**
+• 使用 TypeScript 进行类型检查
+• 实现单元测试覆盖关键逻辑
+• 添加 ESLint 规则防止常见错误
+• 使用 Error Boundary 处理组件错误
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+请提供具体的代码片段或错误信息，我可以给出更精准的修复方案！`
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+  function generateOptimizationResponse(query: string, mode: string): string {
+    return `⚡ **性能优化建议**
 
-  useEffect(() => {
-    localStorage.setItem('weblinux_snippets', JSON.stringify(snippets))
-  }, [snippets])
+根据您的需求，以下是关键优化策略：
 
-  const saveSnippet = useCallback(() => {
-    const title = prompt('请输入代码片段标题：') || '未命名'
-    const newSnippet: CodeSnippet = {
-      id: Date.now().toString(),
-      title,
-      code,
-      language,
-      createdAt: Date.now()
-    }
-    setSnippets(prev => [newSnippet, ...prev])
-  }, [code, language])
+**JavaScript 优化：**
+\`\`\`javascript
+// 1. 使用 Web Workers 处理耗时任务
+const worker = new Worker('worker.js');
 
-  const loadSnippet = useCallback((snippet: CodeSnippet) => {
-    setCode(snippet.code)
-    setLanguage(snippet.language)
-    setActiveTab('editor')
-  }, [])
+// 2. 虚拟化长列表渲染
+import { FixedSizeList } from 'react-window';
 
-  const deleteSnippet = useCallback((id: string) => {
-    if (confirm('确定要删除这个代码片段吗？')) {
-      setSnippets(prev => prev.filter(s => s.id !== id))
-    }
-  }, [])
+// 3. 缓存计算结果
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 
-  const generateResponse = useCallback((userInput: string): string => {
-    const lowerInput = userInput.toLowerCase()
-    
-    if (lowerInput.includes('react') || lowerInput.includes('组件')) {
-      return '这是一个React组件示例：\n\n```jsx\nimport { useState } from \'react\'\n\nexport function Counter() {\n  const [count, setCount] = useState(0)\n  \n  return (\n    <div>\n      <h2>计数器: {count}</h2>\n      <button onClick={() => setCount(c => c + 1)}>增加</button>\n      <button onClick={() => setCount(c => c - 1)}>减少</button>\n    </div>\n  )\n}\n```\n\n这个组件展示了React useState的基本用法。'
-    }
-    
-    if (lowerInput.includes('python') || lowerInput.includes('爬虫')) {
-      return '这是一个Python爬虫示例：\n\n```python\nimport requests\nfrom bs4 import BeautifulSoup\n\ndef scrape(url):\n    res = requests.get(url)\n    soup = BeautifulSoup(res.text, \'html.parser\')\n    return soup.find_all(\'a\')\n```\n\n这使用了requests和BeautifulSoup库来爬取网页内容。'
-    }
-    
-    if (lowerInput.includes('api') || lowerInput.includes('接口')) {
-      return '设计RESTful API的最佳实践：\n\n1. 使用名词复数形式 (如 /users, /posts)\n2. 使用正确的HTTP方法 (GET, POST, PUT, DELETE)\n3. 返回合适的状态码\n4. 提供版本控制 (如 /api/v1/users)\n\n示例响应：\n```json\n{\n  "success": true,\n  "data": { "id": 1, "name": "张三" }\n}\n```'
-    }
-    
-    if (lowerInput.includes('css') || lowerInput.includes('动画')) {
-      return 'CSS动画技巧：\n\n```css\n.animate {\n  animation: slideIn 0.3s ease-out;\n}\n\n@keyframes slideIn {\n  from {\n    opacity: 0;\n    transform: translateX(-20px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n```\n\n使用CSS变量可以让动画更容易维护。'
-    }
-    
-    return '我理解你的问题了！这里有一些建议：\n\n1. 首先明确你想要实现什么功能\n2. 考虑使用什么技术栈\n3. 从简单的示例开始\n4. 逐步优化和重构\n\n你想让我帮你生成什么类型的代码呢？'
-  }, [])
+// 4. 懒加载组件
+const LazyComponent = React.lazy(() => import('./HeavyComponent'));
+\`\`\`
 
-  const sendMessage = useCallback(() => {
-    if (!input.trim()) return
+**React 优化清单：**
+• ✓ 使用 React.memo 防止不必要的重新渲染
+• ✓ useCallback 缓存回调函数
+• ✓ 代码分割减少初始加载时间
+• ✓ 图片优化和懒加载
+• ✓ 使用 CSS containment 提升渲染性能
+
+**性能指标目标：**
+• First Paint: < 1s
+• Time to Interactive: < 3s
+• Bundle Size: < 200KB
+• Lighthouse Score: > 90
+
+请告诉我您要优化的具体代码或场景！`
+  }
+
+  function generateExplanationResponse(query: string, mode: string): string {
+    return `📚 **代码解释**
+
+您请求的代码概念解释如下：
+
+**核心概念：**
+
+1. **异步编程**
+   - Promise: 表示未来完成或失败的操作
+   - async/await: 使异步代码看起来像同步代码
+   - 使用场景: API 调用、文件操作、定时器
+
+2. **闭包**
+   - 函数记住其创建时的变量环境
+   - 用于数据私有化和函数工厂
+   - 注意内存泄漏风险
+
+3. **原型链**
+   - JavaScript 的继承机制
+   - 对象通过 __proto__ 链接
+   - 用于共享方法和属性
+
+4. **事件循环**
+   - JavaScript 的执行模型
+   - 宏任务 vs 微任务
+   - 理解定时器和 Promise 的执行顺序
+
+**示例说明：**
+\`\`\`javascript
+// 闭包示例
+function createCounter() {
+  let count = 0; // 私有变量
+  
+  return {
+    increment: () => ++count,
+    decrement: () => --count,
+    getCount: () => count
+  };
+}
+
+const counter = createCounter();
+counter.increment(); // 1
+counter.increment(); // 2
+console.log(counter.getCount()); // 2
+\`\`\`
+
+需要更详细的某个概念解释吗？`
+  }
+
+  function generateGreetingResponse(query: string, mode: string): string {
+    return `👋 很高兴见到您！
+
+我是您的 AI 编程助手，可以帮您解决各种编程问题：
+
+• 栓写和优化代码
+• 解释复杂的编程概念
+• 分析和修复 Bug
+• 提供最佳实践建议
+• 生成文档和注释
+
+请告诉我您需要什么帮助？您可以：
+1. 描述一个编程问题
+2. 请求代码示例
+3. 询问技术概念
+4. 提交代码片段进行分析`
+  }
+
+  function generateHelpResponse(query: string, mode: string): string {
+    return `📖 **使用指南**
+
+**AI 编程助手支持以下功能：**
+
+**模式选择：**
+• 🤖 编程助手 - 生成、优化、修复代码
+• 💡 代码解释 - 详细解释代码原理和概念
+• 💬 聊天对话 - 一般编程讨论和建议
+
+**交互方式：**
+1. 自然语言描述需求
+2. 提供代码片段请求分析
+3. 提出具体技术问题
+4. 请求算法或实现示例
+
+**示例提问：**
+• "帮我写一个排序函数"
+• "这段代码有什么 Bug？"
+• "解释一下 Promise 的工作原理"
+• "优化这个 React 组件的性能"
+
+**提示：**
+• 问题描述越具体，回答越精准
+• 提供代码片段可以获得针对性建议
+• 可以要求特定语言或框架的示例
+
+准备好了吗？请输入您的问题！`
+  }
+
+  function generateThanksResponse(query: string, mode: string): string {
+    return `😊 不客气！
+
+很高兴能帮到您。如果还有其他问题，随时可以继续提问。
+
+**您还可以尝试：**
+• 请求更多代码示例
+• 深入某个技术话题
+• 分享您遇到的实际问题
+• 探讨最佳实践和设计模式
+
+我会持续为您提供帮助！`
+  }
+
+  function generateDefaultResponse(query: string, mode: string): string {
+    const modeResponses = {
+      code: `💻 我理解您需要编程方面的帮助。
+
+请告诉我：
+• 您要实现什么功能？
+• 使用哪种编程语言？
+• 有什么特定的要求或约束？
+
+我可以为您：
+• 生成完整代码示例
+• 提供多种实现方案
+• 分析性能和优化机会
+• 生成测试用例
+
+请详细描述您的需求，我会给出针对性的建议！`,
+      explain: `💡 我可以帮助您理解编程概念。
+
+您想了解：
+• JavaScript/TypeScript 特性
+• React/Vue 框架原理
+• 算法和数据结构
+• 设计模式和架构
+• 性能优化策略
+
+请提出具体问题，我会详细解释！`,
+      chat: `💬 我在这里随时帮助您！
+
+作为编程助手，我可以：
+• 解答技术问题
+• 提供代码建议
+• 分享最佳实践
+• 协助解决 Bug
+• 探讨技术选型
+
+请继续提问或描述您的需求！`
+    }
     
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+    return modeResponses[mode] || modeResponses.chat
+  }
+
+  // Handle send message
+  const handleSend = useCallback(async () => {
+    if (!input.trim() || loading) return
+    
+    const userMessage: Message = {
       role: 'user',
-      content: input,
-      timestamp: Date.now()
+      content: input.trim(),
+      timestamp: new Date()
     }
     
     setMessages(prev => [...prev, userMessage])
     setInput('')
+    setLoading(true)
     
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: generateResponse(input),
-        timestamp: Date.now()
-      }
-      setMessages(prev => [...prev, aiMessage])
-    }, 800)
-  }, [input, generateResponse])
-
-  const formatCode = useCallback(() => {
     try {
-      if (language === 'JSON') {
-        setCode(JSON.stringify(JSON.parse(code), null, 2))
-      } else {
-        setCode(code.split('\\n').map(line => line.trim()).join('\\n'))
+      const response = await generateResponse(userMessage.content)
+      
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: response,
+        timestamp: new Date()
       }
-    } catch {
-      alert('代码格式化失败，请检查语法')
+      
+      setMessages(prev => [...prev, assistantMessage])
+      
+      // Update session
+      setSessions(prev => prev.map(session => 
+        session.id === currentSessionId 
+          ? { ...session, messages: [...session.messages, userMessage, assistantMessage], title: session.messages.length === 1 ? input.trim().substring(0, 30) : session.title }
+          : session
+      ))
+    } catch (error) {
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: '抱歉，处理您的请求时出现错误。请稍后再试。',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
+      setLoading(false)
+      inputRef.current?.focus()
     }
-  }, [code, language])
+  }, [input, loading, generateResponse, currentSessionId])
 
-  const copyCode = useCallback(() => {
-    navigator.clipboard.writeText(code)
-    alert('代码已复制到剪贴板')
-  }, [code])
-
-  const clearCode = useCallback(() => {
-    if (confirm('确定要清空代码吗？')) {
-      setCode('')
+  // Create new session
+  const createNewSession = useCallback(() => {
+    const sessionId = Date.now().toString()
+    const welcomeMessage: Message = {
+      role: 'assistant',
+      content: '🆕 新对话已创建。请输入您的问题或需求，我会尽力帮助您！',
+      timestamp: new Date()
     }
+    
+    setCurrentSessionId(sessionId)
+    setMessages([welcomeMessage])
+    setSessions(prev => [...prev, {
+      id: sessionId,
+      title: '新对话',
+      messages: [welcomeMessage],
+      createdAt: new Date()
+    }])
   }, [])
 
-  return (
-    <div className="app-container" style={{
+  // Switch session
+  const switchSession = useCallback((sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId)
+    if (session) {
+      setCurrentSessionId(sessionId)
+      setMessages(session.messages)
+    }
+  }, [sessions])
+
+  // Delete session
+  const deleteSession = useCallback((sessionId: string) => {
+    setSessions(prev => prev.filter(s => s.id !== sessionId))
+    if (sessionId === currentSessionId && sessions.length > 1) {
+      const remainingSession = sessions.find(s => s.id !== sessionId)
+      if (remainingSession) {
+        switchSession(remainingSession.id)
+      } else {
+        createNewSession()
+      }
+    }
+  }, [currentSessionId, sessions, switchSession, createNewSession])
+
+  const styles = useMemo(() => ({
+    container: {
+      display: 'flex',
       height: '100%',
+      background: theme === 'light' ? '#f5f5f7' : 'rgba(20, 20, 35, 0.95)',
+      color: theme === 'light' ? '#1c1c1e' : '#f0f0ff'
+    },
+    sidebar: {
+      width: '260px',
+      background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
+      borderRight: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(139, 124, 240, 0.2)'}`,
       display: 'flex',
       flexDirection: 'column',
-      background: 'linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%)',
+      padding: '16px'
+    },
+    mainContent: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '20px'
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '20px',
+      padding: '16px',
+      background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
+      borderRadius: '12px',
+      border: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(139, 124, 240, 0.2)'}`,
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+    },
+    title: {
+      fontSize: '20px',
+      fontWeight: 700,
+      background: theme === 'light' 
+        ? 'linear-gradient(135deg, #007aff 0%, #409cff 100%)'
+        : 'linear-gradient(135deg, #e8e8f4 0%, #a29bfe 50%, #8b7cf0 100%)',
+      backgroundClip: 'text',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
+    },
+    modelSelector: {
+      display: 'flex',
+      gap: '8px',
+      padding: '8px',
+      background: theme === 'light' ? 'rgba(245, 245, 247, 0.5)' : 'rgba(22, 22, 38, 0.4)',
+      borderRadius: '8px'
+    },
+    modelButton: {
+      padding: '8px 16px',
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: '13px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      background: theme === 'light' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(26, 26, 46, 0.4)',
+      color: theme === 'light' ? '#1c1c1e' : '#f0f0ff'
+    },
+    activeModel: {
+      background: theme === 'light' ? '#007aff' : '#9b8af0',
       color: '#fff'
-    }}>
-      <div style={{
-        padding: '16px',
-        background: 'rgba(255,255,255,0.03)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-        display: 'flex',
-        gap: '8px',
-        alignItems: 'center'
-      }}>
-        <button
-          onClick={() => setActiveTab('editor')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'editor' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          ✏️ 代码编辑器
-        </button>
-        <button
-          onClick={() => setActiveTab('chat')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'chat' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          💬 AI 对话
-        </button>
-        <button
-          onClick={() => setActiveTab('snippets')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            background: activeTab === 'snippets' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          📚 代码片段
-        </button>
-      </div>
+    },
+    messagesContainer: {
+      flex: 1,
+      overflowY: 'auto',
+      marginBottom: '20px',
+      padding: '16px',
+      background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
+      borderRadius: '12px',
+      border: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(139, 124, 240, 0.2)'}`,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
+    },
+    message: {
+      padding: '12px 16px',
+      borderRadius: '8px',
+      maxWidth: '80%',
+      wordWrap: 'break-word',
+      whiteSpace: 'pre-wrap'
+    },
+    userMessage: {
+      alignSelf: 'flex-end',
+      background: theme === 'light' ? '#007aff' : '#9b8af0',
+      color: '#fff'
+    },
+    assistantMessage: {
+      alignSelf: 'flex-start',
+      background: theme === 'light' ? 'rgba(245, 245, 247, 0.8)' : 'rgba(22, 22, 38, 0.5)',
+      border: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(139, 124, 240, 0.2)'}`,
+      color: theme === 'light' ? '#1c1c1e' : '#f0f0ff'
+    },
+    inputContainer: {
+      display: 'flex',
+      gap: '12px',
+      alignItems: 'flex-end'
+    },
+    inputArea: {
+      flex: 1,
+      padding: '12px 16px',
+      background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
+      borderRadius: '8px',
+      border: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(139, 124, 240, 0.2)'}`,
+      resize: 'none',
+      minHeight: '48px',
+      maxHeight: '200px',
+      fontSize: '14px',
+      color: theme === 'light' ? '#1c1c1e' : '#f0f0ff',
+      outline: 'none',
+      fontFamily: "'Segoe UI', system-ui, sans-serif"
+    },
+    sendButton: {
+      padding: '12px 24px',
+      background: theme === 'light' ? '#007aff' : '#9b8af0',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '14px',
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      opacity: loading ? 0.6 : 1
+    },
+    sessionItem: {
+      padding: '10px 12px',
+      marginBottom: '6px',
+      background: theme === 'light' ? 'rgba(245, 245, 247, 0.5)' : 'rgba(22, 22, 38, 0.4)',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      fontSize: '13px',
+      transition: 'background 0.15s ease'
+    },
+    activeSession: {
+      background: theme === 'light' ? 'rgba(0, 122, 255, 0.1)' : 'rgba(139, 124, 240, 0.2)',
+      border: `1px solid ${theme === 'light' ? 'rgba(0, 122, 255, 0.3)' : 'rgba(139, 124, 240, 0.4)'}`
+    },
+    loadingIndicator: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '12px',
+      background: theme === 'light' ? 'rgba(245, 245, 247, 0.8)' : 'rgba(22, 22, 38, 0.5)',
+      borderRadius: '8px',
+      alignSelf: 'flex-start',
+      fontSize: '13px',
+      color: theme === 'light' ? '#8e8e93' : '#9090c0'
+    },
+    spinner: {
+      width: '16px',
+      height: '16px',
+      border: `2px solid ${theme === 'light' ? 'rgba(0, 122, 255, 0.2)' : 'rgba(139, 124, 240, 0.2)'}`,
+      borderTop: `2px solid ${theme === 'light' ? '#007aff' : '#9b8af0'}`,
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite'
+    },
+    newSessionBtn: {
+      padding: '10px 16px',
+      background: theme === 'light' ? '#007aff' : '#9b8af0',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '13px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      marginBottom: '12px',
+      width: '100%'
+    },
+    deleteBtn: {
+      padding: '4px 8px',
+      background: 'rgba(255, 59, 48, 0.1)',
+      color: '#ff3b30',
+      border: 'none',
+      borderRadius: '4px',
+      fontSize: '11px',
+      cursor: 'pointer'
+    }
+  }), [theme, loading])
 
-      {activeTab === 'editor' && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{
-            padding: '12px 16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '12px',
-            borderBottom: '1px solid rgba(255,255,255,0.05)'
-          }}>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
+  return (
+    <div style={styles.container}>
+      {/* Sidebar */}
+      <div style={styles.sidebar}>
+        <button style={styles.newSessionBtn} onClick={createNewSession}>
+          + 新对话
+        </button>
+        
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {sessions.map(session => (
+            <div 
+              key={session.id}
               style={{
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255,255,255,0.05)',
-                color: '#fff',
-                fontSize: '14px',
-                cursor: 'pointer'
+                ...styles.sessionItem,
+                ...(session.id === currentSessionId ? styles.activeSession : {})
+              }}
+              onClick={() => switchSession(session.id)}
+              onMouseEnter={(e) => {
+                if (session.id !== currentSessionId) {
+                  e.currentTarget.style.background = theme === 'light' ? 'rgba(0, 122, 255, 0.05)' : 'rgba(139, 124, 240, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (session.id !== currentSessionId) {
+                  e.currentTarget.style.background = theme === 'light' ? 'rgba(245, 245, 247, 0.5)' : 'rgba(22, 22, 38, 0.4)'
+                }
               }}
             >
-              {LANGUAGES.map(lang => (
-                <option key={lang} value={lang}>{lang}</option>
-              ))}
-            </select>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={formatCode}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'rgba(74, 222, 128, 0.2)',
-                  color: '#4ade80',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                🎨 格式化
-              </button>
-              <button
-                onClick={copyCode}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'rgba(59, 130, 246, 0.2)',
-                  color: '#60a5fa',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📋 复制
-              </button>
-              <button
-                onClick={saveSnippet}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                💾 保存
-              </button>
-              <button
-                onClick={clearCode}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  color: '#ef4444',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                🗑️ 清空
-              </button>
-            </div>
-          </div>
-
-          <div style={{ flex: 1, padding: '16px', overflow: 'hidden' }}>
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="在此输入代码..."
-              style={{
-                width: '100%',
-                height: '100%',
-                background: 'rgba(0,0,0,0.3)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '12px',
-                padding: '16px',
-                color: '#e0e0e0',
-                fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                fontSize: '14px',
-                lineHeight: '1.6',
-                resize: 'none',
-                outline: 'none'
-              }}
-              spellCheck={false}
-            />
-          </div>
-
-          <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>快速模板：</div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {TEMPLATES.map((template, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setCode(template.code)
-                    setLanguage(template.language)
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#a0a0c0',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    transition: 'all 0.2s ease'
+              <span>{session.title}</span>
+              {sessions.length > 1 && (
+                <button 
+                  style={styles.deleteBtn}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    deleteSession(session.id)
                   }}
                 >
-                  {template.title}
+                  删除
                 </button>
-              ))}
+              )}
             </div>
-          </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {activeTab === 'chat' && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px'
-          }}>
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{
-                  alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '80%',
-                  background: msg.role === 'user'
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : 'rgba(255,255,255,0.05)',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {msg.content}
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          
-          <div style={{
-            padding: '16px',
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex',
-            gap: '12px'
-          }}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder="输入你的问题..."
-              style={{
-                flex: 1,
-                padding: '12px 16px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255,255,255,0.05)',
-                color: '#fff',
-                fontSize: '14px',
-                outline: 'none'
-              }}
-            />
-            <button
-              onClick={sendMessage}
-              style={{
-                padding: '12px 24px',
-                borderRadius: '12px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                transition: 'all 0.2s ease'
-              }}
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        {/* Header */}
+        <div style={styles.header}>
+          <div style={styles.title}>AI 编程助手</div>
+          <div style={styles.modelSelector}>
+            <button 
+              style={{...styles.modelButton, ...(selectedModel === 'code' ? styles.activeModel : {})}}
+              onClick={() => setSelectedModel('code')}
             >
-              发送 🚀
+              💻 编程助手
+            </button>
+            <button 
+              style={{...styles.modelButton, ...(selectedModel === 'explain' ? styles.activeModel : {})}}
+              onClick={() => setSelectedModel('explain')}
+            >
+              💡 代码解释
+            </button>
+            <button 
+              style={{...styles.modelButton, ...(selectedModel === 'chat' ? styles.activeModel : {})}}
+              onClick={() => setSelectedModel('chat')}
+            >
+              💬 聊天对话
             </button>
           </div>
         </div>
-      )}
 
-      {activeTab === 'snippets' && (
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-            {snippets.map((snippet) => (
-              <div
-                key={snippet.id}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '12px'
-                }}>
-                  <div>
-                    <h3 style={{ fontSize: '15px', fontWeight: '600', margin: '0 0 4px 0' }}>{snippet.title}</h3>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                      {snippet.language} · {new Date(snippet.createdAt).toLocaleDateString('zh-CN')}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => deleteSnippet(snippet.id)}
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: 'rgba(239, 68, 68, 0.2)',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}
-                  >
-                    🗑️
-                  </button>
-                </div>
-                <pre style={{
-                  margin: '0',
-                  padding: '12px',
-                  background: 'rgba(0,0,0,0.3)',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  overflow: 'auto',
-                  maxHeight: '150px',
-                  color: 'rgba(255,255,255,0.8)'
-                }}>
-                  {snippet.code.length > 300 ? snippet.code.slice(0, 300) + '...' : snippet.code}
-                </pre>
-                <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => loadSnippet(snippet)}
-                    style={{
-                      flex: 1,
-                      padding: '8px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: 'rgba(74, 222, 128, 0.2)',
-                      color: '#4ade80',
-                      cursor: 'pointer',
-                      fontSize: '13px'
-                    }}
-                  >
-                    加载
-                  </button>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(snippet.code)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: 'rgba(59, 130, 246, 0.2)',
-                      color: '#60a5fa',
-                      cursor: 'pointer',
-                      fontSize: '13px'
-                    }}
-                  >
-                    📋
-                  </button>
-                </div>
+        {/* Messages */}
+        <div style={styles.messagesContainer}>
+          {messages.map((message, index) => (
+            <div 
+              key={index}
+              style={{
+                ...styles.message,
+                ...(message.role === 'user' ? styles.userMessage : styles.assistantMessage)
+              }}
+            >
+              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '4px' }}>
+                {message.role === 'user' ? '您' : 'AI'} • {message.timestamp.toLocaleTimeString()}
               </div>
-            ))}
-          </div>
+              <div>{message.content}</div>
+            </div>
+          ))}
           
-          {snippets.length === 0 && (
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              color: 'rgba(255,255,255,0.5)'
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
-              <p>还没有保存任何代码片段</p>
-              <p style={{ fontSize: '14px' }}>在代码编辑器中保存你的第一个片段吧！</p>
+          {loading && (
+            <div style={styles.loadingIndicator}>
+              <div style={styles.spinner}></div>
+              <span>AI 正在思考...</span>
             </div>
           )}
+          
+          <div ref={messagesEndRef}></div>
         </div>
-      )}
+
+        {/* Input */}
+        <div style={styles.inputContainer}>
+          <textarea
+            ref={inputRef}
+            style={styles.inputArea}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSend()
+              }
+            }}
+            placeholder="输入您的编程问题... (Shift+Enter 换行)"
+            disabled={loading}
+          />
+          <button 
+            style={styles.sendButton}
+            onClick={handleSend}
+            disabled={loading || !input.trim()}
+          >
+            {loading ? '发送中...' : '发送'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
