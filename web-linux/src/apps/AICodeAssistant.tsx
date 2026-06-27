@@ -94,16 +94,16 @@ export default function AICodeAssistant() {
     
     for (const { pattern, response } of modelPatterns) {
       if (pattern.test(userMessage)) {
-        return response(userMessage, selectedModel)
+        return response()
       }
     }
     
     // Default response based on mode
-    return generateDefaultResponse(userMessage, selectedModel)
+    return generateDefaultResponse(selectedModel)
   }, [selectedModel])
 
   // Response generators
-  function generateCodeResponse(query: string, mode: string): string {
+  function generateCodeResponse(): string {
     const codeExamples = [
       {
         title: 'JavaScript 异步函数示例',
@@ -178,7 +178,7 @@ ${example.code}
 您可以复制此代码到项目中使用，或让我根据您的具体需求进行修改。`
   }
 
-  function generateClassResponse(query: string, mode: string): string {
+  function generateClassResponse(): string {
     return `🏗️ **类设计示例**
 
 根据您的需求，这里是一个类的设计方案：
@@ -230,7 +230,7 @@ class UserManager {
 如需调整设计，请告诉我具体需求！`
   }
 
-  function generateAlgorithmResponse(query: string, mode: string): string {
+  function generateAlgorithmResponse(): string {
     const algorithms = [
       {
         name: '二分查找',
@@ -286,7 +286,7 @@ ${algo.code}
 想要其他算法或优化建议吗？`
   }
 
-  function generateBugFixResponse(query: string, mode: string): string {
+  function generateBugFixResponse(): string {
     return `🔍 **Bug 分析与修复建议**
 
 根据您描述的问题，可能的原因包括：
@@ -328,7 +328,7 @@ try {
 请提供具体的代码片段或错误信息，我可以给出更精准的修复方案！`
   }
 
-  function generateOptimizationResponse(query: string, mode: string): string {
+  function generateOptimizationResponse(): string {
     return `⚡ **性能优化建议**
 
 根据您的需求，以下是关键优化策略：
@@ -364,7 +364,7 @@ const LazyComponent = React.lazy(() => import('./HeavyComponent'));
 请告诉我您要优化的具体代码或场景！`
   }
 
-  function generateExplanationResponse(query: string, mode: string): string {
+  function generateExplanationResponse(): string {
     return `📚 **代码解释**
 
 您请求的代码概念解释如下：
@@ -413,7 +413,7 @@ console.log(counter.getCount()); // 2
 需要更详细的某个概念解释吗？`
   }
 
-  function generateGreetingResponse(query: string, mode: string): string {
+  function generateGreetingResponse(): string {
     return `👋 很高兴见到您！
 
 我是您的 AI 编程助手，可以帮您解决各种编程问题：
@@ -431,7 +431,7 @@ console.log(counter.getCount()); // 2
 4. 提交代码片段进行分析`
   }
 
-  function generateHelpResponse(query: string, mode: string): string {
+  function generateHelpResponse(): string {
     return `📖 **使用指南**
 
 **AI 编程助手支持以下功能：**
@@ -461,7 +461,7 @@ console.log(counter.getCount()); // 2
 准备好了吗？请输入您的问题！`
   }
 
-  function generateThanksResponse(query: string, mode: string): string {
+  function generateThanksResponse(): string {
     return `😊 不客气！
 
 很高兴能帮到您。如果还有其他问题，随时可以继续提问。
@@ -475,8 +475,8 @@ console.log(counter.getCount()); // 2
 我会持续为您提供帮助！`
   }
 
-  function generateDefaultResponse(query: string, mode: string): string {
-    const modeResponses = {
+  function generateDefaultResponse(mode: string): string {
+    const modeResponses: Record<string, string> = {
       code: `💻 我理解您需要编程方面的帮助。
 
 请告诉我：
@@ -603,7 +603,7 @@ console.log(counter.getCount()); // 2
 
   const styles = useMemo(() => ({
     container: {
-      display: 'flex',
+      display: 'flex' as const,
       height: '100%',
       background: theme === 'light' ? '#f5f5f7' : 'rgba(20, 20, 35, 0.95)',
       color: theme === 'light' ? '#1c1c1e' : '#f0f0ff'
@@ -612,20 +612,20 @@ console.log(counter.getCount()); // 2
       width: '260px',
       background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
       borderRight: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(139, 124, 240, 0.2)'}`,
-      display: 'flex',
-      flexDirection: 'column',
+      display: 'flex' as const,
+      flexDirection: 'column' as const,
       padding: '16px'
     },
     mainContent: {
       flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
+      display: 'flex' as const,
+      flexDirection: 'column' as const,
       padding: '20px'
     },
     header: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      display: 'flex' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
       marginBottom: '20px',
       padding: '16px',
       background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
@@ -644,7 +644,7 @@ console.log(counter.getCount()); // 2
       WebkitTextFillColor: 'transparent'
     },
     modelSelector: {
-      display: 'flex',
+      display: 'flex' as const,
       gap: '8px',
       padding: '8px',
       background: theme === 'light' ? 'rgba(245, 245, 247, 0.5)' : 'rgba(22, 22, 38, 0.4)',
@@ -667,22 +667,22 @@ console.log(counter.getCount()); // 2
     },
     messagesContainer: {
       flex: 1,
-      overflowY: 'auto',
+      overflowY: 'auto' as const,
       marginBottom: '20px',
       padding: '16px',
       background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
       borderRadius: '12px',
       border: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(139, 124, 240, 0.2)'}`,
-      display: 'flex',
-      flexDirection: 'column',
+      display: 'flex' as const,
+      flexDirection: 'column' as const,
       gap: '16px'
     },
     message: {
       padding: '12px 16px',
       borderRadius: '8px',
       maxWidth: '80%',
-      wordWrap: 'break-word',
-      whiteSpace: 'pre-wrap'
+      wordWrap: 'break-word' as const,
+      whiteSpace: 'pre-wrap' as const
     },
     userMessage: {
       alignSelf: 'flex-end',
@@ -696,9 +696,9 @@ console.log(counter.getCount()); // 2
       color: theme === 'light' ? '#1c1c1e' : '#f0f0ff'
     },
     inputContainer: {
-      display: 'flex',
+      display: 'flex' as const,
       gap: '12px',
-      alignItems: 'flex-end'
+      alignItems: 'flex-end' as const
     },
     inputArea: {
       flex: 1,
@@ -706,7 +706,7 @@ console.log(counter.getCount()); // 2
       background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 46, 0.6)',
       borderRadius: '8px',
       border: `1px solid ${theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(139, 124, 240, 0.2)'}`,
-      resize: 'none',
+      resize: 'none' as const,
       minHeight: '48px',
       maxHeight: '200px',
       fontSize: '14px',
@@ -731,10 +731,10 @@ console.log(counter.getCount()); // 2
       marginBottom: '6px',
       background: theme === 'light' ? 'rgba(245, 245, 247, 0.5)' : 'rgba(22, 22, 38, 0.4)',
       borderRadius: '6px',
-      cursor: 'pointer',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      cursor: 'pointer' as const,
+      display: 'flex' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
       fontSize: '13px',
       transition: 'background 0.15s ease'
     },
@@ -743,8 +743,8 @@ console.log(counter.getCount()); // 2
       border: `1px solid ${theme === 'light' ? 'rgba(0, 122, 255, 0.3)' : 'rgba(139, 124, 240, 0.4)'}`
     },
     loadingIndicator: {
-      display: 'flex',
-      alignItems: 'center',
+      display: 'flex' as const,
+      alignItems: 'center' as const,
       gap: '8px',
       padding: '12px',
       background: theme === 'light' ? 'rgba(245, 245, 247, 0.8)' : 'rgba(22, 22, 38, 0.5)',

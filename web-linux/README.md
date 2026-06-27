@@ -24,6 +24,7 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 ### Development Tools
 
 - Code editor with syntax highlighting for 20+ languages
+- AI code assistant with multiple modes (code generation, explanation, chat)
 - REST API tester with request builder
 - JSON formatter and validator
 - Interactive regex builder and tester
@@ -54,6 +55,7 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 - Clipboard manager with history
 - Weather app (real-time data from Open-Meteo)
 - Online API hub (NASA, news, cryptocurrency)
+- Real-time dashboard with weather, news, and crypto data
 
 ### Multimedia & Entertainment
 
@@ -193,4 +195,4 @@ To add a new application:
 
 MIT License - Free for personal or commercial use.
 
-Version: 7.0.0 | Last Updated: 2026
+Version: 9.0.0 | Last Updated: 2026

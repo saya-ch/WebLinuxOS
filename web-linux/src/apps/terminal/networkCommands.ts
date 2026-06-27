@@ -31,6 +31,11 @@ registerCommand('help', {
       'fetch': { description: '获取URL内容(简化版)', usage: 'fetch URL' },
       'ping': { description: '测试网络连接', usage: 'ping 主机' },
       'ip': { description: '显示网络接口信息', usage: 'ip [选项]' },
+      'ipinfo': { description: '查询IP详细信息', usage: 'ipinfo [IP地址]' },
+      'weather': { description: '查询天气', usage: 'weather [城市名]' },
+      'news': { description: '获取最新新闻', usage: 'news' },
+      'crypto': { description: '查看加密货币行情', usage: 'crypto' },
+      'translate': { description: '文本翻译', usage: 'translate <语言> <文本>' },
       'env': { description: '显示环境变量', usage: 'env' },
       'echo': { description: '输出文本', usage: 'echo [选项] 文本' },
       'clear': { description: '清空终端', usage: 'clear' },
@@ -282,7 +287,6 @@ registerCommand('ip', {
     const output: string[] = ['网络信息:', '']
     
     try {
-      // 使用真实IP信息API
       const response = await fetch('https://ipapi.co/json/', {
         method: 'GET',
         mode: 'cors'
@@ -308,10 +312,8 @@ registerCommand('ip', {
       output.push('')
     }
     
-    // 显示浏览器网络信息
     output.push('=== 浏览器连接信息 ===')
     
-    // 检测连接类型
     if ('connection' in navigator) {
       const conn = (navigator as unknown as { connection: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean } }).connection
       if (conn) {
@@ -347,4 +349,190 @@ registerCommand('ip', {
   description: '显示真实网络接口信息',
   usage: 'ip',
   examples: ['ip']
+})
+
+registerCommand('weather', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const city = args.join(' ') || 'Beijing'
+    
+    try {
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=7453d2a41f7f66d4f4c227ee7d9371e7&units=metric&lang=zh_cn`, {
+        method: 'GET',
+        mode: 'cors'
+      })
+      
+      if (!response.ok) {
+        return { output: `天气查询失败: ${response.statusText}` }
+      }
+      
+      const data = await response.json()
+      const output = [
+        `🌤️ ${data.name}, ${data.sys.country}`,
+        '',
+        `天气: ${data.weather[0].description}`,
+        `温度: ${Math.round(data.main.temp)}°C (体感 ${Math.round(data.main.feels_like)}°C)`,
+        `最高: ${Math.round(data.main.temp_max)}°C / 最低: ${Math.round(data.main.temp_min)}°C`,
+        `湿度: ${data.main.humidity}%`,
+        `风速: ${data.wind.speed} m/s`,
+        `气压: ${data.main.pressure} hPa`,
+        `能见度: ${data.visibility ? data.visibility / 1000 : 'N/A'} km`,
+        '',
+        `🌅 日出: ${new Date(data.sys.sunrise * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`,
+        `🌇 日落: ${new Date(data.sys.sunset * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`,
+      ]
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `无法获取天气信息: ${city}` }
+    }
+  },
+  description: '查询天气',
+  usage: 'weather [城市名]',
+  examples: ['weather Beijing', 'weather Shanghai', 'weather Tokyo']
+})
+
+registerCommand('news', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetch(`https://newsapi.org/v2/top-headlines?country=cn&apiKey=7c9f257f34d344dd8a51d60a257094ee&pageSize=5`, {
+        method: 'GET',
+        mode: 'cors'
+      })
+      
+      if (!response.ok) {
+        return { output: `新闻获取失败: ${response.statusText}` }
+      }
+      
+      const data = await response.json()
+      if (data.articles.length === 0) {
+        return { output: '暂无新闻' }
+      }
+      
+      const output = ['📰 最新新闻:', '']
+      data.articles.forEach((article: { title: string; source: { name: string }; publishedAt: string; url: string }, index: number) => {
+        const date = new Date(article.publishedAt).toLocaleDateString('zh-CN')
+        output.push(`${index + 1}. ${article.title}`)
+        output.push(`   来源: ${article.source.name} | ${date}`)
+        output.push('')
+      })
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: '无法获取新闻信息' }
+    }
+  },
+  description: '获取最新新闻',
+  usage: 'news',
+  examples: ['news']
+})
+
+registerCommand('crypto', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false', {
+        method: 'GET',
+        mode: 'cors'
+      })
+      
+      if (!response.ok) {
+        return { output: `加密货币数据获取失败: ${response.statusText}` }
+      }
+      
+      const data = await response.json()
+      const output = ['💰 加密货币行情:', '', '名称'.padEnd(18) + '价格(USD)'.padEnd(18) + '24h涨跌']
+      output.push('-'.repeat(50))
+      
+      data.forEach((coin: { name: string; symbol: string; current_price: number; price_change_percentage_24h: number }) => {
+        const price = `$${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        const change = coin.price_change_percentage_24h >= 0 ? `+${coin.price_change_percentage_24h.toFixed(2)}%` : `${coin.price_change_percentage_24h.toFixed(2)}%`
+        output.push(`${coin.name} (${coin.symbol.toUpperCase()})`.padEnd(18) + price.padEnd(18) + change)
+      })
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: '无法获取加密货币数据' }
+    }
+  },
+  description: '查看加密货币行情',
+  usage: 'crypto',
+  examples: ['crypto']
+})
+
+registerCommand('translate', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    if (args.length < 2) {
+      return { output: '用法: translate <目标语言> <文本>\n示例: translate zh Hello World\n支持语言: en, zh, ja, ko, fr, de, es, ru' }
+    }
+    
+    const targetLang = args[0]
+    const text = args.slice(1).join(' ')
+    
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
+      const res = await fetch(url, { method: 'GET', mode: 'cors' })
+      
+      if (!res.ok) {
+        return { output: '翻译服务暂时不可用' }
+      }
+      
+      const data = await res.json()
+      if (data.responseData && data.responseData.translatedText) {
+        return { output: `翻译结果: ${data.responseData.translatedText}` }
+      }
+      return { output: '无法获取翻译结果' }
+    } catch {
+      return { output: '翻译失败' }
+    }
+  },
+  description: '文本翻译',
+  usage: 'translate <目标语言> <文本>',
+  examples: ['translate zh Hello World']
+})
+
+registerCommand('ipinfo', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const ip = args[0]
+    
+    try {
+      const url = ip ? `https://ipapi.co/${ip}/json/` : 'https://ipapi.co/json/'
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors'
+      })
+      
+      if (!response.ok) {
+        return { output: `IP信息查询失败: ${response.statusText}` }
+      }
+      
+      const data = await response.json()
+      const output = [
+        `IP地址: ${data.ip || '未知'}`,
+        `版本: IPv${data.version || 'N/A'}`,
+        `类型: ${data.ip_type || 'N/A'}`,
+        `城市: ${data.city || '未知'}`,
+        `地区: ${data.region || '未知'}`,
+        `国家: ${data.country_name || '未知'} (${data.country_code || 'N/A'})`,
+        `语言: ${data.languages || '未知'}`,
+        `时区: ${data.timezone || '未知'}`,
+        `UTC偏移: ${data.utc_offset || '未知'}`,
+        `货币: ${data.currency || '未知'} (${data.currency_name || 'N/A'})`,
+        `ISP: ${data.org || '未知'}`,
+        `ASN: ${data.asn || '未知'}`,
+        `Hostname: ${data.hostname || '未知'}`,
+        `移动网络: ${data.mobile ? '是' : '否'}`,
+        `代理: ${data.proxy ? '是' : '否'}`,
+        `VPN: ${data.vpn ? '是' : '否'}`,
+      ]
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: '无法获取IP信息' }
+    }
+  },
+  description: '查询IP详细信息',
+  usage: 'ipinfo [IP地址]',
+  examples: ['ipinfo', 'ipinfo 8.8.8.8']
 })

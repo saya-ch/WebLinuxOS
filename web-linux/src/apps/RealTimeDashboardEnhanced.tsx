@@ -346,7 +346,7 @@ export default function RealTimeDashboardEnhanced() {
     },
     newsList: {
       maxHeight: '300px',
-      overflowY: 'auto'
+      overflowY: 'auto' as const
     },
     newsItem: {
       padding: '12px',
@@ -358,7 +358,7 @@ export default function RealTimeDashboardEnhanced() {
     },
     cryptoList: {
       maxHeight: '280px',
-      overflowY: 'auto'
+      overflowY: 'auto' as const
     },
     cryptoItem: {
       display: 'flex',
