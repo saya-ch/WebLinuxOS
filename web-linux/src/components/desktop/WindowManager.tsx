@@ -275,6 +275,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AICodeAnalyzer: () => import('../../apps/AICodeAnalyzer'),
   NetworkStatusDashboard: () => import('../../apps/NetworkStatusDashboard'),
   SystemOptimizer: () => import('../../apps/SystemOptimizer'),
+  // === v9.1.0 新增实时协作应用 ===
+  RealTimeCollaborativeWhiteboard: () => import('../../apps/RealTimeCollaborativeWhiteboard'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}

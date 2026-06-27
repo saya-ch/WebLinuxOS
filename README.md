@@ -1,312 +1,247 @@
 # WebLinuxOS
 
-**A fully-functional Linux desktop environment running entirely in your browser**
+**一个运行在浏览器中的完整 Linux 桌面环境**
 
-[Live Demo](https://saya-ch.github.io/WebLinuxOS/) | [Documentation](README_CN.md)
+[在线体验](https://saya-ch.github.io/WebLinuxOS/) | [中文文档](README_CN.md) | [贡献指南](CONTRIBUTING.md)
 
-## Overview
+---
 
-WebLinuxOS is a production-grade web-based operating system that provides a complete desktop experience with real functionality. Unlike typical OS simulators, WebLinuxOS integrates live APIs, real hardware data, and practical tools that make it genuinely useful for daily work.
+## 项目简介
 
-### Key Features
+WebLinuxOS 是一个生产级的 Web 操作系统，提供完整的桌面体验和真实功能。不同于普通的操作系统模拟器，WebLinuxOS 集成了实时 API、真实硬件数据和实用工具，使其成为真正可用于日常工作的平台。
 
-**Real Functionality, Not Simulation**
+### 核心特性
 
-- Live weather data from Open-Meteo API with real-time updates
-- Actual network performance measurements using Performance API
-- GitHub API integration for repository browsing and statistics
-- Hacker News API for tech news tracking
-- Cryptocurrency prices from CoinGecko API
-- Python code execution with Pyodide runtime
+**真实功能，而非模拟**
 
-**Complete Desktop Environment**
+- 通过 Open-Meteo API 获取实时天气数据
+- 使用 Performance API 进行实际网络性能测量  
+- GitHub API 集成用于仓库浏览和统计数据
+- Hacker News API 获取科技新闻追踪
+- CoinGecko API 提供加密货币价格
+- Pyodide 运行时实现 Python 代码执行
 
-- Full window management system with drag, resize, minimize, maximize
-- Multi-desktop support with keyboard shortcuts (Ctrl+Alt+1-9)
-- Taskbar with app preview and system tray
-- Application launcher with category filtering
-- Virtual file system with CRUD operations
-- Context menus and keyboard shortcuts
+**完整桌面环境**
 
-**200+ Built-in Applications**
+- 支持拖拽、调整大小、最小化、最大化的窗口管理系统
+- 多桌面支持与键盘快捷键 (Ctrl+Alt+1-9)
+- 带应用预览和系统托盘的任务栏
+- 支持分类过滤的应用启动器
+- 支持增删改查的虚拟文件系统
+- 右键菜单和键盘快捷键
 
-Comprehensive application ecosystem covering:
+**200+ 内置应用**
 
-| Category | Apps |
-|----------|------|
-| Development | Code Editor with Python execution, REST Client, API Explorer, JSON/YAML tools, Regex tester, Git tools, Code formatter |
-| Utilities | Real-time data dashboard, Weather tracker, Calculator, Password generator, QR creator, Color picker, Unit converter, Clipboard manager |
-| Office | Markdown editor, Notes with tagging, Task management, Calendar, Kanban board, Mind map, Whiteboard, Presentation creator |
-| Internet | Web browser, News reader, GitHub trending, Wikipedia viewer, Translation tool, Crypto tracker |
-| Multimedia | Image viewer, Music player with visualizer, Video player, Screen recorder, Camera, Paint tool |
-| Games | Snake, Tetris, 2048, Memory game, Breakout |
-| System | Terminal (60+ commands), File manager, System monitor, Process viewer, Disk usage analyzer |
+| 类别 | 应用 |
+|------|------|
+| 开发工具 | Python 执行代码编辑器、REST 客户端、API 探索器、JSON/YAML 工具、正则测试器、Git 工具、代码格式化 |
+| 工具类 | 实时数据仪表盘、天气追踪器、计算器、密码生成器、二维码创建、颜色选择器、单位转换、剪贴板管理 |
+| 办公套件 | Markdown 编辑器、带标签笔记、任务管理、日历、看板、思维导图、白板、演示文稿创建 |
+| 网络应用 | Web 浏览器、新闻阅读器、GitHub 热门、维基百科查看器、翻译工具、加密货币追踪 |
+| 多媒体 | 图片查看器、音乐播放器带可视化、视频播放器、屏幕录制、摄像头、画图工具 |
+| 游戏 | 贪吃蛇、俄罗斯方块、2048、记忆翻牌、打砖块 |
+| 系统工具 | 终端(60+命令)、文件管理器、系统监视器、进程查看器、磁盘使用分析 |
 
-**Terminal Emulator**
+**终端模拟器**
 
-The terminal isn't just decorative - it's fully functional:
+终端不仅是装饰性的，它是完全功能性的：
 
 ```bash
-# File operations (virtual file system)
+# 文件操作（虚拟文件系统）
 ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, grep, find
 
-# Real network commands
-curl <url>           # Fetch actual web content
-fetch <api-url>      # Get JSON from real APIs
-ip                   # Your actual public IP and location (ipapi.co)
-weather [city]       # Live weather data (Open-Meteo)
-ping                 # Real network latency test
-news                 # Tech headlines from Hacker News
+# 真实网络命令
+curl <url>           # 获取实际网页内容
+fetch <api-url>      # 从真实API获取JSON
+ip                   # 您的实际公网IP和位置 (ipapi.co)
+weather [city]       # 实时天气数据 (Open-Meteo)
+ping                 # 真实网络延迟测试
+news                 # 来自Hacker News的科技头条
 
-# Real system data
-cpu-info             # Actual CPU cores and usage (navigator.hardwareConcurrency)
-memory-info          # Real memory stats (Performance API)
-system-info          # Browser performance metrics
-netstat              # Connection type detection
+# 真实系统数据
+cpu-info             # 实际CPU核心和用量 (navigator.hardwareConcurrency)
+memory-info          # 真实内存统计 (Performance API)
+system-info          # 浏览器性能指标
+netstat              # 连接类型检测
 
-# Utilities
-calc <expr>          # Math calculator
-base64 <text>        # Base64 encoding
-hash <text>          # Hash generation
-uuid                 # UUID creation
-password             # Secure password generation
+# 工具
+calc <expr>          # 数学计算器
+base64 <text>        # Base64编码
+hash <text>          # 哈希生成
+uuid                 # UUID创建
+password             # 安全密码生成
 ```
 
-## Technical Architecture
+---
 
-### Technology Stack
+## 技术架构
 
-- **Framework**: React 19 with TypeScript
-- **State Management**: Zustand for global state
-- **Build Tool**: Vite 8 with optimized bundle splitting
-- **Python Runtime**: Pyodide for in-browser Python execution
-- **Icons**: Lucide React icon library
-- **Styling**: CSS-in-JS with comprehensive theme system
+### 技术栈
 
-### Architecture Highlights
+- **框架**: React 19 + TypeScript
+- **状态管理**: Zustand
+- **构建工具**: Vite 8 + 优化打包分割
+- **Python 运行时**: Pyodide 用于浏览器内 Python 执行
+- **图标**: Lucide React 图标库
+- **样式**: CSS-in-JS + 完善主题系统
 
-**Window Management System**
+### 架构亮点
 
-- GPU-accelerated rendering with will-change optimization
-- Window snapping with keyboard shortcuts
-- Multi-desktop architecture with window movement
-- Focused window glow effects and animations
-- Lazy component loading with preloading strategy
+**窗口管理系统**
 
-**Application Registry**
+- GPU 加速渲染 (will-change 优化)
+- 键盘快捷键窗口吸附
+- 多桌面架构与窗口移动
+- 聚焦窗口发光效果和动画
+- 惰性组件加载与预加载策略
 
-- Centralized app definition system
-- Category-based organization
-- Icon and metadata management
-- Dynamic component loading
-- Duplicate prevention with ID validation
+**应用注册表**
 
-**Virtual File System**
+- 集中式应用定义系统
+- 分类组织
+- 图标和元数据管理
+- 动态组件加载
+- ID 验证防止重复
 
-- Tree-based file structure
-- Path resolution and normalization
-- CRUD operations with validation
-- Content storage in localStorage
-- Search and navigation features
+**虚拟文件系统**
 
-**Performance Optimizations**
+- 树状文件结构
+- 路径解析和规范化
+- 增删改查操作与验证
+- localStorage 内容存储
+- 搜索和导航功能
 
-- GPU acceleration for animations (translateZ(0))
-- Content containment (contain: layout/paint)
-- Lazy loading with dynamic imports
-- Bundle splitting for faster initial load
-- Performance API integration for real metrics
+**性能优化**
 
-## Quick Start
+- GPU 加速动画 (translateZ(0))
+- 内容遏制 (contain: layout/paint)
+- 惰性加载与动态导入
+- 打包分割加速初始加载
+- Performance API 集成获取真实指标
 
-### Online Usage
+---
 
-Visit the [GitHub Pages deployment](https://saya-ch.github.io/WebLinuxOS/) for instant access. No installation required.
+## 快速开始
 
-### Local Development
+### 在线使用
+
+访问 [GitHub Pages 部署](https://saya-ch.github.io/WebLinuxOS/) 即可立即使用，无需安装。
+
+### 本地开发
 
 ```bash
-# Clone repository
+# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
 
-# Navigate to project
+# 进入项目
 cd WebLinuxOS/web-linux
 
-# Install dependencies
+# 安装依赖
 npm install
 
-# Development server
+# 开发服务器
 npm run dev
 
-# Production build
+# 生产构建
 npm run build
 
-# Preview build
+# 预览构建
 npm run preview
 ```
 
-### Build Configuration
+### 构建配置
 
 ```bash
-# Local build (base path = /)
+# 本地构建 (base path = /)
 npm run build:local
 
-# GitHub Pages build (configured for deployment)
+# GitHub Pages 构建 (已配置部署)
 npm run build:github
 ```
 
-## Keyboard Shortcuts
+---
 
-### Global System Shortcuts
+## 键盘快捷键
 
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+Shift+L | Toggle application launcher |
-| Ctrl+Shift+K | Global search |
-| Ctrl+Shift+P | Command palette |
-| Ctrl+Alt+1-9 | Switch to desktop 1-9 |
-| Ctrl+Alt+ArrowLeft/Right | Previous/Next desktop |
-| Ctrl+Shift+Alt+1-9 | Move window to desktop |
-| Alt+Tab | Cycle windows |
-| Ctrl+W | Close focused window |
-| Ctrl+M | Minimize window |
-| F11 | Toggle fullscreen |
+### 全局系统快捷键
 
-### Application Quick Launch
+| 快捷键 | 操作 |
+|--------|------|
+| Ctrl+Shift+L | 切换应用启动器 |
+| Ctrl+Shift+K | 全局搜索 |
+| Ctrl+Shift+P | 命令面板 |
+| Ctrl+Alt+1-9 | 切换到桌面 1-9 |
+| Ctrl+Alt+ArrowLeft/Right | 上一个/下一个桌面 |
+| Ctrl+Shift+Alt+1-9 | 移动窗口到桌面 |
+| Alt+Tab | 窗口循环 |
+| Ctrl+W | 关闭聚焦窗口 |
+| Ctrl+M | 最小化窗口 |
+| F11 | 切换全屏 |
 
-| Shortcut | Application |
-|----------|-------------|
-| Ctrl+T | Terminal |
-| Ctrl+E | File Manager |
-| Ctrl+B | Web Browser |
-| Ctrl+, | System Settings |
-| Ctrl+G | Code Editor |
-| Ctrl+D | System Monitor |
-| Ctrl+Shift+C | Calculator |
-| Ctrl+Shift+N | Notes |
-| Ctrl+Shift+W | Weather |
-| Ctrl+Shift+M | Music Player |
+### 应用快速启动
 
-## Application Categories
+| 快捷键 | 应用 |
+|--------|------|
+| Ctrl+T | 终端 |
+| Ctrl+E | 文件管理器 |
+| Ctrl+B | Web 浏览器 |
+| Ctrl+, | 系统设置 |
+| Ctrl+G | 代码编辑器 |
+| Ctrl+D | 系统监视器 |
+| Ctrl+Shift+C | 计算器 |
+| Ctrl+Shift+N | 笔记 |
+| Ctrl+Shift+W | 天气 |
+| Ctrl+Shift+M | 音乐播放器 |
 
-### Development Tools
+---
 
-Comprehensive suite for developers:
+## API 集成
 
-- **Code Editor**: Python/JS execution, syntax highlighting, multiple tabs
-- **REST Client**: Full API testing with headers, body, authentication
-- **API Explorer**: Browse 11 public APIs with live data
-- **JSON Tools**: Formatter, schema validator, YAML converter
-- **Regex Builder**: Visual regex construction and testing
-- **Base64/URL Tools**: Encoding/decoding utilities
-- **JWT Decoder**: Token parsing and verification
-- **Hash Generator**: Multiple algorithm support
-- **Code Diff Viewer**: Side-by-side comparison
-- **Code Formatter**: Automatic code beautification
+WebLinuxOS 集成多个公共 API 提供真实功能：
 
-### Productivity Applications
+| API | 用途 | 应用 |
+|-----|------|------|
+| Open-Meteo | 天气数据 | 天气应用、终端、仪表盘 |
+| ipapi.co | IP 地理位置 | 终端 ip 命令 |
+| CoinGecko | 加密货币 | 加密货币追踪器、仪表盘 |
+| Hacker News | 科技新闻 | 新闻阅读器、仪表盘 |
+| GitHub | 仓库数据 | GitHub 探索器、仪表盘 |
+| Wikipedia | 文章 | 维基百科阅读器 |
 
-Tools for daily work:
+---
 
-- **Markdown Editor**: Live preview with export
-- **Notes**: Tagging, search, starred notes
-- **Task Manager**: Multiple views, deadlines, priorities
-- **Calendar**: Event management with reminders
-- **Kanban Board**: Drag-and-drop task organization
-- **Mind Map**: Visual brainstorming tool
-- **Whiteboard**: Drawing and collaboration
-- **Presentation**: Slide creator from Markdown
+## 性能指标
 
-### Data & Information
+从浏览器 API 获取的真实性能数据：
 
-Real-time data integration:
+- **CPU 信息**: `navigator.hardwareConcurrency` 获取实际核心数
+- **内存信息**: `navigator.deviceMemory` 和 JS Heap 统计
+- **网络信息**: `navigator.connection` 提供带宽和延迟
+- **Performance API**: 导航计时和 FPS 监控
 
-- **Real-time Dashboard Pro**: Weather, news, crypto, GitHub stats, network metrics - all live
-- **Weather**: 7-day forecast with current conditions (Open-Meteo API)
-- **Crypto Tracker**: Top 100 cryptocurrency prices (CoinGecko)
-- **Stock Tracker**: Market indices and stock prices
-- **News Reader**: RSS feeds and tech news aggregation
-- **GitHub Trending**: Repository and developer discovery
-- **Wikipedia Viewer**: Encyclopedia article browsing
+---
 
-### System Utilities
-
-System management tools:
-
-- **Terminal**: 60+ commands with real network/system data
-- **File Manager**: Virtual file system with full operations
-- **System Monitor**: Real CPU, memory, network usage
-- **Process Viewer**: Running application management
-- **Disk Usage**: Storage visualization
-- **Network Speed Test**: Actual connection performance
-- **Clipboard Manager**: History and search
-
-### Creative Tools
-
-Design and multimedia:
-
-- **Paint**: Drawing canvas with tools
-- **Color Picker**: Palette generation and management
-- **Image Viewer**: Photo browsing with editing
-- **Music Player**: Audio playback with visualizer
-- **Video Player**: Media playback
-- **Screen Recorder**: Capture functionality
-- **Camera**: Webcam integration
-
-### Entertainment
-
-Games for breaks:
-
-- Snake
-- Tetris
-- 2048
-- Memory Cards
-- Breakout
-- Virtual Pet
-
-## API Integrations
-
-WebLinuxOS integrates with multiple public APIs for real functionality:
-
-| API | Usage | Application |
-|-----|-------|-------------|
-| Open-Meteo | Weather data | Weather app, Terminal, Dashboard |
-| ipapi.co | IP geolocation | Terminal ip command |
-| CoinGecko | Cryptocurrency | Crypto tracker, Dashboard |
-| Hacker News | Tech news | News reader, Dashboard |
-| GitHub | Repository data | GitHub explorer, Dashboard |
-| Wikipedia | Articles | Wikipedia reader |
-
-## Performance Metrics
-
-Real performance data captured from browser APIs:
-
-- **CPU Info**: `navigator.hardwareConcurrency` for actual core count
-- **Memory Info**: `navigator.deviceMemory` and JS Heap statistics
-- **Network Info**: `navigator.connection` for bandwidth and latency
-- **Performance API**: Navigation timing and FPS monitoring
-
-## Deployment
+## 部署
 
 ### GitHub Pages
 
-The project is configured for GitHub Pages deployment:
+项目已配置 GitHub Pages 部署：
 
-1. Build output goes to root directory (not `/dist`)
-2. `.nojekyll` file prevents Jekyll processing
-3. Custom 404.html for SPA routing
-4. Base path configured for repository URL
+1. 构建输出到根目录（非 `/dist`）
+2. `.nojekyll` 文件阻止 Jekyll 处理
+3. 自定义 404.html 处理 SPA 路由
+4. Base path 配置为仓库 URL
 
-### Build Process
+### 构建流程
 
 ```bash
-# Clean previous build
+# 清理之前构建
 npm run clean
 
-# Build for GitHub Pages
+# 构建 GitHub Pages
 npm run deploy
 
-# Output structure:
+# 输出结构：
 # /workspace/WebLinuxOS/
 #   index.html
 #   favicon.svg
@@ -314,53 +249,82 @@ npm run deploy
 #   manifest.json
 ```
 
-## Browser Compatibility
+---
 
-WebLinuxOS works in all modern browsers:
+## 浏览器兼容性
+
+WebLinuxOS 支持所有现代浏览器：
 
 - Chrome 88+
 - Firefox 78+
 - Safari 14+
 - Edge 88+
 
-Requires:
-- JavaScript enabled
-- localStorage available
-- WebGL support (for particles)
-- Web APIs access
-
-## Contributing
-
-Contributions are welcome! Areas for improvement:
-
-- New applications with real functionality
-- Additional API integrations
-- UI/UX enhancements
-- Performance optimizations
-- Bug fixes and error handling
-- Documentation improvements
-
-Please read the existing code structure before submitting PRs. The project uses:
-- React functional components with hooks
-- Zustand for state management
-- CSS-in-JS for styling
-- TypeScript for type safety
-
-## License
-
-MIT License - open source and free to use.
-
-## Acknowledgments
-
-Built with excellent open-source tools:
-
-- [React](https://react.dev/) - UI framework
-- [Vite](https://vitejs.dev/) - Build tool
-- [Zustand](https://github.com/pmndrs/zustand) - State management
-- [Pyodide](https://pyodide.org/) - Python runtime
-- [Lucide Icons](https://lucide.dev/) - Icon library
-- [Open-Meteo](https://open-meteo.com/) - Weather API
+要求：
+- JavaScript 启用
+- localStorage 可用
+- WebGL 支持（用于粒子）
+- Web APIs 访问
 
 ---
 
-**WebLinuxOS demonstrates that web applications can be more than simple tools - they can provide complete, functional environments for real work.**
+## 贡献指南
+
+欢迎贡献！改进领域：
+
+- 带真实功能的新应用
+- 更多 API 集成
+- UI/UX 增强
+- 性能优化
+- Bug 修复和错误处理
+- 文档改进
+
+提交 PR 前请阅读现有代码结构。项目使用：
+- React 函数组件 + Hooks
+- Zustand 状态管理
+- CSS-in-JS 样式
+- TypeScript 类型安全
+
+---
+
+## 路线图
+
+### v9.1.0 (当前)
+
+- 新增实时协作白板应用
+- 支持多用户协作绘图
+- 画笔、橡皮擦、形状工具
+- 颜色选择和大小调整
+- 撤销/重做操作
+- 导出和分享功能
+
+### 未来计划
+
+- 实时文档协作编辑器
+- WebRTC 视频会议集成
+- 云存储同步功能
+- 更多公共 API 集成
+- 移动端适配优化
+
+---
+
+## 许可证
+
+MIT License - 开源免费使用
+
+---
+
+## 致谢
+
+基于优秀的开源工具构建：
+
+- [React](https://react.dev/) - UI 框架
+- [Vite](https://vitejs.dev/) - 构建工具
+- [Zustand](https://github.com/pmndrs/zustand) - 状态管理
+- [Pyodide](https://pyodide.org/) - Python 运行时
+- [Lucide Icons](https://lucide.dev/) - 图标库
+- [Open-Meteo](https://open-meteo.com/) - 天气 API
+
+---
+
+**WebLinuxOS 展示了 Web 应用可以超越简单工具，提供完整、功能性的环境用于实际工作。**
