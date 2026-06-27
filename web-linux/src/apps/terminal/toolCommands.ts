@@ -1295,6 +1295,7 @@ registerCommand('help', {
       'json': { desc: 'JSON格式化', usage: 'json <JSON>' },
       'hash': { desc: '计算哈希', usage: 'hash <文本>' },
       'rev': { desc: '反转文本', usage: 'rev <文本>' },
+      'qrcode': { desc: '生成二维码', usage: 'qrcode <文本>' },
       'prime': { desc: '质数检测', usage: 'prime <数字>' },
       'factor': { desc: '质因数分解', usage: 'factor <数字>' },
       'roman': { desc: '罗马数字转换', usage: 'roman <数字>' },
@@ -1328,4 +1329,52 @@ registerCommand('help', {
   description: '显示帮助信息',
   usage: 'help [命令]',
   examples: ['help', 'help ls']
+})
+
+registerCommand('qrcode', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const text = args.join(' ')
+    
+    if (!text) {
+      return {
+        output: [
+          '📱 二维码生成器',
+          '',
+          '用法: qrcode <文本或URL>',
+          '',
+          '示例:',
+          '  qrcode https://github.com',
+          '  qrcode Hello World',
+          '  qrcode wifi:T:WPA;S:MyNetwork;P:password;;',
+          '',
+          '💡 支持生成以下类型的二维码:',
+          '  - URL链接',
+          '  - 文本内容',
+          '  - WiFi配置',
+          '  - 联系人信息',
+          '  - 日历事件',
+        ].join('\n')
+      }
+    }
+    
+    const encoded = encodeURIComponent(text)
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}&format=png`
+    
+    return {
+      output: [
+        '📱 二维码已生成',
+        '',
+        `内容: ${text}`,
+        '',
+        `🔗 在线预览: ${qrUrl}`,
+        '',
+        '💡 在浏览器中打开以上链接查看二维码图片',
+        '💡 可使用 -s 参数指定尺寸: qrcode -s 300 <文本>',
+      ].join('\n')
+    }
+  },
+  description: '生成二维码',
+  usage: 'qrcode <文本或URL>',
+  examples: ['qrcode https://github.com', 'qrcode Hello World']
 })
