@@ -1354,7 +1354,7 @@ registerCommand('qrcode', {
           '  qrcode Hello World',
           '  qrcode wifi:T:WPA;S:MyNetwork;P:password;;',
           '',
-          '💡 支持生成以下类型的二维码:',
+          '支持生成以下类型的二维码:',
           '  - URL链接',
           '  - 文本内容',
           '  - WiFi配置',
@@ -1373,14 +1373,312 @@ registerCommand('qrcode', {
         '',
         `内容: ${text}`,
         '',
-        `🔗 在线预览: ${qrUrl}`,
+        `在线预览: ${qrUrl}`,
         '',
-        '💡 在浏览器中打开以上链接查看二维码图片',
-        '💡 可使用 -s 参数指定尺寸: qrcode -s 300 <文本>',
+        '在浏览器中打开以上链接查看二维码图片',
+        '可使用 -s 参数指定尺寸: qrcode -s 300 <文本>',
       ].join('\n')
     }
   },
   description: '生成二维码',
   usage: 'qrcode <文本或URL>',
   examples: ['qrcode https://github.com', 'qrcode Hello World']
+})
+
+registerCommand('stocks', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    const stockData = [
+      { symbol: 'AAPL', name: 'Apple Inc.', price: 178.52, change: 1.24 },
+      { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 141.80, change: -0.85 },
+      { symbol: 'MSFT', name: 'Microsoft Corp.', price: 378.91, change: 2.15 },
+      { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.25, change: 0.92 },
+      { symbol: 'TSLA', name: 'Tesla Inc.', price: 248.50, change: -3.25 },
+      { symbol: 'META', name: 'Meta Platforms', price: 505.75, change: 4.30 },
+      { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.28, change: 12.45 },
+    ]
+    
+    if (args.length > 0) {
+      const symbol = args[0].toUpperCase()
+      const stock = stockData.find(s => s.symbol === symbol)
+      if (stock) {
+        return {
+          output: [
+            `股票信息: ${stock.name}`,
+            '',
+            `代码: ${stock.symbol}`,
+            `价格: $${stock.price.toFixed(2)}`,
+            `涨跌: ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}%`,
+          ].join('\n')
+        }
+      }
+      return { output: `stocks: 未知股票代码 '${symbol}'` }
+    }
+    
+    const output = [
+      '实时股票行情',
+      '',
+      '----------------------------------------------------------------',
+      '',
+      `${'代码'.padEnd(8)} ${'名称'.padEnd(18)} ${'价格'.padEnd(12)} 涨跌`,
+      ...stockData.map(s => 
+        `${s.symbol.padEnd(8)} ${s.name.padEnd(18)} $${s.price.toFixed(2).padEnd(10)} ${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%`
+      ),
+      '',
+      '----------------------------------------------------------------',
+      '',
+      '用法: stocks <代码> 查看详情',
+      '提示: 生产环境需集成真实股票API',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '查询股票行情',
+  usage: 'stocks [代码]',
+  examples: ['stocks', 'stocks AAPL', 'stocks GOOGL']
+})
+
+registerCommand('define', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const word = args.join(' ')
+    
+    if (!word) {
+      return {
+        output: [
+          '词典查询',
+          '',
+          '用法: define <单词>',
+          '',
+          '示例:',
+          '  define hello',
+          '  define algorithm',
+        ].join('\n')
+      }
+    }
+    
+    const dictionary: Record<string, { phonetic: string; meaning: string; example: string }> = {
+      'hello': { phonetic: '/həˈloʊ/', meaning: 'interjection. 用于打招呼或引起注意的问候语', example: 'Hello, how are you doing?' },
+      'world': { phonetic: '/wɜːrld/', meaning: 'noun. 地球；世界；领域；社会', example: 'The world is a beautiful place.' },
+      'code': { phonetic: '/koʊd/', meaning: 'noun. 代码；编码；密码 | verb. 编码；编写程序', example: 'She wrote code in Python.' },
+      'algorithm': { phonetic: '/ˈælɡərɪðəm/', meaning: 'noun. 算法；计算程序', example: 'Quicksort is a classic sorting algorithm.' },
+      'function': { phonetic: '/ˈfʌŋkʃən/', meaning: 'noun. 功能；函数；职务 | verb. 运行；起作用', example: 'What is the function of this button?' },
+      'data': { phonetic: '/ˈdeɪtə/', meaning: 'noun. 数据；资料', example: 'The data shows a clear trend.' },
+      'system': { phonetic: '/ˈsɪstəm/', meaning: 'noun. 系统；体系；制度', example: 'The operating system is very stable.' },
+      'developer': { phonetic: '/dɪˈveləpər/', meaning: 'noun. 开发者；程序员', example: 'The developer fixed the bug quickly.' },
+      'terminal': { phonetic: '/ˈtɜːrmɪnəl/', meaning: 'noun. 终端；终点站 | adj. 末端的；终点的', example: 'Open the terminal and type the command.' },
+    }
+    
+    const lowerWord = word.toLowerCase()
+    if (dictionary[lowerWord]) {
+      const entry = dictionary[lowerWord]
+      return {
+        output: [
+          `${word}`,
+          '',
+          `音标: ${entry.phonetic}`,
+          `词性: ${entry.meaning}`,
+          '',
+          `例句: ${entry.example}`,
+        ].join('\n')
+      }
+    }
+    
+    return { output: [ `${word}`, '', '未找到该单词的释义', '提示: 尝试简单的常用单词' ].join('\n') }
+  },
+  description: '词典查询',
+  usage: 'define <单词>',
+  examples: ['define hello', 'define algorithm']
+})
+
+registerCommand('worldtime', {
+  handler: async (): Promise<CommandResult> => {
+    const now = new Date()
+    const localTime = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const localDate = now.toLocaleDateString('zh-CN')
+    
+    const timeZones: Record<string, { city: string; offset: number }> = {
+      'beijing': { city: '北京', offset: 8 },
+      'shanghai': { city: '上海', offset: 8 },
+      'tokyo': { city: '东京', offset: 9 },
+      'seoul': { city: '首尔', offset: 9 },
+      'newyork': { city: '纽约', offset: -5 },
+      'losangeles': { city: '洛杉矶', offset: -8 },
+      'london': { city: '伦敦', offset: 0 },
+      'paris': { city: '巴黎', offset: 1 },
+      'sydney': { city: '悉尼', offset: 10 },
+      'moscow': { city: '莫斯科', offset: 3 },
+      'dubai': { city: '迪拜', offset: 4 },
+      'singapore': { city: '新加坡', offset: 8 },
+      'hongkong': { city: '香港', offset: 8 },
+    }
+    
+    const output = [
+      '世界时钟',
+      '',
+      `本地时间 (${Intl.DateTimeFormat().resolvedOptions().timeZone}): ${localTime}`,
+      `日期: ${localDate}`,
+      '',
+      '----------------------------------------------------------------',
+      '',
+      ...Object.entries(timeZones).map(([_key, info]) => {
+        const tzTime = new Date(now.getTime() + (info.offset - 8) * 3600000)
+        const timeStr = tzTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
+        const marker = info.offset === 8 ? ' (本地)' : ''
+        return `${info.city.padEnd(10)} ${timeStr}${marker}`
+      }),
+      '',
+      '----------------------------------------------------------------',
+      '',
+      '用法: worldtime <城市>',
+      '支持城市: beijing, shanghai, tokyo, london, newyork, paris, sydney...',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '世界时钟',
+  usage: 'worldtime [城市]',
+  examples: ['worldtime', 'worldtime tokyo', 'worldtime london']
+})
+
+registerCommand('color', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const hex = args[0]?.toUpperCase() || '#8B7CF0'
+    
+    const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+      return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null
+    }
+    
+    const rgb = hexToRgb(hex)
+    
+    if (!rgb) {
+      return {
+        output: [
+          '颜色工具',
+          '',
+          '用法: color <hex颜色值>',
+          '',
+          '示例:',
+          '  color #8B7CF0',
+          '  color #3498db',
+          '  color #2ecc71',
+          '',
+          '内置颜色:',
+          '  primary   #8B7CF0  (主题主色)',
+          '  secondary #00CEC9  (强调色)',
+          '  success   #00B894  (成功)',
+          '  warning   #FDCB6E  (警告)',
+          '  danger    #E17055  (危险)',
+        ].join('\n')
+      }
+    }
+    
+    const { r, g, b } = rgb
+    const luma = 0.299 * r + 0.587 * g + 0.114 * b > 128 ? '浅色' : '深色'
+    
+    return {
+      output: [
+        '颜色信息',
+        '',
+        `颜色预览: [${hex}]`,
+        `RGB: rgb(${r}, ${g}, ${b})`,
+        `亮度: ${luma}`,
+      ].join('\n')
+    }
+  },
+  description: '颜色工具',
+  usage: 'color [hex值]',
+  examples: ['color #8B7CF0', 'color #3498db']
+})
+
+registerCommand('binary', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const text = args.join(' ')
+    
+    if (!text) {
+      return {
+        output: [
+          '文本与二进制转换',
+          '',
+          '用法: binary <文本或二进制>',
+          '',
+          '示例:',
+          '  binary Hello',
+          '  binary 01001000 01100101',
+          '',
+          '提示: 自动检测输入类型',
+        ].join('\n')
+      }
+    }
+    
+    const isBinary = /^[\s01]+$/.test(text) && text.length > 0
+    
+    if (isBinary) {
+      const chars = text.split(/\s+/).map(b => String.fromCharCode(parseInt(b, 2)))
+      return { output: [ '二进制转文本', '', `二进制: ${text}`, `文本: ${chars.join('')}` ].join('\n') }
+    }
+    
+    const binary = text.split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ')
+    return { output: [ '文本转二进制', '', `文本: ${text}`, `二进制: ${binary}` ].join('\n') }
+  },
+  description: '文本与二进制转换',
+  usage: 'binary <文本或二进制>',
+  examples: ['binary Hello', 'binary 01001000 01100101']
+})
+
+registerCommand('hash-verify', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          'Hash 验证工具',
+          '',
+          '用法: hash-verify <算法> <哈希> <文本>',
+          '',
+          '支持的算法: md5, sha1, sha256, sha512',
+          '',
+          '示例:',
+          '  hash-verify sha256 myhash Hello',
+        ].join('\n')
+      }
+    }
+    
+    const [algorithm, , ...textParts] = args
+    const text = textParts.join(' ')
+    
+    const computeHash = async (input: string, algo: string): Promise<string> => {
+      const encoder = new TextEncoder()
+      const data = encoder.encode(input)
+      const algorithms: Record<string, string> = {
+        'md5': 'MD5', 'sha1': 'SHA-1', 'sha256': 'SHA-256', 'sha512': 'SHA-512'
+      }
+      if (!algorithms[algo.toLowerCase()]) throw new Error('Unsupported algorithm')
+      const hashBuffer = await crypto.subtle.digest(algorithms[algo.toLowerCase()], data)
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('')
+    }
+    
+    try {
+      const computedHash = await computeHash(text, algorithm)
+      return {
+        output: [
+          'Hash 验证结果',
+          '',
+          `算法: ${algorithm.toUpperCase()}`,
+          `原文: ${text}`,
+          `计算值: ${computedHash}`,
+        ].join('\n')
+      }
+    } catch {
+      return { output: `hash-verify: 不支持的算法 '${algorithm}'` }
+    }
+  },
+  description: '验证文本Hash',
+  usage: 'hash-verify <算法> <哈希> <文本>',
+  examples: ['hash-verify sha256 myhash Hello']
 })
