@@ -277,6 +277,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SystemOptimizer: () => import('../../apps/SystemOptimizer'),
   // === v9.1.0 新增实时协作应用 ===
   RealTimeCollaborativeWhiteboard: () => import('../../apps/RealTimeCollaborativeWhiteboard'),
+  // === v9.2.0 新增工作流自动化应用 ===
+  WorkflowAutomation: () => import('../../apps/WorkflowAutomation'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}

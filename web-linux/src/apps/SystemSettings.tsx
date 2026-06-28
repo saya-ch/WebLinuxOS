@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store'
 
 const wallpapers = [
-  { id: 'default', name: '默认', style: { background: '#1e1e2e' } },
+  { id: 'default', name: '默认', style: { background: 'var(--desktop-bg, #1e1e2e)' } },
   { id: 'sunset', name: '日落', style: { background: 'linear-gradient(135deg, #ff6b6b, #feca57)' } },
   { id: 'ocean', name: '海洋', style: { background: 'linear-gradient(135deg, #0c3483, #a2b6df)' } },
   { id: 'forest', name: '森林', style: { background: 'linear-gradient(135deg, #134e5e, #71b280)' } },
@@ -10,6 +10,10 @@ const wallpapers = [
   { id: 'midnight', name: '午夜', style: { background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' } },
   { id: 'cherry', name: '樱花', style: { background: 'linear-gradient(135deg, #ffb7b2, #e2f0cb)' } },
   { id: 'fire', name: '火焰', style: { background: 'linear-gradient(135deg, #f12711, #f5af19)' } },
+  { id: 'aurora', name: '极光', style: { background: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' } },
+  { id: 'sunset-purple', name: '晚霞', style: { background: 'linear-gradient(135deg, #cc2b5e, #753a88)' } },
+  { id: 'mint', name: '薄荷', style: { background: 'linear-gradient(135deg, #43cea2, #185a9d)' } },
+  { id: 'peach', name: '蜜桃', style: { background: 'linear-gradient(135deg, #ffecd2, #fcb69f)' } },
 ]
 
 const wifiNetworks = [
@@ -188,7 +192,7 @@ export default function Settings() {
 
   return (
     <div className="app-container app-settings" style={{ flexDirection: 'row', padding: 0 }}>
-      <div className="app-settings-sidebar" style={{ width: 200, borderRight: '1px solid #333', padding: '12px 0', flexShrink: 0 }}>
+      <div className="app-settings-sidebar" style={{ width: 200, borderRight: '1px solid var(--window-border)', padding: '12px 0', flexShrink: 0 }}>
         {categories.map((cat) => (
           <div
             key={cat.id}
@@ -202,7 +206,9 @@ export default function Settings() {
               gap: 10,
               fontSize: 14,
               background: activeCategory === cat.id ? 'var(--accent-bg)' : 'transparent',
+              color: activeCategory === cat.id ? 'var(--accent)' : 'var(--text-primary)',
               borderLeft: activeCategory === cat.id ? '3px solid var(--accent)' : '3px solid transparent',
+              transition: 'all 0.2s ease',
             }}
           >
             <span>{cat.icon}</span>
@@ -214,9 +220,9 @@ export default function Settings() {
       <div style={{ flex: 1, padding: 24, overflow: 'auto' }}>
         {activeCategory === 'appearance' && (
           <div>
-            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>外观设置</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>外观设置</h3>
             <div className="app-settings-section" style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>主题模式</div>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>主题模式</div>
               <div style={{ display: 'flex', gap: 12 }}>
                 <button
                   className={`app-settings-theme-btn${theme === 'light' ? ' active' : ''}`}
@@ -224,11 +230,12 @@ export default function Settings() {
                   style={{
                     padding: '12px 24px',
                     borderRadius: 8,
-                    border: theme === 'light' ? '2px solid var(--accent)' : '1px solid #555',
-                    background: theme === 'light' ? 'var(--accent-bg)' : '#2d2d2d',
-                    color: '#fff',
+                    border: theme === 'light' ? '2px solid var(--accent)' : '1px solid var(--window-border)',
+                    background: theme === 'light' ? 'var(--accent-bg)' : 'var(--window-bg)',
+                    color: 'var(--text-primary)',
                     cursor: 'pointer',
                     fontSize: 14,
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   ☀️ 亮色
@@ -239,11 +246,12 @@ export default function Settings() {
                   style={{
                     padding: '12px 24px',
                     borderRadius: 8,
-                    border: theme === 'dark' ? '2px solid var(--accent)' : '1px solid #555',
-                    background: theme === 'dark' ? 'var(--accent-bg)' : '#2d2d2d',
-                    color: '#fff',
+                    border: theme === 'dark' ? '2px solid var(--accent)' : '1px solid var(--window-border)',
+                    background: theme === 'dark' ? 'var(--accent-bg)' : 'var(--window-bg)',
+                    color: 'var(--text-primary)',
                     cursor: 'pointer',
                     fontSize: 14,
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   🌙 暗色
@@ -255,7 +263,7 @@ export default function Settings() {
 
         {activeCategory === 'wallpaper' && (
           <div>
-            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>壁纸设置</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>壁纸设置</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {wallpapers.map((wp) => (
                 <div
@@ -265,11 +273,12 @@ export default function Settings() {
                     cursor: 'pointer',
                     borderRadius: 8,
                     overflow: 'hidden',
-                    border: wallpaper === wp.style.background ? '2px solid var(--accent)' : '1px solid #333',
+                    border: wallpaper === wp.style.background ? '2px solid var(--accent)' : '1px solid var(--window-border)',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   <div style={{ ...wp.style, height: 80 }} />
-                  <div style={{ padding: '6px 8px', fontSize: 12, textAlign: 'center', background: '#2d2d2d' }}>
+                  <div style={{ padding: '6px 8px', fontSize: 12, textAlign: 'center', background: 'var(--window-bg)', color: 'var(--text-primary)' }}>
                     {wp.name}
                     {wallpaper === wp.style.background && <span style={{ marginLeft: 4, color: 'var(--accent)' }}>✓</span>}
                   </div>
@@ -281,11 +290,11 @@ export default function Settings() {
 
         {activeCategory === 'sound' && (
           <div>
-            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>声音设置</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>声音设置</h3>
             <div className="app-settings-section">
-              <div style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>音量</div>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>音量</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span>🔈</span>
+                <span style={{ color: 'var(--text-primary)' }}>🔈</span>
                 <input
                   type="range"
                   min="0"
@@ -294,13 +303,13 @@ export default function Settings() {
                   onChange={(e) => setVolume(parseInt(e.target.value))}
                   style={{ flex: 1 }}
                 />
-                <span>🔊</span>
-                <span style={{ fontFamily: 'monospace', width: 40, textAlign: 'right' }}>{volume}%</span>
+                <span style={{ color: 'var(--text-primary)' }}>🔊</span>
+                <span style={{ fontFamily: 'monospace', width: 40, textAlign: 'right', color: 'var(--text-primary)' }}>{volume}%</span>
               </div>
             </div>
             <div className="app-settings-section" style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>输出设备</div>
-              <select className="app-select" style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: '#2d2d2d', color: '#fff', border: '1px solid #555' }}>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>输出设备</div>
+              <select className="app-select" style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--window-bg)', color: 'var(--text-primary)', border: '1px solid var(--window-border)' }}>
                 <option>内置扬声器 - Analog Stereo</option>
                 <option>HDMI 输出 - Digital Stereo</option>
               </select>
@@ -310,17 +319,17 @@ export default function Settings() {
 
         {activeCategory === 'network' && (
           <div>
-            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>网络设置</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>网络设置</h3>
             <div className="app-settings-section" style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Wi-Fi</span>
+                <span style={{ color: 'var(--text-primary)' }}>Wi-Fi</span>
                 <button
                   onClick={() => setWifiEnabled(!wifiEnabled)}
                   style={{
                     padding: '6px 18px',
                     borderRadius: 20,
                     border: 'none',
-                    background: wifiEnabled ? 'var(--accent)' : '#555',
+                    background: wifiEnabled ? 'var(--accent)' : 'var(--window-border)',
                     color: '#fff',
                     cursor: 'pointer',
                     fontSize: 13,
@@ -332,7 +341,7 @@ export default function Settings() {
             </div>
             {wifiEnabled && (
               <div>
-                <div style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>可用网络</div>
+                <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>可用网络</div>
                 {wifiNetworks.map((net, i) => (
                   <div
                     key={i}
@@ -341,16 +350,17 @@ export default function Settings() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '10px 14px',
-                      background: '#2d2d2d',
+                      background: 'var(--window-bg)',
+                      border: '1px solid var(--window-border)',
                       borderRadius: 8,
                       marginBottom: 6,
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <SignalIcon level={net.signal} />
-                      <span style={{ fontSize: 14 }}>{net.name}</span>
+                      <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{net.name}</span>
                     </div>
-                    <span style={{ fontSize: 12, color: '#888' }}>{net.secured ? '🔒' : '🔓'}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{net.secured ? '🔒' : '🔓'}</span>
                   </div>
                 ))}
               </div>
@@ -360,7 +370,7 @@ export default function Settings() {
 
         {activeCategory === 'power' && (
           <div>
-            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>电源管理</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>电源管理</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <button
                 className="app-settings-power-btn"
@@ -368,9 +378,9 @@ export default function Settings() {
                 style={{
                   padding: '14px 20px',
                   borderRadius: 8,
-                  border: '1px solid #555',
-                  background: '#2d2d2d',
-                  color: '#fff',
+                  border: '1px solid var(--window-border)',
+                  background: 'var(--window-bg)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   fontSize: 14,
                   display: 'flex',
@@ -379,18 +389,18 @@ export default function Settings() {
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#3d3d3d'
+                  e.currentTarget.style.background = 'var(--accent-bg)'
                   e.currentTarget.style.borderColor = 'var(--accent)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#2d2d2d'
-                  e.currentTarget.style.borderColor = '#555'
+                  e.currentTarget.style.background = 'var(--window-bg)'
+                  e.currentTarget.style.borderColor = 'var(--window-border)'
                 }}
               >
                 <span style={{ fontSize: 20 }}>😴</span>
                 <div style={{ textAlign: 'left' }}>
-                  <div>休眠</div>
-                  <div style={{ fontSize: 12, color: '#888' }}>将当前会话保存到磁盘并进入低功耗模式</div>
+                  <div style={{ color: 'var(--text-primary)' }}>休眠</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>将当前会话保存到磁盘并进入低功耗模式</div>
                 </div>
               </button>
               <button
@@ -399,9 +409,9 @@ export default function Settings() {
                 style={{
                   padding: '14px 20px',
                   borderRadius: 8,
-                  border: '1px solid #555',
-                  background: '#2d2d2d',
-                  color: '#fff',
+                  border: '1px solid var(--window-border)',
+                  background: 'var(--window-bg)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   fontSize: 14,
                   display: 'flex',
@@ -410,18 +420,18 @@ export default function Settings() {
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#3d3d3d'
+                  e.currentTarget.style.background = 'var(--accent-bg)'
                   e.currentTarget.style.borderColor = 'var(--accent)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#2d2d2d'
-                  e.currentTarget.style.borderColor = '#555'
+                  e.currentTarget.style.background = 'var(--window-bg)'
+                  e.currentTarget.style.borderColor = 'var(--window-border)'
                 }}
               >
                 <span style={{ fontSize: 20 }}>🔄</span>
                 <div style={{ textAlign: 'left' }}>
                   <div>重启</div>
-                  <div style={{ fontSize: 12, color: '#888' }}>重新启动系统</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>重新启动系统</div>
                 </div>
               </button>
               <button
@@ -430,9 +440,9 @@ export default function Settings() {
                 style={{
                   padding: '14px 20px',
                   borderRadius: 8,
-                  border: '1px solid #f44747',
-                  background: 'rgba(244,71,71,0.15)',
-                  color: '#f44747',
+                  border: '1px solid #ff6b6b',
+                  background: 'rgba(255,107,107,0.15)',
+                  color: '#ff6b6b',
                   cursor: 'pointer',
                   fontSize: 14,
                   display: 'flex',
@@ -441,10 +451,10 @@ export default function Settings() {
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(244,71,71,0.25)'
+                  e.currentTarget.style.background = 'rgba(255,107,107,0.25)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(244,71,71,0.15)'
+                  e.currentTarget.style.background = 'rgba(255,107,107,0.15)'
                 }}
               >
                 <span style={{ fontSize: 20 }}>⏻</span>
@@ -459,28 +469,28 @@ export default function Settings() {
 
         {activeCategory === 'about' && (
           <div>
-            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20 }}>关于系统</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>关于系统</h3>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <div style={{ fontSize: 64, marginBottom: 8 }}>🐧</div>
-              <div style={{ fontSize: 24, fontWeight: 600 }}>Web Linux</div>
-              <div style={{ fontSize: 14, color: '#888', marginTop: 4 }}>版本 8.2.1</div>
+              <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>Web Linux</div>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>版本 8.2.1</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div style={{ padding: 12, background: '#2d2d2d', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, color: '#888' }}>内核版本</div>
-                <div style={{ fontSize: 14 }}>6.15.0-web</div>
+              <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>内核版本</div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>6.15.0-web</div>
               </div>
-              <div style={{ padding: 12, background: '#2d2d2d', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, color: '#888' }}>桌面环境</div>
-                <div style={{ fontSize: 14 }}>WebDE 4.3</div>
+              <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>桌面环境</div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>WebDE 4.3</div>
               </div>
-              <div style={{ padding: 12, background: '#2d2d2d', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, color: '#888' }}>架构</div>
-                <div style={{ fontSize: 14 }}>x86_64 (Web)</div>
+              <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>架构</div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>x86_64 (Web)</div>
               </div>
-              <div style={{ padding: 12, background: '#2d2d2d', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, color: '#888' }}>构建日期</div>
-                <div style={{ fontSize: 14 }}>{new Date().toLocaleDateString('zh-CN')}</div>
+              <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>构建日期</div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{new Date().toLocaleDateString('zh-CN')}</div>
               </div>
             </div>
           </div>
