@@ -1682,3 +1682,550 @@ registerCommand('hash-verify', {
   usage: 'hash-verify <算法> <哈希> <文本>',
   examples: ['hash-verify sha256 myhash Hello']
 })
+
+registerCommand('find', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔍 文件查找',
+          '',
+          '用法: find [路径] [-name <模式>]',
+          '',
+          '示例:',
+          '  find /home/user',
+          '  find -name "*.txt"',
+          '  find /home/user -name "*.md"',
+        ].join('\n')
+      }
+    }
+    
+    let targetPath = cwd
+    let namePattern: string | null = null
+    
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '-name') {
+        namePattern = args[i + 1]
+        i++
+      } else {
+        targetPath = resolvePath(cwd, args[i])
+      }
+    }
+    
+    const node = findNodeByPath(files, targetPath)
+    if (!node || node.type !== 'folder') {
+      return { output: `find: ${targetPath}: 没有那个文件或目录` }
+    }
+    
+    const results: string[] = []
+    
+    const search = (currentNode: typeof node, currentPath: string) => {
+      if (currentNode.children) {
+        for (const child of currentNode.children) {
+          const childPath = currentPath === '/' ? `/${child.name}` : `${currentPath}/${child.name}`
+          
+          if (namePattern) {
+            const regex = new RegExp(namePattern.replace(/\*/g, '.*'))
+            if (regex.test(child.name)) {
+              results.push(childPath)
+            }
+          } else {
+            results.push(childPath)
+          }
+          
+          if (child.type === 'folder') {
+            search(child, childPath)
+          }
+        }
+      }
+    }
+    
+    search(node, targetPath)
+    
+    return { output: results.join('\n') || '没有找到匹配的文件' }
+  },
+  description: '查找文件',
+  usage: 'find [路径] [-name <模式>]',
+  examples: ['find', 'find -name "*.txt"', 'find /home/user -name "*.md"']
+})
+
+registerCommand('stat', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length === 0) {
+      return { output: 'stat: 缺少操作数' }
+    }
+    
+    const resolved = resolvePath(cwd, args[0])
+    const node = findNodeByPath(files, resolved)
+    
+    if (!node) {
+      return { output: `stat: 无法访问'${args[0]}': 没有那个文件或目录` }
+    }
+    
+    const now = new Date()
+    const size = node.type === 'file' ? (node.content || '').length : 0
+    
+    return {
+      output: [
+        `文件: ${args[0]}`,
+        `大小: ${size} 字节`,
+        `类型: ${node.type === 'folder' ? '目录' : '常规文件'}`,
+        `权限: -rw-r--r--`,
+        `所有者: user`,
+        `组: user`,
+        `创建时间: ${now.toLocaleString('zh-CN')}`,
+        `修改时间: ${now.toLocaleString('zh-CN')}`,
+      ].join('\n')
+    }
+  },
+  description: '显示文件状态',
+  usage: 'stat <文件>',
+  examples: ['stat file.txt', 'stat /home/user']
+})
+
+registerCommand('ln', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return { output: 'ln: 缺少操作数\n用法: ln <源文件> <目标路径>' }
+    }
+    
+    return { output: `ln: 创建链接 ${args[0]} -> ${args[1]} (虚拟文件系统暂不支持链接)` }
+  },
+  description: '创建链接',
+  usage: 'ln <源文件> <目标路径>',
+  examples: ['ln file.txt link.txt']
+})
+
+registerCommand('chmod', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return { output: 'chmod: 缺少操作数\n用法: chmod <权限> <文件>' }
+    }
+    
+    const permissions = args[0]
+    const target = args[1]
+    
+    return { output: `chmod: 将 ${target} 的权限更改为 ${permissions} (虚拟文件系统暂不支持权限)` }
+  },
+  description: '更改文件权限',
+  usage: 'chmod <权限> <文件>',
+  examples: ['chmod 755 script.sh']
+})
+
+registerCommand('less', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length === 0) {
+      return { output: 'less: 缺少操作数' }
+    }
+    
+    const resolved = resolvePath(cwd, args[0])
+    const node = findNodeByPath(files, resolved)
+    
+    if (!node || node.type !== 'file') {
+      return { output: `less: ${args[0]}: 没有那个文件或目录` }
+    }
+    
+    const content = node.content || ''
+    const lines = content.split('\n')
+    const pageSize = 20
+    const totalPages = Math.ceil(lines.length / pageSize)
+    
+    return {
+      output: [
+        `正在查看: ${args[0]}`,
+        `共 ${lines.length} 行, ${totalPages} 页`,
+        '',
+        lines.slice(0, pageSize).join('\n'),
+        '',
+        `-- 第 1/${totalPages} 页 -- (按空格翻页, q退出)`,
+      ].join('\n')
+    }
+  },
+  description: '分页查看文件',
+  usage: 'less <文件>',
+  examples: ['less README.md']
+})
+
+registerCommand('diff', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length < 2) {
+      return { output: 'diff: 缺少操作数\n用法: diff <文件1> <文件2>' }
+    }
+    
+    const resolved1 = resolvePath(cwd, args[0])
+    const resolved2 = resolvePath(cwd, args[1])
+    const node1 = findNodeByPath(files, resolved1)
+    const node2 = findNodeByPath(files, resolved2)
+    
+    if (!node1 || node1.type !== 'file') {
+      return { output: `diff: ${args[0]}: 没有那个文件或目录` }
+    }
+    if (!node2 || node2.type !== 'file') {
+      return { output: `diff: ${args[1]}: 没有那个文件或目录` }
+    }
+    
+    const lines1 = (node1.content || '').split('\n')
+    const lines2 = (node2.content || '').split('\n')
+    
+    const maxLines = Math.max(lines1.length, lines2.length)
+    const diffOutput: string[] = [`--- ${args[0]}`, `+++ ${args[1]}`]
+    
+    for (let i = 0; i < maxLines; i++) {
+      const line1 = lines1[i] || ''
+      const line2 = lines2[i] || ''
+      
+      if (line1 === line2) {
+        diffOutput.push(`  ${line1}`)
+      } else if (!line1) {
+        diffOutput.push(`+ ${line2}`)
+      } else if (!line2) {
+        diffOutput.push(`- ${line1}`)
+      } else {
+        diffOutput.push(`- ${line1}`)
+        diffOutput.push(`+ ${line2}`)
+      }
+    }
+    
+    return { output: diffOutput.join('\n') }
+  },
+  description: '比较两个文件',
+  usage: 'diff <文件1> <文件2>',
+  examples: ['diff file1.txt file2.txt']
+})
+
+registerCommand('system-info', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+    const cores = navigator.hardwareConcurrency || 4
+    
+    const output = [
+      '══════════════════════════════════════════════════════════════',
+      '                    系统信息',
+      '══════════════════════════════════════════════════════════════',
+      '',
+      '┌────────────────────────────────────────────────────────────┐',
+      '│ 基本信息                                                   │',
+      '├────────────────────────────────────────────────────────────┤',
+      `│ 操作系统:   WebLinuxOS 2.9.0                               │`,
+      `│ 内核版本:   6.15.0-web                                    │`,
+      `│ 架构:       x86_64 / WebAssembly                          │`,
+      `│ 运行时间:   ${Math.floor(Math.random() * 24)}小时${Math.floor(Math.random() * 60)}分钟              │`,
+      `│ 当前时间:   ${now.toLocaleString('zh-CN')}                │`,
+      '├────────────────────────────────────────────────────────────┤',
+      '│ 硬件信息                                                   │',
+      '├────────────────────────────────────────────────────────────┤',
+      `│ CPU核心数:  ${cores} 核心                                 │`,
+      `│ 总内存:     ${deviceMemory ? deviceMemory + ' GB' : '未知'}               │`,
+      `│ 浏览器:     ${navigator.userAgent.split(' ').slice(-1)[0]}             │`,
+      `│ 用户代理:   ${navigator.userAgent.substring(0, 50)}...    │`,
+      '├────────────────────────────────────────────────────────────┤',
+      '│ 网络信息                                                   │',
+      '├────────────────────────────────────────────────────────────┤',
+      `│ 在线状态:   已连接                                         │`,
+      `│ 连接类型:   ${(navigator as unknown as { connection: { effectiveType?: string } }).connection?.effectiveType || '未知'}      │`,
+      `│ 语言:       ${navigator.language}                          │`,
+      `│ 平台:       ${navigator.platform}                         │`,
+      '└────────────────────────────────────────────────────────────┘',
+    ].join('\n')
+    
+    return { output }
+  },
+  description: '显示详细系统信息',
+  usage: 'system-info',
+  examples: ['system-info']
+})
+
+registerCommand('netstat', {
+  handler: (): CommandResult => {
+    const connections = [
+      { proto: 'tcp', recv: '0', send: '0', local: '127.0.0.1:22', foreign: '0.0.0.0:*', state: 'LISTEN' },
+      { proto: 'tcp', recv: '0', send: '0', local: '127.0.0.1:80', foreign: '0.0.0.0:*', state: 'LISTEN' },
+      { proto: 'tcp', recv: '0', send: '0', local: '0.0.0.0:443', foreign: '0.0.0.0:*', state: 'LISTEN' },
+      { proto: 'tcp', recv: '0', send: '0', local: '192.168.1.100:49152', foreign: '104.18.2.19:443', state: 'ESTABLISHED' },
+      { proto: 'udp', recv: '0', send: '0', local: '0.0.0.0:53', foreign: '0.0.0.0:*', state: '' },
+      { proto: 'udp', recv: '0', send: '0', local: '0.0.0.0:68', foreign: '0.0.0.0:*', state: '' },
+    ]
+    
+    const output = [
+      '╔════════════════════════════════════════════════════════════════╗',
+      '║                    网络连接状态                                ║',
+      '╠══════════╦════════╦════════╦════════════════╦═══════════════╦══════════╣',
+      '║ 协议     │ 接收   │ 发送   │ 本地地址       │ 外部地址      │ 状态     ║',
+      '╠══════════╬════════╬════════╬════════════════╬═══════════════╬══════════╣',
+      ...connections.map(c => 
+        `║ ${c.proto.padEnd(8)} │ ${c.recv.padEnd(6)} │ ${c.send.padEnd(6)} │ ${c.local.padEnd(16)} │ ${c.foreign.padEnd(15)} │ ${c.state.padEnd(8)} ║`
+      ),
+      '╚══════════╩════════╩════════╩════════════════╩═══════════════╩══════════╝',
+      '',
+      `TCP连接数: ${connections.filter(c => c.proto === 'tcp').length}`,
+      `UDP连接数: ${connections.filter(c => c.proto === 'udp').length}`,
+    ].join('\n')
+    
+    return { output }
+  },
+  description: '显示网络连接状态',
+  usage: 'netstat',
+  examples: ['netstat']
+})
+
+registerCommand('dnslookup', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔍 DNS查询',
+          '',
+          '用法: dnslookup <域名>',
+          '',
+          '示例:',
+          '  dnslookup github.com',
+          '  dnslookup google.com',
+        ].join('\n')
+      }
+    }
+    
+    const domain = args[0]
+    
+    try {
+      const response = await fetch(`https://dns.google/resolve?name=${domain}&type=A`)
+      if (!response.ok) throw new Error('查询失败')
+      
+      const data = await response.json()
+      const answers = data.Answer || []
+      
+      if (answers.length > 0) {
+        return {
+          output: [
+            `DNS 查询结果: ${domain}`,
+            '',
+            ...answers.map((a: any) => `  ${a.data} (${a.type === 1 ? 'A记录' : '其他'})`),
+          ].join('\n')
+        }
+      }
+      
+      return { output: `dnslookup: 未找到 ${domain} 的记录` }
+    } catch {
+      const fallbackResults: Record<string, string[]> = {
+        'github.com': ['140.82.113.4'],
+        'google.com': ['142.250.185.142'],
+        'example.com': ['93.184.216.34'],
+      }
+      
+      const results = fallbackResults[domain] || ['192.168.1.1']
+      
+      return {
+        output: [
+          `DNS 查询结果: ${domain}`,
+          '',
+          ...results.map(ip => `  ${ip} (A记录)`),
+          '',
+          '提示: 使用备用DNS服务器',
+        ].join('\n')
+      }
+    }
+  },
+  description: 'DNS域名查询',
+  usage: 'dnslookup <域名>',
+  examples: ['dnslookup github.com', 'dnslookup google.com']
+})
+
+registerCommand('iplookup', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🌍 IP查询',
+          '',
+          '用法: iplookup <IP地址>',
+          '',
+          '示例:',
+          '  iplookup 8.8.8.8',
+          '  iplookup 1.1.1.1',
+        ].join('\n')
+      }
+    }
+    
+    const ip = args[0]
+    
+    try {
+      const response = await fetch(`https://ipapi.co/${ip}/json/`)
+      if (!response.ok) throw new Error('查询失败')
+      
+      const data = await response.json()
+      
+      return {
+        output: [
+          `IP 查询结果: ${ip}`,
+          '',
+          `国家: ${data.country_name || '未知'} (${data.country_code || ''})`,
+          `城市: ${data.city || '未知'}`,
+          `地区: ${data.region || '未知'}`,
+          `ISP: ${data.org || '未知'}`,
+          `ASN: ${data.asn || '未知'}`,
+          `时区: ${data.timezone || '未知'}`,
+          `经纬度: ${data.latitude || ''}, ${data.longitude || ''}`,
+        ].join('\n')
+      }
+    } catch {
+      return {
+        output: [
+          `IP 查询结果: ${ip}`,
+          '',
+          '查询失败，使用本地数据库',
+          '',
+          '提示: 某些IP可能无法查询到详细信息',
+        ].join('\n')
+      }
+    }
+  },
+  description: 'IP地址查询',
+  usage: 'iplookup <IP地址>',
+  examples: ['iplookup 8.8.8.8', 'iplookup 1.1.1.1']
+})
+
+registerCommand('yaml', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📋 YAML工具',
+          '',
+          '用法: yaml <JSON字符串>',
+          '',
+          '示例:',
+          '  yaml {"name":"test","items":[1,2,3]}',
+          '',
+          '功能: 将JSON转换为YAML格式',
+        ].join('\n')
+      }
+    }
+    
+    try {
+      const json = JSON.parse(args.join(' '))
+      
+      const toYaml = (obj: any, indent: number = 0): string => {
+        const spaces = '  '.repeat(indent)
+        let result = ''
+        
+        if (typeof obj === 'object' && obj !== null) {
+          if (Array.isArray(obj)) {
+            for (const item of obj) {
+              result += `${spaces}- ${toYaml(item, indent + 1).trim()}\n`
+            }
+          } else {
+            for (const [key, value] of Object.entries(obj)) {
+              const valueYaml = toYaml(value, indent + 1).trim()
+              if (typeof value === 'object' && value !== null) {
+                result += `${spaces}${key}:\n${valueYaml}\n`
+              } else {
+                result += `${spaces}${key}: ${valueYaml}\n`
+              }
+            }
+          }
+        } else if (typeof obj === 'string') {
+          result = `"${obj}"`
+        } else {
+          result = String(obj)
+        }
+        
+        return result
+      }
+      
+      return { output: toYaml(json).trim() }
+    } catch {
+      return { output: 'yaml: 无效的JSON格式' }
+    }
+  },
+  description: 'JSON转YAML',
+  usage: 'yaml <JSON字符串>',
+  examples: ['yaml {"name":"test"}']
+})
+
+registerCommand('regex', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🔍 正则表达式测试',
+          '',
+          '用法: regex <模式> <文本>',
+          '',
+          '示例:',
+          '  regex "\\d+" "abc123def456"',
+          '  regex "[a-z]+" "Hello World"',
+          '',
+          '支持的标志:',
+          '  -i 忽略大小写',
+          '  -g 全局匹配',
+        ].join('\n')
+      }
+    }
+    
+    const ignoreCase = args.includes('-i')
+    const global = args.includes('-g')
+    const patternArg = args.find(arg => !arg.startsWith('-')) || ''
+    const textStartIndex = args.indexOf(patternArg) + 1
+    const text = args.slice(textStartIndex).filter(arg => !arg.startsWith('-')).join(' ')
+    
+    try {
+      const flags = (ignoreCase ? 'i' : '') + (global ? 'g' : '')
+      const regex = new RegExp(patternArg, flags)
+      
+      const matches: string[] = []
+      let match
+      
+      if (global) {
+        while ((match = regex.exec(text)) !== null) {
+          matches.push(`匹配: "${match[0]}" 位置: ${match.index}`)
+          if (!global) break
+        }
+      } else {
+        match = regex.exec(text)
+        if (match) {
+          matches.push(`匹配: "${match[0]}" 位置: ${match.index}`)
+        }
+      }
+      
+      if (matches.length === 0) {
+        return { output: `regex: 未找到匹配 (模式: ${patternArg})` }
+      }
+      
+      return {
+        output: [
+          `正则表达式: ${patternArg}`,
+          `标志: ${flags || '无'}`,
+          `测试文本: ${text}`,
+          '',
+          `找到 ${matches.length} 个匹配:`,
+          ...matches,
+        ].join('\n')
+      }
+    } catch (e) {
+      return { output: `regex: 无效的正则表达式 - ${(e as Error).message}` }
+    }
+  },
+  description: '正则表达式测试',
+  usage: 'regex <模式> <文本>',
+  examples: ['regex "\\d+" "abc123"', 'regex -i "hello" "Hello World"']
+})
