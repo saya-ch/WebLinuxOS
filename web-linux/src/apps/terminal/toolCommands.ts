@@ -1304,6 +1304,12 @@ registerCommand('help', {
       'apps': { desc: '列出所有应用', usage: 'apps' },
       'clear': { desc: '清空屏幕', usage: 'clear' },
       'help': { desc: '显示此帮助信息', usage: 'help [命令]' },
+      'curl': { desc: '获取URL内容', usage: 'curl [选项] URL' },
+      'fetch': { desc: '获取URL JSON内容', usage: 'fetch URL' },
+      'ping': { desc: '测试网络连接延迟', usage: 'ping 主机' },
+      'ip': { desc: '显示网络接口信息', usage: 'ip' },
+      'env': { desc: '显示环境变量', usage: 'env' },
+      'history': { desc: '显示命令历史', usage: 'history' },
     }
     
     if (args.length > 0) {

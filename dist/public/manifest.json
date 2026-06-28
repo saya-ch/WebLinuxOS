@@ -1,0 +1,18 @@
+{
+  "name": "WebLinuxOS",
+  "short_name": "WebLinux",
+  "description": "一个完全运行在浏览器中的功能性Linux桌面环境",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

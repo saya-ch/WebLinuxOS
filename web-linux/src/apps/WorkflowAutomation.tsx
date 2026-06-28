@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, memo } from 'react'
 import { useStore } from '../store'
 
 interface WorkflowStep {
@@ -24,19 +24,7 @@ const TRIGGER_TYPES = [
   { id: 'event', name: '事件触发', icon: '⚡', description: '当特定事件发生时执行' },
 ]
 
-const ACTION_TYPES = [
-  { id: 'notification', name: '发送通知', icon: '🔔', description: '向系统发送通知' },
-  { id: 'api', name: '调用API', icon: '🌐', description: '发起HTTP请求' },
-  { id: 'data', name: '数据处理', icon: '📊', description: '处理和转换数据' },
-  { id: 'file', name: '文件操作', icon: '📁', description: '创建或修改文件' },
-  { id: 'timer', name: '延时等待', icon: '⏳', description: '等待指定时间' },
-]
 
-const CONDITION_TYPES = [
-  { id: 'time', name: '时间条件', icon: '🕐', description: '根据时间判断' },
-  { id: 'value', name: '值判断', icon: '🔍', description: '根据数据值判断' },
-  { id: 'state', name: '状态检查', icon: '📋', description: '检查系统状态' },
-]
 
 const PRESET_WORKFLOWS: Workflow[] = [
   {
@@ -87,12 +75,10 @@ export default memo(function WorkflowAutomation() {
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
-  const [activeTab, setActiveTab] = useState<'list' | 'create'>('list')
 
   const handleRunWorkflow = async (workflow: Workflow) => {
     setIsRunning(true)
     addNotification({
-      id: `wf-${Date.now()}`,
       title: '工作流执行中',
       message: `正在执行: ${workflow.name}`,
       type: 'info',
@@ -110,7 +96,6 @@ export default memo(function WorkflowAutomation() {
 
     setIsRunning(false)
     addNotification({
-      id: `wf-${Date.now()}`,
       title: '工作流完成',
       message: `${workflow.name} 执行成功`,
       type: 'success',
@@ -508,7 +493,6 @@ export default memo(function WorkflowAutomation() {
                   onClick={() => {
                     setShowEditor(false)
                     addNotification({
-                      id: `wf-create-${Date.now()}`,
                       title: '工作流创建成功',
                       message: '新工作流已添加到列表中',
                       type: 'success',

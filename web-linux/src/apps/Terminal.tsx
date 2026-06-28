@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useStore, findNodeByPath, resolvePath } from '../store'
+import { useStore, findNodeByPath } from '../store'
 import type { FileNode, WindowState } from '../types'
 import { getCommand, listCommands } from './terminal'
 import type { CommandContext, CommandResult } from './terminal/commands'
@@ -99,7 +99,6 @@ export default function Terminal() {
 
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const renameFileRef = useLatest(renameFile)
   const getWindowsRef = useLatest(getWindows)
   const closeWindowRef = useLatest(closeWindow)
 
@@ -146,170 +145,7 @@ export default function Terminal() {
     return []
   }, [files, cwd])
 
-  const executeFileOperation = useCallback((command: string, args: string[]) => {
-    switch (command) {
-      case 'mkdir': {
-        if (args.length === 0) return 'mkdir: 缺少操作数'
-        const resolved = resolvePath(cwd, args[0])
-        const parts = resolved.split('/').filter(Boolean)
-        const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-        const dirName = parts[parts.length - 1]
-        const parentNode = findNodeByPath(files, parentPath)
-        if (parentNode) {
-          addFile(parentNode.id, dirName, 'folder')
-          return ''
-        }
-        return `mkdir: 无法创建目录'${args[0]}': 没有那个文件或目录`
-      }
-      case 'touch': {
-        if (args.length === 0) return 'touch: 缺少操作数'
-        const resolved = resolvePath(cwd, args[0])
-        const parts = resolved.split('/').filter(Boolean)
-        const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-        const fileName = parts[parts.length - 1]
-        const parentNode = findNodeByPath(files, parentPath)
-        const existing = findNodeByPath(files, resolved)
-        if (existing) {
-          return ''
-        } else if (parentNode) {
-          addFile(parentNode.id, fileName, 'file')
-          return ''
-        }
-        return `touch: 无法创建'${args[0]}': 没有那个文件或目录`
-      }
-      case 'rm': {
-        if (args.length === 0) return 'rm: 缺少操作数'
-        const resolved = resolvePath(cwd, args[0])
-        const node = findNodeByPath(files, resolved)
-        if (node) {
-          deleteFile(node.id)
-          return ''
-        }
-        return `rm: 无法删除'${args[0]}': 没有那个文件或目录`
-      }
-      case 'write':
-      case 'tee': {
-        if (args.length < 2) {
-          return `${command}: 缺少操作数\n用法: ${command} <文件名> <内容...>`
-        }
-        const resolved = resolvePath(cwd, args[0])
-        const parts = resolved.split('/').filter(Boolean)
-        const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-        const fileName = parts[parts.length - 1]
-        const parentNode = findNodeByPath(files, parentPath)
-        const existing = findNodeByPath(files, resolved)
-        const content = args.slice(1).join(' ')
-        if (existing) {
-          updateFileContent(existing.id, content)
-          return command === 'tee' ? content : ''
-        } else if (parentNode) {
-          addFile(parentNode.id, fileName, 'file')
-          setTimeout(() => {
-            const updatedFiles = useStore.getState().files
-            const newFile = findNodeByPath(updatedFiles, resolved)
-            if (newFile) updateFileContent(newFile.id, content)
-          }, 50)
-          return command === 'tee' ? content : ''
-        }
-        return `${command}: 无法创建 '${args[0]}': 没有那个文件或目录`
-      }
-      case 'append': {
-        if (args.length < 2) {
-          return 'append: 缺少操作数\n用法: append <文件名> <内容...>'
-        }
-        const resolved = resolvePath(cwd, args[0])
-        const existing = findNodeByPath(files, resolved)
-        const content = args.slice(1).join(' ')
-        if (existing && existing.type === 'file') {
-          updateFileContent(existing.id, (existing.content || '') + content)
-          return ''
-        }
-        return `append: ${args[0]}: 没有那个文件或目录`
-      }
-      case 'cp': {
-        if (args.length < 2) {
-          return 'cp: 缺少操作数\n用法: cp 源文件 目标路径'
-        }
-        const source = resolvePath(cwd, args[0])
-        const target = resolvePath(cwd, args[1])
-        const sourceNode = findNodeByPath(files, source)
-        const targetNode = findNodeByPath(files, target)
-        
-        if (!sourceNode) {
-          return `cp: 无法访问'${args[0]}': 没有那个文件或目录`
-        } else if (sourceNode.type === 'folder' && targetNode?.type === 'folder') {
-          copyFile(sourceNode.id, targetNode.id)
-          return ''
-        } else if (sourceNode.type === 'file' && targetNode?.type === 'folder') {
-          copyFile(sourceNode.id, targetNode.id)
-          return ''
-        } else if (sourceNode.type === 'file' && !targetNode) {
-          const parts = target.split('/').filter(Boolean)
-          const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-          const fileName = parts[parts.length - 1]
-          const parentNode = findNodeByPath(files, parentPath)
-          if (parentNode) {
-            copyFile(sourceNode.id, parentNode.id)
-            setTimeout(() => {
-              const updatedFiles = useStore.getState().files
-              const parent = findNodeByPath(updatedFiles, parentPath)
-              if (parent?.children) {
-                const newFile = parent.children.find(c => c.name === sourceNode.name)
-                if (newFile) {
-                  renameFileRef.current(newFile.id, fileName)
-                }
-              }
-            }, 100)
-            return ''
-          }
-          return `cp: 无法创建'${args[1]}': 没有那个文件或目录`
-        }
-        return `cp: 无法复制'${args[0]}': 无效的目标`
-      }
-      case 'mv': {
-        if (args.length < 2) {
-          return 'mv: 缺少操作数\n用法: mv 源文件 目标路径'
-        }
-        const source = resolvePath(cwd, args[0])
-        const target = resolvePath(cwd, args[1])
-        const sourceNode = findNodeByPath(files, source)
-        const targetNode = findNodeByPath(files, target)
-        
-        if (!sourceNode) {
-          return `mv: 无法访问'${args[0]}': 没有那个文件或目录`
-        } else if (sourceNode.type === 'folder' && targetNode?.type === 'folder') {
-          moveFile(sourceNode.id, targetNode.id)
-          return ''
-        } else if (sourceNode.type === 'file' && targetNode?.type === 'folder') {
-          moveFile(sourceNode.id, targetNode.id)
-          return ''
-        } else if (sourceNode.type === 'file' && !targetNode) {
-          const parts = target.split('/').filter(Boolean)
-          const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-          const fileName = parts[parts.length - 1]
-          const parentNode = findNodeByPath(files, parentPath)
-          if (parentNode) {
-            moveFile(sourceNode.id, parentNode.id)
-            setTimeout(() => {
-              const updatedFiles = useStore.getState().files
-              const parent = findNodeByPath(updatedFiles, parentPath)
-              if (parent?.children) {
-                const movedFile = parent.children.find(c => c.name === sourceNode.name)
-                if (movedFile) {
-                  renameFileRef.current(movedFile.id, fileName)
-                }
-              }
-            }, 100)
-            return ''
-          }
-          return `mv: 无法移动'${args[1]}': 没有那个文件或目录`
-        }
-        return `mv: 无法移动'${args[0]}': 无效的目标`
-      }
-      default:
-        return ''
-    }
-  }, [cwd, files, addFile, deleteFile, copyFile, moveFile, updateFileContent, renameFileRef])
+
 
   const executeCommand = useCallback(async (cmd: string) => {
     let trimmed = cmd.trim()
@@ -399,13 +235,6 @@ export default function Terminal() {
       return
     }
 
-    const fileOps = ['mkdir', 'touch', 'rm', 'write', 'tee', 'append', 'cp', 'mv']
-    if (fileOps.includes(command)) {
-      const output = executeFileOperation(command, args)
-      setHistory(prev => [...prev, { input: cmd, output }])
-      return
-    }
-
     const cmdDef = getCommand(command)
     if (cmdDef) {
       const context: CommandContext = {
@@ -442,7 +271,7 @@ export default function Terminal() {
     }
 
     setHistory(prev => [...prev, { input: cmd, output: `bash: ${command}: 未找到命令 (输入 'help' 查看可用命令)` }])
-  }, [cwd, files, prevCwd, cmdHistory, aliases, executeFileOperation, theme])
+  }, [cwd, files, prevCwd, cmdHistory, aliases, theme])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
