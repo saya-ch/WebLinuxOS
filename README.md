@@ -1,318 +1,349 @@
 # WebLinuxOS
 
-一个运行在浏览器中的完整 Linux 桌面环境
+一个基于 React + TypeScript 构建的 Web 桌面操作系统，提供完整的桌面体验和丰富的应用程序生态系统。
 
-[在线体验](https://saya-ch.github.io/WebLinuxOS/) | [中文文档](README_CN.md) | [贡献指南](CONTRIBUTING.md)
+## 项目简介
 
----
+WebLinuxOS 是一个创新的 Web 桌面操作系统，完全基于浏览器运行，无需安装任何软件即可体验完整的桌面环境。项目采用现代化的前端技术栈，提供了类 Linux 桌面的交互体验，包括窗口管理、任务栏、文件系统、多任务处理等核心功能。
 
-## 简介
+**核心特性：**
+- 真实的窗口管理系统：支持拖拽、缩放、最小化、最大化、关闭
+- 动态任务栏：应用切换、系统托盘、时钟显示
+- 虚拟文件系统：完整的文件管理体验
+- 多应用并行：支持多个应用同时运行
+- 主题切换：深色/浅色模式无缝切换
+- 响应式设计：适配各种屏幕尺寸
 
-WebLinuxOS 是一个生产级的 Web 操作系统，提供完整的桌面体验和真实功能。不同于普通的操作系统模拟器，WebLinuxOS 集成了实时 API、真实硬件数据和实用工具，使其成为真正可用于日常工作的平台。
+## 应用程序概览
 
-无需安装任何软件，只需打开浏览器即可访问一个功能完整的 Linux 桌面环境。
+项目包含 **220+** 款精心设计的应用程序，覆盖以下类别：
 
----
+### 系统应用
+- 文件管理器 - 完整的文件浏览与管理
+- 终端 - 命令行模拟器
+- 系统监视器 - 实时性能监控
+- 任务管理器 - 进程与应用管理
+- 设置中心 - 系统配置面板
 
-## 核心功能
+### 开发工具
+- 代码编辑器 - 支持 JavaScript/TypeScript/HTML/CSS
+- **开发者生态系统** - 代码片段库、项目模板、API文档浏览器、工具链配置器
+- REST 客户端 - API 测试工具
+- 正则表达式测试器 - Regex 验证与调试
+- JSON 格式化器 - 数据格式转换
+- GitHub 探索器 - 仓库与趋势浏览
 
-### 真实数据集成
+### 办公应用
+- Markdown 编辑器 - 实时预览编辑
+- 电子表格 - 数据录入与计算
+- 演示文稿 -幻灯片制作
+- 日历 - 日期管理与提醒
+- 便签应用 - 快速笔记记录
 
-- **实时天气**: 通过 Open-Meteo API 获取全球城市天气数据
-- **网络信息**: 使用 ipapi.co 获取真实 IP 地理位置和 ISP 信息
-- **加密货币**: CoinGecko API 提供实时加密货币行情
-- **科技新闻**: Hacker News API 获取最新技术资讯
-- **GitHub 数据**: 仓库浏览和统计数据
-- **Python 执行**: Pyodide 运行时实现在浏览器中执行 Python 代码
+### 创新应用（v11.0.0 新增）
 
-### 完整桌面环境
+#### AI 学习伴侣
+一款智能辅助学习工具，专为知识管理和技能提升而设计。
 
-- **窗口管理**: 支持拖拽、调整大小、最小化、最大化
-- **多桌面**: 9个虚拟桌面支持，键盘快捷键切换
-- **任务栏**: 带应用预览和系统托盘
-- **应用启动器**: 支持分类过滤和搜索
-- **虚拟文件系统**: 支持增删改查操作，localStorage 持久化
-- **右键菜单**: 完整的上下文菜单系统
+**核心功能：**
+- 知识卡片系统：基于间隔重复的记忆算法
+- 学习路径规划：系统化的知识掌握路线
+- AI智能问答：即时解答学习疑问
+- 进度追踪：学习数据可视化分析
+- 个性化学习计划：根据目标定制学习方案
 
-### 终端模拟器
+**设计特色：**
+- 温暖舒适的学习氛围
+- 柔和渐变色系（淡紫、淡粉、淡蓝）
+- 圆润卡片设计，减少视觉疲劳
 
-终端提供超过 80 个功能命令：
+#### 创意灵感工坊
+一款创意生成工具，帮助设计师和创作者激发灵感。
 
-```bash
-# 文件操作
-ls, cd, pwd, cat, mkdir, touch, rm, cp, mv, tree, grep, find
-stat, ln, chmod, head, tail, less, wc, diff
+**核心功能：**
+- 灵感画板：可视化创意组合工具
+- 关键词联想：智能词汇拓展引擎
+- 创意提示生成器：10种启发式创意方法
+- 随机创意组合：关键词+配色+形状一键生成
+- 收藏夹管理：保存优质创意方案
 
-# 网络命令
-curl <url>           # 获取网页内容
-fetch <api-url>      # 获取 JSON 数据
-ip                   # 公网 IP 和位置
-ipinfo               # 详细网络信息
-weather [city]       # 实时天气
-ping <host>          # 网络延迟测试
-news                 # 科技新闻
-netstat              # 网络连接状态
-dnslookup <domain>   # DNS 查询
-iplookup <ip>        # IP 位置查询
+**设计特色：**
+- 活泼多彩的视觉风格
+- 鲜明对比色搭配
+- 不对称布局与动态元素
 
-# 系统信息
-cpu-info             # CPU 核心和用量
-memory-info          # 内存统计
-system-info          # 详细系统信息
-uptime               # 系统运行时间
-top, ps              # 进程监控
-df, disk-usage       # 磁盘使用
+#### 开发者生态系统
+开发者工具聚合中心，一站式开发资源平台。
 
-# 工具命令
-calc <expr>          # 数学计算器
-base64 <text>        # Base64 编码
-unbase64 <text>      # Base64 解码
-hash <algorithm> <text>  # 哈希计算 (MD5/SHA1/SHA256/SHA512)
-hash-verify          # 哈希验证
-uuid                 # 生成 UUID
-password [len]       # 安全密码生成
-translate <text>     # 文本翻译
-qrcode <text>        # 生成二维码
-convert <val> <from> <to>  # 单位转换
-yaml <json>          # JSON 转 YAML
-regex <pattern> <text> # 正则表达式测试
-binary <text>        # 文本与二进制转换
-color <hex>          # 颜色工具
-roman <number>       # 罗马数字转换
-prime <number>       # 质数检测
-factor <number>      # 质因数分解
+**核心功能：**
+- 代码片段库：保存、搜索、运行代码片段
+- 项目模板：快速生成 React/Node/CLI 项目结构
+- API 文档浏览器：GitHub/Open-Meteo/CoinGecko 等公共 API
+- 工具链配置器：前端/后端/DevOps 工具集方案
+- 代码运行器：即时执行 JavaScript 代码
 
-# 开发工具
-python               # Python REPL
-run <file>           # 运行脚本
-json <data>          # JSON 格式化
-urlencode <text>     # URL 编码
-urldecode <text>     # URL 解码
+**设计特色：**
+- 技术感深色主题
+- 绿色/蓝色科技渐变
+- 网格化布局，信息密度高
+
+### 多媒体应用
+- 音乐播放器 - 本地音频播放
+- 视频播放器 - 多格式视频支持
+- 图片查看器 - 图片浏览与编辑
+- 画图工具 - 简单绘图应用
+
+### 实用工具
+- 计算器 - 科学计算支持
+- 时钟 - 世界时钟显示
+- 天气 - 实时天气信息
+- 密码生成器 - 安全密码创建
+- QR 码生成器 - 二维码制作
+
+### 游戏娱乐
+- 贪吃蛇 - 经典街机游戏
+- 俄罗斯方块 - 休闲益智
+- 2048 - 数字合并游戏
+- 记忆翻牌 - 记忆训练游戏
+
+## 技术架构
+
+### 前端技术栈
+- **React 18** - 组件化 UI 框架
+- **TypeScript** - 类型安全开发
+- **Vite** - 快速构建工具
+- **Lucide React** - 现代图标库
+- **CSS-in-JS** - 内联样式方案
+
+### 核心模块
+
+```
+src/
+├── apps/                 # 应用组件目录（220+ 应用）
+│   ├── AILearningCompanion.tsx
+│   ├── CreativeInspirationWorkshop.tsx
+│   ├── DevEcosystem.tsx
+│   └── ...
+├── components/           # 系统组件
+│   ├── Window.tsx        # 窗口管理
+│   ├── Taskbar.tsx       # 任务栏
+│   ├── Desktop.tsx       # 桌面环境
+│   └── FileManager.tsx   # 文件管理
+├── store.tsx             # 全局状态管理
+├── apps.tsx              # 应用注册中心
+├── types.ts              # 类型定义
+└── icons.tsx             # 图标系统
 ```
 
-### 200+ 内置应用
+### 状态管理
 
-| 类别 | 应用示例 |
-|------|----------|
-| 开发工具 | Python 代码编辑器、REST 客户端、API 探索器、JSON/YAML 工具、正则测试器、代码格式化、代码片段分享中心 |
-| 实用工具 | 实时仪表盘、天气追踪器、计算器、密码生成器、二维码创建、颜色选择器、单位转换、API健康监控中心 |
-| 办公套件 | Markdown 编辑器、实时Markdown协作编辑器、笔记、任务管理、日历、看板、思维导图、白板、演示文稿 |
-| 网络应用 | Web 浏览器、新闻阅读器、GitHub 热门、维基百科查看器、翻译工具、加密货币追踪 |
-| 多媒体 | 图片查看器、音乐播放器、视频播放器、屏幕录制、摄像头、画图工具 |
-| 游戏 | 贪吃蛇、俄罗斯方块、2048、记忆翻牌、打砖块 |
-| 系统工具 | 终端、文件管理器、系统监视器、进程查看器、磁盘分析 |
-
-### 最新创新应用 (v10.0.0+)
-
-**实时 Markdown 协作编辑器**
-- 支持多人实时协作编辑（模拟多用户光标）
-- 实时预览和语法高亮
-- 版本历史记录和恢复
-- 导出为 HTML 和复制到剪贴板
-- 工具栏快速插入常用 Markdown 元素
-
-**API 健康监控中心**
-- 实时监控多个公开 API 的状态
-- 响应时间趋势图表可视化
-- 自动定期检查和手动检查
-- 分类过滤和统计概览
-- 支持 GitHub API、Open-Meteo、CoinGecko、Hacker News 等多个真实 API
-
-**代码片段分享中心**
-- 分享和管理代码片段
-- 支持多种编程语言和标签分类
-- 搜索、过滤和排序功能
-- 点赞和查看统计
-- 代码预览和一键复制
-
-**创新工具集**
-- **AI 智能助手**: 集成多个 AI 模型，支持对话、代码生成等功能
-- **在线代码运行器**: 支持多种编程语言的在线代码执行环境
-- **系统监控仪表板**: 实时监控系统资源使用情况
-- **网络工具箱**: DNS 查询、IP 查找、端口扫描等网络诊断工具
-- **开发工具集**: 正则表达式测试、JSON 格式化、代码差异比较等
-
----
-
-## 技术栈
-
-- **框架**: React 19 + TypeScript
-- **状态管理**: Zustand
-- **构建工具**: Vite 8
-- **Python 运行时**: Pyodide
-- **图标**: Lucide React
-- **样式**: CSS-in-JS
-
----
+使用 Zustand-like 模式进行全局状态管理：
+- 窗口状态：位置、大小、激活状态
+- 应用状态：运行列表、焦点管理
+- 主题状态：深色/浅色模式
+- 文件系统：虚拟目录结构
 
 ## 快速开始
 
-### 在线体验
-
-访问 [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/) 即可立即使用。
-
-### 本地开发
+### 安装依赖
 
 ```bash
-# 克隆仓库
-git clone https://github.com/saya-ch/WebLinuxOS.git
-
-# 进入项目目录
-cd WebLinuxOS/web-linux
-
-# 安装依赖
+cd web-linux
 npm install
+```
 
-# 启动开发服务器
+### 开发模式
+
+```bash
 npm run dev
+```
 
-# 生产构建
+访问 `http://localhost:5173` 查看应用。
+
+### 生产构建
+
+```bash
+npm run build
+```
+
+构建产物位于 `dist/` 目录。
+
+## GitHub Pages 部署
+
+### 方式一：自动部署（推荐）
+
+项目支持 GitHub Actions 自动部署：
+
+1. 将项目推送到 GitHub 仓库
+2. 进入仓库 Settings > Pages
+3. Source 选择 "GitHub Actions"
+4. 项目将自动构建并部署
+
+### 方式二：手动部署
+
+```bash
+# 构建项目
 npm run build
 
-# 预览构建结果
-npm run preview
+# 部署到 gh-pages 分支
+git subtree push --prefix dist origin gh-pages
 ```
 
-### 构建配置
+### 配置说明
 
-```bash
-# 本地构建 (base path = /)
-npm run build:local
+确保 `vite.config.ts` 正确设置 `base` 路径：
 
-# GitHub Pages 构建
-npm run build:github
+```typescript
+export default defineConfig({
+  base: '/WebLinuxOS/', // 替换为你的仓库名
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
+  }
+})
 ```
 
----
+## 使用示例
 
-## 键盘快捷键
+### 启动应用
 
-### 全局快捷键
+1. 双击桌面图标启动应用
+2. 通过任务栏"应用菜单"浏览全部应用
+3. 使用搜索功能快速定位应用
 
-| 快捷键 | 操作 |
-|--------|------|
-| Ctrl+Shift+L | 应用启动器 |
-| Ctrl+Shift+K | 全局搜索 |
-| Ctrl+Shift+P | 命令面板 |
-| Ctrl+Alt+1-9 | 切换桌面 |
-| Ctrl+Alt+←/→ | 切换上一个/下一个桌面 |
-| Alt+Tab | 窗口循环切换 |
-| Ctrl+W | 关闭窗口 |
-| Ctrl+M | 最小化窗口 |
-| F11 | 全屏切换 |
+### 窗口操作
 
-### 应用快速启动
+- **拖拽**：点击标题栏移动窗口
+- **缩放**：拖拽窗口边角调整大小
+- **最小化**：点击最小化按钮隐藏窗口
+- **最大化**：点击最大化按钮全屏窗口
+- **关闭**：点击关闭按钮终止应用
 
-| 快捷键 | 应用 |
-|--------|------|
-| Ctrl+T | 终端 |
-| Ctrl+E | 文件管理器 |
-| Ctrl+B | Web 浏览器 |
-| Ctrl+, | 系统设置 |
-| Ctrl+G | 代码编辑器 |
-| Ctrl+D | 系统监视器 |
+### 文件管理
 
----
+- 创建文件夹和文件
+- 复制、移动、删除操作
+- 文件搜索与排序
 
-## API 集成
+### 主题切换
 
-WebLinuxOS 集成多个公共 API：
+通过设置中心或系统托盘快速切换深色/浅色主题。
 
-| API | 用途 | 应用 |
-|-----|------|------|
-| Open-Meteo | 天气数据 | 天气应用、终端命令 |
-| ipapi.co | IP 地理位置 | 终端 ip 命令 |
-| CoinGecko | 加密货币行情 | 加密货币追踪器 |
-| Hacker News | 科技新闻 | 新闻阅读器 |
-| GitHub API | 仓库数据 | GitHub 探索器 |
-| Wikipedia | 文章内容 | 维基百科阅读器 |
+## 截图说明
 
----
+**桌面环境**
+- 类 Linux 桌面布局
+- 动态壁纸支持
+- 可定制图标位置
 
-## 性能优化
+**窗口管理**
+- 多窗口并行运行
+- 阴影与透明效果
+- 焦点智能切换
 
-- **GPU 加速**: 使用 will-change 和 translateZ(0) 优化动画
-- **代码分割**: 按应用和依赖进行打包分割
-- **惰性加载**: 应用组件按需加载
-- **缓存策略**: localStorage 存储文件系统数据
-- **性能监控**: 实时 FPS 和资源使用统计
+**任务栏**
+- 应用快速切换
+- 系统托盘图标
+- 实时时钟显示
 
----
+**应用示例**
+- 代码编辑器：语法高亮、自动补全
+- AI学习伴侣：知识卡片、进度追踪
+- 创意灵感工坊：画板、配色方案
+- 开发者生态系统：代码片段、API文档
 
-## 部署
+## 项目特色
 
-### GitHub Pages
+### 真实可用功能
 
-项目已配置 GitHub Actions 自动部署：
+所有应用均提供实际功能，而非模拟界面：
+- 计算器支持科学计算
+- 文件管理器可创建真实文件结构
+- AI学习伴侣保存学习进度到本地存储
+- 代码片段库可执行 JavaScript 代码
 
-1. 构建输出到根目录
-2. `.nojekyll` 文件禁用 Jekyll 处理
-3. 自定义 404.html 处理 SPA 路由
-4. Base path 配置为 `/WebLinuxOS/`
+### 响应式设计
 
-### 手动部署
+应用窗口支持自适应尺寸：
+- 最小尺寸限制保证可用性
+- 最大尺寸充分利用屏幕
+- 内容区域自动调整布局
 
-```bash
-# 清理构建
-npm run clean
+### 性能优化
 
-# 构建生产版本
-npm run deploy
+- 懒加载应用组件
+- 虚拟滚动长列表
+- CSS 动画替代 JS 动画
+- 状态按需更新
 
-# 提交到 GitHub
-git add .
-git commit -m "deploy: update build"
-git push origin main
+## 开发指南
+
+### 添加新应用
+
+1. 在 `src/apps/` 创建组件文件
+2. 在 `src/apps.tsx` 注册应用定义
+3. 实现应用图标组件
+4. 添加到相应类别
+
+### 应用规范
+
+```typescript
+interface AppDefinition {
+  id: string              // 唯一标识
+  name: string            // 显示名称
+  icon: ReactNode         // 图标组件
+  component: string       // 组件名
+  category: string        // 应用类别
+  defaultWidth: number    // 默认宽度
+  defaultHeight: number   // 默认高度
+  minWidth: number        // 最小宽度
+  minHeight: number       // 最小高度
+  resizable: boolean      // 是否可缩放
+  multiple: boolean       // 是否允许多实例
+}
 ```
 
----
+### 类别划分
 
-## 浏览器兼容性
+- `system` - 系统工具
+- `development` - 开发工具
+- `office` - 办公应用
+- `utilities` - 实用工具
+- `multimedia` - 多媒体
+- `internet` - 网络应用
+- `games` - 游戏娱乐
 
-- Chrome 88+
-- Firefox 78+
-- Safari 14+
-- Edge 88+
+## 贡献指南
 
-要求：
-- JavaScript 启用
-- localStorage 可用
-- WebGL 支持
+欢迎提交 Issue 和 Pull Request：
 
----
-
-## 贡献
-
-欢迎贡献！请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-贡献方向：
-- 新应用开发
-- API 集成
-- UI/UX 改进
-- 性能优化
-- Bug 修复
-- 文档完善
-
----
+1. Fork 项目仓库
+2. 创建功能分支
+3. 提交变更代码
+4. 发起 Pull Request
 
 ## 许可证
 
-MIT License
+MIT License - 自由使用、修改和分发。
+
+## 更新日志
+
+### v11.0.0
+- 新增 AI 学习伴侣应用
+- 新增创意灵感工坊应用
+- 新增开发者生态系统应用
+- 优化 README 文档结构
+
+### v10.0.0
+- 新增实时 Markdown 协作编辑器
+- 新增 API 健康监控中心
+- 新增代码片段分享中心
+
+### v9.0.0
+- 新增 AI 代码分析器
+- 新增网络状态仪表盘
+- 新增系统资源优化器
 
 ---
 
-## 致谢
-
-感谢以下开源项目：
-
-- [React](https://react.dev/)
-- [Vite](https://vitejs.dev/)
-- [Zustand](https://github.com/pmndrs/zustand)
-- [Pyodide](https://pyodide.org/)
-- [Lucide Icons](https://lucide.dev/)
-- [Open-Meteo](https://open-meteo.com/)
-- [CoinGecko](https://www.coingecko.com/)
-
----
-
-**WebLinuxOS 展示了 Web 技术的强大潜力，将完整的操作系统体验带入浏览器。**
+**WebLinuxOS** - 在浏览器中体验完整的桌面操作系统。
