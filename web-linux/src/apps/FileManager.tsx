@@ -235,6 +235,7 @@ export default function FileManager() {
   const [propertiesFile, setPropertiesFile] = useState<FileNode | null>(null)
   const [batchRenameOpen, setBatchRenameOpen] = useState(false)
   const [batchRenamePattern, setBatchRenamePattern] = useState('')
+  const [uploadProgress, setUploadProgress] = useState<{ fileName: string; progress: number; status: 'uploading' | 'done' | 'error' }[]>([])
   
   const fileListRef = useRef<HTMLDivElement>(null)
 
@@ -405,7 +406,6 @@ export default function FileManager() {
     e.preventDefault()
     setIsDragging(false)
     
-    // 检查是否是内部拖拽
     if (draggingFileId) {
       const draggingFile = findNodeById(files, draggingFileId)
       if (draggingFile && draggingFile.parentId !== currentNodeId) {
@@ -419,19 +419,28 @@ export default function FileManager() {
     const items = e.dataTransfer.items
     if (!items) return
     
+    const newProgress = Array.from(items)
+      .filter(item => item.kind === 'file')
+      .map(item => ({
+        fileName: item.getAsFile()?.name || 'unknown',
+        progress: 0,
+        status: 'uploading' as const
+      }))
+    
+    setUploadProgress(newProgress)
+    
     Array.from(items).forEach((item, index) => {
       if (item.kind === 'file') {
         const file = item.getAsFile()
         if (file) {
+          const fileName = file.name
           const reader = new FileReader()
           reader.onload = (event) => {
             const content = event.target?.result as string
-            const fileName = file.name
             
             addFile(currentNodeId, fileName, 'file')
             
             setTimeout(() => {
-              // 获取最新的文件状态
               const currentFiles = useStore.getState().files
               const updatedCurrentNode = findNodeById(currentFiles, currentNodeId)
               
@@ -445,7 +454,33 @@ export default function FileManager() {
                 }
               }
             }, 50 + index * 10)
+            
+            setTimeout(() => {
+              setUploadProgress(prev => prev.map(p => 
+                p.fileName === fileName ? { ...p, progress: 100, status: 'done' as const } : p
+              ))
+              
+              setTimeout(() => {
+                setUploadProgress(prev => prev.filter(p => p.fileName !== fileName))
+              }, 2000)
+            }, 300)
           }
+          
+          reader.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const progress = Math.round((event.loaded / event.total) * 100)
+              setUploadProgress(prev => prev.map(p => 
+                p.fileName === fileName ? { ...p, progress } : p
+              ))
+            }
+          }
+          
+          reader.onerror = () => {
+            setUploadProgress(prev => prev.map(p => 
+              p.fileName === fileName ? { ...p, status: 'error' as const } : p
+            ))
+          }
+          
           reader.readAsText(file)
         }
       }
@@ -846,6 +881,26 @@ export default function FileManager() {
           </span>
         )}
       </div>
+
+      {uploadProgress.length > 0 && (
+        <div className="app-upload-progress-bar">
+          {uploadProgress.map((p, i) => (
+            <div key={`${p.fileName}-${i}`} className="app-upload-progress-item">
+              <span className="app-upload-progress-icon">
+                {p.status === 'done' ? '✓' : p.status === 'error' ? '✕' : '📤'}
+              </span>
+              <span className="app-upload-progress-name">{p.fileName}</span>
+              <div className="app-upload-progress-track">
+                <div 
+                  className={`app-upload-progress-fill ${p.status === 'done' ? 'done' : p.status === 'error' ? 'error' : ''}`}
+                  style={{ width: `${p.progress}%` }}
+                />
+              </div>
+              <span className="app-upload-progress-percent">{p.progress}%</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="app-file-path-bar">
         {currentPath.map((id, index) => {

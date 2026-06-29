@@ -44,3 +44,44 @@ export function getCommand(name: string): CommandDefinition | undefined {
 export function listCommands(): string[] {
   return Object.keys(COMMANDS)
 }
+
+export function getCommandSuggestions(prefix: string): string[] {
+  return Object.keys(COMMANDS).filter(cmd => cmd.startsWith(prefix))
+}
+
+export function getSuggestions(input: string, cwd: string, files: FileNode[]): string[] {
+  const parts = input.split(' ')
+  const lastPart = parts[parts.length - 1]
+  
+  if (parts.length === 1) {
+    return getCommandSuggestions(lastPart)
+  }
+  
+  const resolved = lastPart.startsWith('/') ? lastPart : (lastPart.startsWith('~') ? lastPart.replace('~', '/home/user') : `${cwd}/${lastPart}`)
+  const dirPath = resolved.lastIndexOf('/') !== -1 ? resolved.substring(0, resolved.lastIndexOf('/')) : '/'
+  const searchPrefix = resolved.lastIndexOf('/') !== -1 ? resolved.substring(resolved.lastIndexOf('/') + 1) : resolved
+  
+  const findNodeByPath = (nodes: FileNode[], path: string): FileNode | undefined => {
+    if (path === '/') return nodes[0]
+    const parts = path.split('/').filter(Boolean)
+    let current: FileNode | undefined = nodes[0]
+    for (const part of parts) {
+      if (!current || current.type !== 'folder') return undefined
+      current = current.children?.find(child => child.name === part)
+    }
+    return current
+  }
+  
+  const targetDir = findNodeByPath(files, dirPath)
+  
+  if (!targetDir || targetDir.type !== 'folder' || !targetDir.children) {
+    return []
+  }
+  
+  return targetDir.children
+    .filter(child => child.name.startsWith(searchPrefix))
+    .map(child => {
+      const fullPath = dirPath === '/' ? `/${child.name}` : `${dirPath}/${child.name}`
+      return child.type === 'folder' ? `${fullPath}/` : fullPath
+    })
+}

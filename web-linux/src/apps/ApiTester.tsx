@@ -1,542 +1,750 @@
-import { useState, useCallback, memo } from 'react'
-import { useStore } from '../store'
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
 
-interface RequestHeader {
-  key: string
-  value: string
-  enabled: boolean
-}
-
-interface RequestParam {
-  key: string
-  value: string
-  enabled: boolean
-}
-
-interface ApiTemplate {
-  name: string
+interface RequestConfig {
   method: string
   url: string
-  description: string
-  headers?: RequestHeader[]
-  params?: RequestParam[]
-  body?: string
+  headers: { key: string; value: string }[]
+  body: string
+  timeout: number
 }
 
-const apiTemplates: ApiTemplate[] = [
-  {
-    name: 'GitHub 仓库信息',
-    method: 'GET',
-    url: 'https://api.github.com/repos/facebook/react',
-    description: '获取 React 仓库信息',
-  },
-  {
-    name: 'GitHub 搜索仓库',
-    method: 'GET',
-    url: 'https://api.github.com/search/repositories?q=react&sort=stars',
-    description: '搜索 GitHub 仓库',
-  },
-  {
-    name: 'Open-Meteo 天气',
-    method: 'GET',
-    url: 'https://api.open-meteo.com/v1/forecast?latitude=39.9042&longitude=116.4074&current_weather=true',
-    description: '获取北京实时天气',
-  },
-  {
-    name: 'CoinGecko 加密货币',
-    method: 'GET',
-    url: 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10',
-    description: '获取加密货币市场数据',
-  },
-  {
-    name: 'HTTPBin GET',
-    method: 'GET',
-    url: 'https://httpbin.org/get',
-    description: '测试 GET 请求',
-  },
-  {
-    name: 'HTTPBin POST',
-    method: 'POST',
-    url: 'https://httpbin.org/post',
-    description: '测试 POST 请求',
-    body: JSON.stringify({ message: 'Hello from WebLinuxOS', timestamp: new Date().toISOString() }, null, 2),
-  },
-  {
-    name: 'HTTPBin Headers',
-    method: 'GET',
-    url: 'https://httpbin.org/headers',
-    description: '显示请求头信息',
-  },
-  {
-    name: 'JSONPlaceholder Posts',
-    method: 'GET',
-    url: 'https://jsonplaceholder.typicode.com/posts/1',
-    description: '获取示例帖子',
-  },
-  {
-    name: 'JSONPlaceholder Users',
-    method: 'GET',
-    url: 'https://jsonplaceholder.typicode.com/users',
-    description: '获取用户列表',
-  },
-  {
-    name: 'Dog CEO 随机狗图片',
-    method: 'GET',
-    url: 'https://dog.ceo/api/breeds/image/random',
-    description: '获取随机狗图片 URL',
-  },
+interface ResponseData {
+  status: number
+  statusText: string
+  headers: Record<string, string>
+  body: string
+  bodyType: 'json' | 'text' | 'html' | 'xml' | 'binary'
+  durationMs: number
+  error?: string
+}
+
+const defaultRequest: RequestConfig = {
+  method: 'GET',
+  url: 'https://api.github.com/users/octocat',
+  headers: [
+    { key: 'Content-Type', value: 'application/json' },
+    { key: 'Accept', value: 'application/json' }
+  ],
+  body: '',
+  timeout: 30000
+}
+
+const presets = [
+  { name: 'GitHub 用户信息', url: 'https://api.github.com/users/octocat', method: 'GET' },
+  { name: 'JSONPlaceholder 帖子', url: 'https://jsonplaceholder.typicode.com/posts/1', method: 'GET' },
+  { name: '天气查询', url: 'https://api.open-meteo.com/v1/forecast?latitude=31.2304&longitude=121.4737&current=temperature_2m,wind_speed_10m', method: 'GET' },
+  { name: '随机笑话', url: 'https://api.chucknorris.io/jokes/random', method: 'GET' },
+  { name: 'IP 信息', url: 'https://api.ipify.org?format=json', method: 'GET' },
 ]
 
-function formatJson(str: string): string {
+const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD']
+
+function formatJsonHighlight(jsonStr: string): string {
   try {
-    return JSON.stringify(JSON.parse(str), null, 2)
+    const parsed = JSON.parse(jsonStr)
+    const formatted = JSON.stringify(parsed, null, 2)
+    return formatted
+      .replace(/"([^"]+)":/g, '<span style="color:#d7d9fc">"$1"</span>:')
+      .replace(/: "([^"]+)"/g, ': <span style="color:#a5d6ff">"$1"</span>')
+      .replace(/: (\d+)/g, ': <span style="color:#f78166">$1</span>')
+      .replace(/: (true|false)/g, ': <span style="color:#d2a8ff">$1</span>')
+      .replace(/: null/g, ': <span style="color:#8b949e">null</span>')
   } catch {
-    return str
+    return jsonStr.replace(/</g, '&lt;').replace(/>/g, '&gt;')
   }
+}
+
+function detectBodyType(body: string): 'json' | 'text' | 'html' | 'xml' | 'binary' {
+  const trimmed = body.trim()
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) return 'json'
+  if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) return 'html'
+  if (trimmed.startsWith('<')) return 'xml'
+  if (trimmed.length > 0) return 'text'
+  return 'text'
+}
+
+function copyToClipboard(text: string, onSuccess: () => void) {
+  navigator.clipboard.writeText(text).then(onSuccess).catch(() => {})
 }
 
 const ApiTester = memo(function ApiTester() {
-  const addNotification = useStore((s) => s.addNotification)
+  const [request, setRequest] = useState<RequestConfig>(defaultRequest)
+  const [response, setResponse] = useState<ResponseData | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'body' | 'headers' | 'preview'>('body')
+  const [copied, setCopied] = useState(false)
+  const [history, setHistory] = useState<{ url: string; method: string; status: number; timestamp: Date }[]>([])
+  
+  const bodyRef = useRef<HTMLTextAreaElement>(null)
 
-  const [method, setMethod] = useState('GET')
-  const [url, setUrl] = useState('https://api.github.com/repos/facebook/react')
-  const [headers, setHeaders] = useState<RequestHeader[]>([
-    { key: 'Accept', value: 'application/json', enabled: true },
-    { key: 'User-Agent', value: 'WebLinuxOS-API-Tester', enabled: true },
-  ])
-  const [params, setParams] = useState<RequestParam[]>([])
-  const [body, setBody] = useState('')
-  const [response, setResponse] = useState<{ status: number; statusText: string; data: string; time: number; size: string } | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'headers' | 'params' | 'body'>('params')
-  const [history, setHistory] = useState<{ method: string; url: string; status: number; time: number }[]>([])
-
-  const handleSend = useCallback(async () => {
-    if (!url.trim()) {
-      addNotification({ title: '错误', message: '请输入 URL', type: 'error' })
-      return
+  useEffect(() => {
+    const saved = localStorage.getItem('apitester-history')
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved))
+      } catch {}
     }
+  }, [])
 
-    setLoading(true)
+  useEffect(() => {
+    localStorage.setItem('apitester-history', JSON.stringify(history.slice(-50)))
+  }, [history])
+
+  const addHeader = useCallback(() => {
+    setRequest(prev => ({
+      ...prev,
+      headers: [...prev.headers, { key: '', value: '' }]
+    }))
+  }, [])
+
+  const removeHeader = useCallback((index: number) => {
+    setRequest(prev => ({
+      ...prev,
+      headers: prev.headers.filter((_, i) => i !== index)
+    }))
+  }, [])
+
+  const updateHeader = useCallback((index: number, key: string, value: string) => {
+    setRequest(prev => ({
+      ...prev,
+      headers: prev.headers.map((h, i) => i === index ? { key, value } : h)
+    }))
+  }, [])
+
+  const updateMethod = useCallback((method: string) => {
+    setRequest(prev => ({ ...prev, method }))
+  }, [])
+
+  const updateUrl = useCallback((url: string) => {
+    setRequest(prev => ({ ...prev, url }))
+  }, [])
+
+  const updateBody = useCallback((body: string) => {
+    setRequest(prev => ({ ...prev, body }))
+  }, [])
+
+  const applyPreset = useCallback((preset: typeof presets[0]) => {
+    setRequest(prev => ({
+      ...prev,
+      url: preset.url,
+      method: preset.method,
+      body: ''
+    }))
+  }, [])
+
+  const sendRequest = useCallback(async () => {
+    if (!request.url.trim()) return
+    
+    setIsLoading(true)
+    setResponse(null)
     const startTime = performance.now()
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), request.timeout)
 
     try {
-      const requestHeaders: Record<string, string> = {}
-      headers.filter(h => h.enabled && h.key.trim()).forEach(h => {
-        requestHeaders[h.key] = h.value
+      const headers: Record<string, string> = {}
+      request.headers.forEach(h => {
+        if (h.key.trim()) {
+          headers[h.key.trim()] = h.value.trim()
+        }
       })
 
-      let fullUrl = url
-      const enabledParams = params.filter(p => p.enabled && p.key.trim())
-      if (enabledParams.length > 0) {
-        const queryString = enabledParams.map(p => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`).join('&')
-        fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString
+      const config: RequestInit = {
+        method: request.method,
+        headers,
+        signal: abortController.signal
       }
 
-      const options: RequestInit = {
-        method,
-        headers: requestHeaders,
+      if (['POST', 'PUT', 'PATCH'].includes(request.method) && request.body.trim()) {
+        config.body = request.body
       }
 
-      if (['POST', 'PUT', 'PATCH'].includes(method) && body.trim()) {
-        options.body = body
-        if (!requestHeaders['Content-Type']) {
-          requestHeaders['Content-Type'] = 'application/json'
-        }
+      const res = await fetch(request.url, config)
+      const duration = performance.now() - startTime
+      
+      let body = ''
+      try {
+        body = await res.text()
+      } catch {
+        body = '(无法读取响应体)'
       }
 
-      const res = await fetch(fullUrl, options)
-      const endTime = performance.now()
-      const responseTime = Math.round(endTime - startTime)
+      const responseHeaders: Record<string, string> = {}
+      res.headers.forEach((value, key) => {
+        responseHeaders[key] = value
+      })
 
-      let responseData = ''
-      const contentType = res.headers.get('content-type') || ''
-
-      if (contentType.includes('application/json')) {
-        const json = await res.json()
-        responseData = JSON.stringify(json, null, 2)
-      } else {
-        responseData = await res.text()
-      }
-
-      const sizeInBytes = new Blob([responseData]).size
-      const size = sizeInBytes > 1024 ? `${(sizeInBytes / 1024).toFixed(2)} KB` : `${sizeInBytes} B`
-
-      setResponse({
+      const responseData: ResponseData = {
         status: res.status,
         statusText: res.statusText,
-        data: responseData,
-        time: responseTime,
-        size,
-      })
+        headers: responseHeaders,
+        body,
+        bodyType: detectBodyType(body),
+        durationMs: duration
+      }
 
+      setResponse(responseData)
+      
       setHistory(prev => [{
-        method,
-        url: fullUrl,
+        url: request.url,
+        method: request.method,
         status: res.status,
-        time: responseTime,
-      }, ...prev.slice(0, 19)])
+        timestamp: new Date()
+      }, ...prev])
 
-      addNotification({
-        title: '请求成功',
-        message: `${res.status} ${res.statusText} - ${responseTime}ms`,
-        type: 'success',
-      })
     } catch (error) {
-      addNotification({
-        title: '请求失败',
-        message: error instanceof Error ? error.message : '未知错误',
-        type: 'error',
-      })
+      const duration = performance.now() - startTime
+      let errorMsg = '请求失败'
+      if (error instanceof Error) {
+        errorMsg = error.message
+      }
+      if (errorMsg.includes('abort')) {
+        errorMsg = '请求超时'
+      }
+      
       setResponse({
         status: 0,
-        statusText: 'Error',
-        data: error instanceof Error ? error.message : '请求失败',
-        time: 0,
-        size: '0 B',
+        statusText: '',
+        headers: {},
+        body: '',
+        bodyType: 'text',
+        durationMs: duration,
+        error: errorMsg
       })
     } finally {
-      setLoading(false)
+      clearTimeout(timeoutId)
+      setIsLoading(false)
     }
-  }, [url, method, headers, params, body, addNotification])
+  }, [request])
 
-  const addHeader = () => {
-    setHeaders([...headers, { key: '', value: '', enabled: true }])
-  }
+  const clearHistory = useCallback(() => {
+    setHistory([])
+    localStorage.removeItem('apitester-history')
+  }, [])
 
-  const updateHeader = (index: number, field: keyof RequestHeader, value: string | boolean) => {
-    const newHeaders = [...headers]
-    if (field === 'enabled') {
-      newHeaders[index] = { ...newHeaders[index], enabled: value as boolean }
-    } else {
-      newHeaders[index] = { ...newHeaders[index], [field]: value }
-    }
-    setHeaders(newHeaders)
-  }
-
-  const removeHeader = (index: number) => {
-    setHeaders(headers.filter((_, i) => i !== index))
-  }
-
-  const addParam = () => {
-    setParams([...params, { key: '', value: '', enabled: true }])
-  }
-
-  const updateParam = (index: number, field: keyof RequestParam, value: string | boolean) => {
-    const newParams = [...params]
-    if (field === 'enabled') {
-      newParams[index] = { ...newParams[index], enabled: value as boolean }
-    } else {
-      newParams[index] = { ...newParams[index], [field]: value }
-    }
-    setParams(newParams)
-  }
-
-  const removeParam = (index: number) => {
-    setParams(params.filter((_, i) => i !== index))
-  }
-
-  const loadTemplate = (template: ApiTemplate) => {
-    setMethod(template.method)
-    setUrl(template.url)
-    if (template.body) {
-      setBody(template.body)
-    }
-    if (template.headers) {
-      setHeaders(template.headers)
-    }
-    setResponse(null)
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    addNotification({ title: '已复制', message: '内容已复制到剪贴板', type: 'info' })
+  const statusColor = (status: number) => {
+    if (status >= 200 && status < 300) return '#10b981'
+    if (status >= 300 && status < 400) return '#f59e0b'
+    if (status >= 400 && status < 500) return '#ef4444'
+    if (status >= 500) return '#991b1b'
+    return '#8b949e'
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--window-bg)', overflow: 'hidden' }}>
-      <div style={{ padding: '16px', borderBottom: '1px solid var(--window-border)' }}>
-        <div style={{ marginBottom: '12px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            API 端点
-          </label>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--window-border)',
-                background: 'var(--window-bg)',
-                color: method === 'GET' ? '#61affe' : method === 'POST' ? '#49cc90' : method === 'PUT' ? '#fca130' : method === 'DELETE' ? '#f93e3e' : '#9012fe',
-                fontWeight: '600',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="GET">GET</option>
-              <option value="POST">POST</option>
-              <option value="PUT">PUT</option>
-              <option value="PATCH">PATCH</option>
-              <option value="DELETE">DELETE</option>
-            </select>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://api.example.com/endpoint"
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--window-border)',
-                background: 'var(--window-bg)',
-                color: 'var(--text-primary)',
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: '13px',
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSend()
-              }}
-            />
-            <button
-              onClick={handleSend}
-              disabled={loading}
-              style={{
-                padding: '8px 24px',
-                borderRadius: '6px',
-                border: 'none',
-                background: loading ? 'var(--text-secondary)' : 'var(--accent)',
-                color: '#fff',
-                fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              {loading ? '发送中...' : '发送'}
-            </button>
-          </div>
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#0d1117',
+      color: '#c9d1d9',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '10px 14px',
+        background: '#161b22',
+        borderBottom: '1px solid #30363d',
+        gap: 12,
+        flexWrap: 'wrap'
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: '#fff',
+          padding: '4px 10px',
+          borderRadius: 6,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: 0.3
+        }}>
+          API Tester
         </div>
-
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', alignSelf: 'center' }}>快速模板:</span>
-          {apiTemplates.slice(0, 5).map((template, idx) => (
+        
+        <div style={{ display: 'flex', gap: 4 }}>
+          {methods.map(m => (
             <button
-              key={idx}
-              onClick={() => loadTemplate(template)}
+              key={m}
+              onClick={() => updateMethod(m)}
               style={{
-                padding: '4px 10px',
-                borderRadius: '4px',
-                border: '1px solid var(--window-border)',
-                background: 'transparent',
-                color: 'var(--text-secondary)',
-                fontSize: '11px',
+                padding: '6px 12px',
+                borderRadius: 6,
+                border: request.method === m ? '1px solid #764ba2' : '1px solid #30363d',
+                background: request.method === m
+                  ? 'linear-gradient(135deg, rgba(102,126,234,0.25), rgba(118,75,162,0.25))'
+                  : 'transparent',
+                color: request.method === m ? '#d7d9fc' : '#8b949e',
                 cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: request.method === m ? 600 : 400,
+                transition: 'all 0.2s'
               }}
             >
-              {template.name}
+              {m}
             </button>
           ))}
         </div>
+
+        <div style={{ flex: 1, display: 'flex', minWidth: 200 }}>
+          <input
+            type="text"
+            value={request.url}
+            onChange={(e) => updateUrl(e.target.value)}
+            placeholder="输入 API URL..."
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #30363d',
+              background: '#0d1117',
+              color: '#e6edf3',
+              fontSize: 13,
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#764ba2'}
+            onBlur={(e) => e.target.style.borderColor = '#30363d'}
+          />
+        </div>
+
+        <button
+          onClick={sendRequest}
+          disabled={isLoading || !request.url.trim()}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 6,
+            border: 'none',
+            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+            color: '#fff',
+            cursor: isLoading || !request.url.trim() ? 'not-allowed' : 'pointer',
+            fontSize: 13,
+            fontWeight: 600,
+            opacity: isLoading || !request.url.trim() ? 0.7 : 1,
+            transition: 'opacity 0.2s'
+          }}
+        >
+          {isLoading ? (
+            <>⏳ 发送中...</>
+          ) : (
+            <>▶ 发送请求</>
+          )}
+        </button>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--window-border)' }}>
-            {(['params', 'headers', 'body'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '10px 20px',
-                  border: 'none',
-                  background: activeTab === tab ? 'var(--accent-bg)' : 'transparent',
-                  color: activeTab === tab ? 'var(--accent)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                }}
-              >
-                {tab === 'params' ? '参数' : tab === 'headers' ? '请求头' : '请求体'}
-              </button>
-            ))}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRight: '1px solid #30363d',
+          minWidth: 0
+        }}>
+          <div style={{
+            padding: '8px 12px',
+            background: '#161b22',
+            borderBottom: '1px solid #30363d',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: 12,
+            fontWeight: 500
+          }}>
+            <span>请求配置</span>
+            <div style={{ display: 'flex', gap: 8, fontSize: 11 }}>
+              <span>超时: {request.timeout}ms</span>
+            </div>
           </div>
 
-          <div style={{ flex: 1, padding: '12px', overflow: 'auto' }}>
-            {activeTab === 'params' && (
-              <div>
-                <button onClick={addParam} style={buttonStyle}>+ 添加参数</button>
-                {params.map((param, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
-                    <input
-                      type="checkbox"
-                      checked={param.enabled}
-                      onChange={(e) => updateParam(idx, 'enabled', e.target.checked)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="键"
-                      value={param.key}
-                      onChange={(e) => updateParam(idx, 'key', e.target.value)}
-                      style={inputStyle}
-                    />
-                    <input
-                      type="text"
-                      placeholder="值"
-                      value={param.value}
-                      onChange={(e) => updateParam(idx, 'value', e.target.value)}
-                      style={inputStyle}
-                    />
-                    <button onClick={() => removeParam(idx)} style={removeButtonStyle}>×</button>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div style={{ padding: 12, maxHeight: 150, overflow: 'auto' }}>
+            <div style={{ fontSize: 11, color: '#8b949e', marginBottom: 6 }}>请求头</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {request.headers.map((h, i) => (
+                <div key={i} style={{ display: 'flex', gap: 4 }}>
+                  <input
+                    type="text"
+                    value={h.key}
+                    onChange={(e) => updateHeader(i, e.target.value, h.value)}
+                    placeholder="Key"
+                    style={{
+                      width: 120,
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      border: '1px solid #30363d',
+                      background: '#0d1117',
+                      color: '#e6edf3',
+                      fontSize: 12,
+                      outline: 'none'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={h.value}
+                    onChange={(e) => updateHeader(i, h.key, e.target.value)}
+                    placeholder="Value"
+                    style={{
+                      flex: 1,
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      border: '1px solid #30363d',
+                      background: '#0d1117',
+                      color: '#e6edf3',
+                      fontSize: 12,
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={() => removeHeader(i)}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      border: '1px solid #30363d',
+                      background: 'transparent',
+                      color: '#8b949e',
+                      cursor: 'pointer',
+                      fontSize: 12
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={addHeader}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 4,
+                  border: '1px dashed #30363d',
+                  background: 'transparent',
+                  color: '#8b949e',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  marginTop: 4
+                }}
+              >
+                + 添加请求头
+              </button>
+            </div>
+          </div>
 
-            {activeTab === 'headers' && (
-              <div>
-                <button onClick={addHeader} style={buttonStyle}>+ 添加请求头</button>
-                {headers.map((header, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
-                    <input
-                      type="checkbox"
-                      checked={header.enabled}
-                      onChange={(e) => updateHeader(idx, 'enabled', e.target.checked)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="键"
-                      value={header.key}
-                      onChange={(e) => updateHeader(idx, 'key', e.target.value)}
-                      style={inputStyle}
-                    />
-                    <input
-                      type="text"
-                      placeholder="值"
-                      value={header.value}
-                      onChange={(e) => updateHeader(idx, 'value', e.target.value)}
-                      style={inputStyle}
-                    />
-                    <button onClick={() => removeHeader(idx)} style={removeButtonStyle}>×</button>
-                  </div>
-                ))}
+          {['POST', 'PUT', 'PATCH'].includes(request.method) && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <div style={{
+                padding: '6px 12px',
+                background: '#161b22',
+                borderBottom: '1px solid #30363d',
+                fontSize: 12,
+                fontWeight: 500
+              }}>
+                请求体
               </div>
-            )}
+              <textarea
+                ref={bodyRef}
+                value={request.body}
+                onChange={(e) => updateBody(e.target.value)}
+                placeholder='输入请求体 (JSON格式)...'
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  background: '#0d1117',
+                  color: '#e6edf3',
+                  border: 'none',
+                  resize: 'none',
+                  fontSize: 13,
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  outline: 'none',
+                  lineHeight: 1.6
+                }}
+              />
+            </div>
+          )}
 
-            {activeTab === 'body' && (
-              <div>
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder='{"key": "value"}'
-                  style={{
-                    ...inputStyle,
-                    width: '100%',
-                    minHeight: '150px',
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '13px',
-                    resize: 'vertical',
-                  }}
-                />
+          <div style={{
+            padding: '8px 12px',
+            background: '#161b22',
+            borderTop: '1px solid #30363d'
+          }}>
+            <div style={{ fontSize: 11, color: '#8b949e', marginBottom: 6 }}>快捷预设</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {presets.map((p, i) => (
                 <button
-                  onClick={() => setBody(formatJson(body))}
-                  style={{ ...buttonStyle, marginTop: '8px' }}
+                  key={i}
+                  onClick={() => applyPreset(p)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 4,
+                    border: '1px solid #30363d',
+                    background: 'transparent',
+                    color: '#8b949e',
+                    cursor: 'pointer',
+                    fontSize: 11,
+                    transition: 'all 0.2s'
+                  }}
                 >
-                  格式化 JSON
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0
+        }}>
+          <div style={{
+            padding: '6px 12px',
+            background: '#161b22',
+            borderBottom: '1px solid #30363d',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button
+                onClick={() => setActiveTab('body')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 6,
+                  border: activeTab === 'body' ? '1px solid #764ba2' : '1px solid transparent',
+                  background: activeTab === 'body'
+                    ? 'linear-gradient(135deg, rgba(102,126,234,0.25), rgba(118,75,162,0.25))'
+                    : 'transparent',
+                  color: activeTab === 'body' ? '#d7d9fc' : '#8b949e',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontWeight: activeTab === 'body' ? 700 : 500
+                }}
+              >
+                响应体
+              </button>
+              <button
+                onClick={() => setActiveTab('headers')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 6,
+                  border: activeTab === 'headers' ? '1px solid #764ba2' : '1px solid transparent',
+                  background: activeTab === 'headers'
+                    ? 'linear-gradient(135deg, rgba(102,126,234,0.25), rgba(118,75,162,0.25))'
+                    : 'transparent',
+                  color: activeTab === 'headers' ? '#d7d9fc' : '#8b949e',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontWeight: activeTab === 'headers' ? 700 : 500
+                }}
+              >
+                响应头
+              </button>
+              {response?.bodyType === 'json' && (
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 6,
+                    border: activeTab === 'preview' ? '1px solid #764ba2' : '1px solid transparent',
+                    background: activeTab === 'preview'
+                      ? 'linear-gradient(135deg, rgba(102,126,234,0.25), rgba(118,75,162,0.25))'
+                      : 'transparent',
+                    color: activeTab === 'preview' ? '#d7d9fc' : '#8b949e',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: activeTab === 'preview' ? 700 : 500
+                  }}
+                >
+                  预览
+                </button>
+              )}
+            </div>
+
+            {response && (
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <button
+                  onClick={() => copyToClipboard(response.body, () => setCopied(true))}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: 4,
+                    border: '1px solid #30363d',
+                    background: 'transparent',
+                    color: '#8b949e',
+                    cursor: 'pointer',
+                    fontSize: 11
+                  }}
+                >
+                  {copied ? '已复制 ✓' : '复制'}
                 </button>
               </div>
             )}
           </div>
-        </div>
 
-        <div style={{ width: '1px', background: 'var(--window-border)' }} />
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid var(--window-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600' }}>响应</span>
-            {response && (
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '12px' }}>
-                <span style={{ color: response.status >= 200 && response.status < 300 ? '#49cc90' : '#f93e3e', fontWeight: '600' }}>
-                  {response.status} {response.statusText}
-                </span>
-                <span style={{ color: 'var(--text-secondary)' }}>{response.time}ms</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{response.size}</span>
-              </div>
-            )}
-          </div>
-
-          <div style={{ flex: 1, padding: '12px', overflow: 'auto', position: 'relative' }}>
-            {loading && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                <div style={{ color: '#fff', fontSize: '16px' }}>发送请求中...</div>
-              </div>
-            )}
-            {response ? (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-                  <button
-                    onClick={() => copyToClipboard(response.data)}
-                    style={buttonStyle}
-                  >
-                    复制响应
-                  </button>
+          {response && response.error ? (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 20,
+              color: '#f85149',
+              fontSize: 14
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>✕</div>
+                <div>{response.error}</div>
+                <div style={{ fontSize: 12, color: '#8b949e', marginTop: 8 }}>
+                  耗时: {response.durationMs.toFixed(1)} ms
                 </div>
-                <pre
-                  style={{
-                    margin: 0,
-                    padding: '12px',
-                    background: 'var(--titlebar-bg)',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontFamily: 'JetBrains Mono, monospace',
-                    overflow: 'auto',
-                    maxHeight: '400px',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {response.data}
-                </pre>
               </div>
-            ) : (
-              <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '60px' }}>
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📡</div>
-                <div>输入 URL 并点击发送开始测试 API</div>
+            </div>
+          ) : response && activeTab === 'body' ? (
+            <div style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: 12,
+              background: '#0d1117',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              fontSize: 12.5,
+              lineHeight: 1.6
+            }}>
+              {response.bodyType === 'json' ? (
+                <pre dangerouslySetInnerHTML={{ __html: formatJsonHighlight(response.body) }} />
+              ) : (
+                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{response.body}</pre>
+              )}
+            </div>
+          ) : response && activeTab === 'headers' ? (
+            <div style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: 12,
+              background: '#0d1117'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {Object.entries(response.headers).map(([key, value]) => (
+                  <div key={key} style={{ display: 'flex', gap: 8 }}>
+                    <span style={{ color: '#d7d9fc', fontWeight: 500, minWidth: 150 }}>{key}</span>
+                    <span style={{ color: '#e6edf3' }}>{value}</span>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          ) : response && activeTab === 'preview' ? (
+            <div style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: 12,
+              background: '#0d1117'
+            }}>
+              <JsonPreview json={response.body} />
+            </div>
+          ) : (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 20,
+              color: '#8b949e',
+              fontSize: 13
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>📡</div>
+                <div>选择一个预设或输入 URL，然后点击 "发送请求"</div>
+                <div style={{ fontSize: 12, marginTop: 8 }}>
+                  支持 GET / POST / PUT / DELETE / PATCH / OPTIONS / HEAD
+                </div>
+              </div>
+            </div>
+          )}
+
+          {response && !response.error && (
+            <div style={{
+              padding: '6px 12px',
+              background: '#161b22',
+              borderTop: '1px solid #30363d',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: 11,
+              color: '#8b949e'
+            }}>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <span>状态: <span style={{ color: statusColor(response.status), fontWeight: 600 }}>{response.status} {response.statusText}</span></span>
+                <span>|</span>
+                <span>类型: {response.bodyType.toUpperCase()}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <span>耗时: <span style={{ color: '#d7d9fc' }}>{response.durationMs.toFixed(1)} ms</span></span>
+                <span>|</span>
+                <span>大小: {response.body.length.toLocaleString()} 字符</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {history.length > 0 && (
-        <div style={{ padding: '12px', borderTop: '1px solid var(--window-border)', maxHeight: '120px', overflow: 'auto' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '6px' }}>历史记录</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {history.map((item, idx) => (
-              <div
-                key={idx}
-                onClick={() => {
-                  setMethod(item.method)
-                  setUrl(item.url)
-                }}
+        <div style={{
+          height: 80,
+          borderTop: '1px solid #30363d',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <div style={{
+            padding: '4px 12px',
+            background: '#161b22',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: 11,
+            fontWeight: 500,
+            color: '#8b949e'
+          }}>
+            <span>历史记录 ({history.length})</span>
+            <button onClick={clearHistory} style={{
+              padding: '2px 8px',
+              borderRadius: 4,
+              border: '1px solid #30363d',
+              background: 'transparent',
+              color: '#8b949e',
+              cursor: 'pointer',
+              fontSize: 10
+            }}>
+              清空
+            </button>
+          </div>
+          <div style={{
+            flex: 1,
+            overflowX: 'auto',
+            padding: '4px 12px',
+            display: 'flex',
+            gap: 4
+          }}>
+            {history.map((item, i) => (
+              <button
+                key={i}
+                onClick={() => { updateUrl(item.url); updateMethod(item.method); }}
                 style={{
                   padding: '4px 8px',
-                  borderRadius: '4px',
-                  background: 'var(--titlebar-bg)',
-                  fontSize: '11px',
+                  borderRadius: 4,
+                  border: '1px solid #30363d',
+                  background: '#0d1117',
+                  color: '#8b949e',
                   cursor: 'pointer',
-                  display: 'flex',
-                  gap: '6px',
-                  alignItems: 'center',
+                  fontSize: 11,
+                  whiteSpace: 'nowrap',
+                  textAlign: 'left',
+                  maxWidth: 200
                 }}
               >
-                <span style={{ color: '#61affe', fontWeight: '600' }}>{item.method}</span>
-                <span style={{ color: 'var(--text-secondary)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.url.split('?')[0].split('/').slice(-2).join('/')}
-                </span>
-                <span style={{ color: item.status >= 200 && item.status < 300 ? '#49cc90' : '#f93e3e' }}>{item.status}</span>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: statusColor(item.status), fontWeight: 600 }}>{item.method}</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.url}</span>
+                </div>
+              </button>
             ))}
           </div>
         </div>
@@ -545,35 +753,46 @@ const ApiTester = memo(function ApiTester() {
   )
 })
 
-const buttonStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  borderRadius: '4px',
-  border: '1px solid var(--window-border)',
-  background: 'transparent',
-  color: 'var(--text-secondary)',
-  fontSize: '12px',
-  cursor: 'pointer',
+function JsonPreview({ json }: { json: string }) {
+  try {
+    const data = JSON.parse(json)
+    return <JsonTree data={data} />
+  } catch {
+    return <div style={{ color: '#8b949e' }}>无法解析 JSON</div>
+  }
 }
 
-const inputStyle: React.CSSProperties = {
-  flex: 1,
-  padding: '6px 10px',
-  borderRadius: '4px',
-  border: '1px solid var(--window-border)',
-  background: 'var(--window-bg)',
-  color: 'var(--text-primary)',
-  fontSize: '13px',
-}
+function JsonTree({ data, keyName }: { data: unknown; keyName?: string }) {
+  const isObj = typeof data === 'object' && data !== null
+  const isArray = Array.isArray(data)
 
-const removeButtonStyle: React.CSSProperties = {
-  padding: '4px 8px',
-  borderRadius: '4px',
-  border: 'none',
-  background: 'var(--error)',
-  color: '#fff',
-  fontSize: '14px',
-  cursor: 'pointer',
-  lineHeight: 1,
+  if (!isObj) {
+    return (
+      <div style={{ display: 'flex', gap: 4 }}>
+        {keyName && <span style={{ color: '#d7d9fc' }}>"{keyName}": </span>}
+        <span style={typeof data === 'string' ? { color: '#a5d6ff' } : typeof data === 'number' ? { color: '#f78166' } : typeof data === 'boolean' ? { color: '#d2a8ff' } : { color: '#8b949e' }}>
+          {typeof data === 'string' ? `"${data}"` : String(data)}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ paddingLeft: keyName ? 0 : 12 }}>
+      <div style={{ display: 'flex', gap: 4 }}>
+        {keyName && <span style={{ color: '#d7d9fc' }}>"{keyName}": </span>}
+        <span style={{ color: '#8b949e' }}>{isArray ? '[' : '{'}</span>
+      </div>
+      <div style={{ paddingLeft: 16 }}>
+        {isArray
+          ? (data as unknown[]).map((item, i) => <JsonTree key={i} data={item} keyName={String(i)} />)
+          : Object.entries(data as Record<string, unknown>).map(([key, value]) => (
+              <JsonTree key={key} data={value} keyName={key} />
+            ))}
+      </div>
+      <span style={{ color: '#8b949e' }}>{isArray ? ']' : '}'}</span>
+    </div>
+  )
 }
 
 export default ApiTester

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useStore, findNodeByPath } from '../store'
-import type { FileNode, WindowState } from '../types'
-import { getCommand, listCommands } from './terminal'
+import { useStore } from '../store'
+import type { WindowState } from '../types'
+import { getCommand, getSuggestions } from './terminal'
 import type { CommandContext, CommandResult } from './terminal/commands'
 
 function useLatest<T>(value: T): { current: T } {
@@ -130,19 +130,7 @@ export default function Terminal() {
     const trimmed = partial.trim()
     if (!trimmed) return []
     
-    const parts = trimmed.split(/\s+/)
-    if (parts.length === 1) {
-      return listCommands().filter(cmd => cmd.startsWith(parts[0]))
-    } else if (parts[0] === 'cd' || parts[0] === 'cat' || parts[0] === 'rm' || parts[0] === 'ls') {
-      const currentPartial = parts[parts.length - 1]
-      const currentFiles = findNodeByPath(files, cwd)?.children || []
-      const matches = currentFiles.filter((f: FileNode) => f.name.startsWith(currentPartial)).map((f: FileNode) => f.name)
-      if (matches.length === 1) {
-        return [parts.slice(0, -1).join(' ') + ' ' + matches[0]]
-      }
-      return matches
-    }
-    return []
+    return getSuggestions(trimmed, cwd, files)
   }, [files, cwd])
 
 
@@ -182,7 +170,7 @@ export default function Terminal() {
 
     if (command === 'help' || command === '?') {
       const categorizedCommands: Record<string, string[]> = {
-        '文件操作': ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'tee', 'append'],
+        '文件操作': ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'tee', 'append', 'grep', 'find', 'chmod', 'gzip', 'gunzip', 'file', 'sort', 'uniq', 'cut', 'paste', 'nl', 'expand', 'tr', 'split'],
         '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'credits', 'time', 'worldtime'],
         '系统监控': ['ps', 'top', 'cpu-info', 'memory-info', 'disk-usage', 'network-stats', 'process-list'],
         '网络工具': ['ping', 'weather', 'news', 'crypto', 'translate', 'ipinfo'],

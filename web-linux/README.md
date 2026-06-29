@@ -4,7 +4,7 @@ A fully functional Linux desktop environment running entirely in the browser. No
 
 **Live Demo**: https://saya-ch.github.io/WebLinuxOS/
 
-## Overview
+## What is WebLinuxOS
 
 WebLinuxOS is a web-based operating system that brings the familiar Linux desktop experience to your browser. It features a complete windowing system, file management, terminal, and hundreds of applications - all running locally with no server dependencies.
 
@@ -25,14 +25,15 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 
 - Code editor with syntax highlighting for 20+ languages
 - AI code assistant with multiple modes (code generation, explanation, chat)
-- REST API tester with request builder
+- REST API tester with request builder and JSON preview
 - JSON formatter and validator
 - Interactive regex builder and tester
 - GitHub trending repositories viewer
 - Python REPL (via Pyodide)
-- Full-featured terminal with 90+ commands
+- Full-featured terminal with 100+ commands
 - Code snippet manager with import/export
 - CSS toolbox with gradient, shadow, and layout generators
+- Online code runner supporting JavaScript, TypeScript, SQL, Bash, HTML, and Markdown
 
 ### Productivity Suite
 
@@ -56,6 +57,9 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 - Weather app (real-time data from Open-Meteo)
 - Online API hub (NASA, news, cryptocurrency)
 - Real-time dashboard with weather, news, and crypto data
+- Disk usage analyzer with visual charts
+- Task manager with process monitoring
+- Network monitor with connection details
 
 ### Multimedia & Entertainment
 
@@ -63,10 +67,12 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 - Drawing application
 - Camera access for video capture
 - Classic games (Snake, Tetris, 2048, Memory)
+- Photo viewer with slideshow support
+- Video player with basic controls
 
 ## Terminal Commands
 
-**File Operations**: `ls`, `cd`, `pwd`, `cat`, `head`, `tail`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `write`, `tee`, `append`
+**File Operations**: `ls`, `cd`, `pwd`, `cat`, `head`, `tail`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `write`, `tee`, `append`, `grep`, `find`, `chmod`, `gzip`, `gunzip`, `file`, `sort`, `uniq`, `cut`, `paste`, `nl`, `expand`, `tr`, `split`
 
 **System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `neofetch`, `version`, `time`, `worldtime`
 
@@ -102,10 +108,15 @@ npm run deploy
 | Ctrl+P | Command palette |
 | Alt+Tab | Window switch |
 | Ctrl+Q | Close window |
-| Ctrl+C | Copy |
-| Ctrl+V | Paste |
-| Ctrl+1-9 | Switch desktop |
-| Ctrl+Alt+Arrow | Switch desktop |
+| Ctrl+M | Minimize window |
+| Ctrl+1-9 | Switch to app |
+| Ctrl+Shift+T | Open terminal |
+| Ctrl+Shift+E | Open text editor |
+| Ctrl+Shift+C | Open calculator |
+| Ctrl+Shift+W | Open weather |
+| Ctrl+Shift+N | New terminal |
+| F11 | Fullscreen |
+| PrintScreen | Screenshot |
 
 ## Tech Stack
 
@@ -124,6 +135,7 @@ WebLinuxOS uses a modular architecture with separation of concerns:
 ```
 src/
   apps/              # Individual applications (200+)
+    terminal/        # Terminal commands and utilities
   components/
     desktop/         # Desktop environment components
     common/          # Shared UI components
@@ -140,6 +152,8 @@ src/
 - Memoization for expensive computations
 - GPU-accelerated animations
 - Efficient drag and resize handling
+- Virtual scrolling for large lists
+- Persistent state caching
 
 ## Browser Support
 
@@ -164,13 +178,14 @@ To add a new application:
 1. Create a file in `src/apps/` (e.g., `MyApp.tsx`)
 2. Export a default React component
 3. Register it in `src/apps.tsx`
-4. Add icons and metadata
-5. Test thoroughly
+4. Add to `src/components/desktop/WindowManager.tsx` for dynamic import
+5. Add icons and metadata
+6. Test thoroughly
 
 ## Statistics
 
 - 200+ applications
-- 90+ terminal commands
+- 100+ terminal commands
 - 200+ source files
 - 50+ keyboard shortcuts
 
@@ -182,6 +197,8 @@ To add a new application:
 - Lightweight online workspace
 - Teaching system administration
 - Rapid prototyping
+- API testing and development
+- Code experimentation
 
 ## Roadmap
 
@@ -190,6 +207,8 @@ To add a new application:
 - Cloud synchronization
 - Plugin system architecture
 - Real-time collaboration
+- Advanced window tiling
+- Multi-user support
 
 ## License
 
