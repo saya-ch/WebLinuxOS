@@ -324,6 +324,7 @@ const Taskbar = memo(function Taskbar() {
   const currentDesktop = useStore((s) => s.currentDesktop)
   const totalDesktops = useStore((s) => s.totalDesktops)
   const windowsPerDesktop = useStore((s) => s.windowsPerDesktop)
+  const windowSnapshots = useStore((s) => s.windowSnapshots)
 
   const minimizeWindow = useStore((s) => s.minimizeWindow)
   const restoreWindow = useStore((s) => s.restoreWindow)
@@ -669,33 +670,82 @@ const Taskbar = memo(function Taskbar() {
             transform: 'translateX(-50%)',
             background: 'var(--window-bg)',
             border: '1px solid var(--window-border)',
-            borderRadius: '10px',
-            padding: '10px 14px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            borderRadius: '12px',
+            padding: '12px',
+            boxShadow: '0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 124, 240, 0.2)',
             zIndex: 10000,
-            minWidth: '180px',
-            backdropFilter: 'blur(10px)',
+            minWidth: '200px',
+            maxWidth: '360px',
+            backdropFilter: 'blur(20px)',
             pointerEvents: 'none',
+            transition: 'all 0.15s ease',
           }}
         >
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '10px',
               fontSize: '12px',
               color: 'var(--text-primary)',
+              marginBottom: '10px',
             }}
           >
-            <span style={{ fontSize: '16px' }}>
+            <span style={{ fontSize: '18px' }}>
               {apps.find((a) => a.id === hoveredWin.appId)?.icon}
             </span>
-            <span style={{ fontWeight: 500 }}>{hoveredWin.title}</span>
-            {hoveredWin.minimized && (
-              <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>(已最小化)</span>
-            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {hoveredWin.title}
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                {hoveredWin.minimized ? '已最小化' : '运行中'}
+                {' • '}
+                {hoveredWin.width} × {hoveredWin.height}
+              </div>
+            </div>
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          {windowSnapshots[hoveredWin.id] ? (
+            <div
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '1px solid var(--window-border)',
+                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                background: 'var(--window-bg)',
+              }}
+            >
+              <img
+                src={windowSnapshots[hoveredWin.id]}
+                alt={`${hoveredWin.title} 预览`}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  objectFit: 'cover',
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                height: '120px',
+                borderRadius: '8px',
+                border: '1px dashed var(--window-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(255,255,255,0.03)',
+                color: 'var(--text-secondary)',
+                fontSize: '11px',
+              }}
+            >
+              暂无预览
+            </div>
+          )}
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center' }}>
             {formatTime(time)}
           </div>
         </div>

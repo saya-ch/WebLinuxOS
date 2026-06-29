@@ -111,6 +111,7 @@ interface Store {
   recentFiles: FileNode[]
   favorites: string[]
   pinnedApps: string[]
+  windowSnapshots: Record<string, string>
 
   registerApp: (app: AppDefinition) => void
   openApp: (appId: string) => void
@@ -160,6 +161,8 @@ interface Store {
   clearFavorites: () => void
   updateDesktopIconPosition: (id: string, x: number, y: number) => void
   resetToDefaults: () => void
+  setWindowSnapshot: (windowId: string, snapshot: string) => void
+  removeWindowSnapshot: (windowId: string) => void
 }
 
 let windowIdCounter = 0
@@ -196,6 +199,7 @@ export const useStore = create<Store>((set, get) => ({
   recentFiles: initialRecentFiles,
   favorites: initialFavorites,
   pinnedApps: initialPinnedApps,
+  windowSnapshots: {},
 
   // 添加一条通知消息：对同一消息标题做去重限制，避免短时间内刷屏
   addNotification: (notification) => {
@@ -1111,6 +1115,18 @@ export const useStore = create<Store>((set, get) => ({
     const state = get()
     return state.historyIndex < state.fileOperationHistory.length - 1
   },
+
+  setWindowSnapshot: (windowId: string, snapshot: string) =>
+    set((s) => ({
+      windowSnapshots: { ...s.windowSnapshots, [windowId]: snapshot },
+    })),
+
+  removeWindowSnapshot: (windowId: string) =>
+    set((s) => {
+      const newSnapshots = { ...s.windowSnapshots }
+      delete newSnapshots[windowId]
+      return { windowSnapshots: newSnapshots }
+    }),
 }))
 
 export {

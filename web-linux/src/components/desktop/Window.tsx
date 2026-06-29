@@ -15,6 +15,10 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const updateWindowPosition = useStore((s) => s.updateWindowPosition)
   const updateWindowSize = useStore((s) => s.updateWindowSize)
   const apps = useStore((s) => s.apps)
+  const setWindowSnapshot = useStore((s) => s.setWindowSnapshot)
+  const removeWindowSnapshot = useStore((s) => s.removeWindowSnapshot)
+  
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const [dragging, setDragging] = useState(false)
   const [resizing, setResizing] = useState<'bottom' | 'right' | 'left' | 'corner' | null>(null)
@@ -46,6 +50,83 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     const timer = setTimeout(() => setIsOpening(false), 300)
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (isOpening) return
+    
+    const captureSnapshot = () => {
+      const content = contentRef.current
+      if (!content) return
+      
+      const canvas = document.createElement('canvas')
+      const previewWidth = 280
+      const previewHeight = 160
+      canvas.width = previewWidth
+      canvas.height = previewHeight
+      
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      
+      ctx.fillStyle = '#1a1a2e'
+      ctx.fillRect(0, 0, previewWidth, previewHeight)
+      
+      ctx.fillStyle = '#16213e'
+      ctx.fillRect(0, 0, previewWidth, 28)
+      
+      ctx.fillStyle = '#e94560'
+      ctx.beginPath()
+      ctx.arc(8, 14, 5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#f39c12'
+      ctx.beginPath()
+      ctx.arc(20, 14, 5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#27ae60'
+      ctx.beginPath()
+      ctx.arc(32, 14, 5, 0, Math.PI * 2)
+      ctx.fill()
+      
+      ctx.fillStyle = '#ffffff'
+      ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif'
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(win.title, 42, 14)
+      
+      const textContent = content.innerText || ''
+      const lines = textContent.split('\n').filter(line => line.trim()).slice(0, 8)
+      
+      ctx.fillStyle = '#4a5568'
+      ctx.font = '10px monospace'
+      
+      lines.forEach((line, i) => {
+        const y = 40 + i * 14
+        if (y < previewHeight) {
+          ctx.fillText(line.substring(0, 50), 8, y)
+        }
+      })
+      
+      if (lines.length === 0) {
+        ctx.fillStyle = '#718096'
+        ctx.font = '11px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('点击查看窗口内容', previewWidth / 2, previewHeight / 2)
+      }
+      
+      setWindowSnapshot(win.id, canvas.toDataURL('image/png'))
+    }
+    
+    let debounceTimer: ReturnType<typeof setTimeout>
+    const handleBlur = () => {
+      debounceTimer = setTimeout(captureSnapshot, 100)
+    }
+    
+    window.addEventListener('blur', handleBlur)
+    
+    return () => {
+      window.removeEventListener('blur', handleBlur)
+      clearTimeout(debounceTimer)
+    }
+  }, [win.id, win.title, isOpening, setWindowSnapshot])
 
   useEffect(() => {
     if (dragging) {
@@ -89,10 +170,11 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
 
   const handleClose = useCallback(() => {
     setIsClosing(true)
+    removeWindowSnapshot(win.id)
     setTimeout(() => {
       closeWindow(win.id)
     }, 250)
-  }, [win.id, closeWindow])
+  }, [win.id, closeWindow, removeWindowSnapshot])
 
   const handleMinimize = useCallback(() => {
     setIsMinimizing(true)
@@ -480,7 +562,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           </button>
         </div>
       </div>
-      <div className="window-content" id={`${win.id}-content`} tabIndex={-1} aria-label={`${win.title} 窗口内容`}>{children}</div>
+      <div ref={contentRef} className="window-content" id={`${win.id}-content`} tabIndex={-1} aria-label={`${win.title} 窗口内容`}>{children}</div>
       {!win.maximized && win.resizable && (
         <>
           <div
