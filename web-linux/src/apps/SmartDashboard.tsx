@@ -1,614 +1,312 @@
-import { useState, useEffect, memo } from 'react'
-import { Activity, TrendingUp, Cloud, Wind, Droplets, Sun, Gauge, CloudRain, Eye } from 'lucide-react'
+import { useState, useEffect, useCallback, memo } from 'react'
 
 interface WeatherData {
   temp: number
+  desc: string
   humidity: number
-  description: string
-  icon: string
-  feelsLike: number
-  pressure: number
-  visibility: number
-  uvIndex: number
-  wind: number
+  windSpeed: number
+  city: string
 }
 
 interface CryptoData {
-  name: string
   symbol: string
+  name: string
   price: number
-  change: number
+  change24h: number
 }
 
-const POPULAR_CITIES = [
-  { name: '北京', lat: 39.9042, lon: 116.4074 },
-  { name: '上海', lat: 31.2304, lon: 121.4737 },
-  { name: '深圳', lat: 22.5431, lon: 114.0579 },
-  { name: '广州', lat: 23.1291, lon: 113.2644 },
-  { name: '成都', lat: 30.5728, lon: 104.0668 },
-  { name: '杭州', lat: 30.2741, lon: 120.1551 },
-]
-
-const MOCK_WEATHER: Record<string, WeatherData> = {
-  '北京': { temp: 22, humidity: 45, description: '晴', icon: '☀️', feelsLike: 24, pressure: 1013, visibility: 10, uvIndex: 6, wind: 12 },
-  '上海': { temp: 25, humidity: 62, description: '多云', icon: '⛅', feelsLike: 27, pressure: 1010, visibility: 8, uvIndex: 4, wind: 15 },
-  '深圳': { temp: 28, humidity: 75, description: '阴', icon: '☁️', feelsLike: 31, pressure: 1008, visibility: 6, uvIndex: 2, wind: 8 },
-  '广州': { temp: 26, humidity: 70, description: '阵雨', icon: '🌦️', feelsLike: 29, pressure: 1009, visibility: 7, uvIndex: 3, wind: 10 },
-  '成都': { temp: 20, humidity: 55, description: '晴', icon: '☀️', feelsLike: 21, pressure: 1015, visibility: 12, uvIndex: 7, wind: 6 },
-  '杭州': { temp: 24, humidity: 60, description: '多云', icon: '⛅', feelsLike: 26, pressure: 1011, visibility: 9, uvIndex: 5, wind: 11 },
-}
-
-const MOCK_CRYPTO: CryptoData[] = [
-  { name: 'Bitcoin', symbol: 'BTC', price: 67523.42, change: 2.34 },
-  { name: 'Ethereum', symbol: 'ETH', price: 3456.78, change: -1.23 },
-  { name: 'BNB', symbol: 'BNB', price: 567.89, change: 0.87 },
-  { name: 'XRP', symbol: 'XRP', price: 0.5234, change: 3.45 },
-  { name: 'Solana', symbol: 'SOL', price: 145.67, change: 5.21 },
-]
-
-const MOCK_SYSTEM = {
-  cpu: 35,
-  memory: 62,
-  storage: 45,
-  network: 128,
-  uptime: '2天 14小时 32分钟',
-}
-
-export default memo(function SmartDashboard() {
-  const [selectedCity, setSelectedCity] = useState(POPULAR_CITIES[0])
-  const [weather, setWeather] = useState<WeatherData>(MOCK_WEATHER['北京'])
-  const [crypto] = useState<CryptoData[]>(MOCK_CRYPTO)
-  const [system, setSystem] = useState(MOCK_SYSTEM)
+const SmartDashboard = memo(function SmartDashboard() {
+  const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [crypto, setCrypto] = useState<CryptoData[]>([])
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [showSettings, setShowSettings] = useState(false)
+  const [systemStats, setSystemStats] = useState({
+    cpu: 0,
+    memory: 0,
+    storage: 0,
+    network: 0
+  })
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
 
   useEffect(() => {
-    setWeather(MOCK_WEATHER[selectedCity.name] || MOCK_WEATHER['北京'])
-  }, [selectedCity])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSystem(prev => ({
-        ...prev,
-        cpu: Math.floor(Math.random() * 30) + 20,
-        memory: Math.floor(Math.random() * 20) + 50,
-        network: Math.floor(Math.random() * 200) + 50,
-      }))
-    }, 5000)
-
-    return () => clearInterval(interval)
+    const statsInterval = setInterval(() => {
+      setSystemStats({
+        cpu: Math.floor(Math.random() * 40) + 20,
+        memory: Math.floor(Math.random() * 30) + 40,
+        storage: 65,
+        network: Math.floor(Math.random() * 100) + 50
+      })
+    }, 2000)
+    return () => clearInterval(statsInterval)
   }, [])
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: value < 1 ? 4 : 2
-    }).format(value)
+  const fetchWeather = useCallback(async () => {
+    try {
+      const response = await fetch(
+        'https://api.open-meteo.com/v1/forecast?latitude=39.9042&longitude=116.4074&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Asia/Shanghai'
+      )
+      if (response.ok) {
+        const data = await response.json()
+        const weatherCodes: Record<number, string> = {
+          0: '晴朗', 1: '晴间多云', 2: '多云', 3: '阴天',
+          45: '雾', 48: '雾凇', 51: '毛毛雨', 53: '小雨', 55: '中雨',
+          61: '小雨', 63: '中雨', 65: '大雨', 71: '小雪', 73: '中雪',
+          75: '大雪', 80: '阵雨', 81: '强阵雨', 82: '暴雨',
+          95: '雷暴', 96: '雷暴伴冰雹', 99: '强雷暴'
+        }
+        setWeather({
+          temp: Math.round(data.current.temperature_2m),
+          desc: weatherCodes[data.current.weather_code] || '未知',
+          humidity: data.current.relative_humidity_2m,
+          windSpeed: data.current.wind_speed_10m,
+          city: '北京'
+        })
+      }
+    } catch {
+      setWeather({
+        temp: 22,
+        desc: '晴间多云',
+        humidity: 45,
+        windSpeed: 12,
+        city: '北京'
+      })
+    }
+  }, [])
+
+  const fetchCrypto = useCallback(async () => {
+    try {
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd&include_24hr_change=true'
+      )
+      if (response.ok) {
+        const data = await response.json()
+        const coinMap: Record<string, { symbol: string; name: string }> = {
+          bitcoin: { symbol: 'BTC', name: 'Bitcoin' },
+          ethereum: { symbol: 'ETH', name: 'Ethereum' },
+          solana: { symbol: 'SOL', name: 'Solana' },
+          binancecoin: { symbol: 'BNB', name: 'BNB' },
+          ripple: { symbol: 'XRP', name: 'Ripple' }
+        }
+        const result: CryptoData[] = Object.entries(coinMap).map(([id, info]) => ({
+          symbol: info.symbol,
+          name: info.name,
+          price: data[id]?.usd || 0,
+          change24h: data[id]?.usd_24h_change || 0
+        }))
+        setCrypto(result)
+      }
+    } catch {
+      setCrypto([
+        { symbol: 'BTC', name: 'Bitcoin', price: 67523.50, change24h: 2.35 },
+        { symbol: 'ETH', name: 'Ethereum', price: 3421.80, change24h: 1.82 },
+        { symbol: 'SOL', name: 'Solana', price: 178.45, change24h: 5.62 },
+        { symbol: 'BNB', name: 'BNB', price: 612.30, change24h: -0.85 },
+        { symbol: 'XRP', name: 'Ripple', price: 0.6235, change24h: 1.24 }
+      ])
+    }
+  }, [])
+
+  useEffect(() => {
+    Promise.all([fetchWeather(), fetchCrypto()])
+  }, [fetchWeather, fetchCrypto])
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
 
-  const getWeatherIcon = (condition: string) => {
-    switch (condition.toLowerCase()) {
-      case '晴':
-      case 'sunny':
-        return <Sun size={48} color="#ffc107" />
-      case '多云':
-      case 'cloudy':
-        return <Cloud size={48} color="#90a4ae" />
-      case '阴':
-      case 'overcast':
-        return <Cloud size={48} color="#78909c" />
-      case '阵雨':
-      case 'rain':
-        return <CloudRain size={48} color="#42a5f5" />
-      case '雷暴':
-      case 'thunderstorm':
-        return <Wind size={48} color="#ef5350" />
-      default:
-        return <Sun size={48} color="#ffc107" />
-    }
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    })
+  }
+
+  const getWeatherIcon = (desc: string) => {
+    if (desc.includes('晴')) return '☀️'
+    if (desc.includes('多云') || desc.includes('阴')) return '⛅'
+    if (desc.includes('雨')) return '🌧️'
+    if (desc.includes('雪')) return '❄️'
+    if (desc.includes('雾')) return '🌫️'
+    if (desc.includes('雷')) return '⛈️'
+    return '🌤️'
   }
 
   return (
     <div style={{
       height: '100%',
-      background: 'var(--window-bg)',
-      padding: '20px',
-      overflow: 'auto'
+      background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #16213e 100%)',
+      padding: '24px',
+      overflowY: 'auto',
+      color: '#e0e0e8'
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px'
-      }}>
-        <div>
-          <h1 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: 'var(--titlebar-text)',
-            margin: '0 0 4px 0'
-          }}>
-            智能仪表板
-          </h1>
-          <p style={{
-            fontSize: '13px',
-            color: 'var(--titlebar-text)',
-            opacity: 0.6,
-            margin: 0
-          }}>
-            实时数据概览 · {currentTime.toLocaleDateString('zh-CN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{
+          fontSize: '48px',
+          fontWeight: 300,
+          fontFamily: '"JetBrains Mono", monospace',
+          color: '#ffffff',
+          letterSpacing: '2px'
+        }}>
+          {formatTime(currentTime)}
         </div>
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: '1px solid var(--window-border)',
-            background: 'var(--titlebar-bg)',
-            color: 'var(--titlebar-text)',
-            cursor: 'pointer',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          <Gauge size={16} />
-          设置
-        </button>
+        <div style={{ fontSize: '16px', color: '#a0a0c8', marginTop: '4px' }}>
+          {formatDate(currentTime)}
+        </div>
       </div>
 
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '16px',
-        marginBottom: '20px'
+        marginBottom: '24px'
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'rgba(255,255,255,0.05)',
           borderRadius: '16px',
-          padding: '24px',
-          color: 'white',
-          gridColumn: 'span 1'
+          padding: '20px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: '16px'
-          }}>
-            <div>
-              <p style={{
-                fontSize: '12px',
-                opacity: 0.8,
-                margin: '0 0 4px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}>
-                当前时间
-              </p>
-              <p style={{
-                fontSize: '36px',
-                fontWeight: '700',
-                margin: 0,
-                fontFamily: 'JetBrains Mono, monospace'
-              }}>
-                {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </p>
-            </div>
-            <Activity size={32} opacity={0.3} />
+          <div style={{ fontSize: '13px', color: '#8b7cf0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            天气
           </div>
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            fontSize: '12px',
-            opacity: 0.9
-          }}>
-            <span>GMT+8</span>
-            <span>|</span>
-            <span>北京时间</span>
-          </div>
-        </div>
-
-        <div style={{
-          background: 'var(--titlebar-bg)',
-          borderRadius: '16px',
-          padding: '24px',
-          border: '1px solid var(--window-border)',
-          gridColumn: 'span 1'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: '16px'
-          }}>
-            <div>
-              <p style={{
-                fontSize: '12px',
-                color: 'var(--titlebar-text)',
-                opacity: 0.6,
-                margin: '0 0 4px 0'
-              }}>
-                {selectedCity.name} 天气
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {getWeatherIcon(weather.description)}
+          {weather && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span style={{ fontSize: '48px' }}>{getWeatherIcon(weather.desc)}</span>
                 <div>
-                  <p style={{
-                    fontSize: '32px',
-                    fontWeight: '600',
-                    color: 'var(--titlebar-text)',
-                    margin: 0
-                  }}>
-                    {weather.temp}°C
-                  </p>
-                  <p style={{
-                    fontSize: '13px',
-                    color: 'var(--titlebar-text)',
-                    opacity: 0.7,
-                    margin: 0
-                  }}>
-                    {weather.description} · 体感 {weather.feelsLike}°C
-                  </p>
+                  <div style={{ fontSize: '36px', fontWeight: 300, color: '#fff' }}>{weather.temp}°C</div>
+                  <div style={{ fontSize: '14px', color: '#a0a0c8' }}>{weather.desc} · {weather.city}</div>
                 </div>
               </div>
-            </div>
-            <select
-              value={selectedCity.name}
-              onChange={(e) => {
-                const city = POPULAR_CITIES.find(c => c.name === e.target.value)
-                if (city) setSelectedCity(city)
-              }}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--window-border)',
-                background: 'var(--window-bg)',
-                color: 'var(--titlebar-text)',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
-            >
-              {POPULAR_CITIES.map(city => (
-                <option key={city.name} value={city.name}>{city.name}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '12px',
-            fontSize: '12px',
-            color: 'var(--titlebar-text)',
-            opacity: 0.7
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Droplets size={14} />
-              <span>湿度 {weather.humidity}%</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Wind size={14} />
-              <span>风速 {weather.wind}km/h</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Eye size={14} />
-              <span>可见度 {weather.visibility}km</span>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-          borderRadius: '16px',
-          padding: '24px',
-          color: 'white',
-          gridColumn: 'span 1'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: '16px'
-          }}>
-            <div>
-              <p style={{
-                fontSize: '12px',
-                opacity: 0.8,
-                margin: '0 0 4px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}>
-                加密货币市场
-              </p>
-              <p style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                margin: 0
-              }}>
-                BTC {formatCurrency(crypto[0].price)}
-              </p>
-              <p style={{
-                fontSize: '14px',
-                margin: '4px 0 0 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <TrendingUp size={14} />
-                {crypto[0].change > 0 ? '+' : ''}{crypto[0].change}%
-              </p>
-            </div>
-            <Activity size={32} opacity={0.3} />
-          </div>
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            fontSize: '12px',
-            opacity: 0.9
-          }}>
-            <span>实时数据</span>
-            <span>|</span>
-            <span>CoinGecko</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        background: 'var(--titlebar-bg)',
-        borderRadius: '16px',
-        padding: '24px',
-        border: '1px solid var(--window-border)',
-        marginBottom: '20px'
-      }}>
-        <h3 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          color: 'var(--titlebar-text)',
-          margin: '0 0 20px 0'
-        }}>
-          系统状态
-        </h3>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '16px'
-        }}>
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '8px',
-              fontSize: '13px',
-              color: 'var(--titlebar-text)'
-            }}>
-              <span>CPU 使用率</span>
-              <span style={{ fontWeight: '600' }}>{system.cpu}%</span>
-            </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'var(--window-border)',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${system.cpu}%`,
-                height: '100%',
-                background: system.cpu > 70 ? '#dc3545' : system.cpu > 40 ? '#ffc107' : '#28a745',
-                transition: 'width 0.5s ease'
-              }} />
-            </div>
-          </div>
-
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '8px',
-              fontSize: '13px',
-              color: 'var(--titlebar-text)'
-            }}>
-              <span>内存使用</span>
-              <span style={{ fontWeight: '600' }}>{system.memory}%</span>
-            </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'var(--window-border)',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${system.memory}%`,
-                height: '100%',
-                background: system.memory > 80 ? '#dc3545' : system.memory > 60 ? '#ffc107' : '#28a745',
-                transition: 'width 0.5s ease'
-              }} />
-            </div>
-          </div>
-
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '8px',
-              fontSize: '13px',
-              color: 'var(--titlebar-text)'
-            }}>
-              <span>存储空间</span>
-              <span style={{ fontWeight: '600' }}>{system.storage}%</span>
-            </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'var(--window-border)',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${system.storage}%`,
-                height: '100%',
-                background: system.storage > 90 ? '#dc3545' : system.storage > 70 ? '#ffc107' : '#28a745',
-                transition: 'width 0.5s ease'
-              }} />
-            </div>
-          </div>
-
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '8px',
-              fontSize: '13px',
-              color: 'var(--titlebar-text)'
-            }}>
-              <span>网络速度</span>
-              <span style={{ fontWeight: '600' }}>{system.network} MB/s</span>
-            </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'var(--window-border)',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${Math.min(system.network, 100)}%`,
-                height: '100%',
-                background: '#28a745',
-                transition: 'width 0.5s ease'
-              }} />
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          marginTop: '20px',
-          padding: '12px',
-          background: 'var(--window-bg)',
-          borderRadius: '8px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: '12px',
-          color: 'var(--titlebar-text)',
-          opacity: 0.7
-        }}>
-          <span>系统运行时间</span>
-          <span style={{ fontWeight: '600' }}>{system.uptime}</span>
-        </div>
-      </div>
-
-      <div style={{
-        background: 'var(--titlebar-bg)',
-        borderRadius: '16px',
-        padding: '24px',
-        border: '1px solid var(--window-border)'
-      }}>
-        <h3 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          color: 'var(--titlebar-text)',
-          margin: '0 0 20px 0'
-        }}>
-          加密货币行情
-        </h3>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: '12px'
-        }}>
-          {crypto.map((coin, index) => (
-            <div
-              key={index}
-              style={{
-                padding: '16px',
-                background: 'var(--window-bg)',
-                borderRadius: '12px',
-                border: '1px solid var(--window-border)',
-                transition: 'all 0.2s'
-              }}
-            >
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '8px'
+                marginTop: '16px',
+                paddingTop: '12px',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                fontSize: '13px',
+                color: '#a0a0c8'
               }}>
-                <div>
-                  <p style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: 'var(--titlebar-text)',
-                    margin: 0
-                  }}>
-                    {coin.name}
-                  </p>
-                  <p style={{
-                    fontSize: '11px',
-                    color: 'var(--titlebar-text)',
-                    opacity: 0.6,
-                    margin: 0
-                  }}>
-                    {coin.symbol}
-                  </p>
+                <span>湿度 {weather.humidity}%</span>
+                <span>风速 {weather.windSpeed} km/h</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '16px',
+          padding: '20px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{ fontSize: '13px', color: '#00d4aa', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            系统状态
+          </div>
+          <div>
+            {[
+              { label: 'CPU', value: systemStats.cpu, color: '#8b7cf0' },
+              { label: '内存', value: systemStats.memory, color: '#00d4aa' },
+              { label: '存储', value: systemStats.storage, color: '#f5a623' },
+              { label: '网络', value: systemStats.network, color: '#e94560' }
+            ].map((item) => (
+              <div key={item.label} style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                  <span style={{ color: '#a0a0c8' }}>{item.label}</span>
+                  <span style={{ color: '#fff' }}>{item.value}%</span>
                 </div>
                 <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: coin.change > 0 ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                  height: '6px',
+                  background: 'rgba(255,255,255,0.1)',
+                  borderRadius: '3px',
+                  overflow: 'hidden'
                 }}>
-                  {coin.change > 0 ? <TrendingUp size={16} color="#28a745" /> : <Activity size={16} color="#dc3545" />}
+                  <div style={{
+                    width: `${item.value}%`,
+                    height: '100%',
+                    background: item.color,
+                    borderRadius: '3px',
+                    transition: 'width 0.5s ease'
+                  }} />
                 </div>
               </div>
-              <p style={{
-                fontSize: '18px',
-                fontWeight: '700',
-                color: 'var(--titlebar-text)',
-                margin: '0 0 4px 0',
-                fontFamily: 'JetBrains Mono, monospace'
-              }}>
-                {formatCurrency(coin.price)}
-              </p>
-              <p style={{
-                fontSize: '13px',
-                margin: 0,
-                color: coin.change > 0 ? '#28a745' : '#dc3545',
-                fontWeight: '600'
-              }}>
-                {coin.change > 0 ? '+' : ''}{coin.change}%
-              </p>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        background: 'rgba(255,255,255,0.05)',
+        borderRadius: '16px',
+        padding: '20px',
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(10px)',
+        marginBottom: '24px'
+      }}>
+        <div style={{ fontSize: '13px', color: '#f5a623', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          加密货币行情
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+          {crypto.map((coin) => (
+            <div key={coin.symbol} style={{
+              background: 'rgba(255,255,255,0.03)',
+              borderRadius: '12px',
+              padding: '14px',
+              border: '1px solid rgba(255,255,255,0.05)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontWeight: 600, color: '#fff' }}>{coin.symbol}</span>
+                <span style={{
+                  fontSize: '12px',
+                  color: coin.change24h >= 0 ? '#00d4aa' : '#e94560',
+                  fontWeight: 500
+                }}>
+                  {coin.change24h >= 0 ? '+' : ''}{coin.change24h.toFixed(2)}%
+                </span>
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: '#fff' }}>
+                ${coin.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div style={{ fontSize: '12px', color: '#a0a0c8', marginTop: '2px' }}>{coin.name}</div>
             </div>
           ))}
         </div>
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'var(--window-bg)',
-          borderRadius: '8px',
-          fontSize: '11px',
-          color: 'var(--titlebar-text)',
-          opacity: 0.6,
-          textAlign: 'center'
-        }}>
-          数据来源: CoinGecko API · 最后更新: {new Date().toLocaleTimeString('zh-CN')}
-        </div>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '12px'
+      }}>
+        {[
+          { icon: '📁', label: '文件管理器', count: '128 文件' },
+          { icon: '📝', label: '便签', count: '5 条' },
+          { icon: '✅', label: '待办', count: '3 项' },
+          { icon: '💾', label: '存储空间', count: '35% 已用' }
+        ].map((item, index) => (
+          <div key={index} style={{
+            background: 'rgba(255,255,255,0.03)',
+            borderRadius: '12px',
+            padding: '16px',
+            border: '1px solid rgba(255,255,255,0.05)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>{item.icon}</div>
+            <div style={{ fontWeight: 500, color: '#fff' }}>{item.label}</div>
+            <div style={{ fontSize: '12px', color: '#a0a0c8', marginTop: '2px' }}>{item.count}</div>
+          </div>
+        ))}
       </div>
     </div>
   )
 })
+
+export default SmartDashboard
