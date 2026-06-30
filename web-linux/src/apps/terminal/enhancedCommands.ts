@@ -2,38 +2,6 @@ import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { findNodeByPath, resolvePath } from '../../store'
 
-registerCommand('grep', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args, cwd, files } = context
-    
-    if (args.length < 2) {
-      return { output: 'grep: 缺少操作数\n用法: grep <模式> <文件>' }
-    }
-    
-    const pattern = args[0]
-    const resolved = resolvePath(cwd, args[1])
-    const node = findNodeByPath(files, resolved)
-    
-    if (node && node.type === 'file') {
-      const content = node.content || ''
-      const lines = content.split('\n')
-      const matches = lines.map((line, idx) => {
-        if (line.includes(pattern)) {
-          return `${idx + 1}: ${line}`
-        }
-        return null
-      }).filter(Boolean)
-      
-      return { output: matches.join('\n') || '没有找到匹配' }
-    }
-    
-    return { output: `grep: ${args[1]}: 没有那个文件或目录` }
-  },
-  description: '在文件中搜索模式',
-  usage: 'grep <模式> <文件>',
-  examples: ['grep hello file.txt', 'grep TODO notes.md']
-})
-
 registerCommand('find', {
   handler: (context: CommandContext): CommandResult => {
     const { args, cwd, files } = context
@@ -193,64 +161,6 @@ registerCommand('file', {
   description: '识别文件类型',
   usage: 'file <文件>',
   examples: ['file README.md', 'file image.png']
-})
-
-registerCommand('sort', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args, cwd, files } = context
-    
-    if (args.length === 0) {
-      return { output: 'sort: 缺少操作数\n用法: sort <文件>' }
-    }
-    
-    const resolved = resolvePath(cwd, args[0])
-    const node = findNodeByPath(files, resolved)
-    
-    if (node && node.type === 'file') {
-      const content = node.content || ''
-      const lines = content.split('\n').filter(line => line.trim()).sort()
-      return { output: lines.join('\n') }
-    }
-    
-    return { output: `sort: ${args[0]}: 没有那个文件或目录` }
-  },
-  description: '排序文件内容',
-  usage: 'sort <文件>',
-  examples: ['sort list.txt']
-})
-
-registerCommand('uniq', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args, cwd, files } = context
-    
-    if (args.length === 0) {
-      return { output: 'uniq: 缺少操作数\n用法: uniq <文件>' }
-    }
-    
-    const resolved = resolvePath(cwd, args[0])
-    const node = findNodeByPath(files, resolved)
-    
-    if (node && node.type === 'file') {
-      const content = node.content || ''
-      const lines = content.split('\n')
-      const uniqueLines: string[] = []
-      let prevLine = ''
-      
-      lines.forEach(line => {
-        if (line !== prevLine) {
-          uniqueLines.push(line)
-          prevLine = line
-        }
-      })
-      
-      return { output: uniqueLines.join('\n') }
-    }
-    
-    return { output: `uniq: ${args[0]}: 没有那个文件或目录` }
-  },
-  description: '去除重复行',
-  usage: 'uniq <文件>',
-  examples: ['uniq duplicates.txt']
 })
 
 registerCommand('cut', {
