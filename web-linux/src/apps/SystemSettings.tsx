@@ -14,6 +14,25 @@ const wallpapers = [
   { id: 'sunset-purple', name: '晚霞', style: { background: 'linear-gradient(135deg, #cc2b5e, #753a88)' } },
   { id: 'mint', name: '薄荷', style: { background: 'linear-gradient(135deg, #43cea2, #185a9d)' } },
   { id: 'peach', name: '蜜桃', style: { background: 'linear-gradient(135deg, #ffecd2, #fcb69f)' } },
+  { id: 'cosmic', name: '宇宙', style: { background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)' } },
+  { id: 'neon', name: '霓虹', style: { background: 'linear-gradient(135deg, #0d0d0d, #1a1a2e, #2d132c)' } },
+  { id: 'nordic', name: '北欧', style: { background: 'linear-gradient(135deg, #2c3e50, #4ca1af)' } },
+  { id: 'sunrise', name: '日出', style: { background: 'linear-gradient(135deg, #ff9472, #f27059, #f7797d)' } },
+  { id: 'twilight', name: '黄昏', style: { background: 'linear-gradient(135deg, #2b5876, #4e4376)' } },
+  { id: 'emerald', name: '翡翠', style: { background: 'linear-gradient(135deg, #134e5e, #71b280, #2ecc71)' } },
+  { id: 'cyberpunk', name: '赛博朋克', style: { background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e, #ff0099)' } },
+  { id: 'matrix', name: '矩阵', style: { background: 'linear-gradient(135deg, #0d0d0d, #003300, #00ff00)' } },
+  { id: 'aurora-borealis', name: '北极光', style: { background: 'linear-gradient(135deg, #0a0a0a, #1a3a3a, #2d5a5a, #00ff88)' } },
+  { id: 'nebula', name: '星云', style: { background: 'linear-gradient(135deg, #1a0033, #330066, #660099, #9933ff)' } },
+  { id: 'sunset-glow', name: '夕阳余晖', style: { background: 'linear-gradient(135deg, #ff416c, #ff4b2b, #f7797d)' } },
+  { id: 'arctic', name: '极地', style: { background: 'linear-gradient(135deg, #e0eafc, #cfdef3, #a8c0ff)' } },
+  { id: 'desert', name: '沙漠', style: { background: 'linear-gradient(135deg, #c9a27a, #d4a574, #e8c39e)' } },
+  { id: 'volcano', name: '火山', style: { background: 'linear-gradient(135deg, #1a0a00, #3d1a00, #5c2a00, #ff4500)' } },
+  { id: 'crystal', name: '水晶', style: { background: 'linear-gradient(135deg, #667eea, #764ba2, #f093fb)' } },
+  { id: 'storm', name: '风暴', style: { background: 'linear-gradient(135deg, #1e3c72, #2a5298, #203a43)' } },
+  { id: 'autumn', name: '秋叶', style: { background: 'linear-gradient(135deg, #8b4513, #d2691e, #f4a460, #daa520)' } },
+  { id: 'winter', name: '冬日', style: { background: 'linear-gradient(135deg, #e6dada, #274690, #f7f7f7)' } },
+  { id: 'spring', name: '春日', style: { background: 'linear-gradient(135deg, #a8e063, #56ab2f, #56ab2f, #a8e063)' } },
 ]
 
 const wifiNetworks = [
@@ -264,7 +283,7 @@ export default function Settings() {
         {activeCategory === 'wallpaper' && (
           <div>
             <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>壁纸设置</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
               {wallpapers.map((wp) => (
                 <div
                   key={wp.id}

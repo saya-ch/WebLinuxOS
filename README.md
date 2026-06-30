@@ -1,203 +1,206 @@
 # WebLinuxOS
 
-一个基于 React + TypeScript 构建的 Web 桌面操作系统，提供完整的桌面体验和丰富的应用程序生态系统。
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+</p>
 
-## 项目简介
+<p align="center">
+  <strong>A fully functional Web Desktop Operating System</strong>
+</p>
 
-WebLinuxOS 是一个创新的 Web 桌面操作系统，完全基于浏览器运行，无需安装任何软件即可体验完整的桌面环境。项目采用现代化的前端技术栈，提供了类 Linux 桌面的交互体验，包括窗口管理、任务栏、文件系统、多任务处理等核心功能。
+<p align="center">
+  <a href="https://saya-ch.github.io/WebLinuxOS/">Live Demo</a>
+  ·
+  <a href="#features">Features</a>
+  ·
+  <a href="#applications">Applications</a>
+  ·
+  <a href="#quick-start">Quick Start</a>
+  ·
+  <a href="#deployment">Deployment</a>
+</p>
 
-**核心特性：**
-- 真实的窗口管理系统：支持拖拽、缩放、最小化、最大化、关闭
-- 动态任务栏：应用切换、系统托盘、时钟显示
-- 虚拟文件系统：完整的文件管理体验
-- 多应用并行：支持多个应用同时运行
-- 主题切换：深色/浅色模式无缝切换
-- 响应式设计：适配各种屏幕尺寸
-- 实时壁纸：静态与动态壁纸支持
-- 快捷键系统：丰富的全局快捷键
+---
 
-## 应用程序概览
+<p align="center">
+  <img src="https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/public/screenshot.png" alt="WebLinuxOS Screenshot" width="100%">
+</p>
 
-项目包含 **220+** 款精心设计的应用程序，覆盖以下类别：
+## Project Introduction
 
-### 系统应用
-- 文件管理器 - 完整的文件浏览与管理
-- 终端 - 命令行模拟器
-- 系统监视器 - 实时性能监控
-- 任务管理器 - 进程与应用管理
-- 设置中心 - 系统配置面板
+WebLinuxOS is an innovative Web-based desktop operating system that runs entirely in the browser. Built with modern frontend technologies, it delivers a authentic Linux-like desktop experience with complete window management, taskbar, virtual filesystem, and multi-tasking capabilities.
 
-### 开发工具
-- 代码编辑器 - 支持 JavaScript/TypeScript/HTML/CSS
-- **开发者生态系统** - 代码片段库、项目模板、API文档浏览器、工具链配置器
-- REST 客户端 - API 测试工具
-- 正则表达式测试器 - Regex 验证与调试
-- JSON 格式化器 - 数据格式转换
-- GitHub 探索器 - 仓库与趋势浏览
+**No installation required - just open and experience the full desktop environment.**
 
-### 办公应用
-- Markdown 编辑器 - 实时预览编辑
-- 电子表格 - 数据录入与计算
-- 演示文稿 -幻灯片制作
-- 日历 - 日期管理与提醒
-- 便签应用 - 快速笔记记录
+## Features
 
-### 创新应用（v11.0.0 新增）
+### Desktop Experience
+- **Window Management System** - Drag, resize, minimize, maximize, and close windows with smooth animations
+- **Dynamic Taskbar** - Application switching, system tray, real-time clock display
+- **Virtual Filesystem** - Complete file browsing and management experience
+- **Multi-tasking** - Run multiple applications simultaneously
+- **Theme Switching** - Seamless dark/light mode transitions
+- **Responsive Design** - Adapts to various screen sizes
+- **Live Wallpapers** - 32 beautiful gradient wallpapers with more themes
+- **Keyboard Shortcuts** - Comprehensive global hotkey system
 
-#### AI 学习伴侣
-一款智能辅助学习工具，专为知识管理和技能提升而设计。
+### Developer Tools
+- **Code Editor** - Full syntax highlighting for JavaScript/TypeScript/HTML/CSS
+- **Code Runner** - Execute JavaScript code in real-time
+- **API Testing** - REST client for API testing
+- **Regex Tester** - Pattern validation and debugging
+- **JSON Formatter** - Data format conversion
+- **GitHub Explorer** - Browse repositories and trending projects
+- **Developer Ecosystem** - Snippets library, project templates, API docs browser
 
-**核心功能：**
-- 知识卡片系统：基于间隔重复的记忆算法
-- 学习路径规划：系统化的知识掌握路线
-- AI智能问答：即时解答学习疑问
-- 进度追踪：学习数据可视化分析
-- 个性化学习计划：根据目标定制学习方案
+### Smart Applications
+- **AI Learning Companion** - Spaced repetition memory system with progress tracking
+- **Creative Inspiration Workshop** - Idea generation with keyword association
+- **Smart Code Assistant** - Code explanation and generation tool
+- **Activity Tracker** - Productivity monitoring and analytics
 
-**设计特色：**
-- 温暖舒适的学习氛围
-- 柔和渐变色系（淡紫、淡粉、淡蓝）
-- 圆润卡片设计，减少视觉疲劳
+### Office & Productivity
+- **Markdown Editor** - Live preview editing
+- **Spreadsheet** - Data entry and calculation
+- **Presentation** - Slide creation
+- **Calendar** - Date management with reminders
+- **Notes** - Quick note-taking application
 
-#### 创意灵感工坊
-一款创意生成工具，帮助设计师和创作者激发灵感。
+### Utilities
+- **Calculator** - Scientific calculator with currency conversion
+- **World Clock** - Multiple timezone display
+- **Weather** - Real-time weather information
+- **Password Generator** - Secure password creation
+- **QR Code Generator** - Create QR codes instantly
 
-**核心功能：**
-- 灵感画板：可视化创意组合工具
-- 关键词联想：智能词汇拓展引擎
-- 创意提示生成器：10种启发式创意方法
-- 随机创意组合：关键词+配色+形状一键生成
-- 收藏夹管理：保存优质创意方案
+### Multimedia
+- **Music Player** - Local audio playback
+- **Video Player** - Multi-format video support
+- **Image Viewer** - Image browsing and editing
+- **Drawing Tool** - Simple illustration application
 
-**设计特色：**
-- 活泼多彩的视觉风格
-- 鲜明对比色搭配
-- 不对称布局与动态元素
+### Entertainment
+- **Snake Game** - Classic arcade experience
+- **Tetris** - Puzzle gaming
+- **2048** - Number merging game
+- **Memory Card** - Memory training game
 
-#### 开发者生态系统
-开发者工具聚合中心，一站式开发资源平台。
+## Applications Overview
 
-**核心功能：**
-- 代码片段库：保存、搜索、运行代码片段
-- 项目模板：快速生成 React/Node/CLI 项目结构
-- API 文档浏览器：GitHub/Open-Meteo/CoinGecko 等公共 API
-- 工具链配置器：前端/后端/DevOps 工具集方案
-- 代码运行器：即时执行 JavaScript 代码
+The project includes **220+** meticulously designed applications across the following categories:
 
-**设计特色：**
-- 技术感深色主题
-- 绿色/蓝色科技渐变
-- 网格化布局，信息密度高
+### System Applications
+| App | Description |
+|-----|-------------|
+| File Manager | Complete file browsing and management |
+| Terminal | Command-line simulator |
+| System Monitor | Real-time performance monitoring |
+| Task Manager | Process and application management |
+| Settings Center | System configuration panel |
 
-### 多媒体应用
-- 音乐播放器 - 本地音频播放
-- 视频播放器 - 多格式视频支持
-- 图片查看器 - 图片浏览与编辑
-- 画图工具 - 简单绘图应用
+### Development Tools
+| App | Description |
+|-----|-------------|
+| Code Editor | Syntax highlighting for JS/TS/HTML/CSS |
+| REST Client | API testing tool |
+| Regex Tester | Pattern validation and debugging |
+| JSON Formatter | Data format conversion |
+| GitHub Explorer | Repository and trending browsing |
+| Code Runner | Instant JavaScript execution |
 
-### 实用工具
-- 计算器 - 科学计算支持
-- 时钟 - 世界时钟显示
-- 天气 - 实时天气信息
-- 密码生成器 - 安全密码创建
-- QR 码生成器 - 二维码制作
+### Innovation Apps
 
-### 游戏娱乐
-- 贪吃蛇 - 经典街机游戏
-- 俄罗斯方块 - 休闲益智
-- 2048 - 数字合并游戏
-- 记忆翻牌 - 记忆训练游戏
+#### AI Learning Companion
+An intelligent learning assistant designed for knowledge management and skill improvement.
 
-## 技术架构
+**Core Features:**
+- Knowledge card system based on spaced repetition algorithm
+- Learning path planning with systematic knowledge mastery routes
+- AI-powered Q&A for instant answers
+- Progress tracking with data visualization
+- Personalized learning plans customized to goals
 
-### 前端技术栈
-- **React 18** - 组件化 UI 框架
-- **TypeScript** - 类型安全开发
-- **Vite** - 快速构建工具
-- **Lucide React** - 现代图标库
-- **CSS-in-JS** - 内联样式方案
+#### Creative Inspiration Workshop
+A creative generation tool to inspire designers and creators.
 
-### 核心模块
+**Core Features:**
+- Inspiration board for visual creative combinations
+- Smart keyword association engine
+- 10启发式创意方法
+- Random creative combinations: keywords + colors + shapes
+- Favorites management for saving premium ideas
 
-```
-src/
-├── apps/                 # 应用组件目录（220+ 应用）
-│   ├── AILearningCompanion.tsx
-│   ├── CreativeInspirationWorkshop.tsx
-│   ├── DevEcosystem.tsx
-│   └── ...
-├── components/           # 系统组件
-│   ├── Window.tsx        # 窗口管理
-│   ├── Taskbar.tsx       # 任务栏
-│   ├── Desktop.tsx       # 桌面环境
-│   └── FileManager.tsx   # 文件管理
-├── store.tsx             # 全局状态管理
-├── apps.tsx              # 应用注册中心
-├── types.ts              # 类型定义
-└── icons.tsx             # 图标系统
-```
+#### Developer Ecosystem
+Developer tools aggregation center, one-stop development resource platform.
 
-### 状态管理
+**Core Features:**
+- Code snippets library: save, search, run code snippets
+- Project templates: quick generation of React/Node/CLI project structures
+- API documentation browser: GitHub/Open-Meteo/CoinGecko public APIs
+- Toolchain configurator: frontend/backend/DevOps tool solutions
+- Code runner: instant JavaScript code execution
 
-使用 Zustand-like 模式进行全局状态管理：
-- 窗口状态：位置、大小、激活状态
-- 应用状态：运行列表、焦点管理
-- 主题状态：深色/浅色模式
-- 文件系统：虚拟目录结构
+## Quick Start
 
-## 快速开始
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-### 安装依赖
+### Installation
 
 ```bash
-cd web-linux
+# Clone the repository
+git clone https://github.com/saya-ch/WebLinuxOS.git
+cd WebLinuxOS/web-linux
+
+# Install dependencies
 npm install
-```
 
-### 开发模式
-
-```bash
+# Start development server
 npm run dev
 ```
 
-访问 `http://localhost:5173` 查看应用。
+Open `http://localhost:5173` to view the application.
 
-### 生产构建
+### Production Build
 
 ```bash
 npm run build
 ```
 
-构建产物位于 `dist/` 目录。
+Build artifacts are located in the `dist/` directory.
 
-## GitHub Pages 部署
+## Deployment
 
-### 方式一：自动部署（推荐）
+### GitHub Pages (Recommended)
 
-项目支持 GitHub Actions 自动部署：
+The project supports GitHub Actions automatic deployment:
 
-1. 将项目推送到 GitHub 仓库
-2. 进入仓库 Settings > Pages
-3. Source 选择 "GitHub Actions"
-4. 项目将自动构建并部署
+1. Push the project to your GitHub repository
+2. Go to repository Settings > Pages
+3. Select Source as "GitHub Actions"
+4. The project will automatically build and deploy
 
-### 方式二：手动部署
+### Manual Deployment
 
 ```bash
-# 构建项目
+# Build the project
 npm run build
 
-# 部署到 gh-pages 分支
+# Deploy to gh-pages branch
 git subtree push --prefix dist origin gh-pages
 ```
 
-### 配置说明
+### Configuration
 
-确保 `vite.config.ts` 正确设置 `base` 路径：
+Ensure `vite.config.ts` has the correct `base` path:
 
 ```typescript
 export default defineConfig({
-  base: '/WebLinuxOS/', // 替换为你的仓库名
+  base: '/WebLinuxOS/', // Replace with your repository name
   build: {
     outDir: 'dist',
     emptyOutDir: true
@@ -205,147 +208,151 @@ export default defineConfig({
 })
 ```
 
-## 使用示例
+## Technical Architecture
 
-### 启动应用
+### Tech Stack
+- **React 18** - Component-based UI framework
+- **TypeScript** - Type-safe development
+- **Vite 5** - Fast build tool
+- **Lucide React** - Modern icon library
 
-1. 双击桌面图标启动应用
-2. 通过任务栏"应用菜单"浏览全部应用
-3. 使用搜索功能快速定位应用
+### Project Structure
 
-### 窗口操作
+```
+web-linux/
+├── src/
+│   ├── apps/                    # Application components (220+ apps)
+│   │   ├── AILearningCompanion.tsx
+│   │   ├── CreativeInspirationWorkshop.tsx
+│   │   ├── DevEcosystem.tsx
+│   │   └── ...
+│   ├── components/              # System components
+│   │   ├── Window.tsx           # Window management
+│   │   ├── Taskbar.tsx          # Taskbar
+│   │   ├── Desktop.tsx          # Desktop environment
+│   │   └── FileManager.tsx      # File management
+│   ├── store.tsx                # Global state management
+│   ├── apps.tsx                 # Application registry
+│   ├── types.ts                 # Type definitions
+│   ├── icons.tsx                # Icon system
+│   └── index.css                # Global styles
+├── public/                      # Static assets
+├── vite.config.ts              # Build configuration
+└── package.json                # Dependencies
+```
 
-- **拖拽**：点击标题栏移动窗口
-- **缩放**：拖拽窗口边角调整大小
-- **最小化**：点击最小化按钮隐藏窗口
-- **最大化**：点击最大化按钮全屏窗口
-- **关闭**：点击关闭按钮终止应用
+### State Management
 
-### 文件管理
+Using Zustand-like pattern for global state management:
+- Window state: position, size, activation status
+- Application state: running list, focus management
+- Theme state: dark/light mode
+- Filesystem: virtual directory structure
 
-- 创建文件夹和文件
-- 复制、移动、删除操作
-- 文件搜索与排序
+## Usage Examples
 
-### 主题切换
+### Starting Applications
+1. Double-click desktop icons to launch applications
+2. Browse all applications through the taskbar "App Menu"
+3. Use the search function to quickly locate applications
 
-通过设置中心或系统托盘快速切换深色/浅色主题。
+### Window Operations
+- **Drag**: Click the title bar to move the window
+- **Resize**: Drag the window corners to adjust size
+- **Minimize**: Click the minimize button to hide the window
+- **Maximize**: Click the maximize button to fullscreen the window
+- **Close**: Click the close button to terminate the application
 
-## 截图说明
+### File Management
+- Create folders and files
+- Copy, move, delete operations
+- File search and sorting
 
-**桌面环境**
-- 类 Linux 桌面布局
-- 动态壁纸支持
-- 可定制图标位置
+### Theme Switching
+Quickly switch between dark/light themes through the Settings Center or system tray.
 
-**窗口管理**
-- 多窗口并行运行
-- 阴影与透明效果
-- 焦点智能切换
+## Performance Optimization
 
-**任务栏**
-- 应用快速切换
-- 系统托盘图标
-- 实时时钟显示
+- Lazy loading of application components
+- Virtual scrolling for long lists
+- CSS animations instead of JavaScript animations
+- On-demand state updates
+- Optimized bundle size with code splitting
 
-**应用示例**
-- 代码编辑器：语法高亮、自动补全
-- AI学习伴侣：知识卡片、进度追踪
-- 创意灵感工坊：画板、配色方案
-- 开发者生态系统：代码片段、API文档
+## Development Guide
 
-## 项目特色
+### Adding New Applications
 
-### 真实可用功能
+1. Create component file in `src/apps/`
+2. Register application definition in `src/apps.tsx`
+3. Implement application icon component
+4. Add to appropriate category
 
-所有应用均提供实际功能，而非模拟界面：
-- 计算器支持科学计算
-- 文件管理器可创建真实文件结构
-- AI学习伴侣保存学习进度到本地存储
-- 代码片段库可执行 JavaScript 代码
-
-### 响应式设计
-
-应用窗口支持自适应尺寸：
-- 最小尺寸限制保证可用性
-- 最大尺寸充分利用屏幕
-- 内容区域自动调整布局
-
-### 性能优化
-
-- 懒加载应用组件
-- 虚拟滚动长列表
-- CSS 动画替代 JS 动画
-- 状态按需更新
-
-## 开发指南
-
-### 添加新应用
-
-1. 在 `src/apps/` 创建组件文件
-2. 在 `src/apps.tsx` 注册应用定义
-3. 实现应用图标组件
-4. 添加到相应类别
-
-### 应用规范
+### Application Specification
 
 ```typescript
 interface AppDefinition {
-  id: string              // 唯一标识
-  name: string            // 显示名称
-  icon: ReactNode         // 图标组件
-  component: string       // 组件名
-  category: string        // 应用类别
-  defaultWidth: number    // 默认宽度
-  defaultHeight: number   // 默认高度
-  minWidth: number        // 最小宽度
-  minHeight: number       // 最小高度
-  resizable: boolean      // 是否可缩放
-  multiple: boolean       // 是否允许多实例
+  id: string              // Unique identifier
+  name: string            // Display name
+  icon: ReactNode         // Icon component
+  component: string       // Component name
+  category: string        // Application category
+  defaultWidth: number    // Default width
+  defaultHeight: number   // Default height
+  minWidth: number       // Minimum width
+  minHeight: number       // Minimum height
+  resizable: boolean      // Resizable or not
+  multiple: boolean      // Allow multiple instances
 }
 ```
 
-### 类别划分
+### Categories
 
-- `system` - 系统工具
-- `development` - 开发工具
-- `office` - 办公应用
-- `utilities` - 实用工具
-- `multimedia` - 多媒体
-- `internet` - 网络应用
-- `games` - 游戏娱乐
+- `system` - System tools
+- `development` - Development tools
+- `office` - Office applications
+- `utilities` - Utility tools
+- `multimedia` - Multimedia
+- `internet` - Network applications
+- `games` - Games and entertainment
 
-## 贡献指南
+## Contributing
 
-欢迎提交 Issue 和 Pull Request：
+Contributions are welcome! Please feel free to submit issues and pull requests.
 
-1. Fork 项目仓库
-2. 创建功能分支
-3. 提交变更代码
-4. 发起 Pull Request
+1. Fork the project repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-## 许可证
+## License
 
-MIT License - 自由使用、修改和分发。
+MIT License - Free to use, modify, and distribute.
 
-## 更新日志
+## Changelog
 
 ### v11.0.0
-- 新增 AI 学习伴侣应用
-- 新增创意灵感工坊应用
-- 新增开发者生态系统应用
-- 优化 README 文档结构
+- Added AI Learning Companion application
+- Added Creative Inspiration Workshop application
+- Added Developer Ecosystem application
+- Optimized README documentation structure
+- Expanded wallpaper collection to 32 themes
 
 ### v10.0.0
-- 新增实时 Markdown 协作编辑器
-- 新增 API 健康监控中心
-- 新增代码片段分享中心
+- Added real-time Markdown collaborative editor
+- Added API health monitoring center
+- Added code snippet sharing center
 
 ### v9.0.0
-- 新增 AI 代码分析器
-- 新增网络状态仪表盘
-- 新增系统资源优化器
+- Added AI code analyzer
+- Added network status dashboard
+- Added system resource optimizer
 
 ---
 
-**WebLinuxOS** - 在浏览器中体验完整的桌面操作系统。
+**WebLinuxOS** - Experience a complete desktop operating system in your browser.
+
+<p align="center">
+  <sub>Built with passion and modern web technologies</sub>
+</p>
