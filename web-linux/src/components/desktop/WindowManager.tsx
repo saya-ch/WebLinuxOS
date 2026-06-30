@@ -576,6 +576,7 @@ const WindowManager = memo(function WindowManager() {
 
   useEffect(() => {
     const handleVisibilityChange = () => {
+      // 仅在页面可见时才处理窗口overflow，避免后台运行时不必要的样式计算
       if (document.hidden) {
         document.body.style.setProperty('overflow', 'hidden')
       } else {

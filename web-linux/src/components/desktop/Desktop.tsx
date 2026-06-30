@@ -187,7 +187,10 @@ const Desktop = memo(function Desktop() {
   }, [liveWallpaperEnabled])
 
   const initializeParticles = useCallback(() => {
-    const newParticles: Particle[] = Array.from({ length: 60 }, (_, i) => ({
+    // 粒子数量根据设备性能动态调整，避免低性能设备卡顿
+    const isLowPerformance = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
+    const particleCount = isLowPerformance ? 30 : 60;
+    const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -212,7 +215,9 @@ const Desktop = memo(function Desktop() {
     let animationId: number
     let lastTime = 0
     let running = true
-    const targetFPS = 30
+    // 根据设备性能动态调整目标帧率
+    const isLowPerformance = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
+    const targetFPS = isLowPerformance ? 20 : 30
     const frameInterval = 1000 / targetFPS
     let connectionBatchCounter = 0
 
