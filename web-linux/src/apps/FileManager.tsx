@@ -16,12 +16,63 @@ function getFileExtension(name: string): string {
 
 function isImageFile(name: string): boolean {
   const ext = getFileExtension(name)
-  return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)
+  return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'].includes(ext)
 }
 
 function isTextFile(name: string): boolean {
   const ext = getFileExtension(name)
   return ['txt', 'md', 'json', 'js', 'ts', 'tsx', 'jsx', 'html', 'css', 'py', 'java', 'cpp', 'c', 'go', 'rs', 'php', 'rb', 'xml', 'yml', 'yaml', 'sh', 'sql'].includes(ext)
+}
+
+function isJsonFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ext === 'json'
+}
+
+function isMarkdownFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ext === 'md'
+}
+
+function isAudioFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext)
+}
+
+function isVideoFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ['mp4', 'mkv', 'avi', 'mov', 'webm', 'ogg'].includes(ext)
+}
+
+function isCodeFile(name: string): boolean {
+  const ext = getFileExtension(name)
+  return ['js', 'ts', 'tsx', 'jsx', 'html', 'css', 'py', 'java', 'cpp', 'c', 'go', 'rs', 'php', 'rb', 'xml', 'yml', 'yaml', 'sh', 'sql'].includes(ext)
+}
+
+function getCodeLanguage(name: string): string {
+  const ext = getFileExtension(name)
+  const langMap: Record<string, string> = {
+    'js': 'javascript',
+    'ts': 'typescript',
+    'tsx': 'typescript',
+    'jsx': 'javascript',
+    'html': 'html',
+    'css': 'css',
+    'py': 'python',
+    'java': 'java',
+    'cpp': 'cpp',
+    'c': 'c',
+    'go': 'go',
+    'rs': 'rust',
+    'php': 'php',
+    'rb': 'ruby',
+    'xml': 'xml',
+    'yml': 'yaml',
+    'yaml': 'yaml',
+    'sh': 'bash',
+    'sql': 'sql'
+  }
+  return langMap[ext] || 'text'
 }
 
 const fileTypeIcons: Record<string, string> = {
@@ -157,6 +208,7 @@ export default function FileManager() {
   const renameFile = useStore((s) => s.renameFile)
   const openFileWith = useStore((s) => s.openFileWith)
   const copyFile = useStore((s) => s.copyFile)
+  const moveFile = useStore((s) => s.moveFile)
   const updateFileContent = useStore((s) => s.updateFileContent)
   
   function handleDownload(fileId: string) {
@@ -383,13 +435,12 @@ export default function FileManager() {
       if (clipboardMode === 'copy') {
         copyFile(clipboard.id, currentNodeId)
       } else if (clipboardMode === 'cut') {
-        copyFile(clipboard.id, currentNodeId)
-        deleteFile(clipboard.id)
+        moveFile(clipboard.id, currentNodeId)
       }
       setClipboard(null)
       setClipboardMode(null)
     }
-  }, [clipboard, clipboardMode, copyFile, deleteFile, currentNodeId])
+  }, [clipboard, clipboardMode, copyFile, moveFile, currentNodeId])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -1129,6 +1180,66 @@ export default function FileManager() {
                   alt={previewFile.name}
                   className="app-preview-image"
                 />
+              ) : isAudioFile(previewFile.name) ? (
+                <div className="app-preview-audio">
+                  <audio controls className="app-preview-audio-player">
+                    <source src={`data:audio/${getFileExtension(previewFile.name)};base64,${btoa(previewFile.content || '')}`} />
+                  </audio>
+                </div>
+              ) : isVideoFile(previewFile.name) ? (
+                <div className="app-preview-video">
+                  <video controls className="app-preview-video-player">
+                    <source src={`data:video/${getFileExtension(previewFile.name)};base64,${btoa(previewFile.content || '')}`} />
+                  </video>
+                </div>
+              ) : isJsonFile(previewFile.name) ? (
+                <div className="app-preview-json">
+                  <pre className="app-preview-text">{(() => {
+                    try {
+                      return JSON.stringify(JSON.parse(previewFile.content || '{}'), null, 2)
+                    } catch {
+                      return previewFile.content || ''
+                    }
+                  })()}</pre>
+                </div>
+              ) : isMarkdownFile(previewFile.name) ? (
+                <div className="app-preview-markdown">
+                  {(() => {
+                    const md = previewFile.content || ''
+                    return (
+                      <div 
+                        className="app-markdown-rendered"
+                        dangerouslySetInnerHTML={{
+                          __html: md
+                            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                            .replace(/`([^`]+)`/g, '<code>$1</code>')
+                            .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+                            .replace(/^- (.+)$/gm, '<li>$1</li>')
+                            .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+                            .replace(/\n/g, '<br/>')
+                        }}
+                      />
+                    )
+                  })()}
+                </div>
+              ) : isCodeFile(previewFile.name) ? (
+                <div className="app-preview-code">
+                  <div className="app-code-header">
+                    <span className="app-code-lang">{getCodeLanguage(previewFile.name)}</span>
+                    <button 
+                      className="app-copy-btn" 
+                      onClick={() => navigator.clipboard.writeText(previewFile.content || '')}
+                    >
+                      📋 复制
+                    </button>
+                  </div>
+                  <pre className="app-preview-code-text">{previewFile.content || ''}</pre>
+                </div>
               ) : isTextFile(previewFile.name) ? (
                 <pre className="app-preview-text">{previewFile.content || ''}</pre>
               ) : (
@@ -1136,15 +1247,18 @@ export default function FileManager() {
                   <div className="app-preview-icon">📄</div>
                   <p>无法预览此文件类型</p>
                   <p style={{ fontSize: '12px', color: '#666' }}>大小: {formatSize((previewFile.content?.length || 0) * 2)}</p>
+                  <p style={{ fontSize: '12px', color: '#666' }}>类型: {getFileExtension(previewFile.name)}</p>
                 </div>
               )}
             </div>
             <div className="app-modal-footer">
               <button className="app-modal-btn" onClick={() => handleDownload(previewFile.id)}>⬇️ 下载</button>
-              <button className="app-modal-btn" onClick={() => { 
-                openFileWith(previewFile.id, 'text-editor'); 
-                setPreviewFile(null); 
-              }}>📝 编辑</button>
+              {(isTextFile(previewFile.name) || isCodeFile(previewFile.name) || isJsonFile(previewFile.name) || isMarkdownFile(previewFile.name)) && (
+                <button className="app-modal-btn" onClick={() => { 
+                  openFileWith(previewFile.id, 'text-editor'); 
+                  setPreviewFile(null); 
+                }}>📝 编辑</button>
+              )}
               <button className="app-modal-btn app-modal-btn-cancel" onClick={() => setPreviewFile(null)}>关闭</button>
             </div>
           </div>

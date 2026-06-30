@@ -27,6 +27,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const [dragOpacity, setDragOpacity] = useState(1)
   const [snapHint, setSnapHint] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState(false)
+  const [alignmentGuides, setAlignmentGuides] = useState<{ vertical: number[]; horizontal: number[] }>({ vertical: [], horizontal: [] })
   
   const stateRef = useRef({
     startX: 0,
@@ -349,6 +350,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         
         if (snapLayout) {
           setSnapHint(snapLayout.snap)
+          setAlignmentGuides({ vertical: [], horizontal: [] })
           return
         }
 
@@ -365,6 +367,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         let newY = ref.startWindowY + dy
 
         const SNAP_THRESHOLD = 20
+        const ALIGN_THRESHOLD = 8
         const w = ref.startWidth
         const h = ref.startHeight
 
@@ -379,6 +382,63 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         if (dragging && e.clientY < 8) {
           newSnap = 'MAXIMIZE'
         }
+
+        const allWindows = useStore.getState().windows
+        const otherWindows = allWindows.filter(w => w.id !== win.id && !w.minimized)
+        const verticalGuides: number[] = []
+        const horizontalGuides: number[] = []
+
+        const currentCenterX = newX + w / 2
+        const currentCenterY = newY + h / 2
+
+        for (const other of otherWindows) {
+          const otherCenterX = other.x + other.width / 2
+          const otherCenterY = other.y + other.height / 2
+
+          if (Math.abs(currentCenterX - otherCenterX) < ALIGN_THRESHOLD) {
+            newX = other.x + other.width / 2 - w / 2
+            if (!verticalGuides.includes(otherCenterX)) {
+              verticalGuides.push(otherCenterX)
+            }
+          }
+
+          if (Math.abs(currentCenterY - otherCenterY) < ALIGN_THRESHOLD) {
+            newY = other.y + other.height / 2 - h / 2
+            if (!horizontalGuides.includes(otherCenterY)) {
+              horizontalGuides.push(otherCenterY)
+            }
+          }
+
+          if (Math.abs(newX - other.x) < ALIGN_THRESHOLD) {
+            newX = other.x
+            if (!verticalGuides.includes(other.x)) {
+              verticalGuides.push(other.x)
+            }
+          }
+
+          if (Math.abs(newX + w - (other.x + other.width)) < ALIGN_THRESHOLD) {
+            newX = other.x + other.width - w
+            if (!verticalGuides.includes(other.x + other.width)) {
+              verticalGuides.push(other.x + other.width)
+            }
+          }
+
+          if (Math.abs(newY - other.y) < ALIGN_THRESHOLD) {
+            newY = other.y
+            if (!horizontalGuides.includes(other.y)) {
+              horizontalGuides.push(other.y)
+            }
+          }
+
+          if (Math.abs(newY + h - (other.y + other.height)) < ALIGN_THRESHOLD) {
+            newY = other.y + other.height - h
+            if (!horizontalGuides.includes(other.y + other.height)) {
+              horizontalGuides.push(other.y + other.height)
+            }
+          }
+        }
+
+        setAlignmentGuides({ vertical: verticalGuides, horizontal: horizontalGuides })
 
         newX = Math.max(-w + 80, Math.min(newX, screenW - 8))
         newY = Math.max(0, Math.min(newY, screenH - 48))
@@ -447,6 +507,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       setDragging(false)
       setResizing(null)
       setSnapHint(null)
+      setAlignmentGuides({ vertical: [], horizontal: [] })
       snapLayout = null
     }
 
@@ -722,6 +783,24 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           aria-hidden="true"
           data-snap={snapHint}
         />
+      )}
+      {(alignmentGuides.vertical.length > 0 || alignmentGuides.horizontal.length > 0) && (
+        <div className="alignment-guides-container" aria-hidden="true">
+          {alignmentGuides.vertical.map((x, i) => (
+            <div
+              key={`v-${i}`}
+              className="alignment-guide vertical"
+              style={{ left: x }}
+            />
+          ))}
+          {alignmentGuides.horizontal.map((y, i) => (
+            <div
+              key={`h-${i}`}
+              className="alignment-guide horizontal"
+              style={{ top: y }}
+            />
+          ))}
+        </div>
       )}
     </div>
   )

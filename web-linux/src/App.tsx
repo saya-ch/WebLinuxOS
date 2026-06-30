@@ -8,6 +8,7 @@ import StartMenu from './components/desktop/StartMenu'
 import ErrorBoundary from './components/ErrorBoundary'
 import GlobalSearch from './apps/GlobalSearch'
 import CommandPalette from './components/CommandPalette'
+import ShortcutPanel from './components/ShortcutPanel'
 
 interface ShortcutConfig {
   mod?: boolean
@@ -59,6 +60,7 @@ const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }
   'command-palette': { config: { mod: true, key: 'p' }, action: 'command-palette' },
   'lock-screen': { config: { mod: true, key: 'l' }, action: 'lock-screen' },
   'notification-center': { config: { mod: true, key: 'n' }, action: 'notification-center' },
+  'shortcuts': { config: { mod: true, shift: true, key: '?' }, action: 'shortcuts' },
 }
 
 const App = memo(function App() {
@@ -75,6 +77,7 @@ const App = memo(function App() {
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [shortcutPanelOpen, setShortcutPanelOpen] = useState(false)
   const registeredRef = useRef(false)
   const setSearchOpenRef = useRef(setSearchOpen)
   const setCommandPaletteOpenRef = useRef(setCommandPaletteOpen)
@@ -155,6 +158,9 @@ const App = memo(function App() {
         break
       case 'notification-center':
         toggleNotificationCenter()
+        break
+      case 'shortcuts':
+        setShortcutPanelOpen(true)
         break
     }
   }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows])
@@ -350,6 +356,7 @@ const App = memo(function App() {
       <Taskbar />
       <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
+      <ShortcutPanel isOpen={shortcutPanelOpen} onClose={() => setShortcutPanelOpen(false)} />
     </ErrorBoundary>
   )
 })
