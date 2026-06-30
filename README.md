@@ -20,9 +20,9 @@ A fully functional web-based desktop operating system that runs entirely in the 
 
 ## About
 
-WebLinuxOS is a web-based desktop environment that brings a complete Linux-like experience to your browser. It provides window management, file system, taskbar, and over 220 applications - all without installation.
+WebLinuxOS is a web-based desktop environment that brings a complete Linux-like experience to your browser. It provides window management, file system, taskbar, and over 250 applications - all without installation.
 
-Built with React 18, TypeScript, and Vite, WebLinuxOS delivers smooth animations, responsive design, and a rich feature set that rivals native desktop environments.
+Built with React 18, TypeScript, and Vite, WebLinuxOS delivers smooth animations, responsive design, and a rich feature set that rivals native desktop environments. All applications feature real functionality with live API integrations - not just mockups.
 
 ## Features
 
@@ -36,12 +36,13 @@ Built with React 18, TypeScript, and Vite, WebLinuxOS delivers smooth animations
 - **Keyboard Shortcuts**: Comprehensive hotkey system (Ctrl+Shift+? for reference)
 
 ### Developer Tools
-- **Code Editor**: Syntax highlighting for JavaScript, TypeScript, HTML, CSS
+- **Code Editor**: Enhanced syntax highlighting for JavaScript, TypeScript, Python, HTML, CSS with auto-completion, find/replace, and multi-tab support
 - **REST Client**: API testing with request/response inspection
 - **Regex Tester**: Pattern validation and debugging
 - **JSON Formatter**: Pretty-print and validation
-- **GitHub Explorer**: Browse repositories and trending projects
-- **Code Runner**: Execute JavaScript in real-time
+- **GitHub Explorer**: Browse repositories and trending projects with real-time data
+- **Code Runner**: Execute JavaScript and Python in real-time
+- **Code Diff Viewer**: Compare code changes side-by-side
 
 ### Office & Productivity
 - **Markdown Editor**: Live preview with formatting support
@@ -52,11 +53,16 @@ Built with React 18, TypeScript, and Vite, WebLinuxOS delivers smooth animations
 
 ### Utilities
 - **Calculator**: Scientific calculator with unit conversion
-- **Weather**: Real-time weather information
+- **Weather**: Real-time weather information with Open-Meteo API integration
 - **Password Manager**: Secure password storage and generation
 - **System Monitor**: Real-time CPU, memory, and network monitoring
 - **Screenshot**: Capture screen regions and windows
 - **Character Map**: Unicode character reference
+- **Crypto Tracker**: Live cryptocurrency prices from CoinGecko with portfolio management
+- **Country Info**: Explore 250+ countries with REST Countries API (population, currency, languages, flags)
+- **Astro Daily**: NASA Astronomy Picture of the Day with history browsing and favorites
+- **Currency Converter**: Real-time exchange rates from Frankfurter API
+- **IP Lookup**: Network geolocation with multiple fallback APIs
 
 ### Multimedia
 - **Music Player**: Audio playback with playlist management
@@ -73,13 +79,26 @@ WebLinuxOS includes applications across seven categories:
 
 | Category | Applications |
 |----------|-------------|
-| System | File Manager, Terminal, System Monitor, Task Manager, Settings, Software Center |
-| Development | Code Editor, REST Client, Regex Tester, JSON Formatter, GitHub Explorer, Code Runner |
+| System | File Manager, Terminal (60+ commands), System Monitor, Task Manager, Settings, Software Center |
+| Development | Code Editor, REST Client, Regex Tester, JSON Formatter, GitHub Explorer, Code Runner, Code Diff Viewer |
 | Office | Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Notes |
-| Utilities | Calculator, Weather, Password Manager, Screenshot, Character Map, Clock |
+| Utilities | Calculator, Weather, Password Manager, Screenshot, Character Map, Clock, Crypto Tracker, Country Info, Astro Daily, Currency Converter, IP Lookup |
 | Multimedia | Music Player, Video Player, Image Viewer, Drawing Tool, Camera |
-| Internet | Browser, Email Client, Chat |
+| Internet | Browser, Email Client, Chat, Hacker News Reader, Wikipedia Explorer, GitHub Profile |
 | Games | Snake, Tetris, 2048, Memory Card |
+
+### Live API Integrations
+
+All network-enabled applications use real, free public APIs:
+
+- **Weather**: Open-Meteo API (no key required)
+- **Crypto Tracker**: CoinGecko API (no key required)
+- **Currency Converter**: Frankfurter API (no key required)
+- **Country Info**: REST Countries API (no key required)
+- **Astro Daily**: NASA APOD API (demo key)
+- **Hacker News**: Algolia HN API (no key required)
+- **Wikipedia**: MediaWiki API (no key required)
+- **GitHub**: GitHub REST API (rate limit: 60/hour anonymous)
 
 ## Getting Started
 
@@ -200,6 +219,16 @@ Contributions are welcome. Please follow these steps:
 MIT License - See [LICENSE](LICENSE) for details.
 
 ## Changelog
+
+### v12.0.0
+- Added Country Info application with REST Countries API integration (250+ countries)
+- Enhanced Astro Daily with NASA APOD API (random dates, favorites, download)
+- Improved Code Editor with auto-completion, find/replace, multi-tab support
+- Enhanced Crypto Tracker with portfolio management and coin converter
+- Updated GitHub Explorer with real-time trending repos and search
+- Added comprehensive API integration documentation
+- Performance optimizations for large file handling
+- Improved error handling and loading states across apps
 
 ### v11.1.0
 - Enhanced file preview with audio/video support

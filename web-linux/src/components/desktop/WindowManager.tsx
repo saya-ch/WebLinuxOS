@@ -220,6 +220,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DataExporter: () => import('../../apps/DataExporter'),
   Maps: () => import('../../apps/Maps'),
   CryptoTracker: () => import('../../apps/CryptoTracker'),
+  CountryInfo: () => import('../../apps/CountryInfo'),
   StockTracker: () => import('../../apps/StockTracker'),
   AirQualityMonitor: () => import('../../apps/AirQualityMonitor'),
   Weather2: () => import('../../apps/Weather'),
