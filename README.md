@@ -194,16 +194,18 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
-### v12.1.0
+### v6.3.0
 
 - Enhanced terminal with 80+ commands, fixing duplicate command definitions
 - Improved weather application with city search and 7-day forecast
 - Enhanced news reader with Hacker News API integration and filtering
 - Improved translator with multi-language support and history
-- Updated README with improved structure and documentation
-- Performance optimizations for large application list rendering
+- Frontend design optimization with distinctive fonts and refined animations
+- Enhanced user experience with smooth micro-interactions and visual effects
+- Performance improvements for CSS animations and rendering
+- Updated font system with Sora, Outfit and other distinctive typeface options
 
-### v12.0.0
+### v6.2.1
 
 - Added Country Info application with REST Countries API integration (250+ countries)
 - Enhanced Astro Daily with NASA APOD API (random dates, favorites, download)
