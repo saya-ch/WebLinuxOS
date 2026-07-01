@@ -74,7 +74,7 @@ WebLinuxOS includes applications across seven categories:
 | System | File Manager, Terminal, System Monitor, Task Manager, Settings, Software Center |
 | Development | Code Editor, REST Client, Regex Tester, JSON Formatter, GitHub Explorer, Code Runner |
 | Office | Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Notes |
-| Utilities | Calculator, Weather, Password Manager, Screenshot, Character Map, Clock, Crypto Tracker |
+| Utilities | Calculator, Weather, Password Manager, Screenshot, Character Map, Clock, Crypto Tracker, Real-Time Translator, QR Code Generator |
 | Multimedia | Music Player, Video Player, Image Viewer, Drawing Tool, Camera |
 | Internet | Browser, Email Client, Chat, Hacker News Reader, Wikipedia Explorer |
 | Games | Snake, Tetris, 2048, Memory Card |
@@ -235,7 +235,25 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Recent Improvements
 
-### v13.0.0 (Current Iteration)
+### v14.0.0 (Current Iteration)
+
+**New Applications:**
+- **Real-Time Translator Enhanced**: Professional translation tool with MyMemory API integration, supporting 15+ languages, automatic translation, history tracking, and text-to-speech functionality
+- **QR Code Generator Pro**: Advanced QR code generator with goQR.me API integration, custom colors, size control, error correction levels, and batch history
+
+**Key Improvements:**
+- Converted simulation applications to production-grade tools with real API integrations
+- Extended dynamic application registration system (APP_REGISTRY_EXTRAS)
+- Unified modern UI design across all new applications
+- Enhanced error handling and user notification systems
+- Added localStorage persistence for user history and preferences
+
+**API Integrations:**
+- MyMemory Translation API (free, no key required) - supports 15+ languages
+- goQR.me QR Code API (free, no key required) - custom styling and error correction
+- Web Speech API - text-to-speech for translation results
+
+### v13.0.0
 
 **New Applications:**
 - **Code Collaboration Platform**: Real-time collaborative coding environment with session sharing, multi-language support, and live code execution
