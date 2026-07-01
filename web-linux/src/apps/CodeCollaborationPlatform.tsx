@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useStore } from '../store'
-import { PlayIcon, PauseIcon, UsersIcon, ShareIcon, CopyIcon, DownloadIcon, CodeIcon, TerminalIcon } from '../icons'
+import { PlayIcon, PauseIcon, UsersIcon, ShareIcon, CopyIcon, DownloadIcon, TerminalIcon } from '../icons'
 
 interface Collaborator {
   id: string

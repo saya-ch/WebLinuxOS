@@ -474,7 +474,7 @@ export default function RealTimeTranslatorEnhanced() {
               清空
             </button>
             <button
-              onClick={handleCopy}
+              onClick={() => handleCopy(sourceText)}
               disabled={!sourceText}
               style={{
                 padding: '6px 12px',

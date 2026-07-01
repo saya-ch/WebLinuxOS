@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useStore } from '../store'
-import { QrCode, Download, Copy, Share2, Palette, History } from 'lucide-react'
+import { QrCode, Download, Copy, Palette, History } from 'lucide-react'
 
 interface QRHistory {
   content: string
@@ -353,11 +353,10 @@ export default function QRCodeGeneratorPro() {
               fontSize: '12px',
               fontWeight: '600',
               marginBottom: '8px',
-              display: 'block',
-              color: '#a0a0c8',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              color: '#a0a0c8',
             }}>
               <Palette size={12} />
               前景色
@@ -398,11 +397,10 @@ export default function QRCodeGeneratorPro() {
               fontSize: '12px',
               fontWeight: '600',
               marginBottom: '8px',
-              display: 'block',
-              color: '#a0a0c8',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              color: '#a0a0c8',
             }}>
               <Palette size={12} />
               背景色
