@@ -247,6 +247,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v3.2.0 新增应用（显式注册以优化打包） ===
   JwtDecoder: () => import('../../apps/JwtDecoder'),
   ColorPaletteExtractor: () => import('../../apps/ColorPaletteExtractor'),
+  // === v13.0.0 新增创新应用 ===
+  CodeInterviewPrep: () => import('../../apps/CodeInterviewPrep'),
+  APIPlayground: () => import('../../apps/APIPlayground'),
+  DataVizStudio: () => import('../../apps/DataVizStudio'),
   PasswordStrength: () => import('../../apps/PasswordStrength'),
   // === v5.0.0 新增创新应用 ===
   NetworkToolkit: () => import('../../apps/NetworkToolkit'),

@@ -1274,31 +1274,57 @@ registerCommand('help', {
       'wc': { desc: '统计行数/字数/字符数', usage: 'wc <文件>' },
       'head': { desc: '显示文件开头', usage: 'head <文件>' },
       'tail': { desc: '显示文件末尾', usage: 'tail <文件>' },
+      'find': { desc: '查找文件', usage: 'find [路径] [-name 模式]' },
+      'stat': { desc: '显示文件状态', usage: 'stat <文件>' },
+      'diff': { desc: '比较两个文件', usage: 'diff <文件1> <文件2>' },
+      'less': { desc: '分页查看文件', usage: 'less <文件>' },
       'whoami': { desc: '显示当前用户', usage: 'whoami' },
       'date': { desc: '显示日期时间', usage: 'date' },
       'uptime': { desc: '显示系统运行时间', usage: 'uptime' },
       'ps': { desc: '显示进程列表', usage: 'ps' },
       'top': { desc: '系统进程监控', usage: 'top' },
+      'system-info': { desc: '显示详细系统信息', usage: 'system-info' },
+      'netstat': { desc: '显示网络连接状态', usage: 'netstat' },
       'calc': { desc: '数学计算器', usage: 'calc <表达式>' },
       'weather': { desc: '查询天气', usage: 'weather [城市]' },
       'news': { desc: '显示新闻头条', usage: 'news' },
       'crypto': { desc: '加密货币行情', usage: 'crypto [币种]' },
+      'stocks': { desc: '股票行情', usage: 'stocks [代码]' },
       'ipinfo': { desc: 'IP地址信息', usage: 'ipinfo' },
+      'iplookup': { desc: 'IP地址查询', usage: 'iplookup <IP>' },
+      'dnslookup': { desc: 'DNS域名查询', usage: 'dnslookup <域名>' },
       'translate': { desc: '翻译文本', usage: 'translate <文本>' },
+      'define': { desc: '词典查询', usage: 'define <单词>' },
       'quote': { desc: '随机名言', usage: 'quote' },
       'password': { desc: '生成密码', usage: 'password [长度]' },
       'uuid': { desc: '生成UUID', usage: 'uuid' },
+      'shortid': { desc: '生成短ID', usage: 'shortid [数量]' },
       'base64': { desc: 'Base64编码', usage: 'base64 <文本>' },
       'unbase64': { desc: 'Base64解码', usage: 'unbase64 <文本>' },
       'urlencode': { desc: 'URL编码', usage: 'urlencode <文本>' },
       'urldecode': { desc: 'URL解码', usage: 'urldecode <文本>' },
       'json': { desc: 'JSON格式化', usage: 'json <JSON>' },
-      'hash': { desc: '计算哈希', usage: 'hash <文本>' },
+      'yaml': { desc: 'JSON转YAML', usage: 'yaml <JSON>' },
+      'hash': { desc: '计算哈希', usage: 'hash [算法] <文本>' },
+      'hash-verify': { desc: '验证文本Hash', usage: 'hash-verify <算法> <哈希> <文本>' },
+      'jwt': { desc: 'JWT令牌解析', usage: 'jwt <token>' },
       'rev': { desc: '反转文本', usage: 'rev <文本>' },
       'qrcode': { desc: '生成二维码', usage: 'qrcode <文本>' },
       'prime': { desc: '质数检测', usage: 'prime <数字>' },
       'factor': { desc: '质因数分解', usage: 'factor <数字>' },
       'roman': { desc: '罗马数字转换', usage: 'roman <数字>' },
+      'binary': { desc: '文本与二进制转换', usage: 'binary <文本或二进制>' },
+      'color': { desc: '颜色工具', usage: 'color [hex值]' },
+      'regex': { desc: '正则表达式测试', usage: 'regex <模式> <文本>' },
+      'unit': { desc: '单位转换器', usage: 'unit <数值> <源单位> <目标单位>' },
+      'bmi': { desc: 'BMI身体质量指数计算', usage: 'bmi <身高> <体重>' },
+      'age': { desc: '年龄计算器', usage: 'age <出生日期>' },
+      'cron': { desc: 'Cron表达式解析', usage: 'cron <表达式>' },
+      'lorem': { desc: 'Lorem Ipsum生成器', usage: 'lorem [数量] [-w|-s|-p]' },
+      'morse': { desc: '摩斯密码编码/解码', usage: 'morse <文本或摩斯密码>' },
+      'ascii': { desc: 'ASCII艺术字生成', usage: 'ascii <文本>' },
+      'leet': { desc: 'Leet语转换', usage: 'leet <文本>' },
+      'worldtime': { desc: '世界时钟', usage: 'worldtime [城市]' },
       'timer': { desc: '倒计时器', usage: 'timer <秒数>' },
       'motd': { desc: '显示欢迎信息', usage: 'motd' },
       'apps': { desc: '列出所有应用', usage: 'apps' },
@@ -2228,4 +2254,897 @@ registerCommand('regex', {
   description: '正则表达式测试',
   usage: 'regex <模式> <文本>',
   examples: ['regex "\\d+" "abc123"', 'regex -i "hello" "Hello World"']
+})
+
+registerCommand('jwt', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔐 JWT 解析工具',
+          '',
+          '用法: jwt <token>',
+          '',
+          '示例:',
+          '  jwt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          '',
+          '功能: 解析JWT令牌的Header和Payload部分',
+        ].join('\n')
+      }
+    }
+    
+    const token = args[0]
+    const parts = token.split('.')
+    
+    if (parts.length !== 3) {
+      return { output: 'jwt: 无效的JWT令牌格式（需要三部分）' }
+    }
+    
+    try {
+      const decodeBase64Url = (str: string): string => {
+        const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4)
+        return decodeURIComponent(atob(padded).split('').map(c => 
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''))
+      }
+      
+      const header = JSON.parse(decodeBase64Url(parts[0]))
+      const payload = JSON.parse(decodeBase64Url(parts[1]))
+      
+      const formatTime = (timestamp: number): string => {
+        if (!timestamp) return 'N/A'
+        const date = new Date(timestamp * 1000)
+        return date.toLocaleString('zh-CN')
+      }
+      
+      const output = [
+        '🔐 JWT 令牌解析',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '📋 Header (头部):',
+        JSON.stringify(header, null, 2),
+        '',
+        '📦 Payload (载荷):',
+        JSON.stringify(payload, null, 2),
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '⏰ 时间信息:',
+        `  签发时间 (iat): ${formatTime(payload.iat)}`,
+        `  过期时间 (exp): ${formatTime(payload.exp)}`,
+        `  生效时间 (nbf): ${formatTime(payload.nbf)}`,
+        '',
+        '🔏 签名: 已存在 (需密钥验证)',
+        '',
+        '⚠️  注意: 此工具仅解码，不验证签名有效性',
+      ]
+      
+      return { output: output.join('\n') }
+    } catch {
+      return { output: 'jwt: 解析失败，请检查令牌格式' }
+    }
+  },
+  description: 'JWT令牌解析',
+  usage: 'jwt <token>',
+  examples: ['jwt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...']
+})
+
+registerCommand('unit', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 3) {
+      return {
+        output: [
+          '📐 单位转换器',
+          '',
+          '用法: unit <数值> <源单位> <目标单位>',
+          '',
+          '支持的类别:',
+          '  温度: c, f, k (摄氏度/华氏度/开尔文)',
+          '  长度: m, km, cm, mm, mi, yd, ft, in',
+          '  重量: kg, g, lb, oz, t',
+          '  面积: m2, km2, ha, acre, ft2',
+          '  体积: l, ml, gal, qt, pt, cup',
+          '  速度: mps, kmh, mph, knot',
+          '  数据: b, kb, mb, gb, tb (字节/千/兆/吉/太)',
+          '',
+          '示例:',
+          '  unit 100 c f          (100摄氏度转华氏度)',
+          '  unit 1 km mi          (1公里转英里)',
+          '  unit 20 lb kg         (20磅转公斤)',
+          '  unit 1024 mb gb       (1024MB转GB)',
+        ].join('\n')
+      }
+    }
+    
+    const value = parseFloat(args[0])
+    const fromUnit = args[1].toLowerCase()
+    const toUnit = args[2].toLowerCase()
+    
+    if (isNaN(value)) {
+      return { output: 'unit: 无效的数值' }
+    }
+    
+    const lengthToMeters: Record<string, number> = {
+      m: 1, km: 1000, cm: 0.01, mm: 0.001,
+      mi: 1609.344, yd: 0.9144, ft: 0.3048, in: 0.0254,
+    }
+    
+    const weightToKg: Record<string, number> = {
+      kg: 1, g: 0.001, lb: 0.453592, oz: 0.0283495, t: 1000,
+    }
+    
+    const areaToM2: Record<string, number> = {
+      m2: 1, km2: 1e6, ha: 10000, acre: 4046.86, ft2: 0.092903,
+    }
+    
+    const volumeToLiters: Record<string, number> = {
+      l: 1, ml: 0.001, gal: 3.78541, qt: 0.946353, pt: 0.473176, cup: 0.236588,
+    }
+    
+    const speedToMps: Record<string, number> = {
+      mps: 1, kmh: 0.277778, mph: 0.44704, knot: 0.514444,
+    }
+    
+    const dataToBytes: Record<string, number> = {
+      b: 1, kb: 1024, mb: 1024 * 1024, gb: 1024 * 1024 * 1024,
+      tb: 1024 * 1024 * 1024 * 1024,
+    }
+    
+    const tempUnits = ['c', 'f', 'k']
+    
+    let result: number | null = null
+    
+    if (tempUnits.includes(fromUnit) && tempUnits.includes(toUnit)) {
+      let celsius: number
+      if (fromUnit === 'c') celsius = value
+      else if (fromUnit === 'f') celsius = (value - 32) * 5 / 9
+      else celsius = value - 273.15
+      
+      if (toUnit === 'c') result = celsius
+      else if (toUnit === 'f') result = celsius * 9 / 5 + 32
+      else result = celsius + 273.15
+    } else if (fromUnit in lengthToMeters && toUnit in lengthToMeters) {
+      result = (value * lengthToMeters[fromUnit]) / lengthToMeters[toUnit]
+    } else if (fromUnit in weightToKg && toUnit in weightToKg) {
+      result = (value * weightToKg[fromUnit]) / weightToKg[toUnit]
+    } else if (fromUnit in areaToM2 && toUnit in areaToM2) {
+      result = (value * areaToM2[fromUnit]) / areaToM2[toUnit]
+    } else if (fromUnit in volumeToLiters && toUnit in volumeToLiters) {
+      result = (value * volumeToLiters[fromUnit]) / volumeToLiters[toUnit]
+    } else if (fromUnit in speedToMps && toUnit in speedToMps) {
+      result = (value * speedToMps[fromUnit]) / speedToMps[toUnit]
+    } else if (fromUnit in dataToBytes && toUnit in dataToBytes) {
+      result = (value * dataToBytes[fromUnit]) / dataToBytes[toUnit]
+    }
+    
+    if (result === null) {
+      return { output: `unit: 不支持从 '${fromUnit}' 到 '${toUnit}' 的转换` }
+    }
+    
+    const formatted = Math.abs(result) >= 1000000 
+      ? result.toExponential(4) 
+      : result.toFixed(result % 1 === 0 ? 0 : 6).replace(/\.?0+$/, '')
+    
+    return {
+      output: [
+        '📐 单位转换',
+        '',
+        `  ${value} ${fromUnit.toUpperCase()}`,
+        `  = ${formatted} ${toUnit.toUpperCase()}`,
+        '',
+        `  转换方向: ${fromUnit.toUpperCase()} → ${toUnit.toUpperCase()}`,
+      ].join('\n')
+    }
+  },
+  description: '单位转换器',
+  usage: 'unit <数值> <源单位> <目标单位>',
+  examples: ['unit 100 c f', 'unit 1 km mi', 'unit 1024 mb gb']
+})
+
+registerCommand('lorem', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    let count = 5
+    let type: 'words' | 'sentences' | 'paragraphs' = 'paragraphs'
+    
+    if (args.length > 0) {
+      const num = parseInt(args[0])
+      if (!isNaN(num)) count = num
+    }
+    
+    if (args.includes('-w') || args.includes('--words')) type = 'words'
+    if (args.includes('-s') || args.includes('--sentences')) type = 'sentences'
+    if (args.includes('-p') || args.includes('--paragraphs')) type = 'paragraphs'
+    
+    const words = [
+      'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur',
+      'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor',
+      'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna',
+      'aliqua', 'enim', 'ad', 'minim', 'veniam', 'quis',
+      'nostrud', 'exercitation', 'ullamco', 'laboris', 'nisi',
+      'aliquip', 'ex', 'ea', 'commodo', 'consequat', 'duis',
+      'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
+      'velit', 'esse', 'cillum', 'fugiat', 'nulla', 'pariatur',
+      'excepteur', 'sint', 'occaecat', 'cupidatat', 'non',
+      'proident', 'sunt', 'culpa', 'qui', 'officia', 'deserunt',
+      'mollit', 'anim', 'id', 'est', 'laborum',
+    ]
+    
+    const generateWord = (): string => {
+      return words[Math.floor(Math.random() * words.length)]
+    }
+    
+    const generateSentence = (wordCount: number): string => {
+      const sentenceWords: string[] = []
+      for (let i = 0; i < wordCount; i++) {
+        sentenceWords.push(generateWord())
+      }
+      const sentence = sentenceWords.join(' ')
+      return sentence.charAt(0).toUpperCase() + sentence.slice(1) + '.'
+    }
+    
+    const generateParagraph = (sentenceCount: number): string => {
+      const sentences: string[] = []
+      for (let i = 0; i < sentenceCount; i++) {
+        const wordCount = Math.floor(Math.random() * 10) + 5
+        sentences.push(generateSentence(wordCount))
+      }
+      return sentences.join(' ')
+    }
+    
+    let output = ''
+    
+    if (type === 'words') {
+      const wordList: string[] = []
+      for (let i = 0; i < count; i++) {
+        wordList.push(generateWord())
+      }
+      output = wordList.join(' ')
+    } else if (type === 'sentences') {
+      const sentences: string[] = []
+      for (let i = 0; i < count; i++) {
+        const wordCount = Math.floor(Math.random() * 10) + 5
+        sentences.push(generateSentence(wordCount))
+      }
+      output = sentences.join(' ')
+    } else {
+      const paragraphs: string[] = []
+      for (let i = 0; i < count; i++) {
+        const sentenceCount = Math.floor(Math.random() * 4) + 3
+        paragraphs.push(generateParagraph(sentenceCount))
+      }
+      output = paragraphs.join('\n\n')
+    }
+    
+    return {
+      output: [
+        `📝 Lorem Ipsum 生成器 (${count} ${type === 'words' ? '单词' : type === 'sentences' ? '句子' : '段落'})`,
+        '',
+        output,
+      ].join('\n')
+    }
+  },
+  description: 'Lorem Ipsum 文本生成器',
+  usage: 'lorem [数量] [-w|-s|-p]',
+  examples: ['lorem', 'lorem 10 -w', 'lorem 3 -p']
+})
+
+registerCommand('morse', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📡 摩斯密码',
+          '',
+          '用法: morse <文本或摩斯密码>',
+          '',
+          '示例:',
+          '  morse SOS',
+          '  morse "... --- ..."',
+          '  morse Hello World',
+          '',
+          '提示: 自动检测输入类型',
+          '  文本 -> 摩斯密码',
+          '  摩斯密码(只含. - /) -> 文本',
+        ].join('\n')
+      }
+    }
+    
+    const input = args.join(' ')
+    
+    const morseCode: Record<string, string> = {
+      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+      'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+      'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+      'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+      'Y': '-.--', 'Z': '--..',
+      '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+      '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+      '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.', '!': '-.-.--',
+      '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...',
+      ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-',
+      '"': '.-..-.', '$': '...-..-', '@': '.--.-.',
+    }
+    
+    const reverseMorse: Record<string, string> = {}
+    for (const [key, value] of Object.entries(morseCode)) {
+      reverseMorse[value] = key
+    }
+    
+    const isMorse = /^[\s.\-\/]+$/.test(input)
+    
+    if (isMorse) {
+      const words = input.split('/')
+      const decoded = words.map(word => {
+        const letters = word.trim().split(/\s+/)
+        return letters.map(code => reverseMorse[code] || '?').join('')
+      }).join(' ')
+      
+      return {
+        output: [
+          '📡 摩斯密码解码',
+          '',
+          `摩斯密码: ${input}`,
+          `解码结果: ${decoded}`,
+        ].join('\n')
+      }
+    } else {
+      const encoded = input.toUpperCase().split('').map(char => {
+        if (char === ' ') return '/'
+        return morseCode[char] || '?'
+      }).join(' ')
+      
+      return {
+        output: [
+          '📡 摩斯密码编码',
+          '',
+          `原文: ${input}`,
+          `摩斯密码: ${encoded}`,
+        ].join('\n')
+      }
+    }
+  },
+  description: '摩斯密码编码/解码',
+  usage: 'morse <文本或摩斯密码>',
+  examples: ['morse SOS', 'morse "... --- ..."']
+})
+
+registerCommand('ascii', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🎨 ASCII 艺术字',
+          '',
+          '用法: ascii <文本>',
+          '',
+          '示例:',
+          '  ascii Hello',
+          '  ascii WebLinux',
+          '',
+          '支持: 字母、数字、部分符号',
+        ].join('\n')
+      }
+    }
+    
+    const text = args.join(' ').toUpperCase()
+    
+    const asciiFont: Record<string, string[]> = {
+      'A': ['  █████  ', ' ██   ██ ', ' ███████ ', ' ██   ██ ', ' ██   ██ '],
+      'B': [' ██████  ', ' ██   ██ ', ' ██████  ', ' ██   ██ ', ' ██████  '],
+      'C': ['  ██████ ', ' ██      ', ' ██      ', ' ██      ', '  ██████ '],
+      'D': [' ██████  ', ' ██   ██ ', ' ██   ██ ', ' ██   ██ ', ' ██████  '],
+      'E': [' ███████ ', ' ██      ', ' █████   ', ' ██      ', ' ███████ '],
+      'F': [' ███████ ', ' ██      ', ' █████   ', ' ██      ', ' ██      '],
+      'G': ['  ██████ ', ' ██      ', ' ██   ███', ' ██    ██', '  ██████ '],
+      'H': [' ██   ██ ', ' ██   ██ ', ' ███████ ', ' ██   ██ ', ' ██   ██ '],
+      'I': ['  █████  ', '    ██   ', '    ██   ', '    ██   ', '  █████  '],
+      'J': ['     ███ ', '      ██ ', '      ██ ', ' ██   ██ ', '  █████  '],
+      'K': [' ██   ██ ', ' ██  ██  ', ' █████   ', ' ██  ██  ', ' ██   ██ '],
+      'L': [' ██      ', ' ██      ', ' ██      ', ' ██      ', ' ███████ '],
+      'M': [' ███   ███ ', ' ████ ████ ', ' ██ ███ ██ ', ' ██  █  ██ ', ' ██     ██ '],
+      'N': [' ██   ██ ', ' ███  ██ ', ' ████ ██ ', ' ██ ████ ', ' ██   ██ '],
+      'O': ['  █████  ', ' ██   ██ ', ' ██   ██ ', ' ██   ██ ', '  █████  '],
+      'P': [' ██████  ', ' ██   ██ ', ' ██████  ', ' ██      ', ' ██      '],
+      'Q': ['  █████  ', ' ██   ██ ', ' ██ █ ██ ', ' ██   ██ ', '  ███ ██ '],
+      'R': [' ██████  ', ' ██   ██ ', ' ██████  ', ' ██  ██  ', ' ██   ██ '],
+      'S': ['  ██████ ', ' ██      ', '  ████   ', '     ██  ', ' ██████  '],
+      'T': [' █████████ ', '    ██    ', '    ██    ', '    ██    ', '    ██    '],
+      'U': [' ██    ██ ', ' ██    ██ ', ' ██    ██ ', ' ██    ██ ', '  ██████  '],
+      'V': [' ██    ██ ', ' ██    ██ ', ' ██    ██ ', '  ██  ██  ', '   ████   '],
+      'W': [' ██     ██ ', ' ██     ██ ', ' ██  █  ██ ', ' ██ ███ ██ ', ' ███   ███ '],
+      'X': [' ██   ██ ', '  ██ ██  ', '   ███   ', '  ██ ██  ', ' ██   ██ '],
+      'Y': [' ██   ██ ', '  ██ ██  ', '   ███   ', '   ██    ', '   ██    '],
+      'Z': [' ███████ ', '     ██  ', '    ██   ', '   ██    ', ' ███████ '],
+      '0': ['  █████  ', ' ██   ██ ', ' ██   ██ ', ' ██   ██ ', '  █████  '],
+      '1': ['   ██   ', '  ███   ', '   ██   ', '   ██   ', ' ██████ '],
+      '2': ['  █████  ', ' ██   ██ ', '     ██  ', '   ██    ', ' ███████ '],
+      '3': ['  █████  ', ' ██   ██ ', '    ███  ', ' ██   ██ ', '  █████  '],
+      '4': ['    ██   ', '   ███   ', '  ██ ██  ', ' ███████ ', '     ██  '],
+      '5': [' ███████ ', ' ██      ', ' ██████  ', '      ██ ', ' ██████  '],
+      '6': ['  █████  ', ' ██      ', ' ██████  ', ' ██   ██ ', '  █████  '],
+      '7': [' ███████ ', '      ██ ', '     ██  ', '    ██   ', '   ██    '],
+      '8': ['  █████  ', ' ██   ██ ', '  █████  ', ' ██   ██ ', '  █████  '],
+      '9': ['  █████  ', ' ██   ██ ', '  ██████ ', '      ██ ', '  █████  '],
+      ' ': ['    ', '    ', '    ', '    ', '    '],
+      '-': ['        ', '        ', ' ██████ ', '        ', '        '],
+      '_': ['        ', '        ', '        ', '        ', ' ██████ '],
+      '.': ['    ', '    ', '    ', '    ', ' ██ '],
+      '!': [' ██ ', ' ██ ', ' ██ ', '    ', ' ██ '],
+      '?': ['  ████  ', ' █   ██ ', '     █  ', '        ', '    █   '],
+    }
+    
+    const lines: string[] = ['', '', '', '', '']
+    
+    for (const char of text) {
+      const charArt = asciiFont[char] || asciiFont['?'] || ['  ', '  ', '  ', '  ', '  ']
+      for (let i = 0; i < 5; i++) {
+        lines[i] += (charArt[i] || '  ') + ' '
+      }
+    }
+    
+    return {
+      output: [
+        '🎨 ASCII 艺术字',
+        '',
+        ...lines,
+        '',
+        `原文: ${text}`,
+      ].join('\n')
+    }
+  },
+  description: 'ASCII艺术字生成',
+  usage: 'ascii <文本>',
+  examples: ['ascii Hello', 'ascii WebLinux']
+})
+
+registerCommand('age', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🎂 年龄计算器',
+          '',
+          '用法: age <出生日期>',
+          '',
+          '格式: YYYY-MM-DD 或 YYYY/MM/DD',
+          '',
+          '示例:',
+          '  age 1990-01-01',
+          '  age 2000/12/25',
+        ].join('\n')
+      }
+    }
+    
+    const dateStr = args[0].replace(/\//g, '-')
+    const birthDate = new Date(dateStr)
+    
+    if (isNaN(birthDate.getTime())) {
+      return { output: 'age: 无效的日期格式，请使用 YYYY-MM-DD' }
+    }
+    
+    const now = new Date()
+    
+    if (birthDate > now) {
+      return { output: 'age: 出生日期不能晚于今天' }
+    }
+    
+    let years = now.getFullYear() - birthDate.getFullYear()
+    let months = now.getMonth() - birthDate.getMonth()
+    let days = now.getDate() - birthDate.getDate()
+    
+    if (days < 0) {
+      months--
+      const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+      days += lastMonth.getDate()
+    }
+    
+    if (months < 0) {
+      years--
+      months += 12
+    }
+    
+    const totalDays = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24))
+    const totalWeeks = Math.floor(totalDays / 7)
+    const totalHours = totalDays * 24
+    
+    const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate())
+    if (nextBirthday < now) {
+      nextBirthday.setFullYear(now.getFullYear() + 1)
+    }
+    const daysUntilBirthday = Math.ceil((nextBirthday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    
+    const zodiacSigns = [
+      { sign: '摩羯座', start: [0, 1], end: [0, 19] },
+      { sign: '水瓶座', start: [0, 20], end: [1, 18] },
+      { sign: '双鱼座', start: [1, 19], end: [2, 20] },
+      { sign: '白羊座', start: [2, 21], end: [3, 19] },
+      { sign: '金牛座', start: [3, 20], end: [4, 20] },
+      { sign: '双子座', start: [4, 21], end: [5, 21] },
+      { sign: '巨蟹座', start: [5, 22], end: [6, 22] },
+      { sign: '狮子座', start: [6, 23], end: [7, 22] },
+      { sign: '处女座', start: [7, 23], end: [8, 22] },
+      { sign: '天秤座', start: [8, 23], end: [9, 22] },
+      { sign: '天蝎座', start: [9, 23], end: [10, 21] },
+      { sign: '射手座', start: [10, 22], end: [11, 21] },
+      { sign: '摩羯座', start: [11, 22], end: [11, 31] },
+    ]
+    
+    const birthMonth = birthDate.getMonth()
+    const birthDay = birthDate.getDate()
+    
+    let zodiac = '未知'
+    for (const z of zodiacSigns) {
+      const [startMonth, startDay] = z.start
+      const [endMonth, endDay] = z.end
+      if (
+        (birthMonth === startMonth && birthDay >= startDay) ||
+        (birthMonth === endMonth && birthDay <= endDay) ||
+        (startMonth < birthMonth && birthMonth < endMonth)
+      ) {
+        zodiac = z.sign
+        break
+      }
+    }
+    
+    const chineseZodiac = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪']
+    const zodiacIndex = (birthDate.getFullYear() - 4) % 12
+    const chineseAnimal = chineseZodiac[zodiacIndex]
+    
+    return {
+      output: [
+        '🎂 年龄计算结果',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `出生日期: ${birthDate.toLocaleDateString('zh-CN')}`,
+        `当前年龄: ${years} 岁 ${months} 个月 ${days} 天`,
+        '',
+        '📊 详细统计:',
+        `  总天数: ${totalDays.toLocaleString()} 天`,
+        `  总周数: ${totalWeeks.toLocaleString()} 周`,
+        `  总小时: ${totalHours.toLocaleString()} 小时`,
+        '',
+        `🎁 下次生日还有: ${daysUntilBirthday} 天`,
+        '',
+        '⭐ 星座信息:',
+        `  星座: ${zodiac}`,
+        `  生肖: ${chineseAnimal}`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n')
+    }
+  },
+  description: '年龄计算器',
+  usage: 'age <出生日期>',
+  examples: ['age 1990-01-01', 'age 2000/12/25']
+})
+
+registerCommand('shortid', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const count = parseInt(args[0]) || 1
+    
+    const generateShortId = (): string => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      let id = ''
+      for (let i = 0; i < 8; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+      return id
+    }
+    
+    const generateNanoId = (length: number = 10): string => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+      let id = ''
+      const array = new Uint8Array(length)
+      crypto.getRandomValues(array)
+      for (let i = 0; i < length; i++) {
+        id += chars[array[i] % chars.length]
+      }
+      return id
+    }
+    
+    const ids: string[] = []
+    for (let i = 0; i < Math.min(count, 20); i++) {
+      ids.push(`  ${generateShortId()}    ${generateNanoId(10)}`)
+    }
+    
+    return {
+      output: [
+        '🆔 短ID生成器',
+        '',
+        `  ShortID (8字符)   NanoID (10字符)`,
+        '  ───────────────  ───────────────',
+        ...ids,
+        '',
+        `生成数量: ${Math.min(count, 20)} 个`,
+        '提示: shortid [数量] 生成多个ID (最多20个)',
+      ].join('\n')
+    }
+  },
+  description: '生成短ID',
+  usage: 'shortid [数量]',
+  examples: ['shortid', 'shortid 5']
+})
+
+registerCommand('leet', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '1337 7337 5p34k (Leet语转换)',
+          '',
+          '用法: leet <文本>',
+          '',
+          '示例:',
+          '  leet Hello World',
+          '  leet I am a hacker',
+        ].join('\n')
+      }
+    }
+    
+    const text = args.join(' ')
+    
+    const leetMap: Record<string, string> = {
+      'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5',
+      't': '7', 'b': '8', 'g': '6', 'l': '1', 'z': '2',
+      'A': '4', 'E': '3', 'I': '1', 'O': '0', 'S': '5',
+      'T': '7', 'B': '8', 'G': '6', 'L': '1', 'Z': '2',
+    }
+    
+    const superLeetMap: Record<string, string> = {
+      ...leetMap,
+      'c': '(', 'd': '|)', 'f': '|=', 'h': '|-|', 'j': '_|',
+      'k': '|<', 'm': '|v|', 'n': '|\\|', 'p': '|2', 'q': '9',
+      'r': '|2', 'u': '|_|', 'v': '\\/', 'w': '\\/\\/', 'x': '><',
+      'y': '`/',
+    }
+    
+    const basic = text.split('').map(c => leetMap[c] || c).join('')
+    const advanced = text.split('').map(c => superLeetMap[c.toLowerCase()] || c).join('')
+    
+    return {
+      output: [
+        '1337 7337 5p34k',
+        '',
+        '基础转换:',
+        `  ${basic}`,
+        '',
+        '高级转换:',
+        `  ${advanced}`,
+        '',
+        `原文: ${text}`,
+      ].join('\n')
+    }
+  },
+  description: 'Leet语转换 (1337 speak)',
+  usage: 'leet <文本>',
+  examples: ['leet Hello World', 'leet I am a hacker']
+})
+
+registerCommand('bmi', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '⚖️  BMI 计算器',
+          '',
+          '用法: bmi <身高(cm)> <体重(kg)>',
+          '',
+          '示例:',
+          '  bmi 175 70',
+          '  bmi 160 55',
+          '',
+          'BMI 参考标准:',
+          '  < 18.5   偏瘦',
+          '  18.5-24  正常',
+          '  24-28    偏胖',
+          '  28-32    肥胖',
+          '  > 32     重度肥胖',
+        ].join('\n')
+      }
+    }
+    
+    const height = parseFloat(args[0]) / 100
+    const weight = parseFloat(args[1])
+    
+    if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
+      return { output: 'bmi: 请输入有效的身高和体重' }
+    }
+    
+    const bmi = weight / (height * height)
+    
+    let category = ''
+    let emoji = ''
+    let color = ''
+    
+    if (bmi < 18.5) {
+      category = '偏瘦'
+      emoji = '📉'
+      color = '蓝色'
+    } else if (bmi < 24) {
+      category = '正常'
+      emoji = '✅'
+      color = '绿色'
+    } else if (bmi < 28) {
+      category = '偏胖'
+      emoji = '📈'
+      color = '黄色'
+    } else if (bmi < 32) {
+      category = '肥胖'
+      emoji = '⚠️'
+      color = '橙色'
+    } else {
+      category = '重度肥胖'
+      emoji = '🚨'
+      color = '红色'
+    }
+    
+    const idealMin = 18.5 * height * height
+    const idealMax = 24 * height * height
+    
+    return {
+      output: [
+        '⚖️  BMI 计算结果',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `身高: ${(height * 100).toFixed(0)} cm`,
+        `体重: ${weight.toFixed(1)} kg`,
+        '',
+        `BMI 值: ${bmi.toFixed(1)}`,
+        `状态: ${emoji} ${category} (${color})`,
+        '',
+        '🎯 理想体重范围:',
+        `  最低: ${idealMin.toFixed(1)} kg (BMI 18.5)`,
+        `  最高: ${idealMax.toFixed(1)} kg (BMI 24)`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '💡 提示: 仅供参考，具体请咨询专业医生',
+      ].join('\n')
+    }
+  },
+  description: 'BMI 身体质量指数计算',
+  usage: 'bmi <身高(cm)> <体重(kg)>',
+  examples: ['bmi 175 70', 'bmi 160 55']
+})
+
+registerCommand('cron', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '⏰ Cron 表达式解析',
+          '',
+          '用法: cron <表达式>',
+          '',
+          '格式: 分 时 日 月 周',
+          '',
+          '示例:',
+          '  cron "* * * * *"          每分钟',
+          '  cron "0 * * * *"          每小时',
+          '  cron "0 0 * * *"          每天零点',
+          '  cron "0 9 * * 1-5"        工作日早9点',
+          '  cron "*/15 * * * *"       每15分钟',
+          '',
+          '符号说明:',
+          '  *  任意值    ,  列表     -  范围',
+          '  /  步长     ?  不指定    L  最后',
+        ].join('\n')
+      }
+    }
+    
+    const expression = args.join(' ')
+    const parts = expression.trim().split(/\s+/)
+    
+    if (parts.length !== 5) {
+      return { output: 'cron: 表达式需要5个字段（分 时 日 月 周）' }
+    }
+    
+    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts
+    
+    const describeField = (value: string, fieldName: string, min: number, max: number): string => {
+      if (value === '*') return `每${fieldName}`
+      if (value.startsWith('*/')) {
+        const step = parseInt(value.slice(2))
+        return `每 ${step} ${fieldName}`
+      }
+      if (value.includes(',')) {
+        return `${fieldName}: ${value}`
+      }
+      if (value.includes('-')) {
+        return `${fieldName}: ${value} 范围内`
+      }
+      const num = parseInt(value)
+      if (!isNaN(num) && num >= min && num <= max) {
+        return `${fieldName}: ${value}`
+      }
+      return `${fieldName}: ${value}`
+    }
+    
+    const months = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    
+    const formatTime = (): string => {
+      if (minute === '*' && hour === '*') return '每分钟'
+      if (minute === '0' && hour === '*') return '每小时整点'
+      if (minute.startsWith('*/')) {
+        return `每 ${minute.slice(2)} 分钟`
+      }
+      if (hour.startsWith('*/')) {
+        return `每 ${hour.slice(2)} 小时`
+      }
+      const m = minute === '*' ? '每分' : `${minute}分`
+      const h = hour === '*' ? '每时' : `${hour}时`
+      return `${h}${m}`
+    }
+    
+    const formatDate = (): string => {
+      let result = ''
+      if (dayOfMonth !== '*') result += `每月${dayOfMonth}日 `
+      if (month !== '*') {
+        const m = parseInt(month)
+        if (!isNaN(m) && m >= 1 && m <= 12) {
+          result += months[m - 1] + ' '
+        } else {
+          result += `${month}月 `
+        }
+      }
+      if (dayOfWeek !== '*') {
+        const d = parseInt(dayOfWeek)
+        if (!isNaN(d) && d >= 0 && d <= 6) {
+          result += weekdays[d]
+        } else {
+          result += `周${dayOfWeek}`
+        }
+      }
+      return result.trim() || '每天'
+    }
+    
+    return {
+      output: [
+        '⏰ Cron 表达式解析',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `表达式: ${expression}`,
+        '',
+        '📋 详细解读:',
+        `  ${describeField(minute, '分钟', 0, 59)}`,
+        `  ${describeField(hour, '小时', 0, 23)}`,
+        `  ${describeField(dayOfMonth, '日期', 1, 31)}`,
+        `  ${describeField(month, '月份', 1, 12)}`,
+        `  ${describeField(dayOfWeek, '星期', 0, 6)}`,
+        '',
+        '📅 人类可读描述:',
+        `  ${formatDate()} ${formatTime()} 执行`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n')
+    }
+  },
+  description: 'Cron 表达式解析',
+  usage: 'cron <表达式>',
+  examples: ['cron "0 9 * * 1-5"', 'cron "*/15 * * * *"']
 })
