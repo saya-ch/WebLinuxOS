@@ -10,7 +10,7 @@ A fully functional web-based desktop operating system that runs entirely in the 
 
 ## Overview
 
-WebLinuxOS brings a complete Linux-like desktop experience to your browser. It includes window management, a virtual file system, taskbar, system tray, and over 250 applications—all running entirely client-side without any backend server.
+WebLinuxOS brings a complete Linux-like desktop experience to your browser. It includes window management, a virtual file system, taskbar, system tray, and over 250 applications--all running entirely client-side without any backend server.
 
 The system is built with React 19, TypeScript, and Vite, delivering smooth animations, responsive design, and a feature set that rivals native desktop environments. Unlike many demo projects, WebLinuxOS features real functionality with live API integrations throughout.
 
@@ -21,7 +21,7 @@ The system is built with React 19, TypeScript, and Vite, delivering smooth anima
 - **Window System**: Drag, resize, minimize, maximize, and close windows with smooth animations
 - **Taskbar**: Application switching, system tray, real-time clock, and workspace management
 - **Virtual Filesystem**: Complete file browsing, creation, editing, and organization
-- **Multi-workspace**: Organize windows across multiple virtual desktops
+- **Multi-workspace**: Organize windows across multiple virtual desktops (up to 9)
 - **Theme System**: Dark/light mode with custom accent colors
 - **Keyboard Shortcuts**: Comprehensive hotkey support (Ctrl+Shift+? for reference)
 
@@ -29,8 +29,9 @@ The system is built with React 19, TypeScript, and Vite, delivering smooth anima
 
 - 80+ built-in commands covering file operations, system information, networking, and utilities
 - Real API integrations for weather, news, crypto prices, and IP lookup
-- Command history and auto-completion
-- Syntax highlighting and colored output
+- Command history and auto-completion with Tab
+- Syntax highlighting and colored output (ANSI escape codes)
+- Alias support (persisted to localStorage)
 
 ### Development Tools
 
@@ -54,13 +55,15 @@ The system is built with React 19, TypeScript, and Vite, delivering smooth anima
 
 All network-enabled applications use real, free public APIs:
 
-- **Weather**: Open-Meteo API
-- **Crypto Prices**: CoinGecko API
-- **Currency Conversion**: Frankfurter API
-- **Country Information**: REST Countries API
-- **Astronomy**: NASA APOD API
-- **News**: Hacker News Algolia API
-- **Wikipedia**: MediaWiki API
+| Service | API | Purpose |
+|---------|-----|---------|
+| Weather | Open-Meteo | Current conditions and forecasts |
+| Crypto | CoinGecko | Real-time cryptocurrency prices |
+| Currency | Frankfurter | Currency conversion rates |
+| Countries | REST Countries | Country information (250+ countries) |
+| Astronomy | NASA APOD | Daily space imagery |
+| News | Hacker News | Tech news via Algolia API |
+| Wikipedia | MediaWiki | Article search and summaries |
 
 ## Applications
 
@@ -140,9 +143,16 @@ git subtree push --prefix dist origin gh-pages
 web-linux/
 ├── src/
 │   ├── apps/              # Application components
+│   │   ├── terminal/      # Terminal command system
+│   │   └── *.tsx         # Individual applications
 │   ├── components/        # System components (Window, Taskbar, Desktop)
-│   ├── store.tsx          # Global state management
+│   ├── store/             # State management utilities
+│   │   ├── fileUtils.ts   # File system operations
+│   │   ├── storageUtils.ts # localStorage persistence
+│   │   └── defaults.ts    # Default state values
+│   ├── store.tsx          # Global state management (Zustand)
 │   ├── types.ts           # TypeScript definitions
+│   ├── apps.tsx           # Application registry
 │   └── index.css          # Global styles
 ├── public/                # Static assets
 ├── vite.config.ts         # Build configuration
@@ -153,14 +163,25 @@ web-linux/
 
 ### Basic Operations
 
-- **Launch Apps**: Click desktop icons or use the start menu
+- **Launch Apps**: Click desktop icons or use the start menu (click the penguin icon)
 - **Switch Windows**: Alt+Tab or click taskbar icons
 - **Manage Files**: Use File Manager for all file operations
 - **Search**: Ctrl+K for global search
+- **Multiple Desktops**: Switch with taskbar buttons or Ctrl+Arrow keys
 
-### Keyboard Shortcuts
+### Terminal Commands
 
-Press Ctrl+Shift+? to open the full shortcut reference panel.
+The terminal supports 80+ commands. Type `help` in the terminal for the full list. Key categories:
+
+**File Operations**: `ls`, `cd`, `pwd`, `cat`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `grep`, `find`, `tree`
+
+**System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `neofetch`, `ps`, `top`
+
+**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `translate`, `ipinfo`
+
+**Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`
+
+**Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`
 
 ### File Preview
 
@@ -170,13 +191,33 @@ Double-click files to preview:
 - Audio: MP3, WAV, FLAC
 - Video: MP4, WebM, OGG
 
+## Keyboard Shortcuts
+
+Press Ctrl+Shift+? to open the full shortcut reference panel.
+
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+Shift+L | Open launcher |
+| Ctrl+Shift+S | Open settings |
+| Ctrl+Shift+F | Open file manager |
+| Ctrl+Shift+T | Open terminal |
+| Ctrl+N | New terminal window |
+| Ctrl+W | Close current window |
+| Ctrl+M | Minimize current window |
+| F11 | Toggle fullscreen/maximize |
+| Alt+Tab | Switch windows |
+| Ctrl+K | Global search |
+| Ctrl+, | Open settings |
+| Ctrl+Arrow | Switch desktop |
+
 ## Performance
 
-- Lazy loading for applications
-- Code splitting for reduced bundle size
+- Lazy loading for applications via dynamic imports
+- Code splitting for reduced bundle size (vendor chunks + per-app chunks)
 - Virtual scrolling for long lists
-- CSS animations for smooth transitions
-- Optimized re-renders with React memo
+- CSS animations for smooth 60fps transitions
+- GPU-accelerated transforms for window dragging
+- Content-visibility for off-screen content
 
 ## Contributing
 
@@ -194,25 +235,13 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
-### v6.3.0
+### v12.0.0
 
-- Enhanced terminal with 80+ commands, fixing duplicate command definitions
-- Improved weather application with city search and 7-day forecast
-- Enhanced news reader with Hacker News API integration and filtering
-- Improved translator with multi-language support and history
-- Frontend design optimization with distinctive fonts and refined animations
-- Enhanced user experience with smooth micro-interactions and visual effects
-- Performance improvements for CSS animations and rendering
-- Updated font system with Sora, Outfit and other distinctive typeface options
-
-### v6.2.1
-
-- Added Country Info application with REST Countries API integration (250+ countries)
+- Added CountryInfo application with REST Countries API integration (250+ countries)
 - Enhanced Astro Daily with NASA APOD API (random dates, favorites, download)
 - Improved Code Editor with auto-completion, find/replace, multi-tab support
 - Enhanced Crypto Tracker with portfolio management and coin converter
 - Updated GitHub Explorer with real-time trending repos and search
-- Added comprehensive API integration documentation
 
 ### v11.1.0
 
@@ -222,6 +251,21 @@ MIT License - See [LICENSE](LICENSE) for details.
 - Enhanced System Monitor with real-time metrics
 - Fixed file manager cut operation bug
 - Added terminal Git commands
+
+### v10.0.0
+
+- Major UI/UX overhaul with new theme system
+- Added live wallpaper support (particles, aurora, nebula)
+- Enhanced window management with snap hints
+- Improved performance with GPU acceleration
+
+### v6.3.0
+
+- Enhanced terminal with 80+ commands, fixing duplicate command definitions
+- Improved weather application with city search and 7-day forecast
+- Enhanced news reader with Hacker News API integration and filtering
+- Improved translator with multi-language support and history
+- Frontend design optimization with distinctive fonts and refined animations
 
 ---
 
