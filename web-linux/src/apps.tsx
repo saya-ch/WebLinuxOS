@@ -28,7 +28,11 @@ import type { AppDefinition } from './types'
 //     { id: 'my-app', ... },
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
-export const APP_REGISTRY_EXTRAS: AppDefinition[] = []
+export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 新增增强应用（v14.0迭代）
+  // { id: 'realtime-translator-enhanced', name: '实时翻译增强版', icon: <LanguagesIcon />, component: 'RealTimeTranslatorEnhanced', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // { id: 'qr-generator-pro', name: 'QR码生成器 Pro', icon: <QRCodeIcon />, component: 'QRCodeGeneratorPro', category: 'utilities', defaultWidth: 900, defaultHeight: 800, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
 export function registerApps(extras: AppDefinition[]) {
