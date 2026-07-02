@@ -28,10 +28,11 @@ The system is built with React 19, TypeScript, and Vite, delivering smooth anima
 ### Terminal
 
 - 80+ built-in commands covering file operations, system information, networking, and utilities
-- Real API integrations for weather, news, crypto prices, and IP lookup
+- Real API integrations for weather, news, crypto prices, DNS lookup, dictionary, and IP lookup
 - Command history and auto-completion with Tab
 - Syntax highlighting and colored output (ANSI escape codes)
 - Alias support (persisted to localStorage)
+- Smart caching for API responses to reduce network requests
 
 ### Development Tools
 
@@ -64,6 +65,11 @@ All network-enabled applications use real, free public APIs:
 | Astronomy | NASA APOD | Daily space imagery |
 | News | Hacker News | Tech news via Algolia API |
 | Wikipedia | MediaWiki | Article search and summaries |
+| DNS | Google DNS | Domain name system record lookup |
+| Dictionary | Dictionary API | English word definitions and phonetics |
+| Translation | MyMemory | Multi-language text translation |
+| IP Geolocation | ipapi.co | IP address location and ISP info |
+| QR Code | QR Server | QR code generation |
 
 ## Applications
 
@@ -71,8 +77,8 @@ WebLinuxOS includes applications across seven categories:
 
 | Category | Applications |
 |----------|-------------|
-| System | File Manager, Terminal, System Monitor, Task Manager, Settings, Software Center |
-| Development | Code Editor, REST Client, Regex Tester, JSON Formatter, GitHub Explorer, Code Runner |
+| System | File Manager, Terminal, System Monitor, Task Manager, Settings, Software Center, Smart Overview |
+| Development | Code Editor, REST Client, Regex Tester, JSON Formatter, GitHub Explorer, Code Runner, Dev Toolkit |
 | Office | Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Notes |
 | Utilities | Calculator, Weather, Password Manager, Screenshot, Character Map, Clock, Crypto Tracker, Real-Time Translator, QR Code Generator |
 | Multimedia | Music Player, Video Player, Image Viewer, Drawing Tool, Camera |
@@ -150,6 +156,8 @@ web-linux/
 │   │   ├── fileUtils.ts   # File system operations
 │   │   ├── storageUtils.ts # localStorage persistence
 │   │   └── defaults.ts    # Default state values
+│   ├── utils/             # Utility functions
+│   │   └── apiCache.ts    # API caching and fetch utilities
 │   ├── store.tsx          # Global state management (Zustand)
 │   ├── types.ts           # TypeScript definitions
 │   ├── apps.tsx           # Application registry
@@ -177,7 +185,7 @@ The terminal supports 80+ commands. Type `help` in the terminal for the full lis
 
 **System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `neofetch`, `ps`, `top`
 
-**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `translate`, `ipinfo`
+**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `translate`, `ip`, `dns`, `dict`, `qr`
 
 **Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`
 
@@ -218,6 +226,9 @@ Press Ctrl+Shift+? to open the full shortcut reference panel.
 - CSS animations for smooth 60fps transitions
 - GPU-accelerated transforms for window dragging
 - Content-visibility for off-screen content
+- Smart API caching to reduce network requests (configurable TTL)
+- Request timeout and retry mechanism for improved reliability
+- Debounced and throttled event handlers for responsive UI
 
 ## Contributing
 
@@ -235,7 +246,39 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Recent Improvements
 
-### v14.0.0 (Current Iteration)
+### v15.0.0 (Current Iteration)
+
+**New Applications:**
+- **Dev Toolkit**: Comprehensive developer toolkit with 14+ tools including Base64/URL encoding, hash generation, UUID generation, JSON formatting, timestamp conversion, QR code generation, translation, weather, crypto prices, news, IP lookup, DNS query, and English dictionary
+- **Smart Overview**: Intelligent dashboard with system status, weather information, quick notes, and fast app launch
+
+**New Terminal Commands:**
+- `weather` - Real-time weather with 3-day forecast (Open-Meteo API, 10-min cache)
+- `crypto` - Top 10 cryptocurrency prices (CoinGecko API)
+- `news` - Hacker News top stories (Algolia API, 5-min cache)
+- `joke` - Random programming jokes with fallback library
+- `translate` - Multi-language text translation (MyMemory API)
+- `qr` - QR code generation
+- `dns` - DNS record lookup (Google DNS, 5-min cache)
+- `ip` - IP address geolocation (ipapi.co)
+- `dict` - English dictionary with definitions and phonetics (Dictionary API, 30-min cache)
+
+**Key Improvements:**
+- Added smart API caching system with configurable TTL for reduced network requests
+- Implemented request timeout (10s default) and exponential backoff retry mechanism
+- Enhanced error handling across all API-integrated features with user-friendly messages
+- Added utility library with debounce, throttle, formatNumber, formatBytes functions
+- Expanded city support for weather (20+ cities including Chengdu, Hangzhou, Wuhan, Xi'an, Nanjing, Sydney, Dubai, Singapore, Seoul, Bangkok)
+- Extended language support for translation (12+ languages)
+- Improved type safety with proper TypeScript type definitions
+
+**Performance Optimizations:**
+- API response caching with TTL-based invalidation
+- Request deduplication and retry with exponential backoff
+- Memory-efficient cache management
+- Optimized re-renders with useMemo and useCallback
+
+### v14.0.0
 
 **New Applications:**
 - **Real-Time Translator Enhanced**: Professional translation tool with MyMemory API integration, supporting 15+ languages, automatic translation, history tracking, and text-to-speech functionality
