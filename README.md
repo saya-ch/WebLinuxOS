@@ -191,11 +191,11 @@ The terminal supports 80+ commands. Type `help` in the terminal for the full lis
 
 **System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `neofetch`, `ps`, `top`
 
-**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `crypto2`, `translate`, `ip`, `dns`, `dict`, `qr`, `stock`, `timezone`, `github`, `ghuser`, `shorten`
+**Network**: `ping`, `curl`, `fetch`, `weather`, `weather-search`, `news`, `news-summary`, `crypto`, `crypto2`, `crypto-news`, `translate`, `ip`, `ipinfo`, `dns`, `dict`, `qr`, `stock`, `timezone`, `github`, `ghuser`, `shorten`, `whois`
 
-**Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`, `datetime`
+**Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`, `datetime`, `calendar`, `reminder`, `health`, `productivity`, `code-review`, `todo`, `code-tip`, `challenge`, `world-clock`, `quote-of-the-day`, `brainstorm`, `random`
 
-**Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`, `trivia`, `funfact`, `catfact`, `quote`
+**Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`, `trivia`, `funfact`, `catfact`, `quote`, `story`, `flip`, `rps`
 
 ### File Preview
 
@@ -262,10 +262,31 @@ MIT License - See [LICENSE](LICENSE) for details.
 - `datetime` - Display current date/time with timestamp
 - `ping` - Network connectivity test with latency measurement
 - `shorten` - URL shortener with shrtcode API integration
+- `news-summary` - Daily news digest with fallback data
+- `brainstorm` - Creative idea generation for any topic
+- `calendar` - Interactive calendar with month/year navigation
+- `reminder` - Set and manage reminders
+- `health` - Time-based health tips and daily advice
+- `productivity` - Random productivity improvement tips
+- `code-review` - Language-specific code review checklists
+- `todo` - Todo list management
+- `story` - Programming motivational stories
+- `code-tip` - Random programming tips across languages
+- `challenge` - Random coding challenges with difficulty levels
+- `crypto-news` - Latest cryptocurrency news
+- `world-clock` - Real-time world clock for 14+ cities
+- `quote-of-the-day` - Inspirational quotes from Quotable.io
+- `weather-search` - Search weather by city name globally
+- `whois` - Domain registration information lookup
+- `ipinfo` - IP address detailed information
+- `random` - Random number generator with range support
+- `flip` - Coin flip game
+- `rps` - Rock-paper-scissors game
 
 **Bug Fixes:**
 - Fixed CSS duplicate animation definitions (gradientShift, starTwinkle, cursorBlink)
 - Resolved keyboard shortcut conflicts (paint vs command-palette, notes vs new-terminal, camera vs image-viewer)
+- Fixed ping command CORS issues with fallback API (ping.pe)
 
 **Key Improvements:**
 - Added smart API caching system with configurable TTL for reduced network requests
@@ -276,12 +297,16 @@ MIT License - See [LICENSE](LICENSE) for details.
 - Extended language support for translation (12+ languages)
 - Improved type safety with proper TypeScript type definitions
 - Enhanced GitHub integration with both repository and user profile lookup
+- Added comprehensive productivity and developer tools to terminal
+- Implemented fallback data for all API-dependent commands
+- Enhanced terminal output formatting with consistent styling
 
 **Performance Optimizations:**
 - API response caching with TTL-based invalidation
 - Request deduplication and retry with exponential backoff
 - Memory-efficient cache management
 - Optimized re-renders with useMemo and useCallback
+- Lazy-loaded terminal commands for faster initial load
 
 ### v15.0.0
 

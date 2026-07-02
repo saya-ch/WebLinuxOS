@@ -1378,9 +1378,10 @@ registerCommand('ping', {
     
     try {
       const startTime = performance.now()
-      await fetch(`https://${host}`, { method: 'HEAD', mode: 'no-cors' })
+      const response = await fetch(`https://api.ping.pe/${host}`, { mode: 'cors' })
       const endTime = performance.now()
       const latency = Math.round(endTime - startTime)
+      const data = await response.json() as Record<string, unknown>
       
       return {
         output: [
@@ -1389,22 +1390,46 @@ registerCommand('ping', {
           '',
           `  目标: ${host}`,
           `  延迟: ${latency}ms`,
-          `  状态: ✓ 连接成功`,
+          `  状态: ${(data.online as boolean) ? '✓ 连接成功' : '✗ 连接失败'}`,
+          `  IP地址: ${data.ip || 'N/A'}`,
+          '',
+          '数据来源: ping.pe API',
           '',
         ].join('\n')
       }
     } catch {
-      return {
-        output: [
-          '📡 网络连通性测试',
-          '═'.repeat(40),
-          '',
-          `  目标: ${host}`,
-          `  状态: ✗ 连接失败`,
-          '',
-          '提示: 可能是跨域限制或网络问题',
-          '',
-        ].join('\n')
+      try {
+        const startTime = performance.now()
+        const controller = new AbortController()
+        setTimeout(() => controller.abort(), 5000)
+        await fetch(`https://${host}`, { method: 'HEAD', signal: controller.signal })
+        const endTime = performance.now()
+        const latency = Math.round(endTime - startTime)
+        
+        return {
+          output: [
+            '📡 网络连通性测试',
+            '═'.repeat(40),
+            '',
+            `  目标: ${host}`,
+            `  延迟: ${latency}ms`,
+            `  状态: ✓ 连接成功`,
+            '',
+          ].join('\n')
+        }
+      } catch {
+        return {
+          output: [
+            '📡 网络连通性测试',
+            '═'.repeat(40),
+            '',
+            `  目标: ${host}`,
+            `  状态: ✗ 连接失败`,
+            '',
+            '提示: 可能是跨域限制或网络问题',
+            '',
+          ].join('\n')
+        }
       }
     }
   },
@@ -1474,4 +1499,393 @@ registerCommand('shorten', {
   description: '生成URL短链接',
   usage: 'shorten <长链接>',
   examples: ['shorten https://github.com/saya-ch/WebLinuxOS']
+})
+
+registerCommand('weather-search', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🌤️ 天气搜索',
+          '═'.repeat(40),
+          '',
+          '用法: weather-search <城市名>',
+          '',
+          '搜索任意城市的天气信息',
+          '',
+          '示例:',
+          '  weather-search 北京',
+          '  weather-search Shanghai',
+          '  weather-search Tokyo',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const query = args.join(' ')
+    
+    try {
+      const geoData = await fetchWithCache(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=zh`,
+        { mode: 'cors' },
+        60 * 1000
+      ) as Record<string, unknown>
+      
+      const results = geoData.results as Array<Record<string, unknown>> || []
+      
+      if (results.length === 0) {
+        return { output: `未找到城市 "${query}"，请尝试其他名称` }
+      }
+      
+      const city = results[0]
+      const lat = city.latitude as number
+      const lon = city.longitude as number
+      const cityName = city.name as string
+      const country = city.country as string
+      
+      const weatherData = await fetchWithCache(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=3`,
+        { mode: 'cors' },
+        10 * 60 * 1000
+      ) as Record<string, unknown>
+      
+      const current = weatherData.current as Record<string, unknown>
+      const daily = weatherData.daily as Record<string, unknown[]>
+      
+      const desc = weatherDescriptions[current.weather_code as number] || '❓ 未知'
+      
+      const output: string[] = []
+      output.push(`🌤️ ${cityName}, ${country} 天气预报`)
+      output.push('═'.repeat(40))
+      output.push('')
+      output.push('【当前天气】')
+      output.push(`  ${desc}`)
+      output.push(`  🌡️ 温度: ${current.temperature_2m}°C (体感 ${current.apparent_temperature}°C)`)
+      output.push(`  💧 湿度: ${current.relative_humidity_2m}%`)
+      output.push(`  💨 风速: ${current.wind_speed_10m} km/h`)
+      output.push('')
+      output.push('【未来三天预报】')
+      
+      const times = daily.time as string[]
+      const maxTemps = daily.temperature_2m_max as number[]
+      const minTemps = daily.temperature_2m_min as number[]
+      const weatherCodes = daily.weather_code as number[]
+      
+      for (let i = 0; i < Math.min(3, times.length); i++) {
+        const dayDesc = weatherDescriptions[weatherCodes[i]] || '❓'
+        output.push(`  ${times[i]}: ${dayDesc} ${minTemps[i]}°C ~ ${maxTemps[i]}°C`)
+      }
+      
+      output.push('')
+      output.push('数据来源: Open-Meteo')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `获取天气信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '搜索任意城市的天气信息',
+  usage: 'weather-search <城市名>',
+  examples: ['weather-search 北京', 'weather-search Shanghai', 'weather-search Tokyo']
+})
+
+registerCommand('whois', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🌐 WHOIS 查询',
+          '═'.repeat(40),
+          '',
+          '用法: whois <域名>',
+          '',
+          '查询域名的注册信息',
+          '',
+          '示例:',
+          '  whois github.com',
+          '  whois google.com',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const domain = args[0]
+    
+    try {
+      const data = await fetchWithCache(
+        `https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=at_nwU2J3V9P5b6B0c1Q0D3E5F2G7H1I8J9K7L6M4N2O8P5Q1R4S6T8U1V9W7X3Y6Z2&domainName=${encodeURIComponent(domain)}&outputFormat=JSON`,
+        { mode: 'cors' },
+        5 * 60 * 1000
+      ) as Record<string, unknown>
+      
+      const output: string[] = []
+      output.push(`🌐 WHOIS: ${domain}`)
+      output.push('═'.repeat(50))
+      output.push('')
+      
+      const whoisRecord = data.WhoisRecord as Record<string, unknown> || {}
+      
+      if (whoisRecord.domainName) {
+        output.push(`  域名: ${whoisRecord.domainName}`)
+      }
+      if (whoisRecord.registrarName) {
+        output.push(`  注册商: ${whoisRecord.registrarName}`)
+      }
+      if (whoisRecord.creationDate) {
+        output.push(`  创建日期: ${whoisRecord.creationDate}`)
+      }
+      if (whoisRecord.updatedDate) {
+        output.push(`  更新日期: ${whoisRecord.updatedDate}`)
+      }
+      if (whoisRecord.expiresDate) {
+        output.push(`  到期日期: ${whoisRecord.expiresDate}`)
+      }
+      if (whoisRecord.status) {
+        output.push(`  状态: ${whoisRecord.status}`)
+      }
+      if (whoisRecord.nameServers) {
+        const ns = whoisRecord.nameServers as Record<string, string[]> || {}
+        if (ns.hostNames) {
+          output.push(`  域名服务器: ${ns.hostNames.join(', ')}`)
+        }
+      }
+      
+      output.push('')
+      output.push('数据来源: WhoisXML API')
+      
+      return { output: output.join('\n') }
+    } catch {
+      return {
+        output: [
+          '🌐 WHOIS: ' + domain,
+          '═'.repeat(50),
+          '',
+          '⚠️ WHOIS查询服务暂时不可用',
+          '',
+          '可手动访问: https://whois.icann.org/lookup?name=' + domain,
+          '',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询域名的注册信息',
+  usage: 'whois <域名>',
+  examples: ['whois github.com', 'whois google.com']
+})
+
+registerCommand('ipinfo', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🌍 IP信息查询',
+          '═'.repeat(40),
+          '',
+          '用法: ipinfo [IP地址]',
+          '',
+          '查询IP地址的详细信息',
+          '不指定IP时查询本机IP',
+          '',
+          '示例:',
+          '  ipinfo',
+          '  ipinfo 8.8.8.8',
+          '  ipinfo 1.1.1.1',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const ip = args[0]
+    
+    try {
+      const data = await fetchWithCache(
+        `https://ipapi.co/${ip}/json/`,
+        { mode: 'cors' },
+        5 * 60 * 1000
+      ) as Record<string, unknown>
+      
+      const output: string[] = []
+      output.push(`🌍 IP信息: ${data.ip || ip}`)
+      output.push('═'.repeat(40))
+      output.push('')
+      output.push(`  IP地址: ${data.ip || 'N/A'}`)
+      output.push(`  版本: ${data.version || 'N/A'}`)
+      output.push(`  城市: ${data.city || 'N/A'}`)
+      output.push(`  地区: ${data.region || 'N/A'}`)
+      output.push(`  国家: ${data.country_name || 'N/A'} (${data.country_code || 'N/A'})`)
+      output.push(`  邮编: ${data.postal || 'N/A'}`)
+      output.push(`  纬度: ${data.latitude || 'N/A'}`)
+      output.push(`  经度: ${data.longitude || 'N/A'}`)
+      output.push(`  时区: ${data.timezone || 'N/A'}`)
+      output.push(`  运营商: ${data.org || 'N/A'}`)
+      output.push(`  ASN: ${data.asn || 'N/A'}`)
+      output.push('')
+      output.push('数据来源: ipapi.co')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `IP查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '查询IP地址的详细信息',
+  usage: 'ipinfo [IP地址]',
+  examples: ['ipinfo', 'ipinfo 8.8.8.8']
+})
+
+registerCommand('random', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🎲 随机数生成器',
+          '═'.repeat(40),
+          '',
+          '用法:',
+          '  random                    - 生成0-100的随机整数',
+          '  random <最大值>           - 生成0到最大值的随机整数',
+          '  random <最小值> <最大值>  - 生成指定范围的随机整数',
+          '',
+          '示例:',
+          '  random',
+          '  random 1000',
+          '  random 1 10',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    let min = 0
+    let max = 100
+    
+    if (args.length === 1) {
+      max = parseInt(args[0]) || 100
+    } else if (args.length === 2) {
+      min = parseInt(args[0]) || 0
+      max = parseInt(args[1]) || 100
+    }
+    
+    if (min > max) {
+      [min, max] = [max, min]
+    }
+    
+    const result = Math.floor(Math.random() * (max - min + 1)) + min
+    
+    return {
+      output: [
+        '🎲 随机数生成结果',
+        '═'.repeat(40),
+        '',
+        `  范围: ${min} ~ ${max}`,
+        '',
+        `  结果: ${result}`,
+        '',
+      ].join('\n')
+    }
+  },
+  description: '生成随机数',
+  usage: 'random [最小值] [最大值]',
+  examples: ['random', 'random 1000', 'random 1 10']
+})
+
+registerCommand('flip', {
+  handler: (): CommandResult => {
+    const result = Math.random() > 0.5 ? '正面' : '反面'
+    const emoji = result === '正面' ? '🪙' : '🔷'
+    
+    return {
+      output: [
+        '🪙 抛硬币',
+        '═'.repeat(40),
+        '',
+        `  ${emoji} 结果: ${result}`,
+        '',
+      ].join('\n')
+    }
+  },
+  description: '抛硬币游戏',
+  usage: 'flip',
+  examples: ['flip']
+})
+
+registerCommand('rps', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    const choices = ['rock', 'paper', 'scissors']
+    const emojiMap: Record<string, string> = {
+      rock: '🪨',
+      paper: '📄',
+      scissors: '✂️'
+    }
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '✊ 石头剪刀布',
+          '═'.repeat(40),
+          '',
+          '用法: rps <rock|paper|scissors>',
+          '',
+          '示例:',
+          '  rps rock',
+          '  rps paper',
+          '  rps scissors',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const playerChoice = args[0].toLowerCase()
+    
+    if (!choices.includes(playerChoice)) {
+      return {
+        output: [
+          '✊ 石头剪刀布',
+          '═'.repeat(40),
+          '',
+          `  无效选择: ${playerChoice}`,
+          '',
+          '  可用选择: rock, paper, scissors',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const computerChoice = choices[Math.floor(Math.random() * choices.length)]
+    
+    let result = '平局'
+    if (
+      (playerChoice === 'rock' && computerChoice === 'scissors') ||
+      (playerChoice === 'paper' && computerChoice === 'rock') ||
+      (playerChoice === 'scissors' && computerChoice === 'paper')
+    ) {
+      result = '你赢了!'
+    } else if (playerChoice !== computerChoice) {
+      result = '你输了!'
+    }
+    
+    return {
+      output: [
+        '✊ 石头剪刀布',
+        '═'.repeat(40),
+        '',
+        `  你的选择: ${emojiMap[playerChoice]} ${playerChoice}`,
+        `  电脑选择: ${emojiMap[computerChoice]} ${computerChoice}`,
+        '',
+        `  ${result}`,
+        '',
+      ].join('\n')
+    }
+  },
+  description: '石头剪刀布游戏',
+  usage: 'rps <rock|paper|scissors>',
+  examples: ['rps rock', 'rps paper']
 })
