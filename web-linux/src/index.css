@@ -953,18 +953,6 @@ code, pre, .terminal, .code-editor {
   }
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
 @keyframes aurora-bg {
   0% {
     transform: translateX(-100%) rotate(45deg);
@@ -1083,32 +1071,12 @@ code, pre, .terminal, .code-editor {
   }
 }
 
-@keyframes cursorBlink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
 @keyframes clockTick {
   0%, 100% {
     transform: rotate(-3deg);
   }
   50% {
     transform: rotate(3deg);
-  }
-}
-
-@keyframes starTwinkle {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
   }
 }
 
@@ -4065,15 +4033,6 @@ a:hover {
   animation: typewriter 0.15s ease-out;
 }
 
-@keyframes cursorBlink {
-  0%, 50% {
-    opacity: 1;
-  }
-  51%, 100% {
-    opacity: 0;
-  }
-}
-
 .terminal-cursor {
   display: inline-block;
   width: 8px;
@@ -4463,17 +4422,6 @@ a:hover {
   66% {
     transform: translate(-15px, 10px) scale(0.95);
     opacity: 0.9;
-  }
-}
-
-@keyframes starTwinkle {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.5);
   }
 }
 

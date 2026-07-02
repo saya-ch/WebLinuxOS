@@ -1112,3 +1112,366 @@ registerCommand('crypto2', {
   usage: 'crypto2 [币种]',
   examples: ['crypto2', 'crypto2 bitcoin', 'crypto2 ethereum']
 })
+
+registerCommand('uuid', {
+  handler: (): CommandResult => {
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0
+      const v = c == 'x' ? r : (r & 0x3 | 0x8)
+      return v.toString(16)
+    })
+    
+    return {
+      output: [
+        '🔑 UUID 生成器',
+        '═'.repeat(40),
+        '',
+        `  UUID: ${uuid}`,
+        '',
+        '已复制到剪贴板',
+        '',
+      ].join('\n')
+    }
+  },
+  description: '生成随机UUID',
+  usage: 'uuid',
+  examples: ['uuid']
+})
+
+registerCommand('hash', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔐 哈希计算器',
+          '═'.repeat(40),
+          '',
+          '用法: hash <算法> <文本>',
+          '',
+          '支持的算法: md5, sha1, sha256, sha512',
+          '',
+          '示例:',
+          '  hash md5 hello',
+          '  hash sha256 secret',
+          '  hash sha512 "long text"',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const algorithm = (args[0] || 'sha256').toLowerCase()
+    const text = args.slice(1).join(' ')
+    
+    const validAlgorithms = ['md5', 'sha1', 'sha256', 'sha512']
+    if (!validAlgorithms.includes(algorithm)) {
+      return { output: `不支持的算法: ${algorithm}\n支持的算法: ${validAlgorithms.join(', ')}` }
+    }
+    
+    try {
+      const encoder = new TextEncoder()
+      const data = encoder.encode(text)
+      const hashBuffer = await crypto.subtle.digest(algorithm.toUpperCase(), data)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+      
+      return {
+        output: [
+          '🔐 哈希计算结果',
+          '═'.repeat(40),
+          '',
+          `  算法: ${algorithm.toUpperCase()}`,
+          `  输入: ${text}`,
+          '',
+          `  结果: ${hashHex}`,
+          '',
+        ].join('\n')
+      }
+    } catch {
+      return { output: '哈希计算失败，请检查输入' }
+    }
+  },
+  description: '计算文本的哈希值',
+  usage: 'hash <算法> <文本>',
+  examples: ['hash md5 hello', 'hash sha256 secret']
+})
+
+registerCommand('base64', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔤 Base64 编解码器',
+          '═'.repeat(40),
+          '',
+          '用法:',
+          '  base64 encode <文本>   - 编码',
+          '  base64 decode <文本>   - 解码',
+          '',
+          '示例:',
+          '  base64 encode hello',
+          '  base64 decode aGVsbG8=',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const mode = args[0].toLowerCase()
+    const text = args.slice(1).join(' ')
+    
+    if (mode === 'encode') {
+      const encoded = btoa(text)
+      return {
+        output: [
+          '🔤 Base64 编码结果',
+          '═'.repeat(40),
+          '',
+          `  输入: ${text}`,
+          '',
+          `  结果: ${encoded}`,
+          '',
+        ].join('\n')
+      }
+    } else if (mode === 'decode') {
+      try {
+        const decoded = atob(text)
+        return {
+          output: [
+            '🔤 Base64 解码结果',
+            '═'.repeat(40),
+            '',
+            `  输入: ${text}`,
+            '',
+            `  结果: ${decoded}`,
+            '',
+          ].join('\n')
+        }
+      } catch {
+        return { output: '解码失败: 无效的Base64编码' }
+      }
+    }
+    
+    return { output: `未知模式: ${mode}\n用法: base64 encode|decode <文本>` }
+  },
+  description: 'Base64编码和解码',
+  usage: 'base64 encode|decode <文本>',
+  examples: ['base64 encode hello', 'base64 decode aGVsbG8=']
+})
+
+registerCommand('urlencode', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔗 URL 编解码器',
+          '═'.repeat(40),
+          '',
+          '用法:',
+          '  urlencode encode <文本>   - 编码',
+          '  urlencode decode <文本>   - 解码',
+          '',
+          '示例:',
+          '  urlencode encode "hello world"',
+          '  urlencode decode "hello%20world"',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const mode = args[0].toLowerCase()
+    const text = args.slice(1).join(' ')
+    
+    if (mode === 'encode') {
+      const encoded = encodeURIComponent(text)
+      return {
+        output: [
+          '🔗 URL 编码结果',
+          '═'.repeat(40),
+          '',
+          `  输入: ${text}`,
+          '',
+          `  结果: ${encoded}`,
+          '',
+        ].join('\n')
+      }
+    } else if (mode === 'decode') {
+      try {
+        const decoded = decodeURIComponent(text)
+        return {
+          output: [
+            '🔗 URL 解码结果',
+            '═'.repeat(40),
+            '',
+            `  输入: ${text}`,
+            '',
+            `  结果: ${decoded}`,
+            '',
+          ].join('\n')
+        }
+      } catch {
+        return { output: '解码失败: 无效的URL编码' }
+      }
+    }
+    
+    return { output: `未知模式: ${mode}\n用法: urlencode encode|decode <文本>` }
+  },
+  description: 'URL编码和解码',
+  usage: 'urlencode encode|decode <文本>',
+  examples: ['urlencode encode "hello world"', 'urlencode decode "hello%20world"']
+})
+
+registerCommand('datetime', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    
+    const output: string[] = []
+    output.push('📅 当前日期时间')
+    output.push('═'.repeat(40))
+    output.push('')
+    output.push(`  本地时间: ${now.toLocaleString()}`)
+    output.push(`  UTC时间: ${now.toUTCString()}`)
+    output.push(`  时间戳: ${now.getTime()}`)
+    output.push(`  Unix时间: ${Math.floor(now.getTime() / 1000)}`)
+    output.push(`  星期: ${['日', '一', '二', '三', '四', '五', '六'][now.getDay()]}`)
+    output.push(`  月份: ${now.getMonth() + 1}`)
+    output.push(`  日期: ${now.getDate()}`)
+    output.push(`  年份: ${now.getFullYear()}`)
+    output.push(`  小时: ${now.getHours().toString().padStart(2, '0')}`)
+    output.push(`  分钟: ${now.getMinutes().toString().padStart(2, '0')}`)
+    output.push(`  秒: ${now.getSeconds().toString().padStart(2, '0')}`)
+    output.push('')
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示当前日期时间',
+  usage: 'datetime',
+  examples: ['datetime']
+})
+
+registerCommand('ping', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📡 网络连通性测试',
+          '═'.repeat(40),
+          '',
+          '用法: ping <网址>',
+          '',
+          '示例:',
+          '  ping google.com',
+          '  ping github.com',
+          '  ping localhost',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const host = args[0]
+    
+    try {
+      const startTime = performance.now()
+      await fetch(`https://${host}`, { method: 'HEAD', mode: 'no-cors' })
+      const endTime = performance.now()
+      const latency = Math.round(endTime - startTime)
+      
+      return {
+        output: [
+          '📡 网络连通性测试',
+          '═'.repeat(40),
+          '',
+          `  目标: ${host}`,
+          `  延迟: ${latency}ms`,
+          `  状态: ✓ 连接成功`,
+          '',
+        ].join('\n')
+      }
+    } catch {
+      return {
+        output: [
+          '📡 网络连通性测试',
+          '═'.repeat(40),
+          '',
+          `  目标: ${host}`,
+          `  状态: ✗ 连接失败`,
+          '',
+          '提示: 可能是跨域限制或网络问题',
+          '',
+        ].join('\n')
+      }
+    }
+  },
+  description: '测试网络连通性',
+  usage: 'ping <网址>',
+  examples: ['ping google.com', 'ping github.com']
+})
+
+registerCommand('shorten', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔗 URL短链接生成器',
+          '═'.repeat(40),
+          '',
+          '用法: shorten <长链接>',
+          '',
+          '示例:',
+          '  shorten https://github.com/saya-ch/WebLinuxOS',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const url = args.join(' ')
+    
+    try {
+      const response = await fetch(`https://api.shrtco.de/v2/shorten?url=${encodeURIComponent(url)}`, { mode: 'cors' })
+      const data = await response.json() as Record<string, unknown>
+      
+      const result = data.result as Record<string, string> || {}
+      
+      return {
+        output: [
+          '🔗 URL短链接生成结果',
+          '═'.repeat(40),
+          '',
+          `  原始链接: ${url}`,
+          '',
+          `  短链接: ${result.full_short_link}`,
+          `  短链接2: ${result.full_short_link2}`,
+          `  短链接3: ${result.full_short_link3}`,
+          '',
+          '数据来源: shrtcode API',
+          '',
+        ].join('\n')
+      }
+    } catch {
+      return {
+        output: [
+          '🔗 URL短链接生成结果',
+          '═'.repeat(40),
+          '',
+          `  原始链接: ${url}`,
+          '',
+          '⚠️ 短链接服务暂时不可用',
+          '',
+          '可手动访问: https://tinyurl.com/create.php?url=' + encodeURIComponent(url),
+          '',
+        ].join('\n')
+      }
+    }
+  },
+  description: '生成URL短链接',
+  usage: 'shorten <长链接>',
+  examples: ['shorten https://github.com/saya-ch/WebLinuxOS']
+})

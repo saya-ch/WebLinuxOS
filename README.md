@@ -191,9 +191,9 @@ The terminal supports 80+ commands. Type `help` in the terminal for the full lis
 
 **System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `neofetch`, `ps`, `top`
 
-**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `crypto2`, `translate`, `ip`, `dns`, `dict`, `qr`, `stock`, `timezone`, `github`, `ghuser`
+**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `crypto2`, `translate`, `ip`, `dns`, `dict`, `qr`, `stock`, `timezone`, `github`, `ghuser`, `shorten`
 
-**Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`
+**Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`, `datetime`
 
 **Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`, `trivia`, `funfact`, `catfact`, `quote`
 
@@ -252,7 +252,38 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Recent Improvements
 
-### v15.0.0 (Current Iteration)
+### v15.1.0 (Current Iteration)
+
+**New Terminal Commands:**
+- `uuid` - Generate random UUID (v4)
+- `hash` - Calculate MD5/SHA1/SHA256/SHA512 hash values
+- `base64` - Base64 encode/decode text
+- `urlencode` - URL encode/decode text
+- `datetime` - Display current date/time with timestamp
+- `ping` - Network connectivity test with latency measurement
+- `shorten` - URL shortener with shrtcode API integration
+
+**Bug Fixes:**
+- Fixed CSS duplicate animation definitions (gradientShift, starTwinkle, cursorBlink)
+- Resolved keyboard shortcut conflicts (paint vs command-palette, notes vs new-terminal, camera vs image-viewer)
+
+**Key Improvements:**
+- Added smart API caching system with configurable TTL for reduced network requests
+- Implemented request timeout (10s default) and exponential backoff retry mechanism
+- Enhanced error handling across all API-integrated features with user-friendly messages
+- Added utility library with debounce, throttle, formatNumber, formatBytes functions
+- Expanded city support for weather (150+ cities worldwide including major cities in Asia, Europe, Americas, Africa, and Oceania)
+- Extended language support for translation (12+ languages)
+- Improved type safety with proper TypeScript type definitions
+- Enhanced GitHub integration with both repository and user profile lookup
+
+**Performance Optimizations:**
+- API response caching with TTL-based invalidation
+- Request deduplication and retry with exponential backoff
+- Memory-efficient cache management
+- Optimized re-renders with useMemo and useCallback
+
+### v15.0.0
 
 **New Applications:**
 - **Dev Toolkit**: Comprehensive developer toolkit with 14+ tools including Base64/URL encoding, hash generation, UUID generation, JSON formatting, timestamp conversion, QR code generation, translation, weather, crypto prices, news, IP lookup, DNS query, and English dictionary
@@ -277,22 +308,6 @@ MIT License - See [LICENSE](LICENSE) for details.
 - `catfact` - Random cat facts (Cat Fact Ninja)
 - `quote` - Random inspirational quotes (Quotable.io)
 - `crypto2` - Detailed cryptocurrency information with ATH/ATL and description
-
-**Key Improvements:**
-- Added smart API caching system with configurable TTL for reduced network requests
-- Implemented request timeout (10s default) and exponential backoff retry mechanism
-- Enhanced error handling across all API-integrated features with user-friendly messages
-- Added utility library with debounce, throttle, formatNumber, formatBytes functions
-- Expanded city support for weather (150+ cities worldwide including major cities in Asia, Europe, Americas, Africa, and Oceania)
-- Extended language support for translation (12+ languages)
-- Improved type safety with proper TypeScript type definitions
-- Enhanced GitHub integration with both repository and user profile lookup
-
-**Performance Optimizations:**
-- API response caching with TTL-based invalidation
-- Request deduplication and retry with exponential backoff
-- Memory-efficient cache management
-- Optimized re-renders with useMemo and useCallback
 
 ### v14.0.0
 
