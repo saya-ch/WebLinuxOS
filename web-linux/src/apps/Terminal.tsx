@@ -161,7 +161,7 @@ export default function Terminal() {
 
     if (command === 'exit') {
       const windows = getWindowsRef.current
-      const terminalWindow = windows.find((w: WindowState) => w.id.includes('terminal'))
+      const terminalWindow = windows.find((w: WindowState) => w.appId === 'terminal')
       if (terminalWindow) {
         closeWindowRef.current(terminalWindow.id)
       }
