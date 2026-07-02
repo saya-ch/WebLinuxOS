@@ -4,9 +4,9 @@ A fully functional Linux desktop environment running entirely in the browser. No
 
 **Live Demo**: https://saya-ch.github.io/WebLinuxOS/
 
-## What is WebLinuxOS
+## Overview
 
-WebLinuxOS is a web-based operating system that brings the familiar Linux desktop experience to your browser. It features a complete windowing system, file management, terminal, and hundreds of applications - all running locally with no server dependencies.
+WebLinuxOS brings the complete Linux desktop experience to your browser. It includes a full windowing system, file management, terminal with 100+ commands, and hundreds of applications - all running locally without server dependencies.
 
 ## Features
 
@@ -19,7 +19,7 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 - Global search across all apps and files
 - Command palette for quick system operations
 - Dark/light theme switching
-- Dynamic particle wallpaper effects
+- Dynamic particle and nebula wallpaper effects
 
 ### Development Tools
 
@@ -72,17 +72,33 @@ WebLinuxOS is a web-based operating system that brings the familiar Linux deskto
 
 ## Terminal Commands
 
-**File Operations**: `ls`, `cd`, `pwd`, `cat`, `head`, `tail`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `write`, `tee`, `append`, `grep`, `find`, `chmod`, `gzip`, `gunzip`, `file`, `sort`, `uniq`, `cut`, `paste`, `nl`, `expand`, `tr`, `split`
+### File Operations
 
-**System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `neofetch`, `version`, `time`, `worldtime`
+`ls`, `cd`, `pwd`, `cat`, `head`, `tail`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `tree`, `wc`, `write`, `tee`, `append`, `grep`, `find`, `chmod`, `gzip`, `gunzip`, `file`, `sort`, `uniq`, `cut`, `paste`, `nl`, `expand`, `tr`, `split`
 
-**System Monitoring**: `top`, `cpu-info`, `memory-info`, `disk-usage`, `network-stats`, `process-list`
+### System Info
 
-**Network Tools**: `ping`, `weather`, `news`, `crypto`, `translate`, `ipinfo`
+`whoami`, `hostname`, `date`, `uname`, `uptime`, `cal`, `free`, `df`, `ps`, `neofetch`, `version`, `time`, `worldtime`
 
-**Utilities**: `echo`, `calc`, `prime`, `factor`, `roman`, `base64`, `unbase64`, `hash`, `rev`, `json`, `urlencode`, `urldecode`, `uuid`, `password`, `search`
+### System Monitoring
 
-**Fun Commands**: `cowsay`, `cowthink`, `dog`, `fortune`, `sl`, `banner`, `lolcat`, `starwars`, `matrix`, `asciiart`, `joke`, `advice`, `flip`, `rps`
+`top`, `cpu-info`, `memory-info`, `disk-usage`, `network-stats`, `process-list`
+
+### Network Tools
+
+`ping`, `weather`, `news`, `crypto`, `crypto2`, `translate`, `ipinfo`, `ip`, `dns`, `dnslookup`, `iplookup`, `whois`, `curl`, `fetch`
+
+### API Commands
+
+`github`, `ghuser`, `stock`, `timezone`, `dict`, `trivia`, `funfact`, `catfact`, `quote`, `shorten`
+
+### Utilities
+
+`echo`, `calc`, `prime`, `factor`, `roman`, `base64`, `unbase64`, `hash`, `hash-verify`, `rev`, `json`, `yaml`, `urlencode`, `urldecode`, `uuid`, `password`, `jwt`, `regex`, `unit`, `color`, `binary`, `random`
+
+### Fun Commands
+
+`cowsay`, `cowthink`, `dog`, `fortune`, `sl`, `banner`, `lolcat`, `starwars`, `matrix`, `asciiart`, `joke`, `advice`, `flip`, `rps`, `lorem`, `morse`, `ascii`, `leet`, `age`, `shortid`, `timer`, `motd`
 
 ## Quick Start
 
@@ -120,13 +136,13 @@ npm run deploy
 
 ## Tech Stack
 
-- **React 19** - UI framework with Hooks and Suspense
-- **TypeScript 6** - Type-safe development
-- **Zustand 5** - Lightweight state management
-- **Vite 8** - Optimized build tool
-- **Pyodide** - Python runtime in browser
-- **Lucide React** - Icon library
-- **IndexedDB** - Persistent local storage
+- React 19 - UI framework with Hooks and Suspense
+- TypeScript 6 - Type-safe development
+- Zustand 5 - Lightweight state management
+- Vite 8 - Optimized build tool
+- Pyodide - Python runtime in browser
+- Lucide React - Icon library
+- IndexedDB - Persistent local storage
 
 ## Architecture
 
@@ -136,11 +152,20 @@ WebLinuxOS uses a modular architecture with separation of concerns:
 src/
   apps/              # Individual applications (200+)
     terminal/        # Terminal commands and utilities
+      commands.ts    # Command registration system
+      apiCommands.ts # API-based commands
+      fileCommands.ts # File system commands
+      toolCommands.ts # Utility commands
+      networkCommands.ts # Network commands
   components/
     desktop/         # Desktop environment components
+      Desktop.tsx    # Main desktop component
+      Window.tsx     # Window component
+      Taskbar.tsx    # Taskbar component
     common/          # Shared UI components
   store/             # Zustand state management
   utils/             # Utility functions
+    apiCache.ts      # API caching and retry utilities
   types.ts           # TypeScript definitions
   icons.tsx          # Icon exports
 ```
@@ -154,6 +179,8 @@ src/
 - Efficient drag and resize handling
 - Virtual scrolling for large lists
 - Persistent state caching
+- API response caching with configurable TTL
+- Retry mechanisms for flaky API calls
 
 ## Browser Support
 
@@ -175,6 +202,7 @@ Contributions are welcome. Please follow these steps:
 ## Creating New Apps
 
 To add a new application:
+
 1. Create a file in `src/apps/` (e.g., `MyApp.tsx`)
 2. Export a default React component
 3. Register it in `src/apps.tsx`
@@ -182,12 +210,36 @@ To add a new application:
 5. Add icons and metadata
 6. Test thoroughly
 
+## Creating New Terminal Commands
+
+To add a new terminal command:
+
+1. Choose an appropriate command file (apiCommands.ts, fileCommands.ts, toolCommands.ts, etc.)
+2. Use `registerCommand(name, definition)` to register your command
+3. Define handler function, description, usage, and examples
+4. Add to help command listing
+
+## API Integration
+
+WebLinuxOS integrates with several public APIs:
+
+- Open-Meteo - Weather data
+- CoinGecko - Cryptocurrency prices
+- ipapi.co - IP address information
+- GitHub API - Repository and user information
+- Hacker News (Algolia) - News articles
+- LibreTranslate / MyMemory - Translation services
+- Cat Fact Ninja - Cat facts
+- Quotable.io - Quotes
+- Open Trivia Database - Trivia questions
+
 ## Statistics
 
 - 200+ applications
 - 100+ terminal commands
 - 200+ source files
 - 50+ keyboard shortcuts
+- 15+ integrated APIs
 
 ## Use Cases
 
@@ -199,6 +251,7 @@ To add a new application:
 - Rapid prototyping
 - API testing and development
 - Code experimentation
+- Browser-based productivity suite
 
 ## Roadmap
 
@@ -214,4 +267,4 @@ To add a new application:
 
 MIT License - Free for personal or commercial use.
 
-Version: 9.0.0 | Last Updated: 2026
+Version: 15.1.0 | Last Updated: 2026
