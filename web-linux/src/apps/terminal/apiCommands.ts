@@ -30,6 +30,129 @@ const cityMap: Record<string, { lat: number; lon: number; name: string }> = {
   'singapore': { lat: 1.3521, lon: 103.8198, name: '新加坡' },
   'seoul': { lat: 37.5665, lon: 126.978, name: '首尔' },
   'bangkok': { lat: 13.7563, lon: 100.5018, name: '曼谷' },
+  'hong kong': { lat: 22.3193, lon: 114.1694, name: '香港' },
+  '香港': { lat: 22.3193, lon: 114.1694, name: '香港' },
+  'taipei': { lat: 25.0330, lon: 121.5654, name: '台北' },
+  '台北': { lat: 25.0330, lon: 121.5654, name: '台北' },
+  'mumbai': { lat: 19.0760, lon: 72.8777, name: '孟买' },
+  'moscow': { lat: 55.7558, lon: 37.6173, name: '莫斯科' },
+  'berlin': { lat: 52.5200, lon: 13.4050, name: '柏林' },
+  'rome': { lat: 41.9028, lon: 12.4964, name: '罗马' },
+  'madrid': { lat: 40.4168, lon: -3.7038, name: '马德里' },
+  'los angeles': { lat: 34.0522, lon: -118.2437, name: '洛杉矶' },
+  'chicago': { lat: 41.8781, lon: -87.6298, name: '芝加哥' },
+  'toronto': { lat: 43.6532, lon: -79.3832, name: '多伦多' },
+  'vancouver': { lat: 49.2827, lon: -123.1207, name: '温哥华' },
+  'delhi': { lat: 28.7041, lon: 77.1025, name: '德里' },
+  'bangalore': { lat: 12.9716, lon: 77.5946, name: '班加罗尔' },
+  'amsterdam': { lat: 52.3676, lon: 4.9041, name: '阿姆斯特丹' },
+  'stockholm': { lat: 59.3293, lon: 18.0686, name: '斯德哥尔摩' },
+  'copenhagen': { lat: 55.6761, lon: 12.5683, name: '哥本哈根' },
+  'oslo': { lat: 59.9139, lon: 10.7522, name: '奥斯陆' },
+  'helsinki': { lat: 60.1699, lon: 24.9384, name: '赫尔辛基' },
+  'prague': { lat: 50.0755, lon: 14.4378, name: '布拉格' },
+  'vienna': { lat: 48.2082, lon: 16.3738, name: '维也纳' },
+  'budapest': { lat: 47.4979, lon: 19.0402, name: '布达佩斯' },
+  'warsaw': { lat: 52.2297, lon: 21.0122, name: '华沙' },
+  'brussels': { lat: 50.8503, lon: 4.3517, name: '布鲁塞尔' },
+  'lisbon': { lat: 38.7223, lon: -9.1393, name: '里斯本' },
+  'athens': { lat: 37.9838, lon: 23.7275, name: '雅典' },
+  'cairo': { lat: 30.0444, lon: 31.2357, name: '开罗' },
+  'capetown': { lat: -33.9249, lon: 18.4241, name: '开普敦' },
+  'nairobi': { lat: -1.2921, lon: 36.8219, name: '内罗毕' },
+  'houston': { lat: 29.7604, lon: -95.3698, name: '休斯顿' },
+  'seattle': { lat: 47.6062, lon: -122.3321, name: '西雅图' },
+  'portland': { lat: 45.5051, lon: -122.6750, name: '波特兰' },
+  'denver': { lat: 39.7392, lon: -104.9903, name: '丹佛' },
+  'minneapolis': { lat: 44.9778, lon: -93.2650, name: '明尼阿波利斯' },
+  'miami': { lat: 25.7617, lon: -80.1918, name: '迈阿密' },
+  'orlando': { lat: 28.5383, lon: -81.3792, name: '奥兰多' },
+  'tampa': { lat: 27.9760, lon: -82.4530, name: '坦帕' },
+  'boston': { lat: 42.3601, lon: -71.0589, name: '波士顿' },
+  'philadelphia': { lat: 39.9526, lon: -75.1652, name: '费城' },
+  'washington': { lat: 38.9072, lon: -77.0369, name: '华盛顿' },
+  'charlotte': { lat: 35.2271, lon: -80.8431, name: '夏洛特' },
+  'atlanta': { lat: 33.7480, lon: -84.3900, name: '亚特兰大' },
+  'nashville': { lat: 36.1627, lon: -86.7816, name: '纳什维尔' },
+  'st louis': { lat: 38.6270, lon: -90.1994, name: '圣路易斯' },
+  'kansas city': { lat: 39.0997, lon: -94.5786, name: '堪萨斯城' },
+  'oklahoma city': { lat: 35.4676, lon: -97.5164, name: '俄克拉荷马城' },
+  'austin': { lat: 30.2672, lon: -97.7431, name: '奥斯汀' },
+  'san antonio': { lat: 29.4241, lon: -98.4936, name: '圣安东尼奥' },
+  'san diego': { lat: 32.7157, lon: -117.1611, name: '圣地亚哥' },
+  'san francisco': { lat: 37.7749, lon: -122.4194, name: '旧金山' },
+  'san jose': { lat: 37.3382, lon: -121.8863, name: '圣何塞' },
+  'las vegas': { lat: 36.1699, lon: -115.1398, name: '拉斯维加斯' },
+  'phoenix': { lat: 33.4484, lon: -112.0740, name: '凤凰城' },
+  'salt lake city': { lat: 40.7608, lon: -111.8910, name: '盐湖城' },
+  'albuquerque': { lat: 35.0844, lon: -106.6504, name: '阿尔伯克基' },
+  'el paso': { lat: 31.7619, lon: -106.4850, name: '埃尔帕索' },
+  'chihuahua': { lat: 28.6353, lon: -106.0889, name: '奇瓦瓦' },
+  'guadalajara': { lat: 20.6668, lon: -103.3918, name: '瓜达拉哈拉' },
+  'mexico city': { lat: 19.4326, lon: -99.1332, name: '墨西哥城' },
+  'monterrey': { lat: 25.6866, lon: -100.3161, name: '蒙特雷' },
+  'caracas': { lat: 10.4806, lon: -66.9036, name: '加拉加斯' },
+  'santiago': { lat: -33.4489, lon: -70.6693, name: '圣地亚哥' },
+  'buenos aires': { lat: -34.6037, lon: -58.3816, name: '布宜诺斯艾利斯' },
+  'saopaulo': { lat: -23.5505, lon: -46.6333, name: '圣保罗' },
+  'rio': { lat: -22.9068, lon: -43.1729, name: '里约热内卢' },
+  'lima': { lat: -12.0464, lon: -77.0428, name: '利马' },
+  'bogota': { lat: 4.7110, lon: -74.0721, name: '波哥大' },
+  'medellin': { lat: 6.2442, lon: -75.5812, name: '麦德林' },
+  'quito': { lat: -0.1807, lon: -78.4678, name: '基多' },
+  'panama': { lat: 8.9806, lon: -79.5197, name: '巴拿马城' },
+  'kingston': { lat: 17.9712, lon: -76.7936, name: '金斯顿' },
+  'port of spain': { lat: 10.6668, lon: -61.5173, name: '西班牙港' },
+  'havana': { lat: 23.1291, lon: -82.3666, name: '哈瓦那' },
+  'san juan': { lat: 18.4663, lon: -66.1057, name: '圣胡安' },
+  'managua': { lat: 12.1364, lon: -86.2516, name: '马那瓜' },
+  'guatemala': { lat: 14.6289, lon: -90.5232, name: '危地马拉城' },
+  'san salvador': { lat: 13.6929, lon: -89.2182, name: '圣萨尔瓦多' },
+  'tegucigalpa': { lat: 14.1024, lon: -87.2069, name: '特古西加尔巴' },
+  'belmopan': { lat: 17.2505, lon: -88.7683, name: '贝尔莫潘' },
+  'bridgetown': { lat: 13.1060, lon: -59.6131, name: '布里奇顿' },
+  'castries': { lat: 14.0125, lon: -61.7483, name: '卡斯特里' },
+  'roseau': { lat: 15.3010, lon: -61.3883, name: '罗索' },
+  'basseterre': { lat: 17.2903, lon: -62.7275, name: '巴斯特尔' },
+  'kingstown': { lat: 13.1675, lon: -61.2244, name: '金斯敦' },
+  'port au prince': { lat: 18.5944, lon: -72.3074, name: '太子港' },
+  'nassau': { lat: 25.0443, lon: -77.3504, name: '拿骚' },
+  'georgetown': { lat: 6.8045, lon: -58.1553, name: '乔治敦' },
+  'paramaribo': { lat: 5.8663, lon: -55.1700, name: '帕拉马里博' },
+  'suva': { lat: -18.1416, lon: 178.4419, name: '苏瓦' },
+  'apia': { lat: -13.8333, lon: -171.7667, name: '阿皮亚' },
+  'nuku alofa': { lat: -21.1333, lon: -175.2000, name: '努库阿洛法' },
+  'palikir': { lat: 6.9319, lon: 158.2092, name: '帕利基尔' },
+  'hagatna': { lat: 13.4667, lon: 144.7833, name: '阿加尼亚' },
+  'majuro': { lat: 7.1315, lon: 171.1845, name: '马朱罗' },
+  'tarawa': { lat: 1.4135, lon: 172.9769, name: '塔拉瓦' },
+  'funafuti': { lat: -8.5246, lon: 179.1947, name: '富纳富提' },
+  'naypyidaw': { lat: 19.7478, lon: 96.1347, name: '内比都' },
+  'rangoon': { lat: 16.8719, lon: 96.1974, name: '仰光' },
+  'phnom penh': { lat: 11.5560, lon: 104.9282, name: '金边' },
+  'vientiane': { lat: 17.9757, lon: 102.6331, name: '万象' },
+  'hanoi': { lat: 21.0278, lon: 105.8342, name: '河内' },
+  'ho chi minh': { lat: 10.8231, lon: 106.6297, name: '胡志明市' },
+  'manila': { lat: 14.5995, lon: 120.9842, name: '马尼拉' },
+  'jakarta': { lat: -6.2088, lon: 106.8456, name: '雅加达' },
+  'bandung': { lat: -6.9147, lon: 107.6098, name: '万隆' },
+  'surabaya': { lat: -7.2575, lon: 112.7520, name: '泗水' },
+  'kuala lumpur': { lat: 3.1390, lon: 101.6869, name: '吉隆坡' },
+  'penang': { lat: 5.4112, lon: 100.3354, name: '槟城' },
+  'johor bahru': { lat: 1.5547, lon: 103.7532, name: '新山' },
+  'melbourne': { lat: -37.8136, lon: 144.9631, name: '墨尔本' },
+  'perth': { lat: -31.9505, lon: 115.8605, name: '珀斯' },
+  'adelaide': { lat: -34.9285, lon: 138.6007, name: '阿德莱德' },
+  'brisbane': { lat: -27.4698, lon: 153.0251, name: '布里斯班' },
+  'gold coast': { lat: -28.0000, lon: 153.4333, name: '黄金海岸' },
+  'newcastle': { lat: -32.9295, lon: 151.7801, name: '纽卡斯尔' },
+  'wellington': { lat: -41.2865, lon: 174.7762, name: '惠灵顿' },
+  'christchurch': { lat: -43.5321, lon: 172.6362, name: '克赖斯特彻奇' },
+  'dunedin': { lat: -45.8742, lon: 170.5033, name: '达尼丁' },
+  'honolulu': { lat: 21.3069, lon: -157.8583, name: '火奴鲁鲁' },
+  'anchorage': { lat: 61.2181, lon: -149.9003, name: '安克雷奇' },
+  'juneau': { lat: 58.3019, lon: -134.4197, name: '朱诺' },
+  'fairbanks': { lat: 64.8378, lon: -147.7164, name: '费尔班克斯' },
 }
 
 const weatherDescriptions: Record<number, string> = {
@@ -513,4 +636,479 @@ registerCommand('dict', {
   description: '查询英文单词释义',
   usage: 'dict <单词>',
   examples: ['dict hello', 'dict computer', 'dict algorithm']
+})
+
+registerCommand('stock', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: '用法: stock <股票代码>\n查询股票实时行情\n示例: stock AAPL, stock GOOGL, stock MSFT' }
+    }
+    
+    const symbol = args[0].toUpperCase()
+    
+    try {
+      const data = await fetchWithCache(
+        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=demo`,
+        { mode: 'cors' },
+        60 * 1000
+      ) as Record<string, Record<string, string>>
+      
+      const quote = data['Global Quote']
+      
+      if (!quote || !quote['01. symbol']) {
+        return { output: `未找到股票 "${symbol}" 的行情数据` }
+      }
+      
+      const output: string[] = []
+      output.push(`📈 股票行情: ${quote['01. symbol']}`)
+      output.push('═'.repeat(50))
+      output.push('')
+      output.push(`  价格: $${quote['05. price']}`)
+      output.push(`  开盘价: $${quote['02. open']}`)
+      output.push(`  最高价: $${quote['03. high']}`)
+      output.push(`  最低价: $${quote['04. low']}`)
+      output.push(`  成交量: ${quote['06. volume']}`)
+      output.push(`  最新更新: ${quote['07. latest trading day']}`)
+      output.push('')
+      output.push('数据来源: Alpha Vantage (demo API)')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `获取股票行情失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '查询股票实时行情',
+  usage: 'stock <股票代码>',
+  examples: ['stock AAPL', 'stock GOOGL', 'stock MSFT']
+})
+
+registerCommand('timezone', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: '用法: timezone [城市名]\n查询指定城市的当前时间\n示例: timezone, timezone Beijing, timezone Tokyo' }
+    }
+    
+    const city = args.join(' ')
+    const cityKey = city.toLowerCase()
+    const cityInfo = cityMap[cityKey] || { lat: 39.9042, lon: 116.4074, name: city }
+    
+    try {
+      const data = await fetchWithCache(
+        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current=temperature_2m&timezone=auto`,
+        { mode: 'cors' },
+        60 * 1000
+      ) as Record<string, unknown>
+      
+      const timezone = data.timezone as string
+      const currentTime = data.current as Record<string, unknown>
+      const timeStr = currentTime.time as string
+      
+      const output: string[] = []
+      output.push(`🌍 ${cityInfo.name} 当前时间`)
+      output.push('═'.repeat(40))
+      output.push('')
+      output.push(`  时区: ${timezone}`)
+      output.push(`  当前时间: ${timeStr}`)
+      output.push(`  当前温度: ${currentTime.temperature_2m}°C`)
+      output.push('')
+      output.push('数据来源: Open-Meteo')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `获取时区信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '查询指定城市的当前时间',
+  usage: 'timezone [城市名]',
+  examples: ['timezone', 'timezone Beijing', 'timezone Tokyo']
+})
+
+registerCommand('github', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: '用法: github <用户名>/<仓库名>\n查询GitHub仓库信息\n示例: github saya-ch/WebLinuxOS, github vercel/next.js' }
+    }
+    
+    const repo = args.join('/')
+    
+    try {
+      const data = await fetchWithCache(
+        `https://api.github.com/repos/${encodeURIComponent(repo)}`,
+        { mode: 'cors', headers: { 'Accept': 'application/vnd.github.v3+json' } },
+        5 * 60 * 1000
+      ) as Record<string, unknown>
+      
+      const output: string[] = []
+      output.push(`📦 GitHub 仓库: ${data.full_name}`)
+      output.push('═'.repeat(60))
+      output.push('')
+      output.push(`  描述: ${data.description || 'N/A'}`)
+      output.push(`  星级: ⭐ ${data.stargazers_count}`)
+      output.push(`  Forks: 🔀 ${data.forks_count}`)
+      output.push(`  观察者: 👁️ ${data.watchers_count}`)
+      output.push(`  语言: ${data.language || 'N/A'}`)
+      output.push(`  许可证: ${(data.license as Record<string, string>)?.name || 'N/A'}`)
+      output.push(`  创建时间: ${(data.created_at as string)?.split('T')[0] || 'N/A'}`)
+      output.push(`  最后更新: ${(data.updated_at as string)?.split('T')[0] || 'N/A'}`)
+      output.push(`  默认分支: ${data.default_branch || 'main'}`)
+      output.push(`  🔗 ${data.html_url}`)
+      output.push('')
+      output.push('数据来源: GitHub API')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `获取GitHub仓库信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '查询GitHub仓库信息',
+  usage: 'github <用户名>/<仓库名>',
+  examples: ['github saya-ch/WebLinuxOS', 'github vercel/next.js', 'github reactjs/react.dev']
+})
+
+registerCommand('ghuser', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: '用法: ghuser <用户名>\n查询GitHub用户信息\n示例: ghuser saya-ch, ghuser octocat' }
+    }
+    
+    const username = args[0]
+    
+    try {
+      const data = await fetchWithCache(
+        `https://api.github.com/users/${encodeURIComponent(username)}`,
+        { mode: 'cors', headers: { 'Accept': 'application/vnd.github.v3+json' } },
+        5 * 60 * 1000
+      ) as Record<string, unknown>
+      
+      const output: string[] = []
+      output.push(`👤 GitHub 用户: ${data.login}`)
+      output.push('═'.repeat(50))
+      output.push('')
+      output.push(`  名称: ${data.name || data.login}`)
+      output.push(`  简介: ${data.bio || 'N/A'}`)
+      output.push(`  位置: ${data.location || 'N/A'}`)
+      output.push(`  公司: ${data.company || 'N/A'}`)
+      output.push(`  邮箱: ${data.email || 'N/A'}`)
+      output.push(`  博客: ${data.blog || 'N/A'}`)
+      output.push(`  仓库数: 📦 ${data.public_repos}`)
+      output.push(`  关注者: 👥 ${data.followers}`)
+      output.push(`  关注中: 👤 ${data.following}`)
+      output.push(`  加入时间: ${(data.created_at as string)?.split('T')[0] || 'N/A'}`)
+      output.push(`  🔗 ${data.html_url}`)
+      output.push('')
+      output.push('数据来源: GitHub API')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `获取GitHub用户信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '查询GitHub用户信息',
+  usage: 'ghuser <用户名>',
+  examples: ['ghuser saya-ch', 'ghuser octocat', 'ghuser vercel']
+})
+
+registerCommand('trivia', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const data = await fetchWithCache(
+        'https://opentdb.com/api.php?amount=1&type=multiple',
+        { mode: 'cors' },
+        0
+      ) as Record<string, unknown>
+      
+      const results = data.results as Array<Record<string, unknown>>
+      const question = results[0]
+      
+      const output: string[] = []
+      output.push('🧠 知识问答')
+      output.push('═'.repeat(50))
+      output.push('')
+      output.push(`问题: ${question.question}`)
+      output.push('')
+      output.push('选项:')
+      
+      const options = [...(question.incorrect_answers as string[]), question.correct_answer as string]
+      options.sort(() => Math.random() - 0.5)
+      
+      options.forEach((opt, idx) => {
+        const letter = String.fromCharCode(65 + idx)
+        output.push(`  ${letter}. ${opt}`)
+      })
+      
+      output.push('')
+      output.push('使用 "trivia answer" 查看答案')
+      
+      return { output: output.join('\n') }
+    } catch {
+      const fallbackQuestions = [
+        { question: 'HTML的全称是什么？', answer: 'HyperText Markup Language' },
+        { question: 'JavaScript中typeof null的结果是什么？', answer: 'object' },
+        { question: 'CSS中flex-direction默认值是什么？', answer: 'row' },
+        { question: 'React中哪个Hook用于处理副作用？', answer: 'useEffect' },
+        { question: 'HTTP状态码404表示什么？', answer: 'Not Found' },
+      ]
+      
+      const question = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)]
+      
+      return {
+        output: [
+          '🧠 知识问答',
+          '═'.repeat(50),
+          '',
+          `问题: ${question.question}`,
+          '',
+          '使用 "trivia answer" 查看答案',
+        ].join('\n')
+      }
+    }
+  },
+  description: '获取随机知识问答',
+  usage: 'trivia',
+  examples: ['trivia']
+})
+
+registerCommand('funfact', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const data = await fetchWithCache(
+        'https://api.freeapi.app/api/v1/fun/facts',
+        { mode: 'cors' },
+        0
+      ) as Record<string, unknown>
+      
+      const facts = data.data as Array<Record<string, string>>
+      const fact = facts[Math.floor(Math.random() * facts.length)]
+      
+      return {
+        output: [
+          '🎲 趣味事实',
+          '═'.repeat(50),
+          '',
+          `${fact.fact}`,
+          '',
+          '数据来源: FreeAPI',
+        ].join('\n')
+      }
+    } catch {
+      const fallbackFacts = [
+        '蜜蜂的翅膀每分钟振动约200次',
+        '月球上的一天相当于地球的27.3天',
+        '章鱼有三颗心脏',
+        '人类的眼睛可以分辨大约1000万种颜色',
+        '树懒需要两周时间才能消化一片叶子',
+        '蜂蜜永远不会变质',
+        '水在零重力下会形成完美的球体',
+        '香蕉是浆果，但草莓不是',
+        '闪电的温度可以达到太阳表面温度的五倍',
+        '蓝鲸的心脏和小汽车一样大',
+      ]
+      
+      return {
+        output: [
+          '🎲 趣味事实',
+          '═'.repeat(50),
+          '',
+          fallbackFacts[Math.floor(Math.random() * fallbackFacts.length)],
+          '',
+        ].join('\n')
+      }
+    }
+  },
+  description: '获取随机趣味事实',
+  usage: 'funfact',
+  examples: ['funfact']
+})
+
+registerCommand('catfact', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const data = await fetchWithCache(
+        'https://catfact.ninja/fact',
+        { mode: 'cors' },
+        0
+      ) as Record<string, string>
+      
+      return {
+        output: [
+          '🐱 猫咪小知识',
+          '═'.repeat(50),
+          '',
+          data.fact,
+          '',
+          `长度: ${data.length} 字符`,
+          '',
+          '数据来源: Cat Fact Ninja',
+        ].join('\n')
+      }
+    } catch {
+      const fallbackFacts = [
+        '猫咪的睡眠时间占一生的70%',
+        '猫咪可以发出超过100种不同的声音',
+        '猫咪的胡须可以感知空气流动',
+        '猫咪的耳朵有32块肌肉',
+        '猫咪的跳跃高度可以达到自身高度的五倍',
+        '猫咪的鼻子上有独特的纹路，就像人类的指纹',
+        '猫咪不喜欢甜食，它们的味蕾无法感知甜味',
+        '猫咪的尾巴可以表达它们的情绪',
+        '猫咪的爪子有伸缩功能',
+        '猫咪的眼睛在黑暗中可以反光',
+      ]
+      
+      return {
+        output: [
+          '🐱 猫咪小知识',
+          '═'.repeat(50),
+          '',
+          fallbackFacts[Math.floor(Math.random() * fallbackFacts.length)],
+          '',
+        ].join('\n')
+      }
+    }
+  },
+  description: '获取关于猫咪的有趣事实',
+  usage: 'catfact',
+  examples: ['catfact']
+})
+
+registerCommand('quote', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const data = await fetchWithCache(
+        'https://api.quotable.io/random',
+        { mode: 'cors' },
+        0
+      ) as Record<string, string>
+      
+      return {
+        output: [
+          '💭 每日名言',
+          '═'.repeat(50),
+          '',
+          `"${data.content}"`,
+          '',
+          `— ${data.author}`,
+          '',
+          '数据来源: Quotable.io',
+        ].join('\n')
+      }
+    } catch {
+      const fallbackQuotes = [
+        { content: '代码是写给人看的，只是顺便让机器执行', author: 'Robert C. Martin' },
+        { content: '优秀的程序员是那些能看清事物本质的人', author: 'Grady Booch' },
+        { content: '测试是证明错误存在的过程，而非证明错误不存在', author: 'Edsger W. Dijkstra' },
+        { content: '简单胜于复杂，复杂胜于混乱', author: 'The Zen of Python' },
+        { content: '不要重复自己', author: 'DRY Principle' },
+        { content: '早修复错误，成本更低', author: 'Boehm\'s Law' },
+        { content: '架构师的工作不是创造完美，而是避免灾难', author: 'Unknown' },
+        { content: '代码审查不是找错，而是分享知识', author: 'Unknown' },
+      ]
+      
+      const quote = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)]
+      
+      return {
+        output: [
+          '💭 每日名言',
+          '═'.repeat(50),
+          '',
+          `"${quote.content}"`,
+          '',
+          `— ${quote.author}`,
+          '',
+        ].join('\n')
+      }
+    }
+  },
+  description: '获取随机名言警句',
+  usage: 'quote',
+  examples: ['quote']
+})
+
+registerCommand('crypto2', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length > 0) {
+      const symbol = args[0].toLowerCase()
+      
+      try {
+        const data = await fetchWithRetry(
+          `https://api.coingecko.com/api/v3/coins/${symbol}`,
+          { mode: 'cors' }
+        ) as Record<string, unknown>
+        
+        const marketData = data.market_data as Record<string, unknown> || {}
+        const currentPrice = marketData.current_price as Record<string, number> || {}
+        const marketCap = marketData.market_cap as Record<string, number> || {}
+        const totalVolume = marketData.total_volume as Record<string, number> || {}
+        const ath = marketData.ath as Record<string, number> || {}
+        const atl = marketData.atl as Record<string, number> || {}
+        const description = data.description as Record<string, string> || {}
+        
+        const output: string[] = []
+        output.push(`💰 ${data.name} (${(data.symbol as string).toUpperCase()})`)
+        output.push('═'.repeat(50))
+        output.push('')
+        output.push(`  价格: $${currentPrice.usd}`)
+        output.push(`  24h涨跌: ${(marketData.price_change_percentage_24h as number)?.toFixed(2)}%`)
+        output.push(`  市值: $${formatNumber(marketCap.usd as number)}`)
+        output.push(`  24h交易量: $${formatNumber(totalVolume.usd as number)}`)
+        output.push(`  流通供应量: ${marketData.circulating_supply}`)
+        output.push(`  最高价格: $${ath.usd}`)
+        output.push(`  最低价格: $${atl.usd}`)
+        output.push(`  描述: ${description.en?.slice(0, 100)}...`)
+        output.push('')
+        output.push('数据来源: CoinGecko')
+        
+        return { output: output.join('\n') }
+      } catch (error) {
+        return { output: `获取加密货币信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      }
+    }
+    
+    try {
+      const data = await fetchWithRetry(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h',
+        { mode: 'cors' }
+      ) as Array<Record<string, unknown>>
+      
+      const output: string[] = []
+      output.push('💰 热门加密货币 (前5名)')
+      output.push('═'.repeat(60))
+      output.push('')
+      output.push('排名  名称           价格(USD)    24h涨跌   市值')
+      output.push('─'.repeat(60))
+      
+      data.forEach((coin, index) => {
+        const rank = ((coin.market_cap_rank as number) || index + 1).toString().padEnd(4)
+        const name = `${coin.name} (${(coin.symbol as string).toUpperCase()})`.padEnd(15)
+        const price = `$${(coin.current_price as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`.padStart(12)
+        const change = coin.price_change_percentage_24h as number
+        const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%'
+        const paddedChange = changeStr.padStart(9)
+        const mcap = `$${formatNumber(coin.market_cap as number, 2)}`.padStart(10)
+        
+        output.push(`${rank} ${name} ${price} ${paddedChange}  ${mcap}`)
+      })
+      
+      output.push('')
+      output.push('使用 "crypto2 <币种>" 查看详细信息 (如: crypto2 bitcoin)')
+      output.push('数据来源: CoinGecko')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `获取加密货币行情失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '获取加密货币详细信息',
+  usage: 'crypto2 [币种]',
+  examples: ['crypto2', 'crypto2 bitcoin', 'crypto2 ethereum']
 })

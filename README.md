@@ -58,8 +58,8 @@ All network-enabled applications use real, free public APIs:
 
 | Service | API | Purpose |
 |---------|-----|---------|
-| Weather | Open-Meteo | Current conditions and forecasts |
-| Crypto | CoinGecko | Real-time cryptocurrency prices |
+| Weather | Open-Meteo | Current conditions and forecasts (150+ cities) |
+| Crypto | CoinGecko | Real-time cryptocurrency prices and detailed info |
 | Currency | Frankfurter | Currency conversion rates |
 | Countries | REST Countries | Country information (250+ countries) |
 | Astronomy | NASA APOD | Daily space imagery |
@@ -70,6 +70,12 @@ All network-enabled applications use real, free public APIs:
 | Translation | MyMemory | Multi-language text translation |
 | IP Geolocation | ipapi.co | IP address location and ISP info |
 | QR Code | QR Server | QR code generation |
+| Stocks | Alpha Vantage | Stock market quotes and prices |
+| GitHub | GitHub API | Repository and user profile information |
+| Trivia | OpenTDB | Random knowledge quiz questions |
+| Fun Facts | FreeAPI | Random fun facts |
+| Cat Facts | Cat Fact Ninja | Random cat-related facts |
+| Quotes | Quotable.io | Inspirational quotes |
 
 ## Applications
 
@@ -185,11 +191,11 @@ The terminal supports 80+ commands. Type `help` in the terminal for the full lis
 
 **System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `neofetch`, `ps`, `top`
 
-**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `translate`, `ip`, `dns`, `dict`, `qr`
+**Network**: `ping`, `curl`, `fetch`, `weather`, `news`, `crypto`, `crypto2`, `translate`, `ip`, `dns`, `dict`, `qr`, `stock`, `timezone`, `github`, `ghuser`
 
 **Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`
 
-**Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`
+**Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`, `trivia`, `funfact`, `catfact`, `quote`
 
 ### File Preview
 
@@ -262,15 +268,25 @@ MIT License - See [LICENSE](LICENSE) for details.
 - `dns` - DNS record lookup (Google DNS, 5-min cache)
 - `ip` - IP address geolocation (ipapi.co)
 - `dict` - English dictionary with definitions and phonetics (Dictionary API, 30-min cache)
+- `stock` - Stock market quotes (Alpha Vantage API)
+- `timezone` - Current time in any city with timezone info
+- `github` - GitHub repository information (GitHub API, 5-min cache)
+- `ghuser` - GitHub user profile details (GitHub API, 5-min cache)
+- `trivia` - Random knowledge quiz with multiple-choice questions
+- `funfact` - Random fun facts from FreeAPI
+- `catfact` - Random cat facts (Cat Fact Ninja)
+- `quote` - Random inspirational quotes (Quotable.io)
+- `crypto2` - Detailed cryptocurrency information with ATH/ATL and description
 
 **Key Improvements:**
 - Added smart API caching system with configurable TTL for reduced network requests
 - Implemented request timeout (10s default) and exponential backoff retry mechanism
 - Enhanced error handling across all API-integrated features with user-friendly messages
 - Added utility library with debounce, throttle, formatNumber, formatBytes functions
-- Expanded city support for weather (20+ cities including Chengdu, Hangzhou, Wuhan, Xi'an, Nanjing, Sydney, Dubai, Singapore, Seoul, Bangkok)
+- Expanded city support for weather (150+ cities worldwide including major cities in Asia, Europe, Americas, Africa, and Oceania)
 - Extended language support for translation (12+ languages)
 - Improved type safety with proper TypeScript type definitions
+- Enhanced GitHub integration with both repository and user profile lookup
 
 **Performance Optimizations:**
 - API response caching with TTL-based invalidation
