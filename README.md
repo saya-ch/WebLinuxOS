@@ -1,427 +1,173 @@
 # WebLinuxOS
 
-A fully functional web-based desktop operating system that runs entirely in the browser. No installation required.
-
-![WebLinuxOS screenshot](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/public/screenshot.png)
-
-**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | **[Features](#features)** | **[Applications](#applications)** | **[Getting Started](#getting-started)**
-
----
-
-## Overview
-
-WebLinuxOS brings a complete Linux-like desktop experience to your browser. It includes window management, a virtual file system, taskbar, system tray, and over 250 applications--all running entirely client-side without any backend server.
-
-The system is built with React 19, TypeScript, and Vite, delivering smooth animations, responsive design, and a feature set that rivals native desktop environments. Unlike many demo projects, WebLinuxOS features real functionality with live API integrations throughout.
+A feature-rich web-based Linux desktop environment that runs entirely in your browser. Experience a complete operating system interface with window management, file system, terminal, and a wide range of applications.
 
 ## Features
 
-### Desktop Environment
+### Core System
+- Window management with drag, resize, minimize, maximize, and close
+- Virtual file system with CRUD operations
+- Terminal emulator with over 50+ commands
+- Desktop icons and launcher
+- Taskbar with system tray
+- Multiple workspace support
 
-- **Window System**: Drag, resize, minimize, maximize, and close windows with smooth animations
-- **Taskbar**: Application switching, system tray, real-time clock, and workspace management
-- **Virtual Filesystem**: Complete file browsing, creation, editing, and organization
-- **Multi-workspace**: Organize windows across multiple virtual desktops (up to 9)
-- **Theme System**: Dark/light mode with custom accent colors
-- **Keyboard Shortcuts**: Comprehensive hotkey support (Ctrl+Shift+? for reference)
+### Applications
+- **Development Tools**: Code editor, terminal, Git client, code snippets manager
+- **Productivity**: Text editor, calculator, calendar, reminders, todo list
+- **Media**: Image viewer, audio player, video player, paint
+- **Network**: Web browser, weather, news, world clock
+- **System**: File manager, system monitor, settings
 
-### Terminal
+### Innovative Features
+- Real-time system monitoring (CPU, memory)
+- API integration for weather, news, cryptocurrency
+- Code review checklists
+- Programming challenges and tips
+- Brainstorming tool
+- Health and productivity suggestions
 
-- 80+ built-in commands covering file operations, system information, networking, and utilities
-- Real API integrations for weather, news, crypto prices, DNS lookup, dictionary, and IP lookup
-- Command history and auto-completion with Tab
-- Syntax highlighting and colored output (ANSI escape codes)
-- Alias support (persisted to localStorage)
-- Smart caching for API responses to reduce network requests
-
-### Development Tools
-
-- **Code Editor**: Syntax highlighting for JavaScript, TypeScript, Python, HTML, CSS with auto-completion
-- **Code Runner**: Execute JavaScript and Python in real-time
-- **REST Client**: API testing with request/response inspection
-- **Regex Tester**: Pattern validation and debugging
-- **JSON Formatter**: Pretty-print and validation
-- **GitHub Explorer**: Browse repositories and trending projects
-- **Code Diff Viewer**: Compare code changes side-by-side
-
-### Productivity
-
-- **Markdown Editor**: Live preview with formatting support
-- **Spreadsheet**: Data entry and calculations
-- **Presentation**: Slide creation tools
-- **Calendar**: Date management with reminders
-- **Notes**: Quick note-taking with categorization
-
-### Live API Integrations
-
-All network-enabled applications use real, free public APIs:
-
-| Service | API | Purpose |
-|---------|-----|---------|
-| Weather | Open-Meteo | Current conditions and forecasts (150+ cities) |
-| Crypto | CoinGecko | Real-time cryptocurrency prices and detailed info |
-| Currency | Frankfurter | Currency conversion rates |
-| Countries | REST Countries | Country information (250+ countries) |
-| Astronomy | NASA APOD | Daily space imagery |
-| News | Hacker News | Tech news via Algolia API |
-| Wikipedia | MediaWiki | Article search and summaries |
-| DNS | Google DNS | Domain name system record lookup |
-| Dictionary | Dictionary API | English word definitions and phonetics |
-| Translation | MyMemory | Multi-language text translation |
-| IP Geolocation | ipapi.co | IP address location and ISP info |
-| QR Code | QR Server | QR code generation |
-| Stocks | Alpha Vantage | Stock market quotes and prices |
-| GitHub | GitHub API | Repository and user profile information |
-| Trivia | OpenTDB | Random knowledge quiz questions |
-| Fun Facts | FreeAPI | Random fun facts |
-| Cat Facts | Cat Fact Ninja | Random cat-related facts |
-| Quotes | Quotable.io | Inspirational quotes |
-
-## Applications
-
-WebLinuxOS includes applications across seven categories:
-
-| Category | Applications |
-|----------|-------------|
-| System | File Manager, Terminal, System Monitor, Task Manager, Settings, Software Center, Smart Overview |
-| Development | Code Editor, REST Client, Regex Tester, JSON Formatter, GitHub Explorer, Code Runner, Dev Toolkit |
-| Office | Text Editor, Markdown Editor, Spreadsheet, Presentation, Calendar, Notes |
-| Utilities | Calculator, Weather, Password Manager, Screenshot, Character Map, Clock, Crypto Tracker, Real-Time Translator, QR Code Generator |
-| Multimedia | Music Player, Video Player, Image Viewer, Drawing Tool, Camera |
-| Internet | Browser, Email Client, Chat, Hacker News Reader, Wikipedia Explorer |
-| Games | Snake, Tetris, 2048, Memory Card |
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
-
-- Node.js 18 or later
+- Node.js 20+
 - npm or yarn
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
-
-# Install dependencies
 npm install
+```
 
-# Start development server
+### Development
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:5173/WebLinuxOS/` in your browser.
+Open your browser and navigate to `http://localhost:5173/WebLinuxOS/`
 
-### Build for Production
+### Build
 
 ```bash
 npm run build
 ```
 
-Build artifacts are output to the `dist/` directory.
+The build output will be in the `dist` directory.
 
-## Deployment
+### Deployment
 
-### GitHub Pages
+The project is configured for GitHub Pages deployment. Push to the `main` branch and GitHub Actions will automatically deploy.
 
-The project uses GitHub Actions for automatic deployment:
+## Terminal Commands
 
-1. Push changes to the main branch
-2. GitHub Actions automatically builds and deploys to GitHub Pages
-3. Access at `https://saya-ch.github.io/WebLinuxOS/`
+### System Commands
+- `whoami` - Display current user
+- `hostname` - Display hostname
+- `date` - Display current date and time
+- `uname` - Display system information
+- `top` - System monitoring
+- `ps` - Process list
+- `kill` - Terminate process
 
-### Manual Deployment
+### File Commands
+- `ls` - List directory contents
+- `cd` - Change directory
+- `pwd` - Print working directory
+- `cat` - Display file content
+- `touch` - Create file
+- `mkdir` - Create directory
+- `rm` - Remove file
+- `cp` - Copy file
+- `mv` - Move file
+- `grep` - Search in files
+- `find` - Find files
+- `du` - Display directory size
 
-```bash
-npm run build
-git subtree push --prefix dist origin gh-pages
-```
+### Network Commands
+- `ping` - Test network connectivity
+- `curl` - Fetch URL content
+- `dig` - DNS lookup
+- `netstat` - Network statistics
 
-## Technical Details
+### Productivity Commands
+- `calendar` - Display calendar
+- `reminder` - Set reminders
+- `todo` - Manage todo list
+- `health` - Health tips
+- `productivity` - Productivity suggestions
 
-### Tech Stack
+### Developer Commands
+- `git` - Git client
+- `code-review` - Code review checklist
+- `challenge` - Programming challenges
+- `code-tip` - Random coding tips
+- `story` - Programming stories
 
-- React 19 with Concurrent Features
-- TypeScript 5
-- Vite 8
-- Zustand (state management)
-- Lucide React (icons)
+### API Commands
+- `weather` - Get current weather
+- `news-summary` - Get news summary
+- `crypto-news` - Cryptocurrency news
+- `quote-of-the-day` - Daily quotes
+- `world-clock` - World clock
 
-### Project Structure
+## Architecture
 
 ```
 web-linux/
 ├── src/
-│   ├── apps/              # Application components
-│   │   ├── terminal/      # Terminal command system
-│   │   └── *.tsx         # Individual applications
-│   ├── components/        # System components (Window, Taskbar, Desktop)
-│   ├── store/             # State management utilities
-│   │   ├── fileUtils.ts   # File system operations
-│   │   ├── storageUtils.ts # localStorage persistence
-│   │   └── defaults.ts    # Default state values
-│   ├── utils/             # Utility functions
-│   │   └── apiCache.ts    # API caching and fetch utilities
-│   ├── store.tsx          # Global state management (Zustand)
-│   ├── types.ts           # TypeScript definitions
-│   ├── apps.tsx           # Application registry
-│   └── index.css          # Global styles
-├── public/                # Static assets
-├── vite.config.ts         # Build configuration
-└── package.json           # Dependencies
+│   ├── apps/           # Application components
+│   ├── components/     # UI components
+│   ├── hooks/          # Custom hooks
+│   ├── store/          # Zustand state management
+│   ├── utils/          # Utility functions
+│   └── App.tsx         # Main application
+├── public/             # Static assets
+├── index.html          # Entry point
+├── vite.config.ts      # Vite configuration
+└── package.json        # Dependencies
 ```
 
-## Usage
+## Technologies
 
-### Basic Operations
+- **Framework**: React 19 with TypeScript
+- **Build Tool**: Vite
+- **State Management**: Zustand
+- **Styling**: CSS Modules
+- **Icons**: Lucide React
+- **Deployment**: GitHub Pages
 
-- **Launch Apps**: Click desktop icons or use the start menu (click the penguin icon)
-- **Switch Windows**: Alt+Tab or click taskbar icons
-- **Manage Files**: Use File Manager for all file operations
-- **Search**: Ctrl+K for global search
-- **Multiple Desktops**: Switch with taskbar buttons or Ctrl+Arrow keys
+## Browser Support
 
-### Terminal Commands
-
-The terminal supports 80+ commands. Type `help` in the terminal for the full list. Key categories:
-
-**File Operations**: `ls`, `cd`, `pwd`, `cat`, `mkdir`, `touch`, `rm`, `cp`, `mv`, `grep`, `find`, `tree`
-
-**System Info**: `whoami`, `hostname`, `date`, `uname`, `uptime`, `neofetch`, `ps`, `top`
-
-**Network**: `ping`, `curl`, `fetch`, `weather`, `weather-search`, `news`, `news-summary`, `crypto`, `crypto2`, `crypto-news`, `translate`, `ip`, `ipinfo`, `dns`, `dict`, `qr`, `stock`, `timezone`, `github`, `ghuser`, `shorten`, `whois`
-
-**Utilities**: `calc`, `password`, `uuid`, `hash`, `base64`, `json`, `urlencode`, `datetime`, `calendar`, `reminder`, `health`, `productivity`, `code-review`, `todo`, `code-tip`, `challenge`, `world-clock`, `quote-of-the-day`, `brainstorm`, `random`
-
-**Fun**: `cowsay`, `fortune`, `starwars`, `matrix`, `joke`, `advice`, `trivia`, `funfact`, `catfact`, `quote`, `story`, `flip`, `rps`
-
-### File Preview
-
-Double-click files to preview:
-- Images: JPG, PNG, GIF, SVG, WebP
-- Text: TXT, Markdown, JSON, code files
-- Audio: MP3, WAV, FLAC
-- Video: MP4, WebM, OGG
-
-## Keyboard Shortcuts
-
-Press Ctrl+Shift+? to open the full shortcut reference panel.
-
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+Shift+L | Open launcher |
-| Ctrl+Shift+S | Open settings |
-| Ctrl+Shift+F | Open file manager |
-| Ctrl+Shift+T | Open terminal |
-| Ctrl+N | New terminal window |
-| Ctrl+W | Close current window |
-| Ctrl+M | Minimize current window |
-| F11 | Toggle fullscreen/maximize |
-| Alt+Tab | Switch windows |
-| Ctrl+K | Global search |
-| Ctrl+, | Open settings |
-| Ctrl+Arrow | Switch desktop |
-
-## Performance
-
-- Lazy loading for applications via dynamic imports
-- Code splitting for reduced bundle size (vendor chunks + per-app chunks)
-- Virtual scrolling for long lists
-- CSS animations for smooth 60fps transitions
-- GPU-accelerated transforms for window dragging
-- Content-visibility for off-screen content
-- Smart API caching to reduce network requests (configurable TTL)
-- Request timeout and retry mechanism for improved reliability
-- Debounced and throttled event handlers for responsive UI
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
 
 ## Contributing
 
-Contributions are welcome. Please follow these steps:
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Development Guidelines
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Run tests if available
+5. Submit a Pull Request
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details.
+MIT License
 
-## Recent Improvements
+## Acknowledgments
 
-### v15.2.0 (Current Iteration)
-
-**New Terminal Commands:**
-- `cache` - Manage API cache (status/clear) with localStorage persistence
-- `env` - Display browser environment information (user agent, platform, screen, timezone)
-- `help-api` - Comprehensive list of all API-integrated commands with usage examples
-
-**Code Architecture Improvements:**
-- Refactored city mapping data from `apiCommands.ts` into dedicated `cityMap.ts` module
-- Improved cache system with dual-layer caching (memory + localStorage)
-- Added cache statistics and management interface via `getCacheStats()` function
-- Enhanced type safety with proper TypeScript interfaces for city data and cache entries
-
-**API Cache System Enhancement:**
-- Implemented localStorage persistence for cache data (survives page refresh)
-- Added automatic cache invalidation based on TTL with cleanup from both memory and storage
-- Cache key prefixing to avoid conflicts with other applications
-- Error-safe localStorage operations with try-catch blocks
-- Cache statistics showing entry count and memory usage
-
-**Bug Fixes:**
-- Fixed CSS duplicate animation definitions (gradientShift, starTwinkle, cursorBlink)
-- Resolved keyboard shortcut conflicts (paint vs command-palette, notes vs new-terminal, camera vs image-viewer)
-- Fixed ping command CORS issues with fallback API (ping.pe)
-- Fixed `weather-search` command to use imported cityMap from module
-- Added missing type definitions (@types/react, @types/react-dom, @types/node)
-
-**v15.1.0**
-
-**New Terminal Commands:**
-- `uuid` - Generate random UUID (v4)
-- `hash` - Calculate MD5/SHA1/SHA256/SHA512 hash values
-- `base64` - Base64 encode/decode text
-- `urlencode` - URL encode/decode text
-- `datetime` - Display current date/time with timestamp
-- `ping` - Network connectivity test with latency measurement
-- `shorten` - URL shortener with shrtcode API integration
-- `news-summary` - Daily news digest with fallback data
-- `brainstorm` - Creative idea generation for any topic
-- `calendar` - Interactive calendar with month/year navigation
-- `reminder` - Set and manage reminders
-- `health` - Time-based health tips and daily advice
-- `productivity` - Random productivity improvement tips
-- `code-review` - Language-specific code review checklists
-- `todo` - Todo list management
-- `story` - Programming motivational stories
-- `code-tip` - Random programming tips across languages
-- `challenge` - Random coding challenges with difficulty levels
-- `crypto-news` - Latest cryptocurrency news
-- `world-clock` - Real-time world clock for 14+ cities
-- `quote-of-the-day` - Inspirational quotes from Quotable.io
-- `weather-search` - Search weather by city name globally
-- `whois` - Domain registration information lookup
-- `ipinfo` - IP address detailed information
-- `random` - Random number generator with range support
-- `flip` - Coin flip game
-- `rps` - Rock-paper-scissors game
-
-**Key Improvements:**
-- Added smart API caching system with configurable TTL for reduced network requests
-- Implemented request timeout (10s default) and exponential backoff retry mechanism
-- Enhanced error handling across all API-integrated features with user-friendly messages
-- Added utility library with debounce, throttle, formatNumber, formatBytes functions
-- Expanded city support for weather (150+ cities worldwide including major cities in Asia, Europe, Americas, Africa, and Oceania)
-- Extended language support for translation (12+ languages)
-- Improved type safety with proper TypeScript type definitions
-- Enhanced GitHub integration with both repository and user profile lookup
-- Added comprehensive productivity and developer tools to terminal
-- Implemented fallback data for all API-dependent commands
-- Enhanced terminal output formatting with consistent styling
-
-**Performance Optimizations:**
-- API response caching with TTL-based invalidation
-- Request deduplication and retry with exponential backoff
-- Memory-efficient cache management
-- Optimized re-renders with useMemo and useCallback
-- Lazy-loaded terminal commands for faster initial load
-
-### v15.0.0
-
-**New Applications:**
-- **Dev Toolkit**: Comprehensive developer toolkit with 14+ tools including Base64/URL encoding, hash generation, UUID generation, JSON formatting, timestamp conversion, QR code generation, translation, weather, crypto prices, news, IP lookup, DNS query, and English dictionary
-- **Smart Overview**: Intelligent dashboard with system status, weather information, quick notes, and fast app launch
-
-**New Terminal Commands:**
-- `weather` - Real-time weather with 3-day forecast (Open-Meteo API, 10-min cache)
-- `crypto` - Top 10 cryptocurrency prices (CoinGecko API)
-- `news` - Hacker News top stories (Algolia API, 5-min cache)
-- `joke` - Random programming jokes with fallback library
-- `translate` - Multi-language text translation (MyMemory API)
-- `qr` - QR code generation
-- `dns` - DNS record lookup (Google DNS, 5-min cache)
-- `ip` - IP address geolocation (ipapi.co)
-- `dict` - English dictionary with definitions and phonetics (Dictionary API, 30-min cache)
-- `stock` - Stock market quotes (Alpha Vantage API)
-- `timezone` - Current time in any city with timezone info
-- `github` - GitHub repository information (GitHub API, 5-min cache)
-- `ghuser` - GitHub user profile details (GitHub API, 5-min cache)
-- `trivia` - Random knowledge quiz with multiple-choice questions
-- `funfact` - Random fun facts from FreeAPI
-- `catfact` - Random cat facts (Cat Fact Ninja)
-- `quote` - Random inspirational quotes (Quotable.io)
-- `crypto2` - Detailed cryptocurrency information with ATH/ATL and description
-
-### v14.0.0
-
-**New Applications:**
-- **Real-Time Translator Enhanced**: Professional translation tool with MyMemory API integration, supporting 15+ languages, automatic translation, history tracking, and text-to-speech functionality
-- **QR Code Generator Pro**: Advanced QR code generator with goQR.me API integration, custom colors, size control, error correction levels, and batch history
-
-**Key Improvements:**
-- Converted simulation applications to production-grade tools with real API integrations
-- Extended dynamic application registration system (APP_REGISTRY_EXTRAS)
-- Unified modern UI design across all new applications
-- Enhanced error handling and user notification systems
-- Added localStorage persistence for user history and preferences
-
-**API Integrations:**
-- MyMemory Translation API (free, no key required) - supports 15+ languages
-- goQR.me QR Code API (free, no key required) - custom styling and error correction
-- Web Speech API - text-to-speech for translation results
-
-### v13.0.0
-
-**New Applications:**
-- **Code Collaboration Platform**: Real-time collaborative coding environment with session sharing, multi-language support, and live code execution
-- Enhanced developer tools with practical real-world functionality
-
-**Key Improvements:**
-- Strengthened application functionality from simulation shells to practical tools
-- Optimized UI/UX with refined interactions and visual feedback
-- Enhanced code quality and error handling across core components
-- Improved GitHub Pages deployment configuration
-- Added comprehensive keyboard shortcuts documentation
-
-### v12.0.0
-
-- Added CountryInfo application with REST Countries API integration (250+ countries)
-- Enhanced Astro Daily with NASA APOD API (random dates, favorites, download)
-- Improved Code Editor with auto-completion, find/replace, multi-tab support
-- Enhanced Crypto Tracker with portfolio management and coin converter
-- Updated GitHub Explorer with real-time trending repos and search
-
-### v11.1.0
-
-- Enhanced file preview with audio/video support
-- Added global shortcut reference panel (Ctrl+Shift+?)
-- Improved window snapping with alignment guides
-- Enhanced System Monitor with real-time metrics
-- Fixed file manager cut operation bug
-- Added terminal Git commands
-
-### v10.0.0
-
-- Major UI/UX overhaul with new theme system
-- Added live wallpaper support (particles, aurora, nebula)
-- Enhanced window management with snap hints
-- Improved performance with GPU acceleration
+- Inspired by various web-based operating systems
+- Built with modern web technologies
+- Designed for developers and enthusiasts
 
 ---
 
-## Future Roadmap
-
-- Integration with more public APIs for enhanced functionality
-- Real-time collaborative features across multiple applications
-- Enhanced AI-powered tools and assistants
-- Mobile-responsive optimizations
-- Offline capability with localStorage persistence
-- Plugin system for third-party extensions
-
----
-
-Built with modern web technologies for a seamless desktop experience.
+Made with passion for web development

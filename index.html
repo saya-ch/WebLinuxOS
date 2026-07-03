@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta property="og:title" content="WebLinuxOS - Web Linux 桌面环境" />
-    <meta property="og:description" content="一个完全运行在浏览器中的完整Linux桌面环境，200+应用，支持Python运行时" />
+    <meta property="og:description" content="一个完全运行在浏览器中的完整Linux桌面环境，240+应用，支持Python运行时" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://saya-ch.github.io/WebLinuxOS/" />
     <meta property="og:image" content="https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png" />
@@ -20,11 +20,11 @@
     <meta property="og:site_name" content="WebLinuxOS" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="WebLinuxOS - Web Linux 桌面环境" />
-    <meta name="twitter:description" content="一个完全运行在浏览器中的完整Linux桌面环境，200+应用，支持Python运行时" />
+    <meta name="twitter:description" content="一个完全运行在浏览器中的完整Linux桌面环境，240+应用，支持Python运行时" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>WebLinuxOS - Web Linux 桌面环境</title>
     <script>
       try {
@@ -47,11 +47,6 @@
         justify-content: center;
         z-index: 99999;
       }
-      #preload .logo {
-        font-size: 80px;
-        margin-bottom: 20px;
-        animation: logoFloat 1.5s ease-in-out infinite;
-      }
       #preload .text {
         font-size: 32px;
         font-weight: 700;
@@ -69,21 +64,14 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-6px); }
       }
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      #preload.fade-out {
+        animation: fadeOut 0.4s ease-out forwards;
+      }
     </style>
-    <script type="module" crossorigin src="/WebLinuxOS/assets/index-DNB7jcZS.js"></script>
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/rolldown-runtime-NMqb_1LM.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIAssistant-CF9kq7aM.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIAssistantEnhanced-twDU89de.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AILearningCompanion-Cua5lbNI.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIPromptLibrary-DsCF7f8N.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-CodeDiffViewer-BAct63ev.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-APIExplorer-ByLucEbM.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-DevEcosystem-ySRL_Bb8.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-MusicStudio-BObCnOKa.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-react-CN-PlphI.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-ActivityTracker-BA_ZTk9I.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-GlobalSearch-DJrt6AVo.js">
-    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-CTq2Ne7_.css">
   </head>
   <body>
     <div id="preload">
