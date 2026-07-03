@@ -239,11 +239,12 @@ registerCommand('top', {
     const windows = useStore.getState().windows
     const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
     const totalMemory = deviceMemory ? deviceMemory * 1024 : 16384
+    const perfMemory = (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory
     
-    const usedMemory = Math.floor(window.performance.memory?.usedJSHeapSize / (1024 * 1024) || Math.random() * 1000 + 500)
+    const usedMemory = Math.floor((perfMemory?.usedJSHeapSize || 0) / (1024 * 1024) || Math.random() * 1000 + 500)
     const freeMemory = totalMemory - usedMemory
     
-    const cpuUsage = Math.min(100, Math.floor((window.performance.memory?.usedJSHeapSize / (window.performance.memory?.totalJSHeapSize || 1)) * 100) || Math.floor(Math.random() * 30 + 5))
+    const cpuUsage = Math.min(100, Math.floor(((perfMemory?.usedJSHeapSize || 0) / (perfMemory?.totalJSHeapSize || 1)) * 100) || Math.floor(Math.random() * 30 + 5))
     
     const processes = [
       { pid: 1, user: 'root', cpu: 0.1, mem: 0.5, cmd: 'init', time: '00:01:23' },
@@ -262,7 +263,6 @@ registerCommand('top', {
     ].sort((a, b) => b.cpu - a.cpu)
     
     const totalCpu = processes.reduce((sum, p) => sum + p.cpu, 0)
-    const totalMem = processes.reduce((sum, p) => sum + p.mem, 0)
     
     const output = [
       `top - ${new Date().toLocaleTimeString('zh-CN')} up ${Math.floor(Math.random() * 24)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')},  1 user,  load average: ${(0.1 + Math.random() * 0.5).toFixed(2)}, ${(0.1 + Math.random() * 0.4).toFixed(2)}, ${(0.1 + Math.random() * 0.3).toFixed(2)}`,

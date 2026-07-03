@@ -5244,3 +5244,367 @@ a:hover {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* === WebIDE 样式 === */
+.webide-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary, #0d0d1a);
+  color: var(--text-primary, #e8e8ff);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  overflow: hidden;
+}
+
+.webide-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--bg-secondary, #141428);
+  border-bottom: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.webide-toolbar-left,
+.webide-toolbar-center,
+.webide-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.webide-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--accent-color, #7c6cf0);
+}
+
+.webide-template-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-tertiary, #1a1a35);
+  border: 1px solid var(--border-color, rgba(124, 108, 240, 0.25));
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.webide-template-btn:hover {
+  border-color: var(--accent-color, #7c6cf0);
+  background: rgba(124, 108, 240, 0.1);
+}
+
+.webide-template-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--bg-secondary, #141428);
+  border: 1px solid var(--border-color, rgba(124, 108, 240, 0.25));
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 160px;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.webide-template-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s ease;
+}
+
+.webide-template-item:hover {
+  background: rgba(124, 108, 240, 0.15);
+  color: var(--accent-color, #7c6cf0);
+}
+
+.webide-device-toggle {
+  display: flex;
+  background: var(--bg-tertiary, #1a1a35);
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+}
+
+.device-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #9999bb);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.device-btn:hover {
+  color: var(--text-primary, #e8e8ff);
+}
+
+.device-btn.active {
+  background: var(--accent-color, #7c6cf0);
+  color: white;
+}
+
+.webide-autorun {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary, #9999bb);
+  cursor: pointer;
+}
+
+.webide-autorun input {
+  cursor: pointer;
+}
+
+.webide-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-tertiary, #1a1a35);
+  border: 1px solid var(--border-color, rgba(124, 108, 240, 0.25));
+  border-radius: 6px;
+  color: var(--text-primary, #e8e8ff);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.webide-btn:hover {
+  border-color: var(--accent-color, #7c6cf0);
+  background: rgba(124, 108, 240, 0.1);
+}
+
+.webide-view-toggle {
+  display: flex;
+  background: var(--bg-tertiary, #1a1a35);
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #9999bb);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+  color: var(--text-primary, #e8e8ff);
+}
+
+.view-btn.active {
+  background: var(--accent-color, #7c6cf0);
+  color: white;
+}
+
+.webide-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.webide-main.split {
+  flex-direction: row;
+}
+
+.webide-main.code .webide-editor-pane {
+  width: 100%;
+}
+
+.webide-main.preview .webide-preview-pane {
+  width: 100%;
+}
+
+.webide-editor-pane {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  border-right: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+  overflow: hidden;
+}
+
+.webide-preview-pane {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  overflow: hidden;
+}
+
+.webide-tabs {
+  display: flex;
+  background: var(--bg-secondary, #141428);
+  border-bottom: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #9999bb);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary, #e8e8ff);
+}
+
+.tab-btn.active {
+  color: var(--accent-color, #7c6cf0);
+  border-bottom-color: var(--accent-color, #7c6cf0);
+}
+
+.webide-editor-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
+.webide-editor {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  background: var(--bg-primary, #0d0d1a);
+  color: var(--text-primary, #e8e8ff);
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+.webide-editor::placeholder {
+  color: var(--text-muted, #555577);
+}
+
+.webide-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-secondary, #141428);
+  border-bottom: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+  font-size: 12px;
+  color: var(--text-secondary, #9999bb);
+  flex-shrink: 0;
+}
+
+.webide-preview-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  overflow: auto;
+  padding: 16px;
+}
+
+.webide-preview-frame {
+  height: 100%;
+  max-height: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.webide-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+.webide-console {
+  border-top: 1px solid var(--border-color, rgba(124, 108, 240, 0.2));
+  background: var(--bg-secondary, #141428);
+  max-height: 150px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.webide-console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--text-secondary, #9999bb);
+  border-bottom: 1px solid var(--border-color, rgba(124, 108, 240, 0.15));
+}
+
+.console-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #9999bb);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.console-clear:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.webide-console-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.console-line {
+  color: var(--text-primary, #e8e8ff);
+  padding: 2px 0;
+}
+
+.console-line.error {
+  color: #ef4444;
+}
+
+.console-line.warn {
+  color: #f59e0b;
+}
+

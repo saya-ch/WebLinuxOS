@@ -1,4 +1,4 @@
-import { registerCommand } from './commands'
+import { registerCommand, getCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { findNodeByPath, resolvePath } from '../../store'
 
@@ -61,8 +61,13 @@ registerCommand('ls', {
         children.filter(c => c.type === 'folder').forEach(folder => {
           output.push('')
           output.push(`${target === '/' ? '' : target}/${folder.name}:`)
-          const subOutput = registerCommand('ls').handler({ ...context, args: ['-l'], cwd: (target === '/' ? '' : target) + '/' + folder.name })
-          output.push(subOutput.output)
+          const lsCmd = getCommand('ls')
+          if (lsCmd) {
+            const subResult = lsCmd.handler({ ...context, args: ['-l'], cwd: (target === '/' ? '' : target) + '/' + folder.name })
+            if (subResult && typeof subResult === 'object' && 'output' in subResult && typeof (subResult as CommandResult).output === 'string') {
+              output.push((subResult as CommandResult).output)
+            }
+          }
         })
       }
       

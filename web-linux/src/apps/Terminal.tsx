@@ -291,7 +291,6 @@ export default function Terminal() {
         const inputRefEl = inputRef.current
         if (inputRefEl) {
           const pos = inputRefEl.selectionStart || 0
-          const words = input.slice(0, pos).split(' ')
           const lastWordStart = input.lastIndexOf(' ', pos - 2) + 1
           inputRefEl.setSelectionRange(lastWordStart, lastWordStart)
         }

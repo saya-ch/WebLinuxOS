@@ -10,7 +10,7 @@ import {
   File as FileIconL, AppWindow, Network, Pin, PinOff, Trash2, Copy, GripVertical,
   ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
-  Play, Pause, Share2,
+  Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -142,6 +142,9 @@ export const PlayIcon = Play
 export const PauseIcon = Pause
 export const ShareIcon = Share2
 export const UsersIcon = Users
+export const SmartphoneIcon = Smartphone
+export const TabletIcon = Tablet
+export const SplitSquareHorizontalIcon = SplitSquareHorizontal
 
 export { ChevronRight, ChevronDown, Plus, Volume2, VolumeX }
 
