@@ -252,7 +252,34 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Recent Improvements
 
-### v15.1.0 (Current Iteration)
+### v15.2.0 (Current Iteration)
+
+**New Terminal Commands:**
+- `cache` - Manage API cache (status/clear) with localStorage persistence
+- `env` - Display browser environment information (user agent, platform, screen, timezone)
+- `help-api` - Comprehensive list of all API-integrated commands with usage examples
+
+**Code Architecture Improvements:**
+- Refactored city mapping data from `apiCommands.ts` into dedicated `cityMap.ts` module
+- Improved cache system with dual-layer caching (memory + localStorage)
+- Added cache statistics and management interface via `getCacheStats()` function
+- Enhanced type safety with proper TypeScript interfaces for city data and cache entries
+
+**API Cache System Enhancement:**
+- Implemented localStorage persistence for cache data (survives page refresh)
+- Added automatic cache invalidation based on TTL with cleanup from both memory and storage
+- Cache key prefixing to avoid conflicts with other applications
+- Error-safe localStorage operations with try-catch blocks
+- Cache statistics showing entry count and memory usage
+
+**Bug Fixes:**
+- Fixed CSS duplicate animation definitions (gradientShift, starTwinkle, cursorBlink)
+- Resolved keyboard shortcut conflicts (paint vs command-palette, notes vs new-terminal, camera vs image-viewer)
+- Fixed ping command CORS issues with fallback API (ping.pe)
+- Fixed `weather-search` command to use imported cityMap from module
+- Added missing type definitions (@types/react, @types/react-dom, @types/node)
+
+**v15.1.0**
 
 **New Terminal Commands:**
 - `uuid` - Generate random UUID (v4)
@@ -282,11 +309,6 @@ MIT License - See [LICENSE](LICENSE) for details.
 - `random` - Random number generator with range support
 - `flip` - Coin flip game
 - `rps` - Rock-paper-scissors game
-
-**Bug Fixes:**
-- Fixed CSS duplicate animation definitions (gradientShift, starTwinkle, cursorBlink)
-- Resolved keyboard shortcut conflicts (paint vs command-palette, notes vs new-terminal, camera vs image-viewer)
-- Fixed ping command CORS issues with fallback API (ping.pe)
 
 **Key Improvements:**
 - Added smart API caching system with configurable TTL for reduced network requests

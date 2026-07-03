@@ -4,36 +4,99 @@ interface CacheEntry<T = unknown> {
   ttl: number
 }
 
-const cache = new Map<string, CacheEntry>()
-
+const MEMORY_CACHE = new Map<string, CacheEntry>()
+const STORAGE_KEY_PREFIX = 'weblinux_cache_'
 const DEFAULT_TTL = 5 * 60 * 1000
 
-export function getCache<T = unknown>(key: string): T | null {
-  const entry = cache.get(key)
-  if (!entry) return null
-  
-  if (Date.now() - entry.timestamp > entry.ttl) {
-    cache.delete(key)
+function getStorageKey(key: string): string {
+  return STORAGE_KEY_PREFIX + key
+}
+
+function loadFromStorage(key: string): CacheEntry | null {
+  try {
+    const stored = localStorage.getItem(getStorageKey(key))
+    if (!stored) return null
+    return JSON.parse(stored) as CacheEntry
+  } catch {
     return null
   }
-  
-  return entry.data as T
+}
+
+function saveToStorage(key: string, entry: CacheEntry): void {
+  try {
+    localStorage.setItem(getStorageKey(key), JSON.stringify(entry))
+  } catch {
+  }
+}
+
+function removeFromStorage(key: string): void {
+  try {
+    localStorage.removeItem(getStorageKey(key))
+  } catch {
+  }
+}
+
+function clearStorage(): void {
+  try {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(STORAGE_KEY_PREFIX)) {
+        localStorage.removeItem(key)
+      }
+    })
+  } catch {
+  }
+}
+
+export function getCache<T = unknown>(key: string): T | null {
+  const memoryEntry = MEMORY_CACHE.get(key)
+  if (memoryEntry) {
+    if (Date.now() - memoryEntry.timestamp > memoryEntry.ttl) {
+      MEMORY_CACHE.delete(key)
+      removeFromStorage(key)
+      return null
+    }
+    return memoryEntry.data as T
+  }
+
+  const storageEntry = loadFromStorage(key)
+  if (storageEntry) {
+    if (Date.now() - storageEntry.timestamp > storageEntry.ttl) {
+      removeFromStorage(key)
+      return null
+    }
+    MEMORY_CACHE.set(key, storageEntry)
+    return storageEntry.data as T
+  }
+
+  return null
 }
 
 export function setCache<T = unknown>(key: string, data: T, ttl: number = DEFAULT_TTL): void {
-  cache.set(key, {
+  const entry: CacheEntry = {
     data,
     timestamp: Date.now(),
     ttl,
-  })
+  }
+  MEMORY_CACHE.set(key, entry)
+  saveToStorage(key, entry)
 }
 
 export function clearCache(key?: string): void {
   if (key) {
-    cache.delete(key)
+    MEMORY_CACHE.delete(key)
+    removeFromStorage(key)
   } else {
-    cache.clear()
+    MEMORY_CACHE.clear()
+    clearStorage()
   }
+}
+
+export function getCacheStats(): { count: number; size: number } {
+  let size = 0
+  MEMORY_CACHE.forEach(entry => {
+    size += JSON.stringify(entry).length
+  })
+  return { count: MEMORY_CACHE.size, size }
 }
 
 export async function fetchWithCache<T = unknown>(
