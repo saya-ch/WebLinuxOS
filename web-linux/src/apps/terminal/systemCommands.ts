@@ -240,17 +240,25 @@ registerCommand('top', {
     const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
     const totalMemory = deviceMemory ? deviceMemory * 1024 : 16384
     
+    const usedMemory = Math.floor(window.performance.memory?.usedJSHeapSize / (1024 * 1024) || Math.random() * 1000 + 500)
+    const freeMemory = totalMemory - usedMemory
+    
+    const cpuUsage = Math.min(100, Math.floor((window.performance.memory?.usedJSHeapSize / (window.performance.memory?.totalJSHeapSize || 1)) * 100) || Math.floor(Math.random() * 30 + 5))
+    
     const processes = [
-      { pid: 1, user: 'root', cpu: 0.1, mem: 0.5, cmd: 'init' },
+      { pid: 1, user: 'root', cpu: 0.1, mem: 0.5, cmd: 'init', time: '00:01:23' },
+      { pid: 2, user: 'root', cpu: 0.0, mem: 0.1, cmd: 'kthreadd', time: '00:00:01' },
+      { pid: 3, user: 'root', cpu: 0.2, mem: 0.3, cmd: 'systemd', time: '00:00:45' },
       ...windows.map((win, index) => ({
         pid: 100 + index,
         user: 'user',
-        cpu: Math.min(100, Math.floor(Math.random() * 10 + 0.5)),
-        mem: Math.min(100, Math.floor(Math.random() * 5 + 1)),
+        cpu: Math.min(100, Math.floor(Math.random() * 15 + 0.5)),
+        mem: Math.min(100, Math.floor(Math.random() * 8 + 1)),
         cmd: win.appId,
+        time: `00:0${Math.floor(Math.random() * 5)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
       })),
-      { pid: 998, user: 'root', cpu: 1.5, mem: 3.0, cmd: 'window-manager' },
-      { pid: 999, user: 'root', cpu: 0.8, mem: 2.0, cmd: 'desktop' },
+      { pid: 998, user: 'root', cpu: 2.5, mem: 4.0, cmd: 'window-manager', time: '00:05:32' },
+      { pid: 999, user: 'root', cpu: 1.2, mem: 3.5, cmd: 'desktop', time: '00:04:18' },
     ].sort((a, b) => b.cpu - a.cpu)
     
     const totalCpu = processes.reduce((sum, p) => sum + p.cpu, 0)
@@ -260,11 +268,14 @@ registerCommand('top', {
       `top - ${new Date().toLocaleTimeString('zh-CN')} up ${Math.floor(Math.random() * 24)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')},  1 user,  load average: ${(0.1 + Math.random() * 0.5).toFixed(2)}, ${(0.1 + Math.random() * 0.4).toFixed(2)}, ${(0.1 + Math.random() * 0.3).toFixed(2)}`,
       '',
       `Tasks: ${processes.length} total,   1 running,  ${processes.length - 1} sleeping,   0 stopped,   0 zombie`,
-      `%Cpu(s): ${totalCpu.toFixed(1)} us,  2.0 sy,  0.0 ni, ${(100 - totalCpu - 2).toFixed(1)} id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st`,
-      `MiB Mem :   ${totalMemory}.0 total,    ${(totalMemory - totalMem * 50).toFixed(1)} free,    ${totalMem * 50} used,    2048.0 buff/cache`,
+      `%Cpu(s): ${totalCpu.toFixed(1)} us,  ${(cpuUsage - totalCpu).toFixed(1)} sy,  0.0 ni, ${(100 - cpuUsage).toFixed(1)} id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st`,
+      `MiB Mem :   ${totalMemory}.0 total,    ${freeMemory.toFixed(1)} free,    ${usedMemory.toFixed(1)} used,    ${(totalMemory - usedMemory - freeMemory).toFixed(1)} buff/cache`,
+      `MiB Swap:      0.0 total,      0.0 free,      0.0 used.   ${(totalMemory * 0.8).toFixed(1)} avail Mem`,
       '',
       '  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND',
-      ...processes.slice(0, 8).map(p => `${p.pid.toString().padStart(6)} ${p.user.padEnd(8)}  20   0 ${(p.mem * 100).toFixed(0).padStart(8)} ${(p.mem * 50).toFixed(0).padStart(8)} ${(p.mem * 30).toFixed(0).padStart(8)} S  ${p.cpu.toString().padStart(5)} ${p.mem.toString().padStart(5)} 00:00:${String(Math.floor(Math.random() * 30)).padStart(2, '0')} ${p.cmd}`),
+      ...processes.slice(0, 10).map(p => `${p.pid.toString().padStart(6)} ${p.user.padEnd(8)}  20   0 ${(p.mem * 100).toFixed(0).padStart(8)} ${(p.mem * 50).toFixed(0).padStart(8)} ${(p.mem * 30).toFixed(0).padStart(8)} S  ${p.cpu.toString().padStart(5)} ${p.mem.toString().padStart(5)} ${p.time.padEnd(10)} ${p.cmd}`),
+      '',
+      `提示: 输入 'q' 退出，'h' 查看帮助`,
     ]
     
     return { output: output.join('\n') }

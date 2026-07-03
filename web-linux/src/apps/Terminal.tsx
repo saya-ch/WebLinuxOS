@@ -285,6 +285,28 @@ export default function Terminal() {
           setInput(cmdHistory[newIndex])
         }
       }
+    } else if (e.key === 'ArrowLeft') {
+      if (e.ctrlKey) {
+        e.preventDefault()
+        const inputRefEl = inputRef.current
+        if (inputRefEl) {
+          const pos = inputRefEl.selectionStart || 0
+          const words = input.slice(0, pos).split(' ')
+          const lastWordStart = input.lastIndexOf(' ', pos - 2) + 1
+          inputRefEl.setSelectionRange(lastWordStart, lastWordStart)
+        }
+      }
+    } else if (e.key === 'ArrowRight') {
+      if (e.ctrlKey) {
+        e.preventDefault()
+        const inputRefEl = inputRef.current
+        if (inputRefEl) {
+          const pos = inputRefEl.selectionStart || 0
+          const nextSpace = input.indexOf(' ', pos)
+          const newPos = nextSpace === -1 ? input.length : nextSpace + 1
+          inputRefEl.setSelectionRange(newPos, newPos)
+        }
+      }
     } else if (e.key === 'Tab') {
       e.preventDefault()
       const completions = getCompletions(input)
@@ -295,7 +317,14 @@ export default function Terminal() {
         if (prevHistory.length > 0 && !prevHistory[prevHistory.length - 1].input) {
           prevHistory.pop()
         }
-        setHistory([...prevHistory, { input: '', output: completions.join('  ') }])
+        const maxLen = Math.max(...completions.map(c => c.length))
+        const cols = 3
+        const padded = completions.map(c => c.padEnd(maxLen + 2))
+        const lines: string[] = []
+        for (let i = 0; i < padded.length; i += cols) {
+          lines.push(padded.slice(i, i + cols).join(''))
+        }
+        setHistory([...prevHistory, { input: '', output: lines.join('\n') }])
       }
     } else if (e.key === 'l' && e.ctrlKey) {
       e.preventDefault()
@@ -304,6 +333,36 @@ export default function Terminal() {
       e.preventDefault()
       setInput('')
       setHistory(prev => [...prev, { input: '^C', output: '' }])
+    } else if (e.key === 'u' && e.ctrlKey) {
+      e.preventDefault()
+      setInput('')
+    } else if (e.key === 'k' && e.ctrlKey) {
+      e.preventDefault()
+      const inputRefEl = inputRef.current
+      if (inputRefEl) {
+        const pos = inputRefEl.selectionStart || 0
+        setInput(input.slice(0, pos))
+      }
+    } else if (e.key === 'y' && e.ctrlKey) {
+      e.preventDefault()
+      navigator.clipboard.readText().then(text => {
+        const inputRefEl = inputRef.current
+        if (inputRefEl) {
+          const pos = inputRefEl.selectionStart || input.length
+          setInput(input.slice(0, pos) + text + input.slice(pos))
+        } else {
+          setInput(input + text)
+        }
+      }).catch(() => {})
+    } else if (e.key === 'r' && e.ctrlKey) {
+      e.preventDefault()
+      const searchTerm = input.trim()
+      if (searchTerm) {
+        const found = cmdHistory.filter(cmd => cmd.includes(searchTerm)).reverse()
+        if (found.length > 0) {
+          setInput(found[0])
+        }
+      }
     }
   }, [input, executeCommand, cmdHistory, historyIndex, getCompletions, history])
 

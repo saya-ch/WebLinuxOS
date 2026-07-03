@@ -1259,22 +1259,32 @@ registerCommand('find', {
         output: [
           '🔍 文件查找',
           '',
-          '用法: find [路径] [-name <模式>]',
+          '用法: find [路径] [-name <模式>] [-type <f|d>]',
+          '',
+          '选项:',
+          '  -name <模式>   按文件名匹配（支持通配符 *）',
+          '  -type <f|d>    搜索类型：f=文件，d=目录',
           '',
           '示例:',
           '  find /home/user',
           '  find -name "*.txt"',
           '  find /home/user -name "*.md"',
+          '  find -type f -name "*.js"',
+          '  find /home -type d',
         ].join('\n')
       }
     }
     
     let targetPath = cwd
     let namePattern: string | null = null
+    let typeFilter: 'f' | 'd' | null = null
     
     for (let i = 0; i < args.length; i++) {
       if (args[i] === '-name') {
         namePattern = args[i + 1]
+        i++
+      } else if (args[i] === '-type') {
+        typeFilter = args[i + 1] as 'f' | 'd' | null
         i++
       } else {
         targetPath = resolvePath(cwd, args[i])
@@ -1287,19 +1297,27 @@ registerCommand('find', {
     }
     
     const results: string[] = []
+    let searchedCount = 0
     
     const search = (currentNode: typeof node, currentPath: string) => {
       if (currentNode.children) {
         for (const child of currentNode.children) {
           const childPath = currentPath === '/' ? `/${child.name}` : `${currentPath}/${child.name}`
+          searchedCount++
           
+          const matchType = !typeFilter || 
+            (typeFilter === 'f' && child.type === 'file') || 
+            (typeFilter === 'd' && child.type === 'folder')
+          
+          let matchName = true
           if (namePattern) {
             const regex = new RegExp(namePattern.replace(/\*/g, '.*'))
-            if (regex.test(child.name)) {
-              results.push(childPath)
-            }
-          } else {
-            results.push(childPath)
+            matchName = regex.test(child.name)
+          }
+          
+          if (matchType && matchName) {
+            const typeIndicator = child.type === 'folder' ? '/' : ''
+            results.push(childPath + typeIndicator)
           }
           
           if (child.type === 'folder') {
@@ -1311,11 +1329,103 @@ registerCommand('find', {
     
     search(node, targetPath)
     
-    return { output: results.join('\n') || '没有找到匹配的文件' }
+    const output = [
+      ...results,
+      '',
+      `找到 ${results.length} 个匹配项（共搜索 ${searchedCount} 个项目）`
+    ].join('\n')
+    
+    return { output: output }
   },
   description: '查找文件',
-  usage: 'find [路径] [-name <模式>]',
-  examples: ['find', 'find -name "*.txt"', 'find /home/user -name "*.md"']
+  usage: 'find [路径] [-name <模式>] [-type <f|d>]',
+  examples: ['find', 'find -name "*.txt"', 'find /home/user -name "*.md"', 'find -type f']
+})
+
+registerCommand('grep', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🔍 grep - 在文件中搜索文本',
+          '',
+          '用法: grep <模式> <文件> [-i] [-n] [-r]',
+          '',
+          '选项:',
+          '  -i    忽略大小写',
+          '  -n    显示行号',
+          '  -r    递归搜索目录',
+          '',
+          '示例:',
+          '  grep "hello" file.txt',
+          '  grep -i "Hello" file.txt',
+          '  grep -n "pattern" file.txt',
+          '  grep -r "function" /home/user',
+        ].join('\n')
+      }
+    }
+    
+    const ignoreCase = args.includes('-i')
+    const showLineNumbers = args.includes('-n')
+    const recursive = args.includes('-r')
+    
+    const patternArg = args.find(a => !a.startsWith('-'))
+    const fileArg = args.slice(args.indexOf(patternArg || '') + 1).find(a => !a.startsWith('-'))
+    
+    if (!patternArg) {
+      return { output: 'grep: 缺少搜索模式' }
+    }
+    
+    const pattern = new RegExp(patternArg, ignoreCase ? 'i' : '')
+    const results: string[] = []
+    let filesSearched = 0
+    let matchesFound = 0
+    
+    const searchFile = (node: ReturnType<typeof findNodeByPath>, path: string) => {
+      if (!node) return
+      
+      if (node.type === 'file' && node.content) {
+        filesSearched++
+        const lines = (node.content as string).split('\n')
+        lines.forEach((line, index) => {
+          if (pattern.test(line)) {
+            matchesFound++
+            const lineNum = showLineNumbers ? `${index + 1}:` : ''
+            const escapedLine = line.replace(/\x1b\[[0-9;]*m/g, '')
+            const highlighted = escapedLine.replace(pattern, (match) => `\x1b[32m${match}\x1b[0m`)
+            results.push(`${path}:${lineNum}${highlighted}`)
+          }
+        })
+      } else if (node.type === 'folder' && node.children) {
+        if (!recursive) return
+        node.children.forEach(child => {
+          const childPath = path === '/' ? `/${child.name}` : `${path}/${child.name}`
+          searchFile(child, childPath)
+        })
+      }
+    }
+    
+    if (fileArg) {
+      const resolvedPath = resolvePath(cwd, fileArg)
+      const node = findNodeByPath(files, resolvedPath)
+      searchFile(node, resolvedPath)
+    } else {
+      searchFile(findNodeByPath(files, cwd), cwd)
+    }
+    
+    const output = [
+      ...results,
+      '',
+      `找到 ${matchesFound} 个匹配项（搜索了 ${filesSearched} 个文件）`
+    ].join('\n')
+    
+    return { output: output }
+  },
+  description: '在文件中搜索文本',
+  usage: 'grep <模式> <文件> [-i] [-n] [-r]',
+  examples: ['grep "hello" file.txt', 'grep -i "Hello" file.txt', 'grep -r "function" /home/user']
 })
 
 registerCommand('stat', {

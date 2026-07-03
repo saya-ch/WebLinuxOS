@@ -5,8 +5,11 @@ import { findNodeByPath, resolvePath } from '../../store'
 registerCommand('ls', {
   handler: (context: CommandContext): CommandResult => {
     const { args, cwd, files } = context
-    const target = args[0] ? resolvePath(cwd, args[0]) : cwd
-    const showAll = args.includes('-a') || args.includes('-l')
+    const targetArg = args.find(arg => !arg.startsWith('-'))
+    const target = targetArg ? resolvePath(cwd, targetArg) : cwd
+    const showAll = args.includes('-a') || args.includes('-la') || args.includes('-al')
+    const showLong = args.includes('-l') || args.includes('-la') || args.includes('-al')
+    const showRecursive = args.includes('-R')
     
     const node = findNodeByPath(files, target)
     if (!node || node.type !== 'folder') {
@@ -17,21 +20,65 @@ registerCommand('ls', {
     }
     
     const escapeChar = String.fromCharCode(27)
-    const items = node.children.map((child) => {
-      const color = child.type === 'folder' ? `${escapeChar}[34m` : `${escapeChar}[0m`
-      return `${color}${child.name}${escapeChar}[0m`
-    })
+    let children = node.children
     
-    let output = items.join('  ')
-    if (showAll) {
-      output = `${escapeChar}[34m.\n${escapeChar}[34m..\n` + output
+    if (!showAll) {
+      children = children.filter(c => !c.name.startsWith('.'))
     }
     
-    return { output }
+    children = [...children].sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'folder' ? -1 : 1
+      return a.name.localeCompare(b.name)
+    })
+    
+    if (showLong) {
+      let output = []
+      const totalBlocks = children.reduce((sum, c) => {
+        const size = c.type === 'folder' ? 4096 : (c.content?.length || 0)
+        return sum + Math.ceil(size / 1024)
+      }, 0)
+      output.push(`总用量 ${totalBlocks}`)
+      
+      children.forEach((child) => {
+        const permissions = child.type === 'folder' ? 'drwxr-xr-x' : '-rw-r--r--'
+        const links = 1
+        const owner = 'user'
+        const group = 'user'
+        const size = child.type === 'folder' ? 4096 : (child.content?.length || 0)
+        const date = child.modifiedAt 
+          ? new Date(child.modifiedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : new Date().toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        
+        const color = child.type === 'folder' ? `${escapeChar}[34m` : child.name.endsWith('.exe') || child.name.endsWith('.sh') ? `${escapeChar}[32m` : `${escapeChar}[0m`
+        const name = `${color}${child.name}${escapeChar}[0m`
+        
+        output.push(
+          `${permissions} ${links.toString().padStart(3)} ${owner.padEnd(6)} ${group.padEnd(6)} ${size.toString().padStart(8)} ${date.padEnd(15)} ${name}`
+        )
+      })
+      
+      if (showRecursive) {
+        children.filter(c => c.type === 'folder').forEach(folder => {
+          output.push('')
+          output.push(`${target === '/' ? '' : target}/${folder.name}:`)
+          const subOutput = registerCommand('ls').handler({ ...context, args: ['-l'], cwd: (target === '/' ? '' : target) + '/' + folder.name })
+          output.push(subOutput.output)
+        })
+      }
+      
+      return { output: output.join('\n') }
+    } else {
+      const items = children.map((child) => {
+        const color = child.type === 'folder' ? `${escapeChar}[34m` : child.name.endsWith('.exe') || child.name.endsWith('.sh') ? `${escapeChar}[32m` : `${escapeChar}[0m`
+        return `${color}${child.name}${escapeChar}[0m`
+      })
+      
+      return { output: items.join('  ') }
+    }
   },
   description: '列出目录内容',
-  usage: 'ls [-a] [-l] [路径]',
-  examples: ['ls', 'ls -la', 'ls /home/user/documents']
+  usage: 'ls [-a] [-l] [-R] [路径]',
+  examples: ['ls', 'ls -la', 'ls -R /home/user', 'ls /home/user/documents']
 })
 
 registerCommand('cd', {

@@ -541,8 +541,9 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       height: win.maximized ? '100%' : win.height,
       zIndex: win.zIndex,
       display: win.minimized ? 'none' : 'flex',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      border: win.focused ? '1px solid rgba(139, 124, 240, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
+      backdropFilter: 'blur(24px) saturate(180%)',
+      border: win.focused ? '1px solid rgba(139, 124, 240, 0.5)' : '1px solid rgba(255, 255, 255, 0.08)',
+      borderRadius: win.maximized ? '0' : '12px',
       transform: 'translateZ(0)',
       willChange: isDraggingOrResizing ? 'transform, opacity' : 'auto',
       contain: 'strict',
@@ -552,15 +553,18 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       transition: isDraggingOrResizing 
         ? 'opacity 0.15s ease' 
         : win.maximized 
-          ? 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' 
-          : 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          ? 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)' 
+          : 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
       boxShadow: isActive
         ? (isHovered 
-            ? '0 12px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 124, 240, 0.5), 0 16px 60px rgba(139, 124, 240, 0.3)'
-            : '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 124, 240, 0.4), 0 12px 40px rgba(139, 124, 240, 0.25)')
+            ? '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(139, 124, 240, 0.6), 0 24px 80px rgba(139, 124, 240, 0.35)'
+            : '0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 124, 240, 0.5), 0 16px 50px rgba(139, 124, 240, 0.3)')
         : (!win.maximized 
-            ? '0 6px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
-            : 'none')
+            ? '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)' 
+            : 'none'),
+      background: win.focused 
+        ? 'linear-gradient(135deg, rgba(30, 30, 45, 0.92) 0%, rgba(25, 25, 38, 0.95) 100%)' 
+        : 'linear-gradient(135deg, rgba(35, 35, 50, 0.88) 0%, rgba(30, 30, 42, 0.92) 100%)'
     }
   }, [win, isHovered, dragging, resizing, dragOpacity])
 
