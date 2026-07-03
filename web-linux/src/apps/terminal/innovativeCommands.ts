@@ -225,28 +225,21 @@ registerCommand('health', {
     const now = new Date()
     const hours = now.getHours()
 
-    let advice = ''
-    let emoji = ''
-
-    if (hours >= 5 && hours < 8) {
-      emoji = '🌅'
-      advice = '早上好！新的一天开始了，记得吃早餐，保持好心情。'
-    } else if (hours >= 8 && hours < 12) {
-      emoji = '☕'
-      advice = '上午好！工作效率最高的时候，集中注意力完成重要任务。'
-    } else if (hours >= 12 && hours < 14) {
-      emoji = '🍱'
-      advice = '午餐时间！适当休息，补充能量，下午更有精力。'
-    } else if (hours >= 14 && hours < 18) {
-      emoji = '💪'
-      advice = '下午好！继续加油，注意每隔一小时起身活动一下。'
-    } else if (hours >= 18 && hours < 21) {
-      emoji = '🌆'
-      advice = '晚上好！放松一下，做一些喜欢的事情。'
-    } else {
-      emoji = '🌙'
-      advice = '夜深了！该休息了，保证充足睡眠，明天更有精神。'
-    }
+    const { emoji, advice } = (() => {
+      if (hours >= 5 && hours < 8) {
+        return { emoji: '🌅', advice: '早上好！新的一天开始了，记得吃早餐，保持好心情。' }
+      } else if (hours >= 8 && hours < 12) {
+        return { emoji: '☕', advice: '上午好！工作效率最高的时候，集中注意力完成重要任务。' }
+      } else if (hours >= 12 && hours < 14) {
+        return { emoji: '🍱', advice: '午餐时间！适当休息，补充能量，下午更有精力。' }
+      } else if (hours >= 14 && hours < 18) {
+        return { emoji: '💪', advice: '下午好！继续加油，注意每隔一小时起身活动一下。' }
+      } else if (hours >= 18 && hours < 21) {
+        return { emoji: '🌆', advice: '晚上好！放松一下，做一些喜欢的事情。' }
+      } else {
+        return { emoji: '🌙', advice: '夜深了！该休息了，保证充足睡眠，明天更有精神。' }
+      }
+    })()
 
     const output: string[] = []
     output.push(`${emoji} 健康小贴士`)

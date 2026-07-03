@@ -26,6 +26,7 @@ function saveToStorage(key: string, entry: CacheEntry): void {
   try {
     localStorage.setItem(getStorageKey(key), JSON.stringify(entry))
   } catch {
+    // ignore
   }
 }
 
@@ -33,6 +34,7 @@ function removeFromStorage(key: string): void {
   try {
     localStorage.removeItem(getStorageKey(key))
   } catch {
+    // ignore
   }
 }
 
@@ -44,6 +46,7 @@ function clearStorage(): void {
       }
     })
   } catch {
+    // ignore
   }
 }
 
@@ -142,7 +145,7 @@ export async function fetchWithTimeout<T = unknown>(
     return await response.json() as T
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('请求超时，请稍后重试')
+      throw new Error('请求超时，请稍后重试', { cause: error })
     }
     throw error
   } finally {

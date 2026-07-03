@@ -19,14 +19,12 @@ registerCommand('speedtest', {
       }
       
       let bytesRead = 0
-      let totalChunks = 0
       
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         
         bytesRead += value.length
-        totalChunks++
         
         if (bytesRead >= 1048576) break
       }

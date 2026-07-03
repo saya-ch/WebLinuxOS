@@ -1,6 +1,7 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { findNodeByPath } from '../../store'
+import type { FileNode } from '../../types'
 
 registerCommand('grep', {
   handler: (context: CommandContext): CommandResult => {
@@ -51,7 +52,7 @@ registerCommand('find', {
     
     const pattern = args[0] || ''
     
-    const findFiles = (nodes: any[], currentPath: string, results: string[]): void => {
+    const findFiles = (nodes: FileNode[], currentPath: string, results: string[]): void => {
       nodes.forEach(node => {
         const nodePath = currentPath === '/' ? `/${node.name}` : `${currentPath}/${node.name}`
         
@@ -103,12 +104,12 @@ registerCommand('du', {
       return { output: `目录 ${cwd} 不存在` }
     }
     
-    const countFiles = (node: any): { count: number; size: number } => {
+    const countFiles = (node: FileNode): { count: number; size: number } => {
       if (node.type === 'file') {
         return { count: 1, size: (node.content?.length || 0) }
       }
       if (node.type === 'folder' && node.children) {
-        return node.children.reduce((acc: any, child: any) => {
+        return node.children.reduce((acc: { count: number; size: number }, child: FileNode) => {
           const result = countFiles(child)
           return {
             count: acc.count + result.count,
@@ -265,7 +266,7 @@ registerCommand('touch', {
       return { output: `touch: 无法创建文件 ${filename}` }
     }
     
-    const existingFile = parentNode.children?.find((c: any) => c.name === filename)
+    const existingFile = parentNode.children?.find((c: FileNode) => c.name === filename)
     
     if (existingFile) {
       return { output: '' }

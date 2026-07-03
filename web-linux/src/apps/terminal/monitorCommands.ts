@@ -3,7 +3,7 @@ import type { CommandContext, CommandResult } from './commands'
 import { useStore } from '../../store'
 import { countNodes } from '../../store/fileUtils'
 
-let bootTime = Date.now()
+const bootTime = Date.now()
 
 function getRealMemoryInfo(): { total: number; used: number; free: number; jsHeapSize?: number } {
   const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
@@ -33,7 +33,7 @@ function getRealCPUInfo(): { cores: number; usage: number; model: string } {
   const cores = navigator.hardwareConcurrency || 4
   
   // 尝试获取真实的CPU信息
-  let model = 'WebAssembly Virtual CPU'
+  const model = 'WebAssembly Virtual CPU'
   
   // 检测设备性能等级
   let usage = 15 // 默认较低使用率
@@ -304,7 +304,7 @@ registerCommand('cal', {
     const today = now.getDate()
     const isCurrentMonth = year === now.getFullYear() && month === now.getMonth()
     
-    let output = [`    ${monthNames[month]} ${year}`, ' 日 一 二 三 四 五 六']
+    const output = [`    ${monthNames[month]} ${year}`, ' 日 一 二 三 四 五 六']
     
     let line = ''
     for (let i = 0; i < firstDay; i++) {

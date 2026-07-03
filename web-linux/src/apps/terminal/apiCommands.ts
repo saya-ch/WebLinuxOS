@@ -82,7 +82,7 @@ registerCommand('weather', {
       output.push('数据来源: Open-Meteo (已缓存10分钟)')
       
       return { output: output.join('\n') }
-    } catch (error) {
+    } catch {
       const fallbackOutput = [
         `📍 ${cityInfo.name} 天气预报`,
         '═'.repeat(50),
@@ -190,7 +190,7 @@ registerCommand('news', {
       output.push('提示: 使用 news [关键词] 搜索特定主题')
       
       return { output: output.join('\n') }
-    } catch (error) {
+    } catch {
       const fallbackNews = [
         '📰 Hacker News 热门 - 离线模式',
         '═'.repeat(70),
@@ -1166,7 +1166,7 @@ registerCommand('whois', {
       output.push('数据来源: WhoisJSON (demo API)')
       
       return { output: output.join('\n') }
-    } catch (error) {
+    } catch {
       return {
         output: [
           `🔍 WHOIS: ${domain}`,

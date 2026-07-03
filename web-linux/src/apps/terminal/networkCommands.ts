@@ -35,7 +35,7 @@ registerCommand('curl', {
         : text
       
       return { output: truncated }
-    } catch (error) {
+    } catch {
       return { output: `curl: (6) 无法解析主机或连接失败: ${url}` }
     }
   },
@@ -66,7 +66,7 @@ registerCommand('fetch', {
       
       const json = await response.json()
       return { output: JSON.stringify(json, null, 2) }
-    } catch (error) {
+    } catch {
       return { output: `fetch: 无法获取 ${url}` }
     }
   },
@@ -123,7 +123,7 @@ registerCommand('ping', {
       results.push(`--- ${host} ping statistics ---`)
       results.push(`4 packets transmitted, ${latencies.length} received, ${((4 - latencies.length) / 4 * 100).toFixed(1)}% packet loss`)
       results.push(`rtt min/avg/max = ${min}/${avg}/${max} ms`)
-    } catch (error) {
+    } catch {
       results.push(`ping: 无法连接到 ${host}`)
       results.push('提示: 某些网站可能阻止跨域请求，尝试使用 ipinfo 命令获取网络信息')
     }

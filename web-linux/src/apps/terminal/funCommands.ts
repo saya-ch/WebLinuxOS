@@ -349,18 +349,13 @@ registerCommand('rps', {
     
     const computerChoice = choices[Math.floor(Math.random() * choices.length)]
     
-    let result = ''
-    if (userChoice === computerChoice) {
-      result = '平局！'
-    } else if (
-      (userChoice === '石头' && computerChoice === '剪刀') ||
-      (userChoice === '剪刀' && computerChoice === '布') ||
-      (userChoice === '布' && computerChoice === '石头')
-    ) {
-      result = '你赢了！'
-    } else {
-      result = '电脑赢了！'
-    }
+    const result = userChoice === computerChoice
+      ? '平局！'
+      : (userChoice === '石头' && computerChoice === '剪刀') ||
+        (userChoice === '剪刀' && computerChoice === '布') ||
+        (userChoice === '布' && computerChoice === '石头')
+        ? '你赢了！'
+        : '电脑赢了！'
     
     return {
       output: [

@@ -433,19 +433,6 @@ const WebClipper = () => {
     if (activeClip) setEditTags(activeClip.tags.join(', '))
   }, [activeClip?.id])
 
-  // 导出 Markdown
-  const exportMarkdown = useCallback(() => {
-    if (!activeClip) return
-    const md = generateMarkdown(activeClip)
-    const blob = new Blob([md], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${activeClip.title.replace(/[^\w\u4e00-\u9fa5]+/g, '-').slice(0, 50)}.md`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [activeClip])
-
   const generateMarkdown = (c: Clip): string => {
     const lines: string[] = []
     lines.push(`# ${c.title}`)
@@ -471,6 +458,18 @@ const WebClipper = () => {
     lines.push(c.content)
     return lines.join('\n')
   }
+
+  const exportMarkdown = useCallback(() => {
+    if (!activeClip) return
+    const md = generateMarkdown(activeClip)
+    const blob = new Blob([md], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${activeClip.title.replace(/[^\w\u4e00-\u9fa5]+/g, '-').slice(0, 50)}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [activeClip])
 
   // 一键导出全部
   const exportAllMarkdown = useCallback(() => {

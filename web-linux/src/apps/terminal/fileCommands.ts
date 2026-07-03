@@ -32,7 +32,7 @@ registerCommand('ls', {
     })
     
     if (showLong) {
-      let output = []
+      const output = []
       const totalBlocks = children.reduce((sum, c) => {
         const size = c.type === 'folder' ? 4096 : (c.content?.length || 0)
         return sum + Math.ceil(size / 1024)

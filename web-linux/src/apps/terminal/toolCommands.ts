@@ -626,13 +626,11 @@ registerCommand('timer', {
 registerCommand('motd', {
   handler: (): CommandResult => {
     const hours = new Date().getHours()
-    let greeting = ''
-    
-    if (hours < 6) greeting = '夜深了，注意休息 🌙'
-    else if (hours < 12) greeting = '早上好！☀️'
-    else if (hours < 14) greeting = '中午好！🌤️'
-    else if (hours < 18) greeting = '下午好！🌥️'
-    else greeting = '晚上好！🌙'
+    const greeting = hours < 6 ? '夜深了，注意休息 🌙'
+      : hours < 12 ? '早上好！☀️'
+      : hours < 14 ? '中午好！🌤️'
+      : hours < 18 ? '下午好！🌥️'
+      : '晚上好！🌙'
     
     const uptime = Math.floor(Math.random() * 100) + 10
     const users = Math.floor(Math.random() * 10) + 1
@@ -1089,7 +1087,7 @@ registerCommand('worldtime', {
       '',
       '----------------------------------------------------------------',
       '',
-      ...Object.entries(timeZones).map(([_key, info]) => {
+      ...Object.entries(timeZones).map(([_, info]) => {
         const tzTime = new Date(now.getTime() + (info.offset - 8) * 3600000)
         const timeStr = tzTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
         const marker = info.offset === 8 ? ' (本地)' : ''
@@ -1393,7 +1391,7 @@ registerCommand('grep', {
           if (pattern.test(line)) {
             matchesFound++
             const lineNum = showLineNumbers ? `${index + 1}:` : ''
-            const escapedLine = line.replace(/\x1b\[[0-9;]*m/g, '')
+            const escapedLine = line.replace(/\u001b\[[0-9;]*m/g, '')
             const highlighted = escapedLine.replace(pattern, (match) => `\x1b[32m${match}\x1b[0m`)
             results.push(`${path}:${lineNum}${highlighted}`)
           }

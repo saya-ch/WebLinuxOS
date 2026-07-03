@@ -26,6 +26,7 @@ function ErrorBoundary({ children, fallback }: Props) {
     try {
       sessionStorage.clear()
     } catch {
+      // ignore
     }
     window.location.reload()
   }

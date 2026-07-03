@@ -72,6 +72,18 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - Process monitor
 - Clipboard manager
 
+**Utility Center**
+- Unit converter (length, weight, area, volume)
+- Currency converter with real-time exchange rates
+- Base64 encoding and decoding
+- Hash generator (MD5, SHA-1, SHA-256, SHA-512)
+- URL encoding and decoding
+- IP geolocation lookup
+- Color converter (RGB, HEX, HSL)
+- Time tools (timestamp converter, world clock)
+- Multi-language translator
+- Password generator
+
 ### Terminal Commands
 
 The terminal supports a comprehensive set of commands:

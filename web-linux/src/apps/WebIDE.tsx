@@ -315,7 +315,7 @@ const WebIDE = memo(function WebIDE() {
         </head>
         <body>
           ${html}
-          <script>${js}<\/script>
+          <script>${js}</script>
         </body>
       </html>
     `
@@ -366,7 +366,7 @@ ${css}
 ${html}
   <script>
 ${js}
-  <\/script>
+  </script>
 </body>
 </html>`
     const blob = new Blob([fullCode], { type: 'text/html' })
