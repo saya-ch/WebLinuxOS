@@ -1,6 +1,13 @@
 import { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react'
 import { useStore } from '../../store'
 import { TerminalIcon, FolderIcon, GlobeIcon, SettingsIcon, InfoIcon, CalculatorIcon, StickyNoteIcon, ImageIcon, SparklesIcon, PaletteIcon, HelpIcon, SearchIcon, CommandIcon, TrashIcon } from '../../icons'
+import DesktopWidgets, {
+  getWidgetVisibility,
+  setWidgetVisibility,
+  WIDGET_IDS,
+  type WidgetId,
+} from './DesktopWidgets'
+import { loadFromStorage, debouncedSaveToStorage } from '../../store/storageUtils'
 
 interface Particle {
   id: number
@@ -160,6 +167,13 @@ const Desktop = memo(function Desktop() {
 
   const [selectedIconId, setSelectedIconId] = useState<string | null>(null)
   const [showSplash, setShowSplash] = useState(true)
+  // 桌面小部件总开关与单项可见性，持久化到 localStorage
+  const [widgetsVisible, setWidgetsVisible] = useState<boolean>(() =>
+    loadFromStorage<boolean>('weblinux-widgets-on', true)
+  )
+  const [widgetVisibility, setWidgetVisibilityState] = useState<Record<string, boolean>>(() =>
+    getWidgetVisibility()
+  )
   const lastClickRef = useRef<{ id: string; time: number } | null>(null)
   const [particles, setParticles] = useState<Particle[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
@@ -399,6 +413,38 @@ const Desktop = memo(function Desktop() {
     setLiveWallpaper(next)
   }, [liveWallpaper, setLiveWallpaper])
 
+  // 切换小部件总开关
+  const toggleWidgets = useCallback(() => {
+    setWidgetsVisible((prev) => {
+      const next = !prev
+      debouncedSaveToStorage('weblinux-widgets-on', next, 100)
+      return next
+    })
+  }, [])
+
+  // 切换单个小部件可见性
+  const handleToggleWidget = useCallback((id: WidgetId) => {
+    const current = getWidgetVisibility()
+    const next = !current[id]
+    setWidgetVisibility(id, next)
+    setWidgetVisibilityState(getWidgetVisibility())
+  }, [])
+
+  // 监听小部件外部变更（例如小部件自身关闭按钮）
+  useEffect(() => {
+    const handler = () => setWidgetVisibilityState(getWidgetVisibility())
+    window.addEventListener('weblinux-widgets-change', handler)
+    return () => window.removeEventListener('weblinux-widgets-change', handler)
+  }, [])
+
+  const widgetLabelMap: Record<string, string> = {
+    clock: '时钟',
+    pulse: '系统脉搏',
+    weather: '实时天气',
+    focus: '专注计时器',
+    note: '便签',
+  }
+
   const menuItems: MenuEntry[] = useMemo(() => [
     { label: '打开终端', icon: <TerminalIcon size={16} />, action: () => openApp('terminal') },
     { label: '打开文件管理器', icon: <FolderIcon size={16} />, action: () => openApp('files') },
@@ -418,6 +464,13 @@ const Desktop = memo(function Desktop() {
     { label: '切换动态壁纸', icon: <PaletteIcon size={16} />, action: cycleLiveWallpaper },
     { label: '显示设置', icon: <SettingsIcon size={16} />, action: () => openApp('settings') },
     { type: 'separator' as const },
+    { label: widgetsVisible ? '隐藏桌面小部件' : '显示桌面小部件', icon: <SparklesIcon size={16} />, action: toggleWidgets },
+    ...WIDGET_IDS.map((id) => ({
+      label: `${widgetVisibility[id] ? '✓' : '　'} ${widgetLabelMap[id]}`,
+      icon: <span style={{ width: 16, display: 'inline-flex', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: widgetVisibility[id] ? 'var(--accent)' : 'transparent', border: widgetVisibility[id] ? 'none' : '1px solid var(--text-secondary)' }} /></span>,
+      action: () => handleToggleWidget(id),
+    })),
+    { type: 'separator' as const },
     { label: '打开计算器', icon: <CalculatorIcon size={16} />, action: () => openApp('calculator') },
     { label: '打开记事本', icon: <StickyNoteIcon size={16} />, action: () => openApp('notepad') },
     { type: 'separator' as const },
@@ -428,7 +481,7 @@ const Desktop = memo(function Desktop() {
     { type: 'separator' as const },
     { label: '系统信息', icon: <InfoIcon size={16} />, action: () => openApp('about') },
     { label: '帮助', icon: <HelpIcon size={16} />, action: () => openApp('help') },
-  ], [openApp, handleWallpaperChange, liveWallpaperEnabled, toggleLiveWallpaper, cycleLiveWallpaper])
+  ], [openApp, handleWallpaperChange, liveWallpaperEnabled, toggleLiveWallpaper, cycleLiveWallpaper, widgetsVisible, widgetVisibility, toggleWidgets, handleToggleWidget])
 
   const wallpaperStyle = wallpaper
     ? wallpaper.startsWith('linear-gradient')
@@ -565,6 +618,10 @@ const Desktop = memo(function Desktop() {
       <div className="sr-only" role="status" aria-live="polite">
         Web Linux 桌面环境 - 右键可打开上下文菜单
       </div>
+
+      {/* 桌面小部件系统：时钟 / 系统脉搏 / 天气 / 便签 / 专注计时器 */}
+      <DesktopWidgets visible={widgetsVisible} />
+
       {desktopIcons.map((icon) => (
         <DesktopIcon
           key={icon.id}

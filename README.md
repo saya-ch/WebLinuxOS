@@ -28,6 +28,13 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - **Theme Support**: Dark and light themes with customizable accent colors
 - **Live Wallpapers**: Particles, gradients, and dynamic background effects
 - **Global Search**: Command palette for quick access to applications and files
+- **Desktop Widgets**: A live widget system that turns the desktop into an information dashboard:
+  - **Clock** — analog clock face with digital readout and date
+  - **System Pulse** — real-time JS heap memory, CPU cores, battery and online status with a rolling graph
+  - **Weather** — real-time conditions via the public Open-Meteo API (no API key required), with automatic geolocation and graceful fallback
+  - **Focus Timer** — Pomodoro-style countdown ring with audio chime and 15/25/45 minute presets
+  - **Quick Note** — a persistent sticky note that autosaves to localStorage
+  - Widgets are draggable, individually toggleable from the desktop right-click menu, and their layout is persisted across sessions
 
 ### Applications
 
