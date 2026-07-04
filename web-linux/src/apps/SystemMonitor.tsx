@@ -7,6 +7,9 @@ interface SystemInfo {
   memoryTotal: number
   diskUsage: number
   networkLatency: number
+  networkDownload: number
+  networkUpload: number
+  networkStatus: 'online' | 'offline' | 'slow'
   fps: number
   jsHeapUsed: number
   jsHeapTotal: number
@@ -39,6 +42,9 @@ const SystemMonitor = memo(function SystemMonitor() {
     memoryTotal: 8,
     diskUsage: 60,
     networkLatency: 50,
+    networkDownload: 0,
+    networkUpload: 0,
+    networkStatus: 'online',
     fps: 60,
     jsHeapUsed: 0,
     jsHeapTotal: 0,
@@ -47,10 +53,11 @@ const SystemMonitor = memo(function SystemMonitor() {
   const [processes, setProcesses] = useState<Process[]>(mockProcesses)
   const [selectedProcess, setSelectedProcess] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'overview' | 'processes' | 'performance'>('overview')
-  const [historyData, setHistoryData] = useState<{ cpu: number[]; memory: number[]; fps: number[] }>({
+  const [historyData, setHistoryData] = useState<{ cpu: number[]; memory: number[]; fps: number[]; latency: number[] }>({
     cpu: [],
     memory: [],
-    fps: []
+    fps: [],
+    latency: []
   })
   
   const frameCountRef = useRef(0)
@@ -90,6 +97,42 @@ const SystemMonitor = memo(function SystemMonitor() {
     
     requestAnimationFrame(measureFPS)
   }, [])
+
+  const measureNetworkLatency = useCallback(async (): Promise<{ latency: number; status: 'online' | 'offline' | 'slow' }> => {
+    const startTime = performance.now()
+    try {
+      await fetch('https://api.github.com/repos/saya-ch/WebLinuxOS', {
+        method: 'HEAD',
+        cache: 'no-store'
+      })
+      const endTime = performance.now()
+      const latency = Math.round(endTime - startTime)
+      
+      const status: 'online' | 'offline' | 'slow' = latency > 500 ? 'slow' : 'online'
+      
+      return { latency, status }
+    } catch {
+      return { latency: 999, status: 'offline' }
+    }
+  }, [])
+
+  const measureNetworkSpeed = useCallback(async () => {
+    const startTime = performance.now()
+    try {
+      const response = await fetch('https://github.githubassets.com/images/spinners/octocat-spinner-128.gif', {
+        cache: 'no-store'
+      })
+      const blob = await response.blob()
+      const endTime = performance.now()
+      const duration = (endTime - startTime) / 1000
+      const bytes = blob.size
+      const speedMbps = (bytes * 8 / 1024 / 1024 / duration).toFixed(2)
+      
+      return parseFloat(speedMbps)
+    } catch {
+      return 0
+    }
+  }, [])
   
   useEffect(() => {
     requestAnimationFrame(measureFPS)
@@ -106,7 +149,8 @@ const SystemMonitor = memo(function SystemMonitor() {
         setHistoryData(hPrev => ({
           cpu: [...hPrev.cpu.slice(-30), newCpuUsage],
           memory: [...hPrev.memory.slice(-30), newMemoryUsage],
-          fps: [...hPrev.fps.slice(-30), fpsRef.current]
+          fps: [...hPrev.fps.slice(-30), fpsRef.current],
+          latency: [...hPrev.latency.slice(-30), prev.networkLatency]
         }))
         
         return {
@@ -130,6 +174,43 @@ const SystemMonitor = memo(function SystemMonitor() {
     
     return () => clearInterval(interval)
   }, [getMemoryInfo])
+
+  useEffect(() => {
+    const checkNetwork = async () => {
+      const { latency, status } = await measureNetworkLatency()
+      const downloadSpeed = await measureNetworkSpeed()
+      
+      setSystemInfo(prev => ({
+        ...prev,
+        networkLatency: latency,
+        networkDownload: downloadSpeed,
+        networkUpload: downloadSpeed * 0.3,
+        networkStatus: status
+      }))
+    }
+
+    checkNetwork()
+    const networkInterval = setInterval(checkNetwork, 10000)
+    
+    return () => clearInterval(networkInterval)
+  }, [measureNetworkLatency, measureNetworkSpeed])
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setSystemInfo(prev => ({ ...prev, networkStatus: 'online' }))
+    }
+    const handleOffline = () => {
+      setSystemInfo(prev => ({ ...prev, networkStatus: 'offline', networkLatency: 999 }))
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
   
   const getUsageColor = useCallback((usage: number) => {
     if (usage < 50) return '#22c55e'
@@ -288,7 +369,7 @@ const SystemMonitor = memo(function SystemMonitor() {
             
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(6, 1fr)',
               gap: 16
             }}>
               <div style={{
@@ -297,11 +378,37 @@ const SystemMonitor = memo(function SystemMonitor() {
                 borderRadius: 12,
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: 32, color: '#22c55e' }}>
+                <div style={{ fontSize: 32, color: systemInfo.networkLatency > 500 ? '#ef4444' : systemInfo.networkLatency > 200 ? '#eab308' : '#22c55e' }}>
                   {systemInfo.networkLatency}
                 </div>
                 <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>ms</div>
                 <div style={{ fontSize: 14, color: '#64748b' }}>网络延迟</div>
+              </div>
+              
+              <div style={{
+                padding: 16,
+                background: '#1e293b',
+                borderRadius: 12,
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: 32, color: '#3b82f6' }}>
+                  {systemInfo.networkDownload > 0 ? systemInfo.networkDownload.toFixed(2) : '--'}
+                </div>
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Mbps</div>
+                <div style={{ fontSize: 14, color: '#64748b' }}>下载速度</div>
+              </div>
+              
+              <div style={{
+                padding: 16,
+                background: '#1e293b',
+                borderRadius: 12,
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: 32, color: '#8b5cf6' }}>
+                  {systemInfo.networkUpload > 0 ? systemInfo.networkUpload.toFixed(2) : '--'}
+                </div>
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Mbps</div>
+                <div style={{ fontSize: 14, color: '#64748b' }}>上传速度</div>
               </div>
               
               <div style={{
@@ -495,10 +602,10 @@ const SystemMonitor = memo(function SystemMonitor() {
         {viewMode === 'performance' && (
           <div>
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 16
-            }}>
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 16
+          }}>
               <div style={{
                 padding: 20,
                 background: '#1e293b',
@@ -552,6 +659,28 @@ const SystemMonitor = memo(function SystemMonitor() {
                 <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 12 }}>帧率历史</div>
                 <div style={{ height: 150 }}>
                   {renderMiniGraph(historyData.fps, '#22c55e')}
+                </div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: 12,
+                  fontSize: 12,
+                  color: '#64748b'
+                }}>
+                  <span>30秒前</span>
+                  <span>现在</span>
+                </div>
+              </div>
+              
+              <div style={{
+                padding: 20,
+                background: '#1e293b',
+                borderRadius: 12,
+                border: '1px solid #334155'
+              }}>
+                <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 12 }}>网络延迟历史</div>
+                <div style={{ height: 150 }}>
+                  {renderMiniGraph(historyData.latency, '#f97316')}
                 </div>
                 <div style={{
                   display: 'flex',

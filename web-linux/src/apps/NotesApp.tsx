@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, memo } from 'react'
+import { marked } from 'marked'
 
 interface Note {
   id: string
@@ -24,6 +25,8 @@ const defaultCategories: Category[] = [
   { id: 'ideas', name: '想法', color: '#c586c0' },
 ]
 
+type EditorMode = 'edit' | 'preview' | 'split'
+
 const NotesApp = memo(function NotesApp() {
   const [notes, setNotes] = useState<Note[]>(() => {
     const saved = localStorage.getItem('weblinux-notes')
@@ -42,7 +45,7 @@ const NotesApp = memo(function NotesApp() {
       {
         id: 'welcome',
         title: '欢迎使用笔记应用',
-        content: '这是一个功能完整的笔记应用，支持：\n\n- 多分类管理\n- 标签系统\n- 搜索功能\n- Markdown格式\n- 本地存储\n\n开始创建你的第一条笔记吧！',
+        content: '# Markdown 笔记应用\n\n这是一个功能完整的笔记应用，支持：\n\n- **多分类管理**\n- **标签系统**\n- **搜索功能**\n- **Markdown格式**\n- **本地存储**\n\n## 快速开始\n\n点击左侧列表或点击"新建笔记"开始记录你的想法。\n\n### 支持的Markdown语法\n\n- 标题：`# 一级标题`, `## 二级标题`\n- 粗体：`**粗体文本**`\n- 斜体：`*斜体文本*`\n- 列表：`- 列表项`\n- 链接：`[链接文本](URL)`\n- 代码：`` `代码` `` 或 `` ```代码块``` ``\n\n> 提示：编辑模式下可以切换到预览或分屏视图！',
         category: 'personal',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -61,6 +64,7 @@ const NotesApp = memo(function NotesApp() {
   const [editCategory, setEditCategory] = useState('personal')
   const [editTags, setEditTags] = useState('')
   const [showNewNote, setShowNewNote] = useState(false)
+  const [editorMode, setEditorMode] = useState<EditorMode>('split')
   
   // 保存到localStorage
   useEffect(() => {
@@ -146,43 +150,12 @@ const NotesApp = memo(function NotesApp() {
   }, [categories])
   
   const renderMarkdown = useCallback((text: string) => {
-    // 简单的Markdown渲染
-    return text
-      .split('\n')
-      .map((line, i) => {
-        // 标题
-        if (line.startsWith('# ')) {
-          return <h2 key={i} style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>{line.slice(2)}</h2>
-        }
-        if (line.startsWith('## ')) {
-          return <h3 key={i} style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>{line.slice(3)}</h3>
-        }
-        if (line.startsWith('### ')) {
-          return <h4 key={i} style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{line.slice(4)}</h4>
-        }
-        
-        // 列表
-        if (line.startsWith('- ')) {
-          return <li key={i} style={{ marginLeft: 20 }}>{line.slice(2)}</li>
-        }
-        
-        // 粗体
-        const boldMatch = line.match(/\*\*(.*?)\*\*/g)
-        if (boldMatch) {
-          let result = line
-          boldMatch.forEach(match => {
-            result = result.replace(match, `<strong>${match.slice(2, -2)}</strong>`)
-          })
-          return <p key={i} dangerouslySetInnerHTML={{ __html: result }} />
-        }
-        
-        // 普通文本
-        if (line.trim()) {
-          return <p key={i}>{line}</p>
-        }
-        
-        return <br key={i} />
-      })
+    return {
+      __html: marked.parse(text, {
+        breaks: true,
+        gfm: true,
+      }) as string
+    }
   }, [])
   
   return (
@@ -192,6 +165,78 @@ const NotesApp = memo(function NotesApp() {
       background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
+      <style>{`
+        .markdown-preview h1 { font-size: 24px; font-weight: 700; margin: 20px 0 10px; color: #1a1a2e; }
+        .markdown-preview h2 { font-size: 20px; font-weight: 600; margin: 18px 0 8px; color: #16213e; }
+        .markdown-preview h3 { font-size: 16px; font-weight: 600; margin: 16px 0 6px; color: #0f3460; }
+        .markdown-preview h4 { font-size: 14px; font-weight: 600; margin: 14px 0 4px; color: #533483; }
+        .markdown-preview p { margin: 10px 0; line-height: 1.8; color: #333; }
+        .markdown-preview ul { margin: 10px 0; padding-left: 24px; }
+        .markdown-preview ol { margin: 10px 0; padding-left: 24px; }
+        .markdown-preview li { margin: 6px 0; }
+        .markdown-preview blockquote {
+          margin: 16px 0;
+          padding: 12px 16px;
+          border-left: 4px solid #667eea;
+          background: #f0f4ff;
+          color: #4a5568;
+          font-style: italic;
+        }
+        .markdown-preview code {
+          padding: 2px 6px;
+          background: #f4f4f4;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 13px;
+          color: #e53e3e;
+        }
+        .markdown-preview pre {
+          margin: 16px 0;
+          padding: 16px;
+          background: #1e293b;
+          border-radius: 8px;
+          overflow-x: auto;
+        }
+        .markdown-preview pre code {
+          background: none;
+          color: #e2e8f0;
+          padding: 0;
+          font-size: 13px;
+        }
+        .markdown-preview a {
+          color: #667eea;
+          text-decoration: none;
+        }
+        .markdown-preview a:hover {
+          text-decoration: underline;
+        }
+        .markdown-preview hr {
+          margin: 24px 0;
+          border: none;
+          border-top: 1px solid #e0e0e0;
+        }
+        .markdown-preview table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 16px 0;
+        }
+        .markdown-preview th, .markdown-preview td {
+          padding: 8px 12px;
+          border: 1px solid #e0e0e0;
+          text-align: left;
+        }
+        .markdown-preview th {
+          background: #f0f0f0;
+          font-weight: 600;
+        }
+        .markdown-preview strong {
+          font-weight: 600;
+          color: #1a1a2e;
+        }
+        .markdown-preview em {
+          font-style: italic;
+        }
+      `}</style>
       {/* Sidebar */}
       <div style={{
         width: 280,
@@ -437,22 +482,74 @@ const NotesApp = memo(function NotesApp() {
               />
             </div>
             
-            <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              placeholder="笔记内容 (支持Markdown格式)"
-              style={{
-                flex: 1,
-                width: '100%',
-                padding: 16,
-                fontSize: 14,
-                border: '1px solid #e0e0e0',
-                borderRadius: 8,
-                resize: 'none',
-                outline: 'none',
-                lineHeight: 1.6,
-              }}
-            />
+            <div style={{
+              display: 'flex',
+              gap: 8,
+              marginBottom: 12,
+            }}>
+              {(['edit', 'preview', 'split'] as EditorMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setEditorMode(mode)}
+                  style={{
+                    padding: '6px 12px',
+                    background: editorMode === mode ? '#667eea' : '#f0f0f0',
+                    border: 'none',
+                    borderRadius: 4,
+                    color: editorMode === mode ? '#fff' : '#666',
+                    fontSize: 12,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {mode === 'edit' ? '编辑' : mode === 'preview' ? '预览' : '分屏'}
+                </button>
+              ))}
+            </div>
+            
+            <div style={{
+              flex: 1,
+              display: editorMode === 'split' ? 'flex' : 'block',
+              gap: 12,
+              minHeight: 300,
+            }}>
+              {(editorMode === 'edit' || editorMode === 'split') && (
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  placeholder="笔记内容 (支持Markdown格式)"
+                  style={{
+                    flex: 1,
+                    width: editorMode === 'split' ? '50%' : '100%',
+                    padding: 16,
+                    fontSize: 14,
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 8,
+                    resize: 'none',
+                    outline: 'none',
+                    lineHeight: 1.6,
+                    fontFamily: 'monospace',
+                  }}
+                />
+              )}
+              
+              {(editorMode === 'preview' || editorMode === 'split') && (
+                <div
+                  className="markdown-preview"
+                  style={{
+                    flex: 1,
+                    width: editorMode === 'split' ? '50%' : '100%',
+                    padding: 16,
+                    fontSize: 14,
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 8,
+                    overflow: 'auto',
+                    lineHeight: 1.8,
+                    background: '#fff',
+                  }}
+                  dangerouslySetInnerHTML={renderMarkdown(editContent)}
+                />
+              )}
+            </div>
             
             <div style={{
               display: 'flex',
@@ -584,7 +681,8 @@ const NotesApp = memo(function NotesApp() {
               </span>
             </div>
             
-            <div style={{
+            <div className="markdown-preview"
+              style={{
               flex: 1,
               padding: 20,
               background: '#fff',
@@ -593,9 +691,9 @@ const NotesApp = memo(function NotesApp() {
               overflow: 'auto',
               fontSize: 14,
               lineHeight: 1.8,
-            }}>
-              {renderMarkdown(selectedNote.content)}
-            </div>
+            }}
+            dangerouslySetInnerHTML={renderMarkdown(selectedNote.content)}
+            />
           </div>
         ) : (
           /* Empty State */

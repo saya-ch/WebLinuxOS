@@ -1,113 +1,105 @@
 # WebLinuxOS
 
-A fully featured web-based Linux desktop environment running entirely in the browser. Built with React 19 and TypeScript, this project provides a complete operating system experience with window management, file system, terminal, and over 100 applications.
+A fully featured web-based Linux desktop environment running entirely in the browser. Built with React 19 and TypeScript, this project provides a complete operating system experience with window management, file system, terminal, and a comprehensive suite of applications.
 
 ## Live Demo
 
 [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
 
+## Table of Contents
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Architecture](#architecture)
+- [Technologies](#technologies)
+- [Browser Support](#browser-support)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Features
 
 ### Core System
 
-- Window management with drag, resize, minimize, maximize, and close
-- Virtual file system with full CRUD operations
-- Terminal emulator with over 100+ commands
-- Desktop icons and application launcher
-- Taskbar with system tray and notifications
-- Multiple workspace support (up to 9 desktops)
-- Dark/light theme support
-- Live wallpapers (particles, gradients)
-- Global search and command palette
+- **Window Management**: Drag, resize, minimize, maximize, and close windows with smooth animations
+- **Virtual File System**: Full CRUD operations with persistent storage using IndexedDB
+- **Terminal Emulator**: Over 100 commands with history, autocomplete, and syntax highlighting
+- **Desktop Environment**: Desktop icons, application launcher, taskbar, and system tray
+- **Multiple Workspaces**: Up to 9 virtual desktops for organized multitasking
+- **Theme Support**: Dark and light themes with customizable accent colors
+- **Live Wallpapers**: Particles, gradients, and dynamic background effects
+- **Global Search**: Command palette for quick access to applications and files
 
 ### Applications
 
 **Development Tools**
-- Code editor with syntax highlighting
+- Code editor with syntax highlighting for multiple languages
 - Terminal with command history and autocomplete
-- Git client for version control
-- Code snippets manager
+- Git client for version control operations
 - JSON formatter and validator
 - Base64 encoding/decoding
-- Hash generator (MD5, SHA-1, SHA-256)
+- Hash generator (MD5, SHA-1, SHA-256, SHA-512)
 - UUID generator
-- Regex tester
+- Regex tester with real-time validation
 
 **Productivity**
-- Text editor
-- Calculator
-- Calendar
-- Todo list manager
-- Pomodoro timer
-- Notes management
-- Project management
+- Text editor with formatting options
+- Calculator with basic, scientific, and programming modes
+- Calendar with event management
+- Todo list manager with priority levels
+- Pomodoro timer for focused work sessions
+- Notes management with Markdown support
+- Project management board
 - Countdown timer
-- Unit converter
+- Unit converter (length, weight, area, volume, temperature)
 
 **Media**
-- Image viewer
-- Audio player
-- Video player
-- Paint application
-- Wallpaper gallery
-- Emoji browser
+- Image viewer with zoom and rotation
+- Audio player with playlist support
+- Video player with playback controls
+- Paint application with drawing tools
+- Wallpaper gallery with live previews
+- Emoji browser with search and copy functionality
 
 **Network & Information**
-- Web browser
-- Weather (Open-Meteo API)
-- News (Hacker News)
-- Cryptocurrency tracker (CoinGecko)
+- Web browser with tab management
+- Weather dashboard using Open-Meteo API
+- News aggregator from Hacker News
+- Cryptocurrency tracker with CoinGecko API
 - Stock market tracker
-- IP lookup
-- DNS query
-- WHOIS lookup
-- Network speed test
-- Ping and route tracing
-
-**System**
-- File manager
-- System monitor (CPU, memory)
-- System settings
-- Disk usage analyzer
-- Process monitor
-- Clipboard manager
-
-**Utility Center**
-- Unit converter (length, weight, area, volume)
-- Currency converter with real-time exchange rates
-- Base64 encoding and decoding
-- Hash generator (MD5, SHA-1, SHA-256, SHA-512)
-- URL encoding and decoding
 - IP geolocation lookup
-- Color converter (RGB, HEX, HSL)
-- Time tools (timestamp converter, world clock)
-- Multi-language translator
-- Password generator
+- DNS query tool
+- WHOIS lookup
+- Network speed test and latency measurement
+- System monitor with real-time network metrics
+
+**System Utilities**
+- File manager with directory tree navigation
+- System monitor (CPU, memory, disk, network, FPS)
+- System settings with theme and display options
+- Disk usage analyzer
+- Process monitor with kill capability
+- Clipboard manager with history
 
 ### Terminal Commands
 
 The terminal supports a comprehensive set of commands:
 
-**System**: `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown`
-
-**File**: `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq`
-
-**Network**: `ping`, `speedtest`, `bandwidth`, `trace`, `dig`, `dns`, `ip`, `ipinfo`, `whois`, `curl`
-
-**Productivity**: `todo`, `note`, `project`, `calendar`, `countdown`, `pomodoro`
-
-**Developer**: `json`, `base64`, `hash`, `uuid`, `regex`, `urlencode`, `converter`, `git`, `code-review`, `challenge`
-
-**API**: `weather`, `news`, `crypto`, `crypto2`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `trivia`, `funfact`, `catfact`
-
-**Fun**: `joke`, `flip`, `rps`, `random`
+| Category | Commands |
+|----------|----------|
+| **System** | `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown` |
+| **File** | `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq` |
+| **Network** | `ping`, `speedtest`, `bandwidth`, `trace`, `dig`, `dns`, `ip`, `ipinfo`, `whois`, `curl` |
+| **Productivity** | `todo`, `note`, `project`, `calendar`, `countdown`, `pomodoro` |
+| **Developer** | `json`, `base64`, `hash`, `uuid`, `regex`, `urlencode`, `converter`, `git`, `code-review`, `challenge` |
+| **API** | `weather`, `news`, `crypto`, `crypto2`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `trivia`, `funfact`, `catfact` |
+| **Fun** | `joke`, `flip`, `rps`, `random` |
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm or yarn
+- Node.js 20 or later
+- npm, yarn, or pnpm
 
 ### Installation
 
@@ -133,6 +125,12 @@ npm run build
 
 The build output will be in the `dist` directory.
 
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
 ### Deployment
 
 The project is configured for GitHub Pages deployment. Push to the `main` branch and GitHub Actions will automatically build and deploy.
@@ -143,20 +141,24 @@ The project is configured for GitHub Pages deployment. Push to the `main` branch
 web-linux/
 ├── src/
 │   ├── apps/           # Application components
-│   │   ├── terminal/   # Terminal commands
-│   │   └── *.tsx       # Individual applications
-│   ├── components/     # UI components
-│   │   └── desktop/    # Desktop components
-│   ├── store/          # Zustand state management
-│   ├── utils/          # Utility functions
-│   ├── App.tsx         # Main application
+│   │   ├── terminal/   # Terminal command implementations
+│   │   └── *.tsx       # Individual applications (Calculator, Weather, etc.)
+│   ├── components/     # Reusable UI components
+│   │   ├── desktop/    # Desktop-specific components (Window, Taskbar, etc.)
+│   │   └── common/     # Shared components
+│   ├── store/          # Zustand state management stores
+│   ├── utils/          # Utility functions and helpers
+│   ├── hooks/          # Custom React hooks
+│   ├── types/          # TypeScript type definitions
+│   ├── App.tsx         # Main application entry
 │   ├── apps.tsx        # Application registry
-│   ├── store.tsx       # Global state
-│   └── index.css       # Global styles
-├── public/             # Static assets
-├── index.html          # Entry point
+│   ├── store.ts        # Global state store
+│   └── index.css       # Global styles and CSS variables
+├── public/             # Static assets (icons, wallpapers, etc.)
+├── index.html          # HTML entry point
 ├── vite.config.ts      # Vite configuration
-└── package.json        # Dependencies
+├── tsconfig.json       # TypeScript configuration
+└── package.json        # Dependencies and scripts
 ```
 
 ## Technologies
@@ -167,15 +169,15 @@ web-linux/
 - **Styling**: CSS Modules with CSS Variables
 - **Icons**: Lucide React
 - **Markdown**: Marked
-- **Python Runtime**: Pyodide (optional)
+- **Python Runtime**: Pyodide 0.26 (optional)
 - **Deployment**: GitHub Pages via GitHub Actions
 
 ## Browser Support
 
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+- Chrome 110+ (recommended)
+- Firefox 115+
+- Safari 16+
+- Edge 110+
 
 ## Contributing
 
@@ -191,11 +193,13 @@ Contributions are welcome! Please follow these guidelines:
 
 ### Adding a New Terminal Command
 
-Create a new file in `src/apps/terminal/` with your command definitions, then import it in `src/apps/terminal/index.ts`.
+Create a new file in `src/apps/terminal/` with your command definitions following the existing pattern, then import it in `src/apps/terminal/index.ts`.
 
 ### Adding a New Application
 
-Add your application component in `src/apps/`, then register it in `src/apps.tsx`.
+1. Create your application component in `src/apps/`
+2. Register it in `src/apps.tsx` with a unique ID, name, icon, and category
+3. Add any necessary state management or utility functions
 
 ## License
 

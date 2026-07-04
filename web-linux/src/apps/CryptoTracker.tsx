@@ -355,7 +355,7 @@ export default function CryptoTracker() {
   )
 
   return (
-    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--window-bg)' }}>
+    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--window-bg)', color: 'var(--text-primary)' }}>
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--window-border)', background: 'var(--titlebar-bg)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -371,14 +371,18 @@ export default function CryptoTracker() {
               padding: '8px 16px',
               borderRadius: '8px',
               border: 'none',
-              background: 'var(--accent)',
+              background: 'var(--accent-gradient)',
               color: '#fff',
               cursor: 'pointer',
               fontSize: '12px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              transition: 'all 0.2s ease',
+              boxShadow: 'var(--shadow-elevation-2)'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-elevation-3)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-elevation-2)' }}
           >
             🔄 刷新
           </button>
@@ -392,13 +396,16 @@ export default function CryptoTracker() {
           style={{
             width: '100%',
             padding: '10px 14px',
-            borderRadius: '10px',
+            borderRadius: 'var(--radius-md)',
             border: '1px solid var(--window-border)',
-            background: '#2a2a3e',
+            background: 'var(--color-surface)',
             color: 'var(--text-primary)',
             fontSize: '14px',
-            outline: 'none'
+            outline: 'none',
+            transition: 'border-color 0.2s ease'
           }}
+          onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--accent)' }}
+          onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--window-border)' }}
         />
       </div>
 
@@ -419,24 +426,24 @@ export default function CryptoTracker() {
         {/* Gainers / Losers */}
         {!loading && cryptos.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.02))', borderRadius: '12px', padding: '14px', border: '1px solid var(--window-border)' }}>
-              <div style={{ color: '#4ade80', fontSize: '12px', fontWeight: '600', marginBottom: '10px' }}>📈 涨幅前 3</div>
+            <div style={{ background: 'var(--success-bg)', borderRadius: 'var(--radius-md)', padding: '14px', border: '1px solid var(--window-border)' }}>
+              <div style={{ color: 'var(--success)', fontSize: '12px', fontWeight: '600', marginBottom: '10px' }}>📈 涨幅前 3</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {gainers.map(c => (
                   <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
                     <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{c.symbol}</span>
-                    <span style={{ color: '#4ade80', fontWeight: '600' }}>+{c.change24h.toFixed(2)}%</span>
+                    <span style={{ color: 'var(--success)', fontWeight: '600' }}>+{c.change24h.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ background: 'linear-gradient(135deg, rgba(248,113,113,0.08), rgba(248,113,113,0.02))', borderRadius: '12px', padding: '14px', border: '1px solid var(--window-border)' }}>
-              <div style={{ color: '#f87171', fontSize: '12px', fontWeight: '600', marginBottom: '10px' }}>📉 跌幅前 3</div>
+            <div style={{ background: 'var(--error-bg)', borderRadius: 'var(--radius-md)', padding: '14px', border: '1px solid var(--window-border)' }}>
+              <div style={{ color: 'var(--error)', fontSize: '12px', fontWeight: '600', marginBottom: '10px' }}>📉 跌幅前 3</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {losers.map(c => (
                   <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
                     <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{c.symbol}</span>
-                    <span style={{ color: '#f87171', fontWeight: '600' }}>{c.change24h.toFixed(2)}%</span>
+                    <span style={{ color: 'var(--error)', fontWeight: '600' }}>{c.change24h.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
@@ -457,14 +464,17 @@ export default function CryptoTracker() {
                   <div
                     key={id}
                     style={{
-                      background: '#2a2a3e',
-                      borderRadius: '12px',
+                      background: 'var(--color-surface)',
+                      borderRadius: 'var(--radius-md)',
                       padding: '14px',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      border: '1px solid var(--window-border)'
+                      border: '1px solid var(--window-border)',
+                      transition: 'all 0.2s ease'
                     }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#2a2a3e'; e.currentTarget.style.transform = 'translateX(2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.transform = 'translateX(0)' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {crypto.image && (
@@ -479,7 +489,7 @@ export default function CryptoTracker() {
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{formatCurrency(value)}</div>
                         <div style={{
-                          color: crypto.change24h >= 0 ? '#4ade80' : '#f87171',
+                          color: crypto.change24h >= 0 ? 'var(--success)' : 'var(--error)',
                           fontSize: '12px'
                         }}>
                           {crypto.change24h >= 0 ? '↑' : '↓'} {Math.abs(crypto.change24h).toFixed(2)}%
@@ -489,13 +499,16 @@ export default function CryptoTracker() {
                         onClick={() => removeFromPortfolio(id)}
                         style={{
                           padding: '6px 10px',
-                          borderRadius: '6px',
+                          borderRadius: 'var(--radius-sm)',
                           border: 'none',
-                          background: 'rgba(248, 113, 113, 0.2)',
-                          color: '#f87171',
+                          background: 'var(--error-bg)',
+                          color: 'var(--error)',
                           cursor: 'pointer',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          transition: 'all 0.2s ease'
                         }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255, 77, 95, 0.3)' }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--error-bg)' }}
                       >
                         删除
                       </button>
@@ -526,7 +539,7 @@ export default function CryptoTracker() {
           ) : (
             <>
               {error && (
-                <div style={{ padding: '10px 14px', background: 'rgba(248,113,113,0.1)', borderRadius: '8px', color: '#f87171', fontSize: '12px', marginBottom: '10px' }}>
+                <div style={{ padding: '10px 14px', background: 'var(--error-bg)', borderRadius: 'var(--radius-sm)', color: 'var(--error)', fontSize: '12px', marginBottom: '10px' }}>
                   {error}（使用缓存数据，60秒后重试）
                 </div>
               )}
@@ -555,11 +568,11 @@ export default function CryptoTracker() {
                     key={crypto.id}
                     onClick={() => setSelectedCrypto(crypto)}
                     style={{
-                      background: '#2a2a3e',
-                      borderRadius: '10px',
+                      background: 'var(--color-surface)',
+                      borderRadius: 'var(--radius-md)',
                       padding: '10px',
                       cursor: 'pointer',
-                      transition: 'background 0.2s ease',
+                      transition: 'all 0.2s ease',
                       border: '1px solid var(--window-border)',
                       display: 'grid',
                       gridTemplateColumns: '1.8fr 1fr 1fr 1fr 1fr 0.7fr 0.5fr',
@@ -567,10 +580,12 @@ export default function CryptoTracker() {
                       alignItems: 'center',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#3a3a4e'
+                      e.currentTarget.style.background = '#2a2a3e'
+                      e.currentTarget.style.transform = 'translateX(2px)'
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#2a2a3e'
+                      e.currentTarget.style.background = 'var(--color-surface)'
+                      e.currentTarget.style.transform = 'translateX(0)'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
@@ -583,7 +598,7 @@ export default function CryptoTracker() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', color: 'var(--text-primary)', fontWeight: '600', fontSize: '13px' }}>{formatCurrency(crypto.price)}</div>
-                    <div style={{ textAlign: 'right', color: crypto.change24h >= 0 ? '#4ade80' : '#f87171', fontSize: '12px', fontWeight: '600' }}>
+                    <div style={{ textAlign: 'right', color: crypto.change24h >= 0 ? 'var(--success)' : 'var(--error)', fontSize: '12px', fontWeight: '600' }}>
                       {crypto.change24h >= 0 ? '+' : ''}{crypto.change24h.toFixed(2)}%
                     </div>
                     <div style={{ textAlign: 'right', color: 'var(--text-secondary)', fontSize: '11px' }}>{formatCurrency(crypto.marketCap)}</div>
@@ -600,13 +615,17 @@ export default function CryptoTracker() {
                         }}
                         style={{
                           padding: '4px 10px',
-                          borderRadius: '6px',
+                          borderRadius: 'var(--radius-sm)',
                           border: 'none',
-                          background: 'var(--accent)',
+                          background: 'var(--accent-gradient)',
                           color: '#fff',
                           cursor: 'pointer',
-                          fontSize: '11px'
+                          fontSize: '11px',
+                          transition: 'all 0.2s ease',
+                          boxShadow: 'var(--shadow-elevation-1)'
                         }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)' }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
                       >
                         + 添加
                       </button>
@@ -658,11 +677,14 @@ export default function CryptoTracker() {
                     height: '36px',
                     borderRadius: '50%',
                     border: 'none',
-                    background: '#3a3a4e',
+                    background: 'var(--color-surface)',
                     color: 'var(--text-primary)',
                     cursor: 'pointer',
-                    fontSize: '18px'
+                    fontSize: '18px',
+                    transition: 'all 0.2s ease'
                   }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--error-bg)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface)' }}
                 >
                   ✕
                 </button>
@@ -673,7 +695,7 @@ export default function CryptoTracker() {
                   {formatCurrency(selectedCrypto.price)}
                 </div>
                 <div style={{
-                  color: selectedCrypto.change24h >= 0 ? '#4ade80' : '#f87171',
+                  color: selectedCrypto.change24h >= 0 ? 'var(--success)' : 'var(--error)',
                   fontSize: '16px',
                   fontWeight: '600'
                 }}>
@@ -682,17 +704,17 @@ export default function CryptoTracker() {
               </div>
 
               {/* Mini Chart */}
-              <div style={{ background: '#2a2a3e', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid var(--window-border)' }}>
+              <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '20px', border: '1px solid var(--window-border)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '10px' }}>📊 价格走势（模拟）</div>
                 <MiniChart currentPrice={selectedCrypto.price} change24h={selectedCrypto.change24h} width={440} height={100} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}>
-                <div style={{ background: '#2a2a3e', padding: '14px', borderRadius: '10px', border: '1px solid var(--window-border)' }}>
+                <div style={{ background: 'var(--color-surface)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--window-border)' }}>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>市值</div>
                   <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{formatCurrency(selectedCrypto.marketCap)}</div>
                 </div>
-                <div style={{ background: '#2a2a3e', padding: '14px', borderRadius: '10px', border: '1px solid var(--window-border)' }}>
+                <div style={{ background: 'var(--color-surface)', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--window-border)' }}>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>24h交易量</div>
                   <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{formatCurrency(selectedCrypto.volume24h)}</div>
                 </div>
@@ -700,7 +722,7 @@ export default function CryptoTracker() {
 
               {/* Converter */}
               {cryptos.length >= 2 && (
-                <div style={{ background: '#2a2a3e', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid var(--window-border)' }}>
+                <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '20px', border: '1px solid var(--window-border)' }}>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '12px' }}>🔄 币种转换器</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -714,9 +736,9 @@ export default function CryptoTracker() {
                         style={{
                           flex: 1,
                           padding: '10px',
-                          borderRadius: '8px',
+                          borderRadius: 'var(--radius-sm)',
                           border: '1px solid var(--window-border)',
-                          background: '#1e1e2e',
+                          background: 'var(--window-bg)',
                           color: 'var(--text-primary)',
                           fontSize: '14px',
                           outline: 'none'
@@ -727,9 +749,9 @@ export default function CryptoTracker() {
                         onChange={(e) => setFromCryptoId(e.target.value)}
                         style={{
                           padding: '10px',
-                          borderRadius: '8px',
+                          borderRadius: 'var(--radius-sm)',
                           border: '1px solid var(--window-border)',
-                          background: '#1e1e2e',
+                          background: 'var(--window-bg)',
                           color: 'var(--text-primary)',
                           fontSize: '13px',
                           outline: 'none',
@@ -747,9 +769,9 @@ export default function CryptoTracker() {
                       <div style={{
                         flex: 1,
                         padding: '10px',
-                        borderRadius: '8px',
+                        borderRadius: 'var(--radius-sm)',
                         border: '1px solid var(--window-border)',
-                        background: '#1e1e2e',
+                        background: 'var(--window-bg)',
                         color: 'var(--text-primary)',
                         fontSize: '14px',
                         fontWeight: '600'
@@ -761,9 +783,9 @@ export default function CryptoTracker() {
                         onChange={(e) => setToCryptoId(e.target.value)}
                         style={{
                           padding: '10px',
-                          borderRadius: '8px',
+                          borderRadius: 'var(--radius-sm)',
                           border: '1px solid var(--window-border)',
-                          background: '#1e1e2e',
+                          background: 'var(--window-bg)',
                           color: 'var(--text-primary)',
                           fontSize: '13px',
                           outline: 'none',
@@ -842,9 +864,9 @@ export default function CryptoTracker() {
                   style={{
                     width: '100%',
                     padding: '12px',
-                    borderRadius: '10px',
+                    borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--window-border)',
-                    background: '#2a2a3e',
+                    background: 'var(--color-surface)',
                     color: 'var(--text-primary)',
                     fontSize: '16px',
                     outline: 'none'
@@ -858,13 +880,16 @@ export default function CryptoTracker() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    borderRadius: '10px',
+                    borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--window-border)',
-                    background: '#2a2a3e',
+                    background: 'var(--color-surface)',
                     color: 'var(--text-primary)',
                     cursor: 'pointer',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease'
                   }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-bg)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface)' }}
                 >
                   取消
                 </button>
@@ -879,14 +904,17 @@ export default function CryptoTracker() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    borderRadius: '10px',
+                    borderRadius: 'var(--radius-md)',
                     border: 'none',
-                    background: 'var(--accent)',
+                    background: 'var(--accent-gradient)',
                     color: '#fff',
                     cursor: 'pointer',
                     fontSize: '14px',
-                    fontWeight: '600'
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease'
                   }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)' }}
                 >
                   确认添加
                 </button>
