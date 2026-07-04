@@ -167,6 +167,28 @@ const formatDate = (ts: number) => {
   return d.toLocaleDateString()
 }
 
+const STOP_WORDS = new Set([
+  'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'to', 'of', 'in', 'on',
+  'for', 'with', 'at', 'by', 'from', 'as', 'and', 'or', 'but', 'if', 'this', 'that', 'it',
+  'we', 'you', 'i', 'he', 'she', 'they', 'them', 'our', 'your', 'my', 'his', 'her', 'its',
+  '的', '了', '在', '是', '我', '你', '他', '她', '它', '们', '和', '与', '或', '但', '就',
+  '也', '都', '很', '有', '没', '不', '对', '这', '那', '一个', '一些', '可以', '应该',
+])
+
+const extractTags = (text: string): string[] => {
+  const words = text.toLowerCase().match(/[\p{L}][\p{L}\d]{2,}/gu) || []
+  const freq = new Map<string, number>()
+  for (const w of words) {
+    if (STOP_WORDS.has(w)) continue
+    if (w.length < 3) continue
+    freq.set(w, (freq.get(w) || 0) + 1)
+  }
+  return Array.from(freq.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([w]) => w)
+}
+
 const WebClipper = () => {
   const [clips, setClips] = useState<Clip[]>(() => loadClips())
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -311,29 +333,6 @@ const WebClipper = () => {
     setManualTitle('')
     setShowAdd(false)
   }, [manualTitle, manualContent])
-
-  // 简易关键词提取（高频词）
-  const STOP_WORDS = new Set([
-    'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'to', 'of', 'in', 'on',
-    'for', 'with', 'at', 'by', 'from', 'as', 'and', 'or', 'but', 'if', 'this', 'that', 'it',
-    'we', 'you', 'i', 'he', 'she', 'they', 'them', 'our', 'your', 'my', 'his', 'her', 'its',
-    '的', '了', '在', '是', '我', '你', '他', '她', '它', '们', '和', '与', '或', '但', '就',
-    '也', '都', '很', '有', '没', '不', '对', '这', '那', '一个', '一些', '可以', '应该',
-  ])
-
-  const extractTags = (text: string): string[] => {
-    const words = text.toLowerCase().match(/[\p{L}][\p{L}\d]{2,}/gu) || []
-    const freq = new Map<string, number>()
-    for (const w of words) {
-      if (STOP_WORDS.has(w)) continue
-      if (w.length < 3) continue
-      freq.set(w, (freq.get(w) || 0) + 1)
-    }
-    return Array.from(freq.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([w]) => w)
-  }
 
   // 添加高亮
   const addHighlight = useCallback(

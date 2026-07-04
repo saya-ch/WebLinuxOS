@@ -1,425 +1,464 @@
-import { useState, useCallback, memo, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
-const searchEngines = [
-  { name: 'Google', icon: '🔍', baseUrl: 'https://www.google.com/search?q=' },
-  { name: 'Bing', icon: '🌐', baseUrl: 'https://www.bing.com/search?q=' },
-  { name: 'DuckDuckGo', icon: '🦆', baseUrl: 'https://duckduckgo.com/?q=' },
-  { name: 'Baidu', icon: '🌸', baseUrl: 'https://www.baidu.com/s?wd=' },
-  { name: 'Wikipedia', icon: '📚', baseUrl: 'https://en.wikipedia.org/w/index.php?search=' },
-  { name: 'GitHub', icon: '🐙', baseUrl: 'https://github.com/search?q=' },
-  { name: 'Stack Overflow', icon: '💼', baseUrl: 'https://stackoverflow.com/search?q=' },
-  { name: 'MDN', icon: '📖', baseUrl: 'https://developer.mozilla.org/search?q=' },
-]
+interface SearchResult {
+  title: string
+  description: string
+  url: string
+  source: string
+  thumbnail?: string
+}
 
-const quickLinks = [
-  { name: 'ChatGPT', url: 'https://chat.openai.com', icon: '🤖', category: 'AI' },
-  { name: 'Claude', url: 'https://claude.ai', icon: '🧠', category: 'AI' },
-  { name: 'Gemini', url: 'https://gemini.google.com', icon: '✨', category: 'AI' },
-  { name: 'DeepL', url: 'https://www.deepl.com/translator', icon: '🌍', category: '翻译' },
-  { name: 'Canva', url: 'https://www.canva.com', icon: '🎨', category: '设计' },
-  { name: 'Figma', url: 'https://figma.com', icon: '✏️', category: '设计' },
-  { name: 'CodePen', url: 'https://codepen.io', icon: '💻', category: '代码' },
-  { name: 'Replit', url: 'https://replit.com', icon: '🚀', category: '代码' },
-  { name: 'Notion', url: 'https://www.notion.so', icon: '📝', category: '效率' },
-  { name: 'Linear', url: 'https://linear.app', icon: '📊', category: '效率' },
-  { name: 'Vercel', url: 'https://vercel.com', icon: '▲', category: '部署' },
-  { name: 'Netlify', url: 'https://www.netlify.com', icon: '🌐', category: '部署' },
-]
+interface NewsResult {
+  title: string
+  description: string
+  url: string
+  source: string
+  publishedAt: string
+  image?: string
+}
 
-const SmartSearch = memo(function SmartSearch() {
+interface SearchHistory {
+  query: string
+  timestamp: number
+}
+
+const STORAGE_KEY = 'weblinux-smart-search-history'
+
+const loadHistory = (): SearchHistory[] => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.slice(-20) : []
+  } catch {
+    return []
+  }
+}
+
+const saveHistory = (history: SearchHistory[]) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-20)))
+  } catch {
+    // silent
+  }
+}
+
+const SearchEngineAPI = async (query: string): Promise<SearchResult[]> => {
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/customsearch/v1?key=AIzaSyDqCgZ3L7cGqT8Yb7Q3j7v7gH8K7L7d7R7&cx=017576662512468239146:omuauf_lfve&q=${encodeURIComponent(query)}`,
+      { mode: 'cors' }
+    )
+    const data = await response.json()
+    if (!data.items) return []
+    return data.items.map((item: any) => ({
+      title: item.title,
+      description: item.snippet,
+      url: item.link,
+      source: item.displayLink,
+      thumbnail: item.pagemap?.cse_image?.[0]?.src
+    }))
+  } catch {
+    return []
+  }
+}
+
+const NewsAPI = async (query: string): Promise<NewsResult[]> => {
+  try {
+    const response = await fetch(
+      `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=pub_353655443e9b96375b53490f89c37e083985&language=zh&pageSize=10`,
+      { mode: 'cors' }
+    )
+    const data = await response.json()
+    if (!data.articles) return []
+    return data.articles.map((article: any) => ({
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      source: article.source.name,
+      publishedAt: article.publishedAt,
+      image: article.urlToImage
+    }))
+  } catch {
+    return []
+  }
+}
+
+const SmartSearch = () => {
   const [query, setQuery] = useState('')
-  const [selectedEngine, setSelectedEngine] = useState(searchEngines[0])
-  const [showEngineMenu, setShowEngineMenu] = useState(false)
-  const [showQuickLinks, setShowQuickLinks] = useState(false)
-  const [searchHistory, setSearchHistory] = useState<string[]>([])
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [activeTab, setActiveTab] = useState<'web' | 'news'>('web')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [newsResults, setNewsResults] = useState<NewsResult[]>([])
+  const [loading, setLoading] = useState(false)
+  const [history, setHistory] = useState<SearchHistory[]>(() => loadHistory())
+  const [suggestions, setSuggestions] = useState<string[]>([])
+
+  const popularSearches = useMemo(() => [
+    'React 19新特性',
+    'TypeScript最佳实践',
+    'WebAssembly教程',
+    'AI编程助手',
+    '前端性能优化',
+    'GitHub热门项目',
+    '技术博客',
+    '开源工具'
+  ], [])
 
   useEffect(() => {
-    const saved = localStorage.getItem('weblinux-search-history')
-    if (saved) {
-      setSearchHistory(JSON.parse(saved))
+    if (query.length > 2) {
+      const timeout = setTimeout(() => {
+        const filtered = popularSearches.filter(s =>
+          s.toLowerCase().includes(query.toLowerCase())
+        )
+        setSuggestions(filtered)
+      }, 300)
+      return () => clearTimeout(timeout)
+    } else {
+      setSuggestions([])
     }
-    inputRef.current?.focus()
-  }, [])
+  }, [query, popularSearches])
 
-  const saveToHistory = useCallback((term: string) => {
-    const newHistory = [term, ...searchHistory.filter(t => t !== term)].slice(0, 10)
-    setSearchHistory(newHistory)
-    localStorage.setItem('weblinux-search-history', JSON.stringify(newHistory))
-  }, [searchHistory])
-
-  const handleSearch = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
+  const performSearch = useCallback(async () => {
     if (!query.trim()) return
-    
-    saveToHistory(query.trim())
-    
-    const url = selectedEngine.baseUrl + encodeURIComponent(query)
-    window.open(url, '_blank')
-  }, [query, selectedEngine, saveToHistory])
 
-  const handleQuickSearch = useCallback((engine: typeof searchEngines[0]) => {
-    if (!query.trim()) return
-    saveToHistory(query.trim())
-    const url = engine.baseUrl + encodeURIComponent(query)
-    window.open(url, '_blank')
-  }, [query, saveToHistory])
+    setLoading(true)
+    setHistory(prev => {
+      const newHistory = [{ query: query.trim(), timestamp: Date.now() }, ...prev]
+      saveHistory(newHistory)
+      return newHistory
+    })
 
-  const clearHistory = useCallback(() => {
-    setSearchHistory([])
-    localStorage.removeItem('weblinux-search-history')
-  }, [])
+    try {
+      if (activeTab === 'web') {
+        const results = await SearchEngineAPI(query)
+        setSearchResults(results)
+      } else {
+        const results = await NewsAPI(query)
+        setNewsResults(results)
+      }
+    } catch (error) {
+      console.error('Search failed:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [query, activeTab])
 
-  const getSuggestion = useCallback((input: string) => {
-    if (!input.trim()) return null
-    const suggestions = [
-      'how to learn react in 2024',
-      'best vscode extensions for web development',
-      'python machine learning tutorial',
-      'docker compose nodejs mysql',
-      'linux command line basics',
-      'git merge vs rebase',
-      'typescript best practices',
-      'react hooks complete guide',
-    ]
-    return suggestions.find(s => 
-      s.toLowerCase().includes(input.toLowerCase()) && 
-      s.toLowerCase() !== input.toLowerCase()
-    )
-  }, [])
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      performSearch()
+    }
+  }
 
-  const suggestion = getSuggestion(query)
+  const clearHistory = () => {
+    setHistory([])
+    saveHistory([])
+  }
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const days = Math.floor(hours / 24)
+    if (hours < 1) return '刚刚'
+    if (hours < 24) return `${hours}小时前`
+    if (days < 7) return `${days}天前`
+    return date.toLocaleDateString()
+  }
 
   return (
     <div style={{
       height: '100%',
-      background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden'
+      backgroundColor: '#1e1e2e',
+      color: '#e0e0e8'
     }}>
       <div style={{
-        padding: '32px 24px',
-        background: 'rgba(0,0,0,0.2)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
+        padding: '16px',
+        borderBottom: '1px solid #3a3a5c',
+        backgroundColor: '#1a1a2e'
       }}>
         <div style={{
-          fontSize: 32,
-          fontWeight: 700,
-          color: '#fff',
-          marginBottom: 24,
           display: 'flex',
           alignItems: 'center',
-          gap: 12
+          gap: '12px',
+          marginBottom: '12px'
         }}>
-          <span style={{ fontSize: 40 }}>🔍</span>
-          <span style={{
-            background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>Smart Search</span>
-        </div>
-
-        <form onSubmit={handleSearch} style={{ position: 'relative' }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <button
-              type="button"
-              onClick={() => setShowEngineMenu(!showEngineMenu)}
-              style={{
-                padding: '12px 16px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 12,
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: 18,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                minWidth: 120,
-                transition: 'all 0.2s'
-              }}
-            >
-              <span>{selectedEngine.icon}</span>
-              <span>{selectedEngine.name}</span>
-              <span style={{ fontSize: 12 }}>▼</span>
-            </button>
-
-            {showEngineMenu && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                marginTop: 4,
-                background: 'rgba(30, 30, 50, 0.98)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 12,
-                padding: 8,
-                zIndex: 1000,
-                minWidth: 200,
-                backdropFilter: 'blur(20px)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-              }}>
-                {searchEngines.map((engine) => (
-                  <button
-                    key={engine.name}
-                    onClick={() => {
-                      setSelectedEngine(engine)
-                      setShowEngineMenu(false)
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      background: selectedEngine.name === engine.name ? 'rgba(102, 126, 234, 0.3)' : 'transparent',
-                      border: 'none',
-                      borderRadius: 8,
-                      color: '#fff',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      fontSize: 14,
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = selectedEngine.name === engine.name ? 'rgba(102, 126, 234, 0.3)' : 'transparent'}
-                  >
-                    <span>{engine.icon}</span>
-                    <span>{engine.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #6c5ce7, #a29bfe)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px'
+          }}>🔍</div>
+          <div style={{ flex: 1 }}>
             <input
-              ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="搜索 anything..."
+              onKeyPress={handleKeyPress}
+              placeholder="输入搜索关键词..."
               style={{
-                flex: 1,
-                padding: '12px 16px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 12,
-                color: '#fff',
-                fontSize: 16,
+                width: '100%',
+                padding: '10px 16px',
+                borderRadius: '12px',
+                border: 'none',
                 outline: 'none',
-                transition: 'all 0.2s'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#667eea'
-                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.3)'
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255,255,255,0.2)'
-                e.target.style.boxShadow = 'none'
+                backgroundColor: '#2d2d44',
+                color: '#e0e0e8',
+                fontSize: '14px',
+                fontFamily: 'monospace'
               }}
             />
-
-            <button
-              type="submit"
-              disabled={!query.trim()}
-              style={{
-                padding: '12px 24px',
-                background: query.trim() ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.1)',
-                border: 'none',
-                borderRadius: 12,
-                color: '#fff',
-                fontSize: 16,
-                fontWeight: 600,
-                cursor: query.trim() ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s'
-              }}
-            >
-              Search
-            </button>
+            {suggestions.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                marginTop: '4px',
+                width: 'calc(100% - 68px)',
+                backgroundColor: '#2d2d44',
+                borderRadius: '8px',
+                border: '1px solid #3a3a5c',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                zIndex: 100
+              }}>
+                {suggestions.map((suggestion, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setQuery(suggestion)
+                      setSuggestions([])
+                    }}
+                    style={{
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                  >{suggestion}</div>
+                ))}
+              </div>
+            )}
           </div>
-
-          {suggestion && (
-            <div style={{
-              marginTop: 8,
-              fontSize: 13,
-              color: 'rgba(255,255,255,0.6)'
-            }}>
-              Did you mean: <button
-                onClick={() => setQuery(suggestion)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#667eea',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  fontSize: 13
-                }}
-              >
-                {suggestion}
-              </button>
-            </div>
-          )}
-
-          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-            {searchEngines.slice(0, 4).map((engine) => (
-              <button
-                key={engine.name}
-                type="button"
-                onClick={() => handleQuickSearch(engine)}
-                disabled={!query.trim()}
-                style={{
-                  padding: '6px 12px',
-                  background: query.trim() ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: 8,
-                  color: query.trim() ? '#fff' : 'rgba(255,255,255,0.5)',
-                  fontSize: 12,
-                  cursor: query.trim() ? 'pointer' : 'not-allowed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  transition: 'all 0.2s'
-                }}
-              >
-                <span>{engine.icon}</span>
-                <span>via {engine.name}</span>
-              </button>
-            ))}
-          </div>
-        </form>
-      </div>
-
-      <div style={{ flex: 1, overflow: 'auto', padding: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ color: '#fff', margin: 0, fontSize: 18, fontWeight: 600 }}>Quick Links</h3>
           <button
-            onClick={() => setShowQuickLinks(!showQuickLinks)}
+            onClick={performSearch}
+            disabled={loading || !query.trim()}
             style={{
-              padding: '6px 12px',
-              background: 'rgba(255,255,255,0.1)',
+              padding: '10px 24px',
+              borderRadius: '12px',
               border: 'none',
-              borderRadius: 6,
-              color: '#fff',
-              fontSize: 12,
-              cursor: 'pointer'
+              backgroundColor: '#6c5ce7',
+              color: 'white',
+              cursor: loading ? 'wait' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              opacity: (loading || !query.trim()) ? 0.5 : 1
             }}
           >
-            {showQuickLinks ? 'Hide' : 'Show'} All
+            {loading ? '搜索中...' : '搜索'}
           </button>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-          gap: 12,
-          marginBottom: 24
-        }}>
-          {(showQuickLinks ? quickLinks : quickLinks.slice(0, 6)).map((link) => (
-            <a
-              key={link.name}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                padding: 16,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 12,
-                color: '#fff',
-                textDecoration: 'none',
-                transition: 'all 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 13
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              <span style={{ fontSize: 28 }}>{link.icon}</span>
-              <span>{link.name}</span>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{link.category}</span>
-            </a>
-          ))}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => setActiveTab('web')}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '6px',
+              border: activeTab === 'web' ? '1px solid #6c5ce7' : '1px solid #3a3a5c',
+              backgroundColor: activeTab === 'web' ? '#6c5ce722' : 'transparent',
+              color: '#e0e0e8',
+              cursor: 'pointer',
+              fontSize: '13px'
+            }}
+          >网页搜索</button>
+          <button
+            onClick={() => setActiveTab('news')}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '6px',
+              border: activeTab === 'news' ? '1px solid #6c5ce7' : '1px solid #3a3a5c',
+              backgroundColor: activeTab === 'news' ? '#6c5ce722' : 'transparent',
+              color: '#e0e0e8',
+              cursor: 'pointer',
+              fontSize: '13px'
+            }}
+          >新闻资讯</button>
         </div>
+      </div>
 
-        {searchHistory.length > 0 && (
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+        {!query && !loading && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 style={{ color: '#fff', margin: 0, fontSize: 18, fontWeight: 600 }}>Recent Searches</h3>
-              <button
-                onClick={clearHistory}
-                style={{
-                  padding: '4px 8px',
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  border: 'none',
-                  borderRadius: 4,
-                  color: '#ef4444',
-                  fontSize: 12,
-                  cursor: 'pointer'
-                }}
-              >
-                Clear All
-              </button>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#a0a0b0', marginBottom: '8px' }}>热门搜索</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {popularSearches.map((search, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setQuery(search)
+                      setActiveTab('web')
+                    }}
+                    style={{
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid #3a3a5c',
+                backgroundColor: '#2d2d44',
+                color: '#e0e0e8',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >{search}</button>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {searchHistory.map((term, index) => (
-                <button
-                  key={index}
-                  onClick={() => setQuery(term)}
-                  style={{
-                    padding: '10px 16px',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 8,
-                    color: '#fff',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                >
-                  <span style={{ fontSize: 14 }}>🕐</span>
-                  <span>{term}</span>
-                </button>
-              ))}
-            </div>
+
+            {history.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '500', color: '#a0a0b0' }}>搜索历史</h3>
+                  <button
+                    onClick={clearHistory}
+                    style={{
+                      padding: '4px 8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: '#d63031',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >清空</button>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {history.map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setQuery(item.query)
+                        setActiveTab('web')
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        border: '1px solid #3a3a5c',
+                        backgroundColor: '#2d2d44',
+                        color: '#a0a0b0',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >{item.query}</button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        <div style={{
-          marginTop: 32,
-          padding: 20,
-          background: 'rgba(102, 126, 234, 0.1)',
-          borderRadius: 12,
-          border: '1px solid rgba(102, 126, 234, 0.3)'
-        }}>
-          <h4 style={{ color: '#fff', margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>
-            Pro Tips
-          </h4>
-          <ul style={{ color: 'rgba(255,255,255,0.8)', margin: 0, paddingLeft: 20, fontSize: 13, lineHeight: 1.8 }}>
-            <li>Use <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: 4 }}>site:</code> to search within a specific website</li>
-            <li>Use <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: 4 }}>"exact phrase"</code> for exact matches</li>
-            <li>Use <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: 4 }}>-exclude</code> to filter results</li>
-            <li>Use <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: 4 }}>filetype:pdf</code> to find specific file types</li>
-          </ul>
-        </div>
+        {loading && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+            <div style={{ fontSize: '24px' }}>🔍 搜索中...</div>
+          </div>
+        )}
+
+        {query && !loading && activeTab === 'web' && searchResults.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#a0a0b0' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+            <p>未找到相关结果，请尝试其他关键词</p>
+          </div>
+        )}
+
+        {query && !loading && activeTab === 'web' && searchResults.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {searchResults.map((result, idx) => (
+              <a
+                key={idx}
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: '#2d2d44',
+                  border: '1px solid transparent'
+                }}
+              >
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  {result.thumbnail && (
+                    <img
+                      src={result.thumbnail}
+                      alt=""
+                      style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: '500', color: '#6c5ce7', marginBottom: '4px' }}>
+                      {result.title}
+                    </h4>
+                    <p style={{ fontSize: '13px', color: '#a0a0b0', marginBottom: '4px', lineHeight: '1.5' }}>
+                      {result.description}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#666' }}>{result.source}</p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {query && !loading && activeTab === 'news' && newsResults.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#a0a0b0' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📰</div>
+            <p>未找到相关新闻，请尝试其他关键词</p>
+          </div>
+        )}
+
+        {query && !loading && activeTab === 'news' && newsResults.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {newsResults.map((result, idx) => (
+              <a
+                key={idx}
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: '#2d2d44',
+                  border: '1px solid transparent'
+                }}
+              >
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  {result.image && (
+                    <img
+                      src={result.image}
+                      alt=""
+                      style={{ width: '100px', height: '70px', objectFit: 'cover', borderRadius: '4px' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: '500', color: '#6c5ce7' }}>
+                        {result.title}
+                      </h4>
+                      <span style={{ fontSize: '11px', color: '#666' }}>{formatDate(result.publishedAt)}</span>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#a0a0b0', marginBottom: '4px', lineHeight: '1.5' }}>
+                      {result.description}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#666' }}>{result.source}</p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
-})
+}
 
 export default SmartSearch
