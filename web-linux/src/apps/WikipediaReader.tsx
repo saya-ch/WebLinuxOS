@@ -185,8 +185,8 @@ export default function WikipediaReader() {
     try {
       const results = await searchArticles(q, lang)
       setSearchResults(results)
-    } catch (err: any) {
-      setSearchError(err?.message || '搜索失败，请稍后重试')
+    } catch (err) {
+      setSearchError((err as Error)?.message || '搜索失败，请稍后重试')
     } finally {
       setSearching(false)
     }
@@ -199,8 +199,8 @@ export default function WikipediaReader() {
     try {
       const list = await fetchRandom(lang)
       setRandomResults(list)
-    } catch (err: any) {
-      setRandomError(err?.message || '加载失败')
+    } catch (err) {
+      setRandomError((err as Error)?.message || '加载失败')
     } finally {
       setLoadingRandom(false)
     }
@@ -215,8 +215,8 @@ export default function WikipediaReader() {
       try {
         const data = await fetchArticle(title, lang)
         setArticle(data)
-      } catch (err: any) {
-        setArticleError(err?.message || '加载条目失败')
+      } catch (err) {
+      setArticleError((err as Error)?.message || '加载条目失败')
       } finally {
         setLoadingArticle(false)
       }

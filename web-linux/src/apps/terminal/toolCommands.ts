@@ -1087,7 +1087,7 @@ registerCommand('worldtime', {
       '',
       '----------------------------------------------------------------',
       '',
-      ...Object.entries(timeZones).map(([_, info]) => {
+      ...Object.entries(timeZones).map(([, info]) => {
         const tzTime = new Date(now.getTime() + (info.offset - 8) * 3600000)
         const timeStr = tzTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
         const marker = info.offset === 8 ? ' (本地)' : ''
@@ -1688,7 +1688,7 @@ registerCommand('dnslookup', {
           output: [
             `DNS 查询结果: ${domain}`,
             '',
-            ...answers.map((a: any) => `  ${a.data} (${a.type === 1 ? 'A记录' : '其他'})`),
+            ...answers.map((a: { data: string; type: number }) => `  ${a.data} (${a.type === 1 ? 'A记录' : '其他'})`),
           ].join('\n')
         }
       }

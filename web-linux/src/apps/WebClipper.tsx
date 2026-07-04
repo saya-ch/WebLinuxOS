@@ -67,7 +67,7 @@ const htmlToText = (html: string): string => {
   div.querySelectorAll('p, div, li, h1, h2, h3, h4, h5, h6, blockquote, pre').forEach((el) => {
     el.appendChild(document.createTextNode('\n'))
   })
-  let text = (div.textContent || '').replace(/\n{3,}/g, '\n\n')
+  const text = (div.textContent || '').replace(/\n{3,}/g, '\n\n')
   return text.trim()
 }
 

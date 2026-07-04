@@ -20,6 +20,7 @@ WebLinuxOS brings the complete Linux desktop experience to your browser. It incl
 - Command palette for quick system operations
 - Dark/light theme switching
 - Dynamic particle and nebula wallpaper effects
+- Notification center with persistent alerts
 
 ### Development Tools
 
@@ -38,6 +39,7 @@ WebLinuxOS brings the complete Linux desktop experience to your browser. It incl
 ### Productivity Suite
 
 - Markdown editor with live preview
+- Smart notes with tag-based organization, search, and Markdown rendering
 - Spreadsheet with formula support
 - Calendar and event manager
 - Todo list with completion tracking
@@ -267,4 +269,4 @@ WebLinuxOS integrates with several public APIs:
 
 MIT License - Free for personal or commercial use.
 
-Version: 15.1.0 | Last Updated: 2026
+Version: 15.3.0 | Last Updated: 2026

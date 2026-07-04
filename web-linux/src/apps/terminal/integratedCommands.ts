@@ -241,7 +241,7 @@ registerCommand('host', {
         const output = [
           `🔍 ${hostname} 的DNS记录`,
           '',
-          ...answers.map((ans: any) => `  ${ans.data} (${ans.type === 1 ? 'A记录' : ans.type})`),
+          ...answers.map((ans: { data: string; type: number }) => `  ${ans.data} (${ans.type === 1 ? 'A记录' : ans.type})`),
         ]
         return { output: output.join('\n') }
       }
@@ -506,7 +506,7 @@ registerCommand('news', {
         '',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         '',
-        ...repos.slice(0, 6).map((repo: any, index: number) => 
+        ...repos.slice(0, 6).map((repo: { full_name: string; stargazers_count: number }, index: number) => 
           `[${index + 1}] ${repo.full_name.padEnd(35)} ⭐ ${repo.stargazers_count.toLocaleString().padStart(10)}`
         ),
         '',
