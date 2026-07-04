@@ -2,14 +2,32 @@ interface CacheEntry<T = unknown> {
   data: T
   timestamp: number
   ttl: number
+  version?: number
 }
 
 const MEMORY_CACHE = new Map<string, CacheEntry>()
 const STORAGE_KEY_PREFIX = 'weblinux_cache_'
 const DEFAULT_TTL = 5 * 60 * 1000
+const MAX_CACHE_SIZE = 100
+const STORAGE_SIZE_LIMIT = 4_000_000
 
 function getStorageKey(key: string): string {
   return STORAGE_KEY_PREFIX + key
+}
+
+function estimateStorageSize(): number {
+  try {
+    let total = 0
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(STORAGE_KEY_PREFIX)) {
+        const value = localStorage.getItem(key) || ''
+        total += new Blob([value]).size
+      }
+    })
+    return total
+  } catch {
+    return 0
+  }
 }
 
 function loadFromStorage(key: string): CacheEntry | null {
@@ -24,6 +42,9 @@ function loadFromStorage(key: string): CacheEntry | null {
 
 function saveToStorage(key: string, entry: CacheEntry): void {
   try {
+    if (estimateStorageSize() > STORAGE_SIZE_LIMIT) {
+      clearOldestEntries()
+    }
     localStorage.setItem(getStorageKey(key), JSON.stringify(entry))
   } catch {
     // ignore
@@ -50,6 +71,32 @@ function clearStorage(): void {
   }
 }
 
+function clearOldestEntries(count: number = 10): void {
+  const entries: { key: string; timestamp: number }[] = []
+  try {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(STORAGE_KEY_PREFIX)) {
+        const stored = localStorage.getItem(key)
+        if (stored) {
+          try {
+            const entry = JSON.parse(stored) as CacheEntry
+            entries.push({ key, timestamp: entry.timestamp })
+          } catch {
+            // ignore
+          }
+        }
+      }
+    })
+    entries.sort((a, b) => a.timestamp - b.timestamp)
+    entries.slice(0, count).forEach(({ key }) => {
+      localStorage.removeItem(key)
+      MEMORY_CACHE.delete(key.replace(STORAGE_KEY_PREFIX, ''))
+    })
+  } catch {
+    // ignore
+  }
+}
+
 export function getCache<T = unknown>(key: string): T | null {
   const memoryEntry = MEMORY_CACHE.get(key)
   if (memoryEntry) {
@@ -58,6 +105,7 @@ export function getCache<T = unknown>(key: string): T | null {
       removeFromStorage(key)
       return null
     }
+    memoryEntry.timestamp = Date.now()
     return memoryEntry.data as T
   }
 
@@ -75,6 +123,13 @@ export function getCache<T = unknown>(key: string): T | null {
 }
 
 export function setCache<T = unknown>(key: string, data: T, ttl: number = DEFAULT_TTL): void {
+  if (MEMORY_CACHE.size >= MAX_CACHE_SIZE) {
+    const oldestKey = MEMORY_CACHE.keys().next().value
+    if (oldestKey) {
+      MEMORY_CACHE.delete(oldestKey)
+      removeFromStorage(oldestKey)
+    }
+  }
   const entry: CacheEntry = {
     data,
     timestamp: Date.now(),
@@ -92,6 +147,10 @@ export function clearCache(key?: string): void {
     MEMORY_CACHE.clear()
     clearStorage()
   }
+}
+
+export function hasCache(key: string): boolean {
+  return MEMORY_CACHE.has(key) || loadFromStorage(key) !== null
 }
 
 export function getCacheStats(): { count: number; size: number } {

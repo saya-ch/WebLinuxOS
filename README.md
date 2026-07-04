@@ -21,8 +21,8 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 ### Core System
 
 - **Window Management**: Drag, resize, minimize, maximize, and close windows with smooth animations
-- **Virtual File System**: Full CRUD operations with persistent storage using IndexedDB
-- **Terminal Emulator**: Over 100 commands with history, autocomplete, and syntax highlighting
+- **Virtual File System**: Full CRUD operations with persistent storage using localStorage
+- **Terminal Emulator**: Over 120 commands with history, autocomplete, and syntax highlighting
 - **Desktop Environment**: Desktop icons, application launcher, taskbar, and system tray
 - **Multiple Workspaces**: Up to 9 virtual desktops for organized multitasking
 - **Theme Support**: Dark and light themes with customizable accent colors
@@ -86,13 +86,14 @@ The terminal supports a comprehensive set of commands:
 
 | Category | Commands |
 |----------|----------|
-| **System** | `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown` |
-| **File** | `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq` |
-| **Network** | `ping`, `speedtest`, `bandwidth`, `trace`, `dig`, `dns`, `ip`, `ipinfo`, `whois`, `curl` |
-| **Productivity** | `todo`, `note`, `project`, `calendar`, `countdown`, `pomodoro` |
+| **System** | `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown`, `env`, `history`, `alias` |
+| **File** | `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq`, `diff`, `stat`, `less`, `ln`, `chmod` |
+| **Network** | `ping`, `speedtest`, `bandwidth`, `trace`, `dig`, `dns`, `ip`, `ipinfo`, `whois`, `curl`, `fetch`, `dnslookup`, `netstat` |
+| **Productivity** | `todo`, `note`, `project`, `calendar`, `countdown`, `pomodoro`, `timer`, `calc` |
 | **Developer** | `json`, `base64`, `hash`, `uuid`, `regex`, `urlencode`, `converter`, `git`, `code-review`, `challenge` |
-| **API** | `weather`, `news`, `crypto`, `crypto2`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `trivia`, `funfact`, `catfact` |
-| **Fun** | `joke`, `flip`, `rps`, `random` |
+| **API** | `weather`, `weather-forecast`, `news`, `newsapi`, `crypto`, `crypto2`, `bitcoin`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `trivia`, `funfact`, `catfact`, `covid`, `geocode`, `timezone-info`, `convert`, `currency`, `shorturl`, `time-convert` |
+| **Tools** | `base64`, `hash`, `urlencode`, `json-pretty`, `uuid`, `qrcode`, `password`, `unicode`, `regex-test` |
+| **Fun** | `joke`, `flip`, `rps`, `random`, `prime`, `factor`, `roman`, `binary`, `rev`, `ascii`, `lorem`, `morse`, `leet` |
 
 ## Getting Started
 
@@ -142,12 +143,20 @@ web-linux/
 ├── src/
 │   ├── apps/           # Application components
 │   │   ├── terminal/   # Terminal command implementations
+│   │   │   ├── commands.ts          # Command framework
+│   │   │   ├── fileCommands.ts      # File system commands
+│   │   │   ├── systemCommands.ts    # System commands
+│   │   │   ├── toolCommands.ts      # Utility tools
+│   │   │   ├── apiCommands.ts       # API integration commands
+│   │   │   ├── extendedCommands.ts  # Extended commands
+│   │   │   └── ...                  # Other command files
 │   │   └── *.tsx       # Individual applications (Calculator, Weather, etc.)
 │   ├── components/     # Reusable UI components
 │   │   ├── desktop/    # Desktop-specific components (Window, Taskbar, etc.)
 │   │   └── common/     # Shared components
 │   ├── store/          # Zustand state management stores
 │   ├── utils/          # Utility functions and helpers
+│   │   └── apiCache.ts # API caching utilities
 │   ├── hooks/          # Custom React hooks
 │   ├── types/          # TypeScript type definitions
 │   ├── App.tsx         # Main application entry
