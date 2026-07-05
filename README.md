@@ -6,16 +6,6 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 
 [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
 
-## Table of Contents
-
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Architecture](#architecture)
-- [Technologies](#technologies)
-- [Browser Support](#browser-support)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Features
 
 ### Core System
@@ -224,7 +214,3 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 This project was inspired by various web-based operating systems and built with modern web technologies. Special thanks to the open source community for the APIs and libraries used.
-
----
-
-Built for developers, by developers.
