@@ -1825,34 +1825,6 @@ registerCommand('urlencode', {
   examples: ['urlencode encode "hello world"', 'urlencode decode "hello%20world"']
 })
 
-registerCommand('datetime', {
-  handler: (): CommandResult => {
-    const now = new Date()
-    
-    const output: string[] = []
-    output.push('📅 当前日期时间')
-    output.push('═'.repeat(40))
-    output.push('')
-    output.push(`  本地时间: ${now.toLocaleString()}`)
-    output.push(`  UTC时间: ${now.toUTCString()}`)
-    output.push(`  时间戳: ${now.getTime()}`)
-    output.push(`  Unix时间: ${Math.floor(now.getTime() / 1000)}`)
-    output.push(`  星期: ${['日', '一', '二', '三', '四', '五', '六'][now.getDay()]}`)
-    output.push(`  月份: ${now.getMonth() + 1}`)
-    output.push(`  日期: ${now.getDate()}`)
-    output.push(`  年份: ${now.getFullYear()}`)
-    output.push(`  小时: ${now.getHours().toString().padStart(2, '0')}`)
-    output.push(`  分钟: ${now.getMinutes().toString().padStart(2, '0')}`)
-    output.push(`  秒: ${now.getSeconds().toString().padStart(2, '0')}`)
-    output.push('')
-    
-    return { output: output.join('\n') }
-  },
-  description: '显示当前日期时间',
-  usage: 'datetime',
-  examples: ['datetime']
-})
-
 registerCommand('ping', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context

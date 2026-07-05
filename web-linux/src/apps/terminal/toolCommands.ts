@@ -668,54 +668,6 @@ registerCommand('echo', {
   examples: ['echo Hello World', 'echo $PATH']
 })
 
-registerCommand('grep', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args, cwd, files } = context
-    
-    if (args.length < 2) {
-      return {
-        output: [
-          '🔍 grep 文本搜索',
-          '',
-          '用法: grep <模式> <文件>',
-          '',
-          '示例:',
-          '  grep hello file.txt',
-          '  grep -i hello file.txt',
-          '',
-          '选项:',
-          '  -i 忽略大小写',
-        ].join('\n')
-      }
-    }
-    
-    const ignoreCase = args.includes('-i')
-    const patternIndex = args.includes('-i') ? 1 : 0
-    const pattern = args[patternIndex]
-    const filePath = args[patternIndex + 1]
-    
-    const resolved = resolvePath(cwd, filePath)
-    const node = findNodeByPath(files, resolved)
-    
-    if (!node || node.type !== 'file') {
-      return { output: `grep: ${filePath}: 没有那个文件或目录` }
-    }
-    
-    const content = node.content || ''
-    const lines = content.split('\n')
-    const matches = lines.filter(line => {
-      const target = ignoreCase ? line.toLowerCase() : line
-      const searchPattern = ignoreCase ? pattern.toLowerCase() : pattern
-      return target.includes(searchPattern)
-    })
-    
-    return { output: matches.join('\n') || '' }
-  },
-  description: '在文件中搜索文本',
-  usage: 'grep [-i] <模式> <文件>',
-  examples: ['grep hello file.txt', 'grep -i error log.txt']
-})
-
 registerCommand('sort', {
   handler: (context: CommandContext): CommandResult => {
     const { args, cwd, files } = context

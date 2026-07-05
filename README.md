@@ -12,7 +12,7 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 
 - **Window Management**: Drag, resize, minimize, maximize, and close windows with smooth animations
 - **Virtual File System**: Full CRUD operations with persistent storage using localStorage
-- **Terminal Emulator**: Over 120 commands with history, autocomplete, and syntax highlighting
+- **Terminal Emulator**: Over 150 commands with history, autocomplete, and syntax highlighting
 - **Desktop Environment**: Desktop icons, application launcher, taskbar, and system tray
 - **Multiple Workspaces**: Up to 9 virtual desktops for organized multitasking
 - **Theme Support**: Dark and light themes with customizable accent colors
@@ -37,6 +37,8 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - Hash generator (MD5, SHA-1, SHA-256, SHA-512)
 - UUID generator
 - Regex tester with real-time validation
+- API testing tools with REST client
+- Code sandbox for running JavaScript/TypeScript
 
 **Productivity**
 - Text editor with formatting options
@@ -45,9 +47,11 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - Todo list manager with priority levels
 - Pomodoro timer for focused work sessions
 - Notes management with Markdown support
-- Project management board
+- Project management board (Kanban)
 - Countdown timer
 - Unit converter (length, weight, area, volume, temperature)
+- Password manager
+- Clipboard history manager
 
 **Media**
 - Image viewer with zoom and rotation
@@ -56,6 +60,7 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - Paint application with drawing tools
 - Wallpaper gallery with live previews
 - Emoji browser with search and copy functionality
+- Music visualizer
 
 **Network & Information**
 - Web browser with tab management
@@ -68,6 +73,9 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - WHOIS lookup
 - Network speed test and latency measurement
 - System monitor with real-time network metrics
+- Real-time translator (multi-language)
+- Wikipedia explorer
+- GitHub repository explorer
 
 **System Utilities**
 - File manager with directory tree navigation
@@ -76,6 +84,7 @@ A fully featured web-based Linux desktop environment running entirely in the bro
 - Disk usage analyzer
 - Process monitor with kill capability
 - Clipboard manager with history
+- System health dashboard
 
 ### Terminal Commands
 
@@ -83,13 +92,13 @@ The terminal supports a comprehensive set of commands:
 
 | Category | Commands |
 |----------|----------|
-| **System** | `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown`, `env`, `history`, `alias` |
-| **File** | `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq`, `diff`, `stat`, `less`, `ln`, `chmod` |
+| **System** | `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown`, `env`, `history`, `alias`, `clear`, `echo`, `motd`, `uptime` |
+| **File** | `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq`, `diff`, `stat`, `less`, `ln`, `chmod`, `tree`, `write`, `tee`, `append` |
 | **Network** | `ping`, `speedtest`, `bandwidth`, `trace`, `dig`, `dns`, `ip`, `ipinfo`, `whois`, `curl`, `fetch`, `dnslookup`, `netstat` |
 | **Productivity** | `todo`, `note`, `project`, `calendar`, `countdown`, `pomodoro`, `timer`, `calc` |
 | **Developer** | `json`, `base64`, `hash`, `uuid`, `regex`, `urlencode`, `converter`, `git`, `code-review`, `challenge` |
-| **API** | `weather`, `weather-forecast`, `news`, `newsapi`, `crypto`, `crypto2`, `bitcoin`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `trivia`, `funfact`, `catfact`, `covid`, `geocode`, `timezone-info`, `convert`, `currency`, `shorturl`, `time-convert` |
-| **Tools** | `base64`, `hash`, `urlencode`, `json-pretty`, `uuid`, `qrcode`, `password`, `unicode`, `regex-test` |
+| **API** | `weather`, `weather-forecast`, `weather-search`, `news`, `newsapi`, `crypto`, `crypto2`, `crypto-news`, `bitcoin`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `quote-of-the-day`, `trivia`, `funfact`, `catfact`, `covid`, `geocode`, `timezone`, `timezone-info`, `world-clock`, `convert`, `currency`, `shorten`, `shorturl`, `time-convert` |
+| **Tools** | `base64`, `hash`, `urlencode`, `json-pretty`, `uuid`, `qrcode`, `password`, `unicode`, `regex-test`, `hash`, `base64`, `urlencode`, `datetime`, `random`, `flip`, `rps` |
 | **Fun** | `joke`, `flip`, `rps`, `random`, `prime`, `factor`, `roman`, `binary`, `rev`, `ascii`, `lorem`, `morse`, `leet` |
 
 ## Getting Started
