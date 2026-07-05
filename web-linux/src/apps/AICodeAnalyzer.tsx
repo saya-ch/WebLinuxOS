@@ -115,12 +115,12 @@ export default function AICodeAnalyzer() {
       }).length
 
       // 计算函数数量
-      let functionCount = 0
-      if (language === 'Python') {
-        functionCount = (code.match(/def\s+\w+/g) || []).length
-      } else {
-        functionCount = (code.match(/function\s+\w+|=>/g) || []).length
-      }
+      const functionCount = (() => {
+        if (language === 'Python') {
+          return (code.match(/def\s+\w+/g) || []).length
+        }
+        return (code.match(/function\s+\w+|=>/g) || []).length
+      })()
 
       // 计算复杂度
       const loops = (code.match(/\b(for|while)\b/gi) || []).length

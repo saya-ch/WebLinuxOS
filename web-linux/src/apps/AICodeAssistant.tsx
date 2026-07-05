@@ -66,42 +66,6 @@ export default function AICodeAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Generate AI response (simulated for demonstration)
-  const generateResponse = useCallback(async (userMessage: string): Promise<string> => {
-    // Simulate AI thinking delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
-    
-    // Pattern matching for different types of queries
-    const patterns = {
-      code: [
-        { pattern: /function|函数|方法/i, response: generateCodeResponse },
-        { pattern: /class|类|对象/i, response: generateClassResponse },
-        { pattern: /algorithm|算法|sort|排序|search|搜索/i, response: generateAlgorithmResponse },
-        { pattern: /bug|error|错误|fix|修复/i, response: generateBugFixResponse },
-        { pattern: /optimize|优化|performance|性能/i, response: generateOptimizationResponse }
-      ],
-      explain: [
-        { pattern: /explain|解释|what|什么|how|如何|why|为什么/i, response: generateExplanationResponse }
-      ],
-      chat: [
-        { pattern: /hello|hi|你好|您好/i, response: generateGreetingResponse },
-        { pattern: /help|帮助|usage|使用/i, response: generateHelpResponse },
-        { pattern: /thanks|thank|谢谢|感谢/i, response: generateThanksResponse }
-      ]
-    }
-    
-    const modelPatterns = patterns[selectedModel] || patterns.chat
-    
-    for (const { pattern, response } of modelPatterns) {
-      if (pattern.test(userMessage)) {
-        return response()
-      }
-    }
-    
-    // Default response based on mode
-    return generateDefaultResponse(selectedModel)
-  }, [selectedModel])
-
   // Response generators
   function generateCodeResponse(): string {
     const codeExamples = [
@@ -515,6 +479,39 @@ console.log(counter.getCount()); // 2
     
     return modeResponses[mode] || modeResponses.chat
   }
+
+  // Generate AI response (simulated for demonstration)
+  const generateResponse = useCallback(async (userMessage: string): Promise<string> => {
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+    
+    const patterns = {
+      code: [
+        { pattern: /function|函数|方法/i, response: generateCodeResponse },
+        { pattern: /class|类|对象/i, response: generateClassResponse },
+        { pattern: /algorithm|算法|sort|排序|search|搜索/i, response: generateAlgorithmResponse },
+        { pattern: /bug|error|错误|fix|修复/i, response: generateBugFixResponse },
+        { pattern: /optimize|优化|performance|性能/i, response: generateOptimizationResponse }
+      ],
+      explain: [
+        { pattern: /explain|解释|what|什么|how|如何|why|为什么/i, response: generateExplanationResponse }
+      ],
+      chat: [
+        { pattern: /hello|hi|你好|您好/i, response: generateGreetingResponse },
+        { pattern: /help|帮助|usage|使用/i, response: generateHelpResponse },
+        { pattern: /thanks|thank|谢谢|感谢/i, response: generateThanksResponse }
+      ]
+    }
+    
+    const modelPatterns = patterns[selectedModel] || patterns.chat
+    
+    for (const { pattern, response } of modelPatterns) {
+      if (pattern.test(userMessage)) {
+        return response()
+      }
+    }
+    
+    return generateDefaultResponse(selectedModel)
+  }, [selectedModel])
 
   // Handle send message
   const handleSend = useCallback(async () => {
