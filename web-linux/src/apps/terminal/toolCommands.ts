@@ -1344,7 +1344,8 @@ registerCommand('grep', {
             matchesFound++
             const lineNum = showLineNumbers ? `${index + 1}:` : ''
             const escapedLine = line.replace(/\u001b\[[0-9;]*m/g, '')
-            const highlighted = escapedLine.replace(pattern, (match) => `\x1b[32m${match}\x1b[0m`)
+            const ansiEscape = '\u001b'
+            const highlighted = escapedLine.replace(pattern, (match) => `${ansiEscape}[32m${match}${ansiEscape}[0m`)
             results.push(`${path}:${lineNum}${highlighted}`)
           }
         })
@@ -1749,7 +1750,7 @@ registerCommand('yaml', {
     try {
       const json = JSON.parse(args.join(' '))
       
-      const toYaml = (obj: any, indent: number = 0): string => {
+      const toYaml = (obj: unknown, indent: number = 0): string => {
         const spaces = '  '.repeat(indent)
         let result = ''
         
@@ -2181,7 +2182,7 @@ registerCommand('morse', {
       reverseMorse[value] = key
     }
     
-    const isMorse = /^[\s.\-\/]+$/.test(input)
+    const isMorse = /^[\s.\-/]+$/.test(input)
     
     if (isMorse) {
       const words = input.split('/')

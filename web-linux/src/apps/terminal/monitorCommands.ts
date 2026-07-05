@@ -36,7 +36,7 @@ function getRealCPUInfo(): { cores: number; usage: number; model: string } {
   const model = 'WebAssembly Virtual CPU'
   
   // 检测设备性能等级
-  let usage = 15 // 默认较低使用率
+  let usage: number
   
   // 基于打开的窗口数量估算CPU使用
   const windows = useStore.getState().windows

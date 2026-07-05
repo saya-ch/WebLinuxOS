@@ -1342,7 +1342,7 @@ registerCommand('rps', {
     
     const computerChoice = choices[Math.floor(Math.random() * choices.length)]
     
-    let result = ''
+    let result: string
     if (userChoice === computerChoice) {
       result = '平局！'
     } else if (
