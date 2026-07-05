@@ -10,6 +10,10 @@ registerCommand('ls', {
     const showAll = args.includes('-a') || args.includes('-la') || args.includes('-al')
     const showLong = args.includes('-l') || args.includes('-la') || args.includes('-al')
     const showRecursive = args.includes('-R')
+    const showHuman = args.includes('-h') || args.includes('-lh') || args.includes('-hl')
+    const sortBySize = args.includes('-S')
+    const sortByTime = args.includes('-t')
+    const reverseSort = args.includes('-r')
     
     const node = findNodeByPath(files, target)
     if (!node || node.type !== 'folder') {
@@ -27,9 +31,37 @@ registerCommand('ls', {
     }
     
     children = [...children].sort((a, b) => {
+      if (sortBySize) {
+        const sizeA = a.type === 'folder' ? 4096 : (a.content?.length || 0)
+        const sizeB = b.type === 'folder' ? 4096 : (b.content?.length || 0)
+        return reverseSort ? sizeA - sizeB : sizeB - sizeA
+      }
+      if (sortByTime) {
+        const timeA = a.modifiedAt ? new Date(a.modifiedAt).getTime() : 0
+        const timeB = b.modifiedAt ? new Date(b.modifiedAt).getTime() : 0
+        return reverseSort ? timeA - timeB : timeB - timeA
+      }
       if (a.type !== b.type) return a.type === 'folder' ? -1 : 1
-      return a.name.localeCompare(b.name)
+      return reverseSort ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)
     })
+    
+    const formatSize = (bytes: number): string => {
+      if (!showHuman) return bytes.toString()
+      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`
+      if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)}K`
+      return bytes.toString()
+    }
+    
+    const getFileColor = (name: string, type: string): string => {
+      if (type === 'folder') return `${escapeChar}[34m`
+      if (name.endsWith('.sh') || name.endsWith('.bash') || name.endsWith('.py')) return `${escapeChar}[32m`
+      if (name.endsWith('.js') || name.endsWith('.ts') || name.endsWith('.tsx')) return `${escapeChar}[33m`
+      if (name.endsWith('.md') || name.endsWith('.txt')) return `${escapeChar}[37m`
+      if (name.endsWith('.json')) return `${escapeChar}[36m`
+      if (name.endsWith('.html') || name.endsWith('.css')) return `${escapeChar}[35m`
+      if (name.endsWith('.zip') || name.endsWith('.tar') || name.endsWith('.gz')) return `${escapeChar}[31m`
+      return `${escapeChar}[0m`
+    }
     
     if (showLong) {
       const output = []
@@ -37,7 +69,7 @@ registerCommand('ls', {
         const size = c.type === 'folder' ? 4096 : (c.content?.length || 0)
         return sum + Math.ceil(size / 1024)
       }, 0)
-      output.push(`总用量 ${totalBlocks}`)
+      output.push(`总用量 ${showHuman ? formatSize(totalBlocks * 1024) : totalBlocks}`)
       
       children.forEach((child) => {
         const permissions = child.type === 'folder' ? 'drwxr-xr-x' : '-rw-r--r--'
@@ -49,11 +81,11 @@ registerCommand('ls', {
           ? new Date(child.modifiedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
           : new Date().toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         
-        const color = child.type === 'folder' ? `${escapeChar}[34m` : child.name.endsWith('.exe') || child.name.endsWith('.sh') ? `${escapeChar}[32m` : `${escapeChar}[0m`
+        const color = getFileColor(child.name, child.type)
         const name = `${color}${child.name}${escapeChar}[0m`
         
         output.push(
-          `${permissions} ${links.toString().padStart(3)} ${owner.padEnd(6)} ${group.padEnd(6)} ${size.toString().padStart(8)} ${date.padEnd(15)} ${name}`
+          `${permissions} ${links.toString().padStart(3)} ${owner.padEnd(6)} ${group.padEnd(6)} ${formatSize(size).padStart(8)} ${date.padEnd(15)} ${name}`
         )
       })
       
@@ -74,7 +106,7 @@ registerCommand('ls', {
       return { output: output.join('\n') }
     } else {
       const items = children.map((child) => {
-        const color = child.type === 'folder' ? `${escapeChar}[34m` : child.name.endsWith('.exe') || child.name.endsWith('.sh') ? `${escapeChar}[32m` : `${escapeChar}[0m`
+        const color = getFileColor(child.name, child.type)
         return `${color}${child.name}${escapeChar}[0m`
       })
       
@@ -82,8 +114,8 @@ registerCommand('ls', {
     }
   },
   description: '列出目录内容',
-  usage: 'ls [-a] [-l] [-R] [路径]',
-  examples: ['ls', 'ls -la', 'ls -R /home/user', 'ls /home/user/documents']
+  usage: 'ls [-a] [-l] [-h] [-R] [-S] [-t] [-r] [路径]',
+  examples: ['ls', 'ls -la', 'ls -lh', 'ls -R /home/user', 'ls -S /home/user', 'ls -t /home/user']
 })
 
 registerCommand('cd', {
@@ -135,21 +167,65 @@ registerCommand('cat', {
     const { args, cwd, files } = context
     
     if (args.length === 0) {
-      return { output: 'cat: 缺少操作数' }
+      return { output: 'cat: 缺少操作数\n用法: cat <文件>...' }
     }
     
-    const resolved = resolvePath(cwd, args[0])
-    const node = findNodeByPath(files, resolved)
+    const showNumbers = args.includes('-n') || args.includes('--number')
+    const showNonBlank = args.includes('-b') || args.includes('--number-nonblank')
+    const squeezeBlank = args.includes('-s') || args.includes('--squeeze-blank')
     
-    if (node && node.type === 'file') {
-      return { output: node.content || '' }
+    const fileArgs = args.filter(arg => !arg.startsWith('-'))
+    
+    if (fileArgs.length === 0) {
+      return { output: 'cat: 缺少操作数\n用法: cat <文件>...' }
     }
     
-    return { output: `cat: ${args[0]}: 没有那个文件或目录` }
+    let output = ''
+    
+    for (const fileArg of fileArgs) {
+      const resolved = resolvePath(cwd, fileArg)
+      const node = findNodeByPath(files, resolved)
+      
+      if (!node) {
+        output += `cat: ${fileArg}: 没有那个文件或目录\n`
+        continue
+      }
+      
+      if (node.type === 'folder') {
+        output += `cat: ${fileArg}: 是一个目录\n`
+        continue
+      }
+      
+      let content = node.content || ''
+      
+      if (squeezeBlank) {
+        content = content.replace(/\n{3,}/g, '\n\n')
+      }
+      
+      const lines = content.split('\n')
+      let lineNum = 1
+      
+      lines.forEach((line) => {
+        if (showNonBlank && line.trim() === '') {
+          output += '\n'
+        } else if (showNumbers || (showNonBlank && line.trim() !== '')) {
+          output += `${lineNum.toString().padStart(6)}  ${line}\n`
+          lineNum++
+        } else {
+          output += `${line}\n`
+        }
+      })
+      
+      if (fileArgs.length > 1 && fileArg !== fileArgs[fileArgs.length - 1]) {
+        output += '\n'
+      }
+    }
+    
+    return { output: output.trimEnd() }
   },
   description: '显示文件内容',
-  usage: 'cat <文件>',
-  examples: ['cat README.md', 'cat /etc/hosts']
+  usage: 'cat [-n] [-b] [-s] <文件>...',
+  examples: ['cat README.md', 'cat -n file.txt', 'cat file1.txt file2.txt']
 })
 
 registerCommand('head', {
@@ -157,22 +233,44 @@ registerCommand('head', {
     const { args, cwd, files } = context
     
     if (args.length === 0) {
-      return { output: 'head: 缺少操作数' }
+      return { output: 'head: 缺少操作数\n用法: head [-n <行数>] <文件>' }
     }
     
-    const resolved = resolvePath(cwd, args[0])
+    let linesCount = 10
+    let fileArg = args[0]
+    
+    if (args[0] === '-n') {
+      linesCount = parseInt(args[1]) || 10
+      fileArg = args[2]
+    } else if (args[0].startsWith('-n')) {
+      linesCount = parseInt(args[0].slice(2)) || 10
+      fileArg = args[1]
+    } else if (args[0].startsWith('-')) {
+      linesCount = parseInt(args[0].slice(1)) || 10
+      fileArg = args[1]
+    }
+    
+    if (!fileArg) {
+      return { output: 'head: 缺少操作数\n用法: head [-n <行数>] <文件>' }
+    }
+    
+    const resolved = resolvePath(cwd, fileArg)
     const node = findNodeByPath(files, resolved)
     
-    if (node && node.type === 'file') {
-      const lines = (node.content || '').split('\n')
-      return { output: lines.slice(0, 10).join('\n') }
+    if (!node) {
+      return { output: `head: ${fileArg}: 没有那个文件或目录` }
     }
     
-    return { output: `head: ${args[0]}: 没有那个文件或目录` }
+    if (node.type === 'folder') {
+      return { output: `head: ${fileArg}: 是一个目录` }
+    }
+    
+    const lines = (node.content || '').split('\n')
+    return { output: lines.slice(0, linesCount).join('\n') }
   },
   description: '显示文件开头部分',
-  usage: 'head <文件>',
-  examples: ['head README.md']
+  usage: 'head [-n <行数>] <文件>',
+  examples: ['head README.md', 'head -n 5 file.txt', 'head -20 log.txt']
 })
 
 registerCommand('tail', {
@@ -180,53 +278,121 @@ registerCommand('tail', {
     const { args, cwd, files } = context
     
     if (args.length === 0) {
-      return { output: 'tail: 缺少操作数' }
+      return { output: 'tail: 缺少操作数\n用法: tail [-n <行数>] <文件>' }
     }
     
-    const resolved = resolvePath(cwd, args[0])
+    let linesCount = 10
+    let fileArg = args[0]
+    
+    if (args[0] === '-n') {
+      linesCount = parseInt(args[1]) || 10
+      fileArg = args[2]
+    } else if (args[0].startsWith('-n')) {
+      linesCount = parseInt(args[0].slice(2)) || 10
+      fileArg = args[1]
+    } else if (args[0].startsWith('-')) {
+      linesCount = parseInt(args[0].slice(1)) || 10
+      fileArg = args[1]
+    }
+    
+    if (!fileArg) {
+      return { output: 'tail: 缺少操作数\n用法: tail [-n <行数>] <文件>' }
+    }
+    
+    const resolved = resolvePath(cwd, fileArg)
     const node = findNodeByPath(files, resolved)
     
-    if (node && node.type === 'file') {
-      const lines = (node.content || '').split('\n')
-      return { output: lines.slice(-10).join('\n') }
+    if (!node) {
+      return { output: `tail: ${fileArg}: 没有那个文件或目录` }
     }
     
-    return { output: `tail: ${args[0]}: 没有那个文件或目录` }
+    if (node.type === 'folder') {
+      return { output: `tail: ${fileArg}: 是一个目录` }
+    }
+    
+    const lines = (node.content || '').split('\n')
+    return { output: lines.slice(-linesCount).join('\n') }
   },
   description: '显示文件末尾部分',
-  usage: 'tail <文件>',
-  examples: ['tail log.txt']
+  usage: 'tail [-n <行数>] <文件>',
+  examples: ['tail log.txt', 'tail -n 5 file.txt', 'tail -20 output.txt']
 })
 
 registerCommand('mkdir', {
   handler: (context: CommandContext): CommandResult => {
     const { args, cwd, files, addFile } = context
     
-    if (args.length === 0) {
-      return { output: 'mkdir: 缺少操作数' }
+    const createParents = args.includes('-p') || args.includes('--parents')
+    const verbose = args.includes('-v') || args.includes('--verbose')
+    
+    const dirArgs = args.filter(arg => !arg.startsWith('-'))
+    
+    if (dirArgs.length === 0) {
+      return { output: 'mkdir: 缺少操作数\n用法: mkdir [-p] [-v] <目录名>...' }
     }
     
-    const resolved = resolvePath(cwd, args[0])
-    const parts = resolved.split('/').filter(Boolean)
-    const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
-    const dirName = parts[parts.length - 1]
-    const parentNode = findNodeByPath(files, parentPath)
-    const existing = findNodeByPath(files, resolved)
+    let output = ''
     
-    if (existing) {
-      return { output: `mkdir: 无法创建目录'${args[0]}': 文件已存在` }
+    for (const dirArg of dirArgs) {
+      const resolved = resolvePath(cwd, dirArg)
+      const parts = resolved.split('/').filter(Boolean)
+      const parentPath = '/' + parts.slice(0, -1).join('/') || '/'
+      const dirName = parts[parts.length - 1]
+      const existing = findNodeByPath(files, resolved)
+      
+      if (existing) {
+        if (existing.type === 'folder') {
+          if (verbose) {
+            output += `mkdir: 已存在目录 '${dirArg}'\n`
+          }
+        } else {
+          output += `mkdir: 无法创建目录'${dirArg}': 文件已存在\n`
+        }
+        continue
+      }
+      
+      if (createParents) {
+        let currentPath = '/'
+        for (let i = 0; i < parts.length; i++) {
+          currentPath = currentPath === '/' ? `/${parts[i]}` : `${currentPath}/${parts[i]}`
+          const currentNode = findNodeByPath(files, currentPath)
+          if (!currentNode) {
+            const parent = findNodeByPath(files, currentPath === '/' ? '/' : currentPath.substring(0, currentPath.lastIndexOf('/')))
+            if (parent && parent.type === 'folder' && addFile) {
+              addFile(parent.id, parts[i], 'folder')
+              if (verbose) {
+                output += `mkdir: 创建目录 '${currentPath}'\n`
+              }
+            }
+          }
+        }
+      } else {
+        const parentNode = findNodeByPath(files, parentPath)
+        
+        if (!parentNode) {
+          output += `mkdir: 无法创建目录'${dirArg}': 没有那个文件或目录\n`
+          continue
+        }
+        
+        if (parentNode.type !== 'folder') {
+          output += `mkdir: 无法创建目录'${dirArg}': 不是目录\n`
+          continue
+        }
+        
+        if (addFile) {
+          addFile(parentNode.id, dirName, 'folder')
+          if (verbose) {
+            output += `mkdir: 创建目录 '${dirArg}'\n`
+          }
+        }
+      }
     }
     
-    if (parentNode && parentNode.type === 'folder' && addFile) {
-      addFile(parentNode.id, dirName, 'folder')
-      return { output: '' }
-    }
-    
-    return { output: `mkdir: 无法创建目录'${args[0]}': 没有那个文件或目录` }
+    return { output: output.trimEnd() }
   },
   description: '创建目录',
-  usage: 'mkdir <目录名>',
-  examples: ['mkdir projects', 'mkdir /home/user/docs']
+  usage: 'mkdir [-p] [-v] <目录名>...',
+  examples: ['mkdir projects', 'mkdir -p /home/user/docs/subdir', 'mkdir -v newdir']
 })
 
 registerCommand('touch', {
@@ -264,38 +430,55 @@ registerCommand('rm', {
   handler: (context: CommandContext): CommandResult => {
     const { args, cwd, files, deleteFile } = context
     
-    if (args.length === 0) {
-      return { output: 'rm: 缺少操作数' }
+    const recursive = args.includes('-r') || args.includes('-rf') || args.includes('-fr')
+    const force = args.includes('-f') || args.includes('-rf') || args.includes('-fr')
+    const verbose = args.includes('-v') || args.includes('--verbose')
+    const interactive = args.includes('-i') || args.includes('--interactive')
+    
+    const targetArgs = args.filter(arg => !arg.startsWith('-'))
+    
+    if (targetArgs.length === 0) {
+      return { output: 'rm: 缺少操作数\n用法: rm [-f] [-i] [-r] [-v] <文件或目录>...' }
     }
     
-    const recursive = args.includes('-r') || args.includes('-rf')
+    let output = ''
     
-    const targetArg = args.find(arg => !arg.startsWith('-'))
-    if (!targetArg) {
-      return { output: 'rm: 缺少操作数' }
+    for (const targetArg of targetArgs) {
+      const resolved = resolvePath(cwd, targetArg)
+      const node = findNodeByPath(files, resolved)
+      
+      if (!node) {
+        if (!force) {
+          output += `rm: 无法删除'${targetArg}': 没有那个文件或目录\n`
+        }
+        continue
+      }
+      
+      if (node.type === 'folder' && !recursive) {
+        output += `rm: 无法删除'${targetArg}': 是一个目录 (使用 -r 参数递归删除)\n`
+        continue
+      }
+      
+      if (interactive) {
+        output += `rm: 是否删除 ${node.type === 'folder' ? '目录' : '文件'} '${targetArg}'? y/N\n`
+        continue
+      }
+      
+      if (deleteFile) {
+        deleteFile(node.id)
+        if (verbose) {
+          output += `rm: 删除 '${targetArg}'\n`
+        }
+      } else {
+        output += `rm: 无法删除'${targetArg}': 权限不够\n`
+      }
     }
     
-    const resolved = resolvePath(cwd, targetArg)
-    const node = findNodeByPath(files, resolved)
-    
-    if (!node) {
-      return { output: `rm: 无法删除'${targetArg}': 没有那个文件或目录` }
-    }
-    
-    if (node.type === 'folder' && !recursive) {
-      return { output: `rm: 无法删除'${targetArg}': 是一个目录 (使用 -r 参数递归删除)` }
-    }
-    
-    if (deleteFile) {
-      deleteFile(node.id)
-      return { output: '' }
-    }
-    
-    return { output: `rm: 无法删除'${targetArg}': 权限不够` }
+    return { output: output.trimEnd() }
   },
   description: '删除文件或目录',
-  usage: 'rm [-r] <文件或目录>',
-  examples: ['rm oldfile.txt', 'rm -rf temp/']
+  usage: 'rm [-f] [-i] [-r] [-v] <文件或目录>...',
+  examples: ['rm oldfile.txt', 'rm -rf temp/', 'rm -i important.txt', 'rm -v file1.txt file2.txt']
 })
 
 registerCommand('tree', {

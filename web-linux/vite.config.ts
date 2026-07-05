@@ -60,9 +60,28 @@ export default defineConfig(() => {
             if (id.includes('node_modules/pyodide')) {
               return 'vendor-pyodide'
             }
+            if (id.includes('node_modules/monaco-editor')) {
+              return 'vendor-monaco'
+            }
+            if (id.includes('node_modules/codemirror')) {
+              return 'vendor-codemirror'
+            }
+            if (id.includes('node_modules/prismjs')) {
+              return 'vendor-prism'
+            }
+            if (id.includes('node_modules/@codemirror')) {
+              return 'vendor-codemirror'
+            }
             if (id.includes('src/apps/')) {
               const match = id.match(/src\/apps\/([A-Za-z][A-Za-z0-9_-]*)\.tsx/)
               if (match) return `app-${match[1]}`
+            }
+            if (id.includes('src/apps/terminal/')) {
+              return 'app-terminal'
+            }
+            if (id.includes('src/components/')) {
+              const match = id.match(/src\/components\/([A-Za-z][A-Za-z0-9_-]*)\//)
+              if (match) return `component-${match[1]}`
             }
             return undefined
           },
@@ -73,7 +92,7 @@ export default defineConfig(() => {
       },
     },
     optimizeDeps: {
-      include: ['react', 'react-dom', 'zustand'],
+      include: ['react', 'react-dom', 'zustand', 'lucide-react'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
     },
@@ -83,6 +102,10 @@ export default defineConfig(() => {
       host: true,
       hmr: {
         overlay: true,
+      },
+      headers: {
+        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin',
       },
     },
     preview: {
