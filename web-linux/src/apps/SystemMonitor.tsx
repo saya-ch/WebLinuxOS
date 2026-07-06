@@ -1,776 +1,738 @@
-import { useState, useEffect, useCallback, useRef, memo } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, TrendingUp, TrendingDown } from 'lucide-react'
 
 interface SystemInfo {
-  cpuUsage: number
-  memoryUsage: number
-  memoryUsed: number
-  memoryTotal: number
-  diskUsage: number
-  networkLatency: number
-  networkDownload: number
-  networkUpload: number
-  networkStatus: 'online' | 'offline' | 'slow'
-  fps: number
-  jsHeapUsed: number
-  jsHeapTotal: number
+  cpu: number
+  memory: number
+  network: number
+  disk: number
+  battery: number
+  uptime: string
 }
 
 interface Process {
-  id: string
+  id: number
   name: string
   cpu: number
   memory: number
-  status: 'running' | 'idle' | 'stopped'
+  status: 'running' | 'sleeping' | 'idle'
 }
 
-const mockProcesses: Process[] = [
-  { id: '1', name: 'Desktop Environment', cpu: 15, memory: 120, status: 'running' },
-  { id: '2', name: 'Window Manager', cpu: 8, memory: 45, status: 'running' },
-  { id: '3', name: 'Terminal', cpu: 2, memory: 25, status: 'running' },
-  { id: '4', name: 'Code Editor', cpu: 12, memory: 80, status: 'running' },
-  { id: '5', name: 'Weather App', cpu: 1, memory: 15, status: 'idle' },
-  { id: '6', name: 'File Manager', cpu: 3, memory: 35, status: 'idle' },
-  { id: '7', name: 'Browser', cpu: 25, memory: 150, status: 'running' },
-  { id: '8', name: 'Music Player', cpu: 5, memory: 40, status: 'running' },
-]
-
-const SystemMonitor = memo(function SystemMonitor() {
+const SystemMonitor = () => {
   const [systemInfo, setSystemInfo] = useState<SystemInfo>({
-    cpuUsage: 35,
-    memoryUsage: 45,
-    memoryUsed: 3.2,
-    memoryTotal: 8,
-    diskUsage: 60,
-    networkLatency: 50,
-    networkDownload: 0,
-    networkUpload: 0,
-    networkStatus: 'online',
-    fps: 60,
-    jsHeapUsed: 0,
-    jsHeapTotal: 0,
+    cpu: 0,
+    memory: 0,
+    network: 0,
+    disk: 45,
+    battery: 87,
+    uptime: '00:00:00',
   })
   
-  const [processes, setProcesses] = useState<Process[]>(mockProcesses)
-  const [selectedProcess, setSelectedProcess] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'overview' | 'processes' | 'performance'>('overview')
-  const [historyData, setHistoryData] = useState<{ cpu: number[]; memory: number[]; fps: number[]; latency: number[] }>({
-    cpu: [],
-    memory: [],
-    fps: [],
-    latency: []
-  })
-  
-  const frameCountRef = useRef(0)
-  const lastTimeRef = useRef(performance.now())
-  const fpsRef = useRef(60)
+  const [processes, setProcesses] = useState<Process[]>([])
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'processes' | 'network' | 'storage'>('overview')
+  const [history, setHistory] = useState<{ time: string; cpu: number; memory: number }[]>([])
+  const startTime = useRef(Date.now())
 
-  const getMemoryInfo = useCallback((): { used: number; total: number; percent: number } => {
-    const performanceMemory = (window.performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+  const generateProcesses = useCallback(() => {
+    const processNames = [
+      'systemd', 'chrome', 'node', 'python', 'firefox', 'vscode', 'nginx', 'postgres',
+      'redis', 'docker', 'git', 'npm', 'electron', 'java', 'dotnet', 'rustc',
+      'webpack', 'babel', 'eslint', 'prettier', 'tailwind', 'sass', 'gulp', 'webpack-dev-server'
+    ]
     
-    if (performanceMemory) {
-      const usedMB = performanceMemory.usedJSHeapSize / (1024 * 1024)
-      const limitMB = performanceMemory.jsHeapSizeLimit / (1024 * 1024)
-      return {
-        used: usedMB,
-        total: limitMB,
-        percent: (usedMB / limitMB) * 100
-      }
-    }
-    
-    const deviceMemory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 8
-    return {
-      used: deviceMemory * 0.4,
-      total: deviceMemory,
-      percent: 40
-    }
-  }, [])
-
-  const measureFPS = useCallback(() => {
-    frameCountRef.current++
-    const currentTime = performance.now()
-    
-    if (currentTime - lastTimeRef.current >= 1000) {
-      fpsRef.current = Math.round((frameCountRef.current * 1000) / (currentTime - lastTimeRef.current))
-      frameCountRef.current = 0
-      lastTimeRef.current = currentTime
-    }
-    
-    requestAnimationFrame(measureFPS)
-  }, [])
-
-  const measureNetworkLatency = useCallback(async (): Promise<{ latency: number; status: 'online' | 'offline' | 'slow' }> => {
-    const startTime = performance.now()
-    try {
-      await fetch('https://api.github.com/repos/saya-ch/WebLinuxOS', {
-        method: 'HEAD',
-        cache: 'no-store'
+    const newProcesses: Process[] = []
+    for (let i = 0; i < 25; i++) {
+      newProcesses.push({
+        id: Math.floor(Math.random() * 65535),
+        name: processNames[Math.floor(Math.random() * processNames.length)],
+        cpu: Math.random() * 30,
+        memory: Math.random() * 15,
+        status: Math.random() > 0.7 ? 'running' : Math.random() > 0.5 ? 'sleeping' : 'idle',
       })
-      const endTime = performance.now()
-      const latency = Math.round(endTime - startTime)
-      
-      const status: 'online' | 'offline' | 'slow' = latency > 500 ? 'slow' : 'online'
-      
-      return { latency, status }
-    } catch {
-      return { latency: 999, status: 'offline' }
     }
+    
+    return newProcesses.sort((a, b) => b.cpu - a.cpu)
   }, [])
 
-  const measureNetworkSpeed = useCallback(async () => {
-    const startTime = performance.now()
-    try {
-      const response = await fetch('https://github.githubassets.com/images/spinners/octocat-spinner-128.gif', {
-        cache: 'no-store'
-      })
-      const blob = await response.blob()
-      const endTime = performance.now()
-      const duration = (endTime - startTime) / 1000
-      const bytes = blob.size
-      const speedMbps = (bytes * 8 / 1024 / 1024 / duration).toFixed(2)
-      
-      return parseFloat(speedMbps)
-    } catch {
-      return 0
-    }
-  }, [])
-  
   useEffect(() => {
-    requestAnimationFrame(measureFPS)
-  }, [measureFPS])
-  
+    setProcesses(generateProcesses())
+  }, [generateProcesses])
+
   useEffect(() => {
     const interval = setInterval(() => {
-      const memInfo = getMemoryInfo()
-      
-      setSystemInfo(prev => {
-        const newCpuUsage = Math.max(5, Math.min(95, prev.cpuUsage + (Math.random() - 0.5) * 10))
-        const newMemoryUsage = Math.max(20, Math.min(90, memInfo.percent + (Math.random() - 0.5) * 5))
-        
-        setHistoryData(hPrev => ({
-          cpu: [...hPrev.cpu.slice(-30), newCpuUsage],
-          memory: [...hPrev.memory.slice(-30), newMemoryUsage],
-          fps: [...hPrev.fps.slice(-30), fpsRef.current],
-          latency: [...hPrev.latency.slice(-30), prev.networkLatency]
-        }))
-        
-        return {
-          ...prev,
-          cpuUsage: newCpuUsage,
-          memoryUsage: newMemoryUsage,
-          memoryUsed: parseFloat(memInfo.used.toFixed(1)),
-          memoryTotal: parseFloat(memInfo.total.toFixed(1)),
-          jsHeapUsed: parseFloat((memInfo.used / 1024).toFixed(2)),
-          jsHeapTotal: parseFloat((memInfo.total / 1024).toFixed(2)),
-          fps: fpsRef.current,
-        }
-      })
-      
-      setProcesses(prev => prev.map(p => ({
-        ...p,
-        cpu: Math.max(0, Math.min(100, p.cpu + (Math.random() - 0.5) * 5)),
-        memory: Math.max(5, p.memory + (Math.random() - 0.5) * 10)
-      })))
-    }, 1000)
-    
-    return () => clearInterval(interval)
-  }, [getMemoryInfo])
-
-  useEffect(() => {
-    const checkNetwork = async () => {
-      const { latency, status } = await measureNetworkLatency()
-      const downloadSpeed = await measureNetworkSpeed()
+      const elapsed = Date.now() - startTime.current
+      const hours = Math.floor(elapsed / 3600000)
+      const minutes = Math.floor((elapsed % 3600000) / 60000)
+      const seconds = Math.floor((elapsed % 60000) / 1000)
       
       setSystemInfo(prev => ({
         ...prev,
-        networkLatency: latency,
-        networkDownload: downloadSpeed,
-        networkUpload: downloadSpeed * 0.3,
-        networkStatus: status
+        cpu: Math.min(100, prev.cpu + (Math.random() - 0.5) * 10),
+        memory: Math.min(100, prev.memory + (Math.random() - 0.5) * 5),
+        network: Math.random() * 100,
+        uptime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
       }))
-    }
-
-    checkNetwork()
-    const networkInterval = setInterval(checkNetwork, 10000)
-    
-    return () => clearInterval(networkInterval)
-  }, [measureNetworkLatency, measureNetworkSpeed])
-
-  useEffect(() => {
-    const handleOnline = () => {
-      setSystemInfo(prev => ({ ...prev, networkStatus: 'online' }))
-    }
-    const handleOffline = () => {
-      setSystemInfo(prev => ({ ...prev, networkStatus: 'offline', networkLatency: 999 }))
-    }
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-    
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
-  
-  const getUsageColor = useCallback((usage: number) => {
-    if (usage < 50) return '#22c55e'
-    if (usage < 75) return '#eab308'
-    return '#ef4444'
-  }, [])
-  
-  const renderProgressBar = useCallback((value: number, max: number = 100) => {
-    const percentage = (value / max) * 100
-    return (
-      <div style={{
-        width: '100%',
-        height: 24,
-        background: '#1f2937',
-        borderRadius: 12,
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          width: `${percentage}%`,
-          height: '100%',
-          background: getUsageColor(percentage),
-          borderRadius: 12,
-          transition: 'width 0.5s ease'
-        }} />
-      </div>
-    )
-  }, [getUsageColor])
-  
-  const renderMiniGraph = useCallback((data: number[], color: string) => {
-    if (data.length < 2) return null
-    
-    const max = Math.max(...data, 100)
-    const min = Math.min(...data, 0)
-    const range = max - min || 1
-    
-    const points = data.map((v, i) => {
-      const x = (i / (data.length - 1)) * 100
-      const y = 100 - ((v - min) / range) * 100
-      return `${x},${y}`
-    }).join(' ')
-    
-    return (
-      <svg style={{ width: '100%', height: 60 }} viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <polyline
-          fill={`url(#gradient-${color.replace('#', '')})`}
-          stroke={color}
-          strokeWidth="2"
-          points={`0,100 ${points} 100,100`}
-        />
-        <polyline
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          points={points}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }, [])
-
-  const hardwareConcurrency = (navigator as unknown as { hardwareConcurrency?: number }).hardwareConcurrency || 4
-  const deviceMemory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 8
-  
-  return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      background: '#0f172a',
-      color: '#e2e8f0',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
-      <div style={{
-        display: 'flex',
-        gap: 0,
-        borderBottom: '1px solid #1e293b'
-      }}>
-        {(['overview', 'processes', 'performance'] as const).map(mode => (
-          <button
-            key={mode}
-            onClick={() => setViewMode(mode)}
-            style={{
-              padding: '12px 20px',
-              border: 'none',
-              background: viewMode === mode ? '#1e293b' : 'transparent',
-              color: viewMode === mode ? '#3b82f6' : '#94a3b8',
-              cursor: 'pointer',
-              borderBottom: viewMode === mode ? '2px solid #3b82f6' : 'none',
-              fontSize: 14,
-              fontWeight: 500
-            }}
-          >
-            {mode === 'overview' ? '概览' : mode === 'processes' ? '进程' : '性能'}
-          </button>
-        ))}
-      </div>
       
-      <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
-        {viewMode === 'overview' && (
-          <div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 16,
-              marginBottom: 24
-            }}>
-              <div style={{
-                padding: 20,
-                background: '#1e293b',
-                borderRadius: 12,
-                border: '1px solid #334155'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ fontSize: 14, color: '#94a3b8' }}>CPU 使用率</span>
-                  <span style={{ fontSize: 24, fontWeight: 'bold', color: getUsageColor(systemInfo.cpuUsage) }}>
-                    {systemInfo.cpuUsage.toFixed(1)}%
-                  </span>
-                </div>
-                {renderProgressBar(systemInfo.cpuUsage)}
-                <div style={{ marginTop: 12 }}>
-                  {renderMiniGraph(historyData.cpu, '#3b82f6')}
-                </div>
-                <div style={{ marginTop: 8, fontSize: 12, color: '#64748b' }}>
-                  逻辑核心: {hardwareConcurrency}
-                </div>
-              </div>
-              
-              <div style={{
-                padding: 20,
-                background: '#1e293b',
-                borderRadius: 12,
-                border: '1px solid #334155'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ fontSize: 14, color: '#94a3b8' }}>内存使用率</span>
-                  <span style={{ fontSize: 24, fontWeight: 'bold', color: getUsageColor(systemInfo.memoryUsage) }}>
-                    {systemInfo.memoryUsage.toFixed(1)}%
-                  </span>
-                </div>
-                {renderProgressBar(systemInfo.memoryUsage)}
-                <div style={{ marginTop: 12 }}>
-                  {renderMiniGraph(historyData.memory, '#8b5cf6')}
-                </div>
-                <div style={{ marginTop: 8, fontSize: 12, color: '#64748b' }}>
-                  已用: {systemInfo.memoryUsed.toFixed(1)} GB / {systemInfo.memoryTotal.toFixed(1)} GB
-                </div>
-              </div>
-            </div>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(6, 1fr)',
-              gap: 16
-            }}>
-              <div style={{
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 32, color: systemInfo.networkLatency > 500 ? '#ef4444' : systemInfo.networkLatency > 200 ? '#eab308' : '#22c55e' }}>
-                  {systemInfo.networkLatency}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>ms</div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>网络延迟</div>
-              </div>
-              
-              <div style={{
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 32, color: '#3b82f6' }}>
-                  {systemInfo.networkDownload > 0 ? systemInfo.networkDownload.toFixed(2) : '--'}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Mbps</div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>下载速度</div>
-              </div>
-              
-              <div style={{
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 32, color: '#8b5cf6' }}>
-                  {systemInfo.networkUpload > 0 ? systemInfo.networkUpload.toFixed(2) : '--'}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Mbps</div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>上传速度</div>
-              </div>
-              
-              <div style={{
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 32, color: '#3b82f6' }}>
-                  {systemInfo.fps}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>FPS</div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>实时帧率</div>
-              </div>
-              
-              <div style={{
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 32, color: getUsageColor(systemInfo.diskUsage) }}>
-                  {systemInfo.diskUsage}%
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>60 GB / 100 GB</div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>磁盘使用</div>
-              </div>
-              
-              <div style={{
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 32, color: '#f97316' }}>
-                  {systemInfo.jsHeapUsed > 0 ? systemInfo.jsHeapUsed.toFixed(2) : '--'}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>GB</div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>JS堆内存</div>
-              </div>
-            </div>
-            
-            <div style={{
-              marginTop: 24,
-              padding: 20,
-              background: '#1e293b',
-              borderRadius: 12,
-              border: '1px solid #334155'
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 16 }}>系统信息</div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: 12,
-                fontSize: 13
-              }}>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>操作系统: </span>
-                  <span>WebLinuxOS 9.2.0</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>浏览器: </span>
-                  <span>{navigator.userAgent.split(' ').slice(-1)[0]}</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>处理器: </span>
-                  <span>{hardwareConcurrency} 核心 Virtual CPU</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>内存: </span>
-                  <span>{deviceMemory} GB RAM</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>运行时间: </span>
-                  <span>{Math.floor(performance.now() / 1000 / 60)} 分钟</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>进程数: </span>
-                  <span>{processes.length}</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>屏幕分辨率: </span>
-                  <span>{window.screen.width} x {window.screen.height}</span>
-                </div>
-                <div>
-                  <span style={{ color: '#94a3b8' }}>语言: </span>
-                  <span>{navigator.language}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {viewMode === 'processes' && (
-          <div>
-            <div style={{
-              background: '#1e293b',
-              borderRadius: 12,
-              border: '1px solid #334155',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '40px 1fr 80px 80px 80px',
-                padding: '12px 16px',
-                background: '#334155',
-                fontSize: 12,
-                color: '#94a3b8',
-                fontWeight: 500
-              }}>
-                <div>ID</div>
-                <div>进程名</div>
-                <div>CPU %</div>
-                <div>内存 MB</div>
-                <div>状态</div>
-              </div>
-              
-              {processes.map(process => (
-                <div
-                  key={process.id}
-                  onClick={() => setSelectedProcess(process.id)}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '40px 1fr 80px 80px 80px',
-                    padding: '12px 16px',
-                    background: selectedProcess === process.id ? '#334155' : 'transparent',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    borderBottom: '1px solid #334155'
-                  }}
-                >
-                  <div style={{ color: '#64748b' }}>{process.id}</div>
-                  <div>{process.name}</div>
-                  <div style={{ color: getUsageColor(process.cpu) }}>{process.cpu.toFixed(1)}%</div>
-                  <div style={{ color: '#8b5cf6' }}>{process.memory.toFixed(0)}</div>
-                  <div>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: 4,
-                      fontSize: 11,
-                      background: process.status === 'running' ? '#22c55e20' : '#64748b20',
-                      color: process.status === 'running' ? '#22c55e' : '#64748b'
-                    }}>
-                      {process.status === 'running' ? '运行中' : process.status === 'idle' ? '空闲' : '已停止'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {selectedProcess && (
-              <div style={{
-                marginTop: 16,
-                padding: 16,
-                background: '#1e293b',
-                borderRadius: 12,
-                display: 'flex',
-                gap: 12
-              }}>
-                <button
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: 6,
-                    border: 'none',
-                    background: '#ef4444',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 13
-                  }}
-                >
-                  结束进程
-                </button>
-                <button
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: 6,
-                    border: '1px solid #334155',
-                    background: 'transparent',
-                    color: '#94a3b8',
-                    cursor: 'pointer',
-                    fontSize: 13
-                  }}
-                >
-                  查看详情
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-        
-        {viewMode === 'performance' && (
-          <div>
-            <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 16
-          }}>
-              <div style={{
-                padding: 20,
-                background: '#1e293b',
-                borderRadius: 12,
-                border: '1px solid #334155'
-              }}>
-                <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 12 }}>CPU 使用历史</div>
-                <div style={{ height: 150 }}>
-                  {renderMiniGraph(historyData.cpu, '#3b82f6')}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 12,
-                  fontSize: 12,
-                  color: '#64748b'
-                }}>
-                  <span>30秒前</span>
-                  <span>现在</span>
-                </div>
-              </div>
-              
-              <div style={{
-                padding: 20,
-                background: '#1e293b',
-                borderRadius: 12,
-                border: '1px solid #334155'
-              }}>
-                <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 12 }}>内存使用历史</div>
-                <div style={{ height: 150 }}>
-                  {renderMiniGraph(historyData.memory, '#8b5cf6')}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 12,
-                  fontSize: 12,
-                  color: '#64748b'
-                }}>
-                  <span>30秒前</span>
-                  <span>现在</span>
-                </div>
-              </div>
-              
-              <div style={{
-                padding: 20,
-                background: '#1e293b',
-                borderRadius: 12,
-                border: '1px solid #334155'
-              }}>
-                <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 12 }}>帧率历史</div>
-                <div style={{ height: 150 }}>
-                  {renderMiniGraph(historyData.fps, '#22c55e')}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 12,
-                  fontSize: 12,
-                  color: '#64748b'
-                }}>
-                  <span>30秒前</span>
-                  <span>现在</span>
-                </div>
-              </div>
-              
-              <div style={{
-                padding: 20,
-                background: '#1e293b',
-                borderRadius: 12,
-                border: '1px solid #334155'
-              }}>
-                <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 12 }}>网络延迟历史</div>
-                <div style={{ height: 150 }}>
-                  {renderMiniGraph(historyData.latency, '#f97316')}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 12,
-                  fontSize: 12,
-                  color: '#64748b'
-                }}>
-                  <span>30秒前</span>
-                  <span>现在</span>
-                </div>
-              </div>
-            </div>
-            
-            <div style={{
-              marginTop: 24,
-              padding: 20,
-              background: '#1e293b',
-              borderRadius: 12,
-              border: '1px solid #334155'
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 16 }}>性能统计</div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(6, 1fr)',
-                gap: 16
-              }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#3b82f6' }}>
-                    {historyData.cpu.length > 0 ? (historyData.cpu.reduce((a, b) => a + b, 0) / historyData.cpu.length).toFixed(1) : 0}%
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>平均CPU</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#8b5cf6' }}>
-                    {historyData.memory.length > 0 ? (historyData.memory.reduce((a, b) => a + b, 0) / historyData.memory.length).toFixed(1) : 0}%
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>平均内存</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#22c55e' }}>
-                    {historyData.fps.length > 0 ? (historyData.fps.reduce((a, b) => a + b, 0) / historyData.fps.length).toFixed(1) : 0}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>平均FPS</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#ef4444' }}>
-                    {Math.max(...historyData.cpu, 0).toFixed(1)}%
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>峰值CPU</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#f97316' }}>
-                    {Math.max(...historyData.memory, 0).toFixed(1)}%
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>峰值内存</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#eab308' }}>
-                    {Math.min(...historyData.fps, 100).toFixed(0)}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>最低FPS</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '8px 16px',
-        background: '#1e293b',
-        borderTop: '1px solid #334155',
-        fontSize: 12,
-        color: '#64748b'
-      }}>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <span>CPU: {systemInfo.cpuUsage.toFixed(1)}%</span>
-          <span>内存: {systemInfo.memoryUsage.toFixed(1)}%</span>
-          <span>FPS: {systemInfo.fps}</span>
+      setHistory(prev => {
+        const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        const newHistory = [...prev, { time: now, cpu: systemInfo.cpu, memory: systemInfo.memory }]
+        if (newHistory.length > 30) newHistory.shift()
+        return newHistory
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [systemInfo.cpu, systemInfo.memory])
+
+  const getStatusColor = (status: Process['status']) => {
+    switch (status) {
+      case 'running': return '#22c55e'
+      case 'sleeping': return '#eab308'
+      case 'idle': return '#6b7280'
+    }
+  }
+
+  const getStatusText = (status: Process['status']) => {
+    switch (status) {
+      case 'running': return '运行中'
+      case 'sleeping': return '睡眠'
+      case 'idle': return '空闲'
+    }
+  }
+
+  const getUsageColor = (usage: number) => {
+    if (usage > 80) return '#ef4444'
+    if (usage > 60) return '#f59e0b'
+    return '#22c55e'
+  }
+
+  const renderGauge = (label: string, value: number, icon: React.ReactNode, color?: string) => {
+    const actualColor = color || getUsageColor(value)
+    return (
+      <div className="gauge-card">
+        <div className="gauge-header">
+          {icon}
+          <span>{label}</span>
         </div>
-        <div>
-          实时更新
+        <div className="gauge-value">
+          <span style={{ color: actualColor }}>{value.toFixed(1)}%</span>
+        </div>
+        <div className="gauge-bar">
+          <div className="gauge-fill" style={{ width: `${Math.min(value, 100)}%`, backgroundColor: actualColor }} />
+        </div>
+      </div>
+    )
+  }
+
+  const renderChart = () => {
+    if (history.length < 2) return null
+    
+    const maxValue = 100
+    const width = 100 / history.length
+    
+    return (
+      <div className="chart-container">
+        <div className="chart-header">
+          <span className="chart-label">CPU</span>
+          <span className="chart-label memory">内存</span>
+        </div>
+        <div className="chart-area">
+          {history.map((point, index) => (
+            <div key={index} className="chart-bar-group" style={{ width: `${width}%` }}>
+              <div 
+                className="chart-bar cpu" 
+                style={{ height: `${(point.cpu / maxValue) * 100}%` }}
+                title={`CPU: ${point.cpu.toFixed(1)}%`}
+              />
+              <div 
+                className="chart-bar memory" 
+                style={{ height: `${(point.memory / maxValue) * 100}%` }}
+                title={`内存: ${point.memory.toFixed(1)}%`}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="chart-footer">
+          <span>{history[0]?.time}</span>
+          <span>{history[history.length - 1]?.time}</span>
+        </div>
+      </div>
+    )
+  }
+
+  const renderOverview = () => (
+    <div className="tab-content">
+      <div className="gauges-grid">
+        {renderGauge('CPU使用率', systemInfo.cpu, <Cpu size={20} />)}
+        {renderGauge('内存使用', systemInfo.memory, <MemoryStick size={20} />)}
+        {renderGauge('磁盘空间', systemInfo.disk, <HardDrive size={20} />)}
+        {renderGauge('网络流量', systemInfo.network, <Wifi size={20} />)}
+        {renderGauge('电池电量', systemInfo.battery, <Battery size={20} />, systemInfo.battery < 20 ? '#ef4444' : '#22c55e')}
+      </div>
+      
+      <div className="uptime-card">
+        <div className="uptime-header">
+          <Clock size={20} />
+          <span>系统运行时间</span>
+        </div>
+        <div className="uptime-value">{systemInfo.uptime}</div>
+      </div>
+      
+      {renderChart()}
+    </div>
+  )
+
+  const renderProcesses = () => (
+    <div className="tab-content processes-tab">
+      <div className="processes-header">
+        <span>进程列表</span>
+        <span className="count">{processes.length} 个进程</span>
+      </div>
+      <div className="processes-table">
+        <div className="table-header">
+          <span>PID</span>
+          <span>进程名</span>
+          <span>CPU</span>
+          <span>内存</span>
+          <span>状态</span>
+        </div>
+        <div className="table-body">
+          {processes.map((proc, index) => (
+            <div key={index} className="table-row">
+              <span className="pid">{proc.id}</span>
+              <span className="name">{proc.name}</span>
+              <span className="cpu">{proc.cpu.toFixed(1)}%</span>
+              <span className="memory">{proc.memory.toFixed(1)}%</span>
+              <span className="status" style={{ color: getStatusColor(proc.status) }}>
+                {getStatusText(proc.status)}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   )
-})
+
+  const renderNetwork = () => (
+    <div className="tab-content network-tab">
+      <div className="network-status">
+        <div className="status-item online">
+          <Wifi size={24} />
+          <div>
+            <span className="status-label">网络状态</span>
+            <span className="status-value">已连接</span>
+          </div>
+        </div>
+        <div className="status-item">
+          <Activity size={24} />
+          <div>
+            <span className="status-label">IP地址</span>
+            <span className="status-value">192.168.1.100</span>
+          </div>
+        </div>
+        <div className="status-item">
+          <TrendingUp size={24} />
+          <div>
+            <span className="status-label">上传速度</span>
+            <span className="status-value">{(Math.random() * 10).toFixed(2)} MB/s</span>
+          </div>
+        </div>
+        <div className="status-item">
+          <TrendingDown size={24} />
+          <div>
+            <span className="status-label">下载速度</span>
+            <span className="status-value">{(Math.random() * 50).toFixed(2)} MB/s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderStorage = () => (
+    <div className="tab-content storage-tab">
+      <div className="storage-card">
+        <div className="storage-header">
+          <HardDrive size={20} />
+          <span>本地存储</span>
+        </div>
+        <div className="storage-info">
+          <div className="storage-bar">
+            <div className="storage-fill" style={{ width: `${systemInfo.disk}%` }} />
+          </div>
+          <div className="storage-text">
+            <span>已用: {systemInfo.disk.toFixed(0)}%</span>
+            <span>可用: {(100 - systemInfo.disk).toFixed(0)}%</span>
+          </div>
+        </div>
+        <div className="storage-details">
+          <div className="detail-item">
+            <span>总容量</span>
+            <span>512 GB</span>
+          </div>
+          <div className="detail-item">
+            <span>已使用</span>
+            <span>{(512 * systemInfo.disk / 100).toFixed(0)} GB</span>
+          </div>
+          <div className="detail-item">
+            <span>剩余空间</span>
+            <span>{(512 * (100 - systemInfo.disk) / 100).toFixed(0)} GB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="system-monitor">
+      <div className="monitor-header">
+        <div className="header-left">
+          <Activity className="header-icon" />
+          <h2>系统监视器</h2>
+        </div>
+        <div className="header-right">
+          <span className="system-status online">● 在线</span>
+        </div>
+      </div>
+
+      <div className="monitor-tabs">
+        {[
+          { id: 'overview', label: '概览' },
+          { id: 'processes', label: '进程' },
+          { id: 'network', label: '网络' },
+          { id: 'storage', label: '存储' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            className={`tab-btn ${selectedTab === tab.id ? 'active' : ''}`}
+            onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {selectedTab === 'overview' && renderOverview()}
+      {selectedTab === 'processes' && renderProcesses()}
+      {selectedTab === 'network' && renderNetwork()}
+      {selectedTab === 'storage' && renderStorage()}
+
+      <style>{`
+        .system-monitor {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          background: var(--window-bg, #1a1a2e);
+          color: var(--text-color, #e0e0e0);
+          padding: 16px;
+          overflow: hidden;
+        }
+
+        .monitor-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--border-color, #333);
+          margin-bottom: 12px;
+        }
+
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .header-icon {
+          width: 24px;
+          height: 24px;
+          color: #61afef;
+        }
+
+        .header-left h2 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        .header-right {
+          display: flex;
+          align-items: center;
+        }
+
+        .system-status {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          color: #6b7280;
+        }
+
+        .system-status.online {
+          color: #22c55e;
+        }
+
+        .monitor-tabs {
+          display: flex;
+          gap: 4px;
+          margin-bottom: 16px;
+        }
+
+        .tab-btn {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 4px;
+          background: transparent;
+          color: #9ca3af;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #e0e0e0;
+        }
+
+        .tab-btn.active {
+          background: #61afef;
+          color: #1a1a2e;
+        }
+
+        .tab-content {
+          flex: 1;
+          overflow-y: auto;
+        }
+
+        .gauges-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .gauge-card {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 12px;
+          border: 1px solid var(--border-color, #333);
+        }
+
+        .gauge-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #9ca3af;
+          font-size: 12px;
+          margin-bottom: 8px;
+        }
+
+        .gauge-value {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 8px;
+        }
+
+        .gauge-bar {
+          height: 6px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .gauge-fill {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 0.3s ease;
+        }
+
+        .uptime-card {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 16px;
+          border: 1px solid var(--border-color, #333);
+          margin-bottom: 16px;
+        }
+
+        .uptime-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #9ca3af;
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+
+        .uptime-value {
+          font-size: 32px;
+          font-weight: 700;
+          font-family: 'Monaco', 'Menlo', monospace;
+          color: #61afef;
+        }
+
+        .chart-container {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 16px;
+          border: 1px solid var(--border-color, #333);
+        }
+
+        .chart-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+
+        .chart-label {
+          font-size: 12px;
+          color: #61afef;
+        }
+
+        .chart-label.memory {
+          color: #a855f7;
+        }
+
+        .chart-area {
+          display: flex;
+          align-items: flex-end;
+          height: 120px;
+          gap: 2px;
+        }
+
+        .chart-bar-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-end;
+          height: 100%;
+          gap: 2px;
+        }
+
+        .chart-bar {
+          width: 6px;
+          border-radius: 3px;
+          transition: height 0.3s ease;
+        }
+
+        .chart-bar.cpu {
+          background: #61afef;
+        }
+
+        .chart-bar.memory {
+          background: #a855f7;
+        }
+
+        .chart-footer {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 12px;
+          font-size: 11px;
+          color: #6b7280;
+        }
+
+        .processes-tab {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .processes-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+          font-size: 14px;
+        }
+
+        .processes-header .count {
+          color: #6b7280;
+          font-size: 12px;
+        }
+
+        .processes-table {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          border: 1px solid var(--border-color, #333);
+          overflow: hidden;
+        }
+
+        .table-header {
+          display: grid;
+          grid-template-columns: 80px 1fr 60px 60px 80px;
+          padding: 10px 12px;
+          background: rgba(255, 255, 255, 0.05);
+          font-size: 12px;
+          color: #9ca3af;
+          font-weight: 500;
+        }
+
+        .table-body {
+          max-height: 400px;
+          overflow-y: auto;
+        }
+
+        .table-row {
+          display: grid;
+          grid-template-columns: 80px 1fr 60px 60px 80px;
+          padding: 8px 12px;
+          border-bottom: 1px solid var(--border-color, #333);
+          font-size: 13px;
+          transition: background 0.1s;
+        }
+
+        .table-row:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table-row .pid {
+          font-family: 'Monaco', monospace;
+          color: #61afef;
+        }
+
+        .table-row .name {
+          font-weight: 500;
+        }
+
+        .table-row .cpu {
+          color: #f59e0b;
+        }
+
+        .table-row .memory {
+          color: #a855f7;
+        }
+
+        .network-tab {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .network-status {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 12px;
+        }
+
+        .status-item {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 16px;
+          border: 1px solid var(--border-color, #333);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .status-item.online {
+          border-color: #22c55e;
+        }
+
+        .status-item > div {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .status-label {
+          font-size: 12px;
+          color: #9ca3af;
+        }
+
+        .status-value {
+          font-size: 16px;
+          font-weight: 600;
+          color: #e0e0e0;
+        }
+
+        .storage-tab {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .storage-card {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 16px;
+          border: 1px solid var(--border-color, #333);
+        }
+
+        .storage-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #9ca3af;
+          font-size: 13px;
+          margin-bottom: 16px;
+        }
+
+        .storage-info {
+          margin-bottom: 16px;
+        }
+
+        .storage-bar {
+          height: 24px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+
+        .storage-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #61afef, #a855f7);
+          border-radius: 12px;
+          transition: width 0.3s ease;
+        }
+
+        .storage-text {
+          display: flex;
+          justify-content: space-between;
+          font-size: 12px;
+          color: #9ca3af;
+        }
+
+        .storage-details {
+          display: flex;
+          gap: 24px;
+        }
+
+        .detail-item {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .detail-item span:first-child {
+          font-size: 12px;
+          color: #9ca3af;
+        }
+
+        .detail-item span:last-child {
+          font-size: 14px;
+          font-weight: 600;
+          color: #e0e0e0;
+        }
+
+        @media (prefers-color-scheme: light) {
+          .system-monitor {
+            background: #f5f5f5;
+            color: #1f2937;
+          }
+          
+          .gauge-card, .uptime-card, .chart-container, .processes-table, .status-item, .storage-card {
+            background: white;
+            border-color: #e5e7eb;
+          }
+          
+          .table-header {
+            background: #f3f4f6;
+          }
+          
+          .table-row:hover {
+            background: #f9fafb;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}
 
 export default SystemMonitor
