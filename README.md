@@ -1,225 +1,364 @@
+<div align="center">
+
 # WebLinuxOS
 
-A fully featured web-based Linux desktop environment running entirely in the browser. Built with React 19 and TypeScript, this project provides a complete operating system experience with window management, file system, terminal, and a comprehensive suite of applications.
+### 一个运行在浏览器中的完整 Linux 桌面环境
 
-## Live Demo
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-live-222222?style=flat-square&logo=githubpages)](https://saya-ch.github.io/WebLinuxOS/)
 
-[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
+**[在线演示](https://saya-ch.github.io/WebLinuxOS/) · [功能特性](#功能特性) · [快速开始](#快速开始) · [架构设计](#架构设计)**
 
-## Features
+</div>
 
-### Core System
+---
 
-- **Window Management**: Drag, resize, minimize, maximize, and close windows with smooth animations
-- **Virtual File System**: Full CRUD operations with persistent storage using localStorage
-- **Terminal Emulator**: Over 150 commands with history, autocomplete, and syntax highlighting
-- **Desktop Environment**: Desktop icons, application launcher, taskbar, and system tray
-- **Multiple Workspaces**: Up to 9 virtual desktops for organized multitasking
-- **Theme Support**: Dark and light themes with customizable accent colors
-- **Live Wallpapers**: Particles, gradients, and dynamic background effects
-- **Global Search**: Command palette for quick access to applications and files
-- **Desktop Widgets**: A live widget system that turns the desktop into an information dashboard:
-  - **Clock** — analog clock face with digital readout and date
-  - **System Pulse** — real-time JS heap memory, CPU cores, battery and online status with a rolling graph
-  - **Weather** — real-time conditions via the public Open-Meteo API (no API key required), with automatic geolocation and graceful fallback
-  - **Focus Timer** — Pomodoro-style countdown ring with audio chime and 15/25/45 minute presets
-  - **Quick Note** — a persistent sticky note that autosaves to localStorage
-  - Widgets are draggable, individually toggleable from the desktop right-click menu, and their layout is persisted across sessions
+## 项目简介
 
-### Applications
+WebLinuxOS 是一个完全运行在浏览器中的 Web 操作系统，使用 React 19 和 TypeScript 构建。它提供了完整的桌面环境体验——窗口管理、虚拟文件系统、终端模拟器、以及超过 200 个内置应用程序。
 
-**Development Tools**
-- Code editor with syntax highlighting for multiple languages
-- Terminal with command history and autocomplete
-- Git client for version control operations
-- JSON formatter and validator
-- Base64 encoding/decoding
-- Hash generator (MD5, SHA-1, SHA-256, SHA-512)
-- UUID generator
-- Regex tester with real-time validation
-- API testing tools with REST client
-- Code sandbox for running JavaScript/TypeScript
+无需安装，打开即用。所有数据都存储在本地浏览器中，隐私安全由你掌控。
 
-**Productivity**
-- Text editor with formatting options
-- Calculator with basic, scientific, and programming modes
-- Calendar with event management
-- Todo list manager with priority levels
-- Pomodoro timer for focused work sessions
-- Notes management with Markdown support
-- Project management board (Kanban)
-- Countdown timer
-- Unit converter (length, weight, area, volume, temperature)
-- Password manager
-- Clipboard history manager
+> 200+ 应用 · 150+ 终端命令 · 多工作区 · 主题定制 · 实时 API 集成
 
-**Media**
-- Image viewer with zoom and rotation
-- Audio player with playlist support
-- Video player with playback controls
-- Paint application with drawing tools
-- Wallpaper gallery with live previews
-- Emoji browser with search and copy functionality
-- Music visualizer
+---
 
-**Network & Information**
-- Web browser with tab management
-- Weather dashboard using Open-Meteo API
-- News aggregator from Hacker News
-- Cryptocurrency tracker with CoinGecko API
-- Stock market tracker
-- IP geolocation lookup
-- DNS query tool
-- WHOIS lookup
-- Network speed test and latency measurement
-- System monitor with real-time network metrics
-- Real-time translator (multi-language)
-- Wikipedia explorer
-- GitHub repository explorer
+## 功能特性
 
-**System Utilities**
-- File manager with directory tree navigation
-- System monitor (CPU, memory, disk, network, FPS)
-- System settings with theme and display options
-- Disk usage analyzer
-- Process monitor with kill capability
-- Clipboard manager with history
-- System health dashboard
+### 核心系统
 
-### Terminal Commands
+| 功能 | 描述 |
+|------|------|
+| **窗口管理** | 拖拽、缩放、最小化、最大化、关闭，流畅的动画过渡 |
+| **虚拟文件系统** | 完整的文件操作，localStorage 持久化存储 |
+| **终端模拟器** | 150+ 命令，历史记录、自动补全、语法高亮 |
+| **桌面环境** | 桌面图标、应用启动器、任务栏、系统托盘 |
+| **多工作区** | 最多 9 个虚拟桌面，高效多任务处理 |
+| **主题系统** | 深色/浅色主题，可自定义强调色 |
+| **动态壁纸** | 粒子效果、渐变、动态背景 |
+| **全局搜索** | 命令面板快速访问应用和文件 |
+| **桌面小部件** | 时钟、天气、系统监控、便签、番茄钟 |
 
-The terminal supports a comprehensive set of commands:
+### 开发工具
 
-| Category | Commands |
-|----------|----------|
-| **System** | `whoami`, `hostname`, `date`, `datetime`, `uname`, `top`, `ps`, `kill`, `reboot`, `shutdown`, `env`, `history`, `alias`, `clear`, `echo`, `motd`, `uptime` |
-| **File** | `ls`, `cd`, `pwd`, `cat`, `touch`, `mkdir`, `rm`, `rmdir`, `cp`, `mv`, `grep`, `find`, `du`, `df`, `head`, `tail`, `wc`, `sort`, `uniq`, `diff`, `stat`, `less`, `ln`, `chmod`, `tree`, `write`, `tee`, `append` |
-| **Network** | `ping`, `speedtest`, `bandwidth`, `trace`, `dig`, `dns`, `ip`, `ipinfo`, `whois`, `curl`, `fetch`, `dnslookup`, `netstat` |
-| **Productivity** | `todo`, `note`, `project`, `calendar`, `countdown`, `pomodoro`, `timer`, `calc` |
-| **Developer** | `json`, `base64`, `hash`, `uuid`, `regex`, `urlencode`, `converter`, `git`, `code-review`, `challenge` |
-| **API** | `weather`, `weather-forecast`, `weather-search`, `news`, `newsapi`, `crypto`, `crypto2`, `crypto-news`, `bitcoin`, `stock`, `dict`, `translate`, `github`, `ghuser`, `quote`, `quote-of-the-day`, `trivia`, `funfact`, `catfact`, `covid`, `geocode`, `timezone`, `timezone-info`, `world-clock`, `convert`, `currency`, `shorten`, `shorturl`, `time-convert` |
-| **Tools** | `base64`, `hash`, `urlencode`, `json-pretty`, `uuid`, `qrcode`, `password`, `unicode`, `regex-test`, `hash`, `base64`, `urlencode`, `datetime`, `random`, `flip`, `rps` |
-| **Fun** | `joke`, `flip`, `rps`, `random`, `prime`, `factor`, `roman`, `binary`, `rev`, `ascii`, `lorem`, `morse`, `leet` |
+- **代码编辑器** - 多语言语法高亮
+- **终端** - 完整的命令行环境
+- **JSON 格式化/验证** - 美化、压缩、Schema 校验
+- **Base64 / URL 编解码** - 多种编码格式转换
+- **哈希生成器** - MD5 / SHA-1 / SHA-256 / SHA-512
+- **UUID 生成器** - v1 / v4 / v5
+- **正则测试器** - 实时匹配测试
+- **REST 客户端** - API 调试工具
+- **代码沙盒** - 在线运行 JS/TS
+- **Git 客户端** - 版本控制操作
 
-## Getting Started
+### 生产力工具
 
-### Prerequisites
+- 文本编辑器 / Markdown 预览
+- 计算器（基础/科学/编程模式）
+- 日历与事件管理
+- 待办清单与项目管理
+- 番茄钟与倒计时
+- 笔记管理
+- 单位换算（长度/重量/面积/体积/温度）
+- 密码管理器与生成器
+- 剪贴板历史
 
-- Node.js 20 or later
-- npm, yarn, or pnpm
+### 多媒体
 
-### Installation
+- 图片查看器（缩放/旋转）
+- 音频播放器（播放列表）
+- 视频播放器
+- 画板应用
+- 壁纸库
+- Emoji 浏览器
+- 音乐可视化
+
+### 网络与信息
+
+集成了多个免费公开 API，提供真实数据：
+
+| 应用 | API 来源 | 说明 |
+|------|----------|------|
+| 天气 | Open-Meteo | 实时天气与预报，无需 API Key |
+| 新闻 | Hacker News (Algolia) | 技术新闻聚合 |
+| 加密货币 | CoinGecko | 实时行情与市场数据 |
+| 股票 | Alpha Vantage | 股票行情查询 |
+| IP 查询 | ipapi.co | IP 地理位置 |
+| DNS 查询 | Google DNS | 域名解析查询 |
+| 翻译 | MyMemory | 多语言互译 |
+| 词典 | Dictionary API | 英文单词释义 |
+| GitHub | GitHub API | 仓库与用户信息 |
+| 维基百科 | Wikimedia | 百科内容浏览 |
+| 趣味事实 | Cat Fact Ninja / FreeAPI | 随机冷知识 |
+| 名言 | Quotable.io | 每日名言警句 |
+
+### 系统工具
+
+- 文件管理器
+- 系统监视器（CPU/内存/磁盘/网络/FPS）
+- 系统设置
+- 磁盘使用分析
+- 进程管理
+- 剪贴板管理器
+
+---
+
+## 在线演示
+
+立即体验：**[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)**
+
+快速上手：
+- 按 `Ctrl + K` 打开全局搜索
+- 按 `Ctrl + T` 打开终端
+- 按 `Ctrl + E` 打开文件管理器
+- 右键点击桌面查看小部件选项
+- 查看 [终端命令速查](#终端命令速查)
+
+---
+
+## 快速开始
+
+### 环境要求
+
+- Node.js >= 20
+- npm / yarn / pnpm
+
+### 安装与运行
 
 ```bash
+# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
+
+# 安装依赖
 npm install
-```
 
-### Development
-
-```bash
+# 启动开发服务器
 npm run dev
 ```
 
-Open your browser and navigate to `http://localhost:5173/WebLinuxOS/`
+浏览器打开 `http://localhost:5173/WebLinuxOS/` 即可访问。
 
-### Build
+### 构建生产版本
 
 ```bash
 npm run build
 ```
 
-The build output will be in the `dist` directory.
+构建产物输出到 `dist/` 目录。
 
-### Preview Production Build
+### 预览生产构建
 
 ```bash
 npm run preview
 ```
 
-### Deployment
+---
 
-The project is configured for GitHub Pages deployment. Push to the `main` branch and GitHub Actions will automatically build and deploy.
+## 终端命令速查
 
-## Architecture
+### 系统命令
+
+```bash
+whoami          # 当前用户
+hostname        # 主机名
+date / datetime # 日期时间
+uname           # 系统信息
+top / ps        # 进程监控
+history         # 命令历史
+uptime          # 运行时间
+```
+
+### 文件命令
+
+```bash
+ls, cd, pwd     # 目录导航
+cat, head, tail # 查看文件
+touch, mkdir    # 创建文件/目录
+rm, rmdir       # 删除
+cp, mv          # 复制/移动
+grep, find      # 搜索
+du, df          # 磁盘使用
+tree            # 目录树
+```
+
+### 网络命令
+
+```bash
+weather [城市]  # 天气查询
+news [关键词]   # Hacker News 新闻
+crypto          # 加密货币行情
+ip / ipinfo     # IP 信息查询
+dns <域名>      # DNS 查询
+github <repo>   # GitHub 仓库信息
+ghuser <用户>   # GitHub 用户信息
+translate <lang> <text>  # 翻译
+dict <单词>     # 英文词典
+stock <代码>    # 股票行情
+shorten <URL>   # 短链接生成
+whois <域名>    # WHOIS 查询
+```
+
+### 开发工具
+
+```bash
+json            # JSON 格式化
+base64          # Base64 编解码
+hash            # 哈希计算
+uuid            # UUID 生成
+regex           # 正则测试
+urlencode       # URL 编码
+```
+
+### 趣味命令
+
+```bash
+joke            # 随机笑话
+quote           # 名言警句
+funfact         # 趣味事实
+catfact         # 猫咪冷知识
+trivia          # 知识问答
+flip            # 抛硬币
+rps             # 石头剪刀布
+random          # 随机数
+```
+
+> 输入 `help` 查看完整命令列表
+
+---
+
+## 架构设计
+
+### 项目结构
 
 ```
 web-linux/
 ├── src/
-│   ├── apps/           # Application components
-│   │   ├── terminal/   # Terminal command implementations
-│   │   │   ├── commands.ts          # Command framework
-│   │   │   ├── fileCommands.ts      # File system commands
-│   │   │   ├── systemCommands.ts    # System commands
-│   │   │   ├── toolCommands.ts      # Utility tools
-│   │   │   ├── apiCommands.ts       # API integration commands
-│   │   │   ├── extendedCommands.ts  # Extended commands
-│   │   │   └── ...                  # Other command files
-│   │   └── *.tsx       # Individual applications (Calculator, Weather, etc.)
-│   ├── components/     # Reusable UI components
-│   │   ├── desktop/    # Desktop-specific components (Window, Taskbar, etc.)
-│   │   └── common/     # Shared components
-│   ├── store/          # Zustand state management stores
-│   ├── utils/          # Utility functions and helpers
-│   │   └── apiCache.ts # API caching utilities
-│   ├── hooks/          # Custom React hooks
-│   ├── types/          # TypeScript type definitions
-│   ├── App.tsx         # Main application entry
-│   ├── apps.tsx        # Application registry
-│   ├── store.ts        # Global state store
-│   └── index.css       # Global styles and CSS variables
-├── public/             # Static assets (icons, wallpapers, etc.)
-├── index.html          # HTML entry point
-├── vite.config.ts      # Vite configuration
-├── tsconfig.json       # TypeScript configuration
-└── package.json        # Dependencies and scripts
+│   ├── apps/                  # 应用组件（200+）
+│   │   ├── terminal/          # 终端命令系统
+│   │   │   ├── commands.ts    # 命令框架
+│   │   │   ├── fileCommands.ts
+│   │   │   ├── systemCommands.ts
+│   │   │   ├── apiCommands.ts # API 集成命令
+│   │   │   └── ...
+│   │   ├── Terminal.tsx
+│   │   ├── FileManager.tsx
+│   │   ├── Weather.tsx
+│   │   └── ...
+│   ├── components/
+│   │   ├── desktop/           # 桌面核心组件
+│   │   │   ├── Window.tsx     # 窗口组件
+│   │   │   ├── WindowManager.tsx
+│   │   │   ├── Desktop.tsx
+│   │   │   ├── Taskbar.tsx
+│   │   │   └── StartMenu.tsx
+│   │   └── common/
+│   ├── store.ts               # Zustand 全局状态
+│   ├── apps.tsx               # 应用注册表
+│   ├── App.tsx                # 应用入口
+│   ├── utils/
+│   │   └── apiCache.ts        # API 缓存工具
+│   ├── hooks/                 # 自定义 Hooks
+│   └── index.css              # 全局样式与 CSS 变量
+├── public/                    # 静态资源
+├── index.html
+├── vite.config.ts
+└── package.json
 ```
 
-## Technologies
+### 核心设计
 
-- **Framework**: React 19 with TypeScript
-- **Build Tool**: Vite 8
-- **State Management**: Zustand 5
-- **Styling**: CSS Modules with CSS Variables
-- **Icons**: Lucide React
-- **Markdown**: Marked
-- **Python Runtime**: Pyodide 0.26 (optional)
-- **Deployment**: GitHub Pages via GitHub Actions
+- **状态管理**：Zustand 轻量级状态管理，支持持久化
+- **代码分割**：应用级别的 React.lazy 动态导入，按需加载
+- **API 缓存**：内置缓存层，减少重复请求，提升响应速度
+- **主题系统**：CSS 变量驱动的主题切换
+- **窗口管理**：Z-index 层级管理、焦点追踪、工作区隔离
 
-## Browser Support
+### 技术栈
 
-- Chrome 110+ (recommended)
-- Firefox 115+
-- Safari 16+
-- Edge 110+
+| 类别 | 技术 |
+|------|------|
+| 框架 | React 19 + TypeScript |
+| 构建 | Vite 8 |
+| 状态 | Zustand 5 |
+| 图标 | Lucide React |
+| 样式 | CSS Modules + CSS Variables |
+| Markdown | Marked |
+| 部署 | GitHub Pages + Actions |
 
-## Contributing
+---
 
-Contributions are welcome! Please follow these guidelines:
+## 浏览器支持
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Make your changes
-4. Run linting (`npm run lint`)
-5. Run type checking (`npm run typecheck`)
-6. Build the project (`npm run build`)
-7. Submit a Pull Request
+| 浏览器 | 最低版本 |
+|--------|----------|
+| Chrome | 110+ |
+| Firefox | 115+ |
+| Safari | 16+ |
+| Edge | 110+ |
 
-### Adding a New Terminal Command
+---
 
-Create a new file in `src/apps/terminal/` with your command definitions following the existing pattern, then import it in `src/apps/terminal/index.ts`.
+## 贡献指南
 
-### Adding a New Application
+欢迎贡献代码！请遵循以下步骤：
 
-1. Create your application component in `src/apps/`
-2. Register it in `src/apps.tsx` with a unique ID, name, icon, and category
-3. Add any necessary state management or utility functions
+1. Fork 本仓库
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 开启 Pull Request
 
-## License
+提交前请确保：
+- `npm run lint` 通过
+- `npm run typecheck` 通过
+- `npm run build` 构建成功
 
-MIT License - see [LICENSE](LICENSE) for details.
+### 添加新应用
 
-## Acknowledgments
+1. 在 `src/apps/` 中创建应用组件
+2. 在 `src/apps.tsx` 中注册（唯一 ID、名称、图标、分类）
+3. 在 `src/components/desktop/WindowManager.tsx` 中添加懒加载
 
-This project was inspired by various web-based operating systems and built with modern web technologies. Special thanks to the open source community for the APIs and libraries used.
+### 添加终端命令
+
+1. 在 `src/apps/terminal/` 中创建或修改命令文件
+2. 使用 `registerCommand` 注册命令
+3. 在 `src/apps/terminal/index.ts` 中导入
+
+---
+
+## 许可证
+
+本项目基于 MIT 许可证开源 - 详见 [LICENSE](LICENSE) 文件。
+
+---
+
+## 致谢
+
+感谢以下开源项目和免费 API 服务：
+
+- [Open-Meteo](https://open-meteo.com/) - 免费天气 API
+- [CoinGecko](https://www.coingecko.com/) - 加密货币数据 API
+- [Hacker News](https://news.ycombinator.com/) - 技术新闻
+- [ipapi.co](https://ipapi.co/) - IP 地理位置
+- [MyMemory](https://mymemory.translated.net/) - 翻译 API
+- [Dictionary API](https://dictionaryapi.dev/) - 英文词典
+- [Quotable](https://quotable.io/) - 名言警句
+- [Cat Fact Ninja](https://catfact.ninja/) - 猫咪冷知识
+- [shrtcode](https://shrtco.de/) - 短链接服务
+- [Google DNS](https://dns.google/) - DNS 查询 API
+
+---
+
+<div align="center">
+
+如果这个项目对你有帮助，欢迎给个 Star ⭐
+
+Made with ❤️ by [saya-ch](https://github.com/saya-ch)
+
+</div>
