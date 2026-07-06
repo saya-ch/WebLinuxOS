@@ -1010,10 +1010,22 @@ function SmartDevFlowIcon() {
   )
 }
 
+function SmartAIHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M12 2a5 5 0 0 1 5 5v1a4 4 0 0 1 2 7.464V17a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-1.536A4 4 0 0 1 7 8V7a5 5 0 0 1 5-5z" />
+      <circle cx="9" cy="12" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M9 17h6" />
+    </svg>
+  )
+}
+
 // 注意（校验提示）：以下所有条目在 src/apps/ 下均应存在同名 .tsx 组件文件，
 // 且每个 id 必须全局唯一。如新增注册，请先确认组件文件已就位。
-// （当前 200 项已完成组件存在性与 id 去重校验，无异常。）
+// （当前 201 项已完成组件存在性与 id 去重校验，无异常。）
 export const appRegistry: AppDefinition[] = [
+  { id: 'smart-ai-hub', name: '智能AI中心', icon: <SmartAIHubIcon />, component: 'SmartAIHub', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-dev-flow', name: '智能开发工作台', icon: <SmartDevFlowIcon />, component: 'SmartDevFlow', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'dev-toolbox', name: '开发者工具箱', icon: <DevToolboxIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'unified-dashboard', name: '统一数据仪表盘', icon: <UnifiedDashboardIcon />, component: 'UnifiedDashboard', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },

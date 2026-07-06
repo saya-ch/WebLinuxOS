@@ -287,6 +287,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WorkflowAutomation: () => import('../../apps/WorkflowAutomation'),
   // === v12.1.0 新增实用工具箱 ===
   UtilityToolkit: () => import('../../apps/UtilityToolkit'),
+  // === v13.0 新增智能AI中心 ===
+  SmartAIHub: () => import('../../apps/SmartAIHub'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}

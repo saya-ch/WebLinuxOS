@@ -1,6 +1,27 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, memo, useRef } from 'react'
 import { useStore } from '../store'
-import { Droplets, Gauge, Wind, Compass, Thermometer } from 'lucide-react'
+import {
+  Droplets,
+  Gauge,
+  Wind,
+  Compass,
+  Thermometer,
+  Sunrise,
+  Sunset,
+  Sun,
+  Eye,
+  CloudRain,
+  Search,
+  RefreshCw,
+  MapPin,
+  Clock,
+  SunMedium,
+  Cloud,
+  CloudSun,
+  CloudMoon,
+  Snowflake,
+  CloudLightning,
+} from 'lucide-react'
 
 // ==================== 类型定义 ====================
 interface CurrentWeather {
@@ -11,6 +32,19 @@ interface CurrentWeather {
   windDirection: number
   pressure: number
   weatherCode: number
+  visibility: number
+  uvIndex: number
+  isDay: boolean
+}
+
+interface HourlyForecast {
+  time: string
+  temperature: number
+  weatherCode: number
+  windSpeed: number
+  precipitation: number
+  precipitationProbability: number
+  isDay: boolean
 }
 
 interface DailyForecast {
@@ -18,6 +52,12 @@ interface DailyForecast {
   temperatureMax: number
   temperatureMin: number
   weatherCode: number
+  sunrise: string
+  sunset: string
+  uvIndexMax: number
+  precipitationSum: number
+  precipitationProbabilityMax: number
+  windSpeedMax: number
 }
 
 interface CityInfo {
@@ -40,9 +80,9 @@ const DEFAULT_CITIES: CityInfo[] = [
 
 const STORAGE_KEY = 'weblinux-weather-city'
 
-// 根据天气代码返回不同 emoji（图标）
-function getWeatherIcon(code: number, isNight = false): string {
-  if (isNight) {
+// ==================== 工具函数 ====================
+function getWeatherIcon(code: number, isDay = true): string {
+  if (!isDay) {
     if (code === 0) return '🌙'
     if (code <= 2) return '🌙'
     if (code === 3) return '☁️'
@@ -60,6 +100,38 @@ function getWeatherIcon(code: number, isNight = false): string {
   return '☁️'
 }
 
+function getWeatherLucideIcon(code: number, isDay = true) {
+  if (code === 0) return isDay ? Sun : Moon
+  if (code <= 2) return isDay ? CloudSun : CloudMoon
+  if (code === 3) return Cloud
+  if (code <= 48) return Cloud
+  if (code <= 67) return CloudRain
+  if (code <= 77) return Snowflake
+  if (code <= 82) return CloudRain
+  if (code <= 86) return Snowflake
+  if (code <= 99) return CloudLightning
+  return Cloud
+}
+
+function Moon(props: any) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  )
+}
+
 function getWeatherDescription(code: number): string {
   if (code === 0) return '晴朗'
   if (code <= 2) return '局部多云'
@@ -74,14 +146,12 @@ function getWeatherDescription(code: number): string {
   return '未知'
 }
 
-// 根据风向角度返回方向文字
 function getWindDirectionText(deg: number): string {
   const dirs = ['北', '东北', '东', '东南', '南', '西南', '西', '西北']
   const idx = Math.round(((deg % 360) / 45)) % 8
   return dirs[idx]
 }
 
-// 格式化日期（MM-DD 周X）
 function formatDate(dateStr: string, index: number): string {
   if (index === 0) return '今天'
   if (index === 1) return '明天'
@@ -90,11 +160,37 @@ function formatDate(dateStr: string, index: number): string {
   return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${weekdays[date.getDay()]}`
 }
 
-// ==================== SVG Sparkline 温度趋势 ====================
+function formatTime(timeStr: string): string {
+  const date = new Date(timeStr)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+function formatHour(timeStr: string): string {
+  const date = new Date(timeStr)
+  return `${String(date.getHours()).padStart(2, '0')}:00`
+}
+
+function getUVLevel(uv: number): string {
+  if (uv <= 2) return '低'
+  if (uv <= 5) return '中等'
+  if (uv <= 7) return '高'
+  if (uv <= 10) return '很高'
+  return '极高'
+}
+
+function getUVColor(uv: number): string {
+  if (uv <= 2) return '#10b981'
+  if (uv <= 5) return '#f59e0b'
+  if (uv <= 7) return '#f97316'
+  if (uv <= 10) return '#ef4444'
+  return '#8b5cf6'
+}
+
+// ==================== 温度趋势 Sparkline ====================
 function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[] }) {
   const width = 600
   const height = 120
-  const padding = 20
+  const padding = 24
   if (highs.length === 0) return null
 
   const allVals = [...highs, ...lows]
@@ -104,18 +200,39 @@ function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[]
 
   const stepX = (width - padding * 2) / (highs.length - 1)
 
-  const buildPath = (values: number[]) => values.map((v, i) => {
-    const x = padding + i * stepX
-    const y = height - padding - ((v - min) / range) * (height - padding * 2)
-    return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
-  }).join(' ')
+  const buildPath = (values: number[]) =>
+    values.map((v, i) => {
+      const x = padding + i * stepX
+      const y = height - padding - ((v - min) / range) * (height - padding * 2)
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
+    }).join(' ')
+
+  const buildAreaPath = (highValues: number[], lowValues: number[]) => {
+    const highPath = highValues.map((v, i) => {
+      const x = padding + i * stepX
+      const y = height - padding - ((v - min) / range) * (height - padding * 2)
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
+    })
+    const lowPath = [...lowValues].reverse().map((v, i) => {
+      const x = padding + (lowValues.length - 1 - i) * stepX
+      const y = height - padding - ((v - min) / range) * (height - padding * 2)
+      return `L ${x.toFixed(1)} ${y.toFixed(1)}`
+    })
+    return [...highPath, ...lowPath, 'Z'].join(' ')
+  }
 
   const highPath = buildPath(highs)
   const lowPath = buildPath(lows)
+  const areaPath = buildAreaPath(highs, lows)
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
-      {/* 背景网格线 */}
+      <defs>
+        <linearGradient id="tempGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
       {[0, 1, 2, 3, 4].map((i) => (
         <line
           key={i}
@@ -123,36 +240,163 @@ function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[]
           x2={width - padding}
           y1={padding + ((height - padding * 2) / 4) * i}
           y2={padding + ((height - padding * 2) / 4) * i}
-          stroke="rgba(255,255,255,0.08)"
+          stroke="var(--color-border)"
           strokeWidth="1"
         />
       ))}
-      {/* 最高温线 */}
+      <path d={areaPath} fill="url(#tempGradient)" />
       <path d={highPath} fill="none" stroke="#ff7a59" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {/* 最低温线 */}
       <path d={lowPath} fill="none" stroke="#5ac8fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {/* 最高温节点 */}
       {highs.map((v, i) => {
         const x = padding + i * stepX
         const y = height - padding - ((v - min) / range) * (height - padding * 2)
         return (
           <g key={`h-${i}`}>
             <circle cx={x} cy={y} r="4" fill="#ff7a59" />
-            <text x={x} y={y - 8} fill="#ff7a59" fontSize="11" textAnchor="middle" fontWeight="600">
+            <text x={x} y={y - 10} fill="#ff7a59" fontSize="11" textAnchor="middle" fontWeight="600">
               {Math.round(v)}°
             </text>
           </g>
         )
       })}
-      {/* 最低温节点 */}
       {lows.map((v, i) => {
         const x = padding + i * stepX
         const y = height - padding - ((v - min) / range) * (height - padding * 2)
-        return (
-          <circle key={`l-${i}`} cx={x} cy={y} r="3" fill="#5ac8fa" />
-        )
+        return <circle key={`l-${i}`} cx={x} cy={y} r="3" fill="#5ac8fa" />
       })}
     </svg>
+  )
+}
+
+// ==================== 小时预报组件 ====================
+function HourlyForecastList({ hourly }: { hourly: HourlyForecast[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const now = new Date()
+  const currentHour = now.getHours()
+
+  const displayHours = hourly.filter((h) => {
+    const hourDate = new Date(h.time)
+    return hourDate.getHours() >= currentHour || hourDate > now
+  }).slice(0, 24)
+
+  if (displayHours.length === 0) return null
+
+  return (
+    <div
+      ref={scrollRef}
+      style={{
+        display: 'flex',
+        gap: 8,
+        overflowX: 'auto',
+        padding: '4px 2px 12px',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'var(--scrollbar-thumb) transparent',
+      }}
+    >
+      {displayHours.map((hour, i) => {
+        const hourDate = new Date(hour.time)
+        const isNow = hourDate.getHours() === currentHour && i === 0
+        const WeatherIcon = getWeatherLucideIcon(hour.weatherCode, hour.isDay)
+
+        return (
+          <div
+            key={hour.time}
+            style={{
+              flex: '0 0 auto',
+              width: 64,
+              padding: '12px 8px',
+              borderRadius: 12,
+              background: isNow
+                ? 'linear-gradient(180deg, var(--accent-bg) 0%, transparent 100%)'
+                : 'var(--glass-bg)',
+              border: `1px solid ${isNow ? 'var(--accent)' : 'var(--glass-border)'}`,
+              textAlign: 'center',
+              transition: 'all 0.2s ease',
+              animation: `fadeSlideUp 0.4s ease-out ${i * 0.03}s both`,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                color: isNow ? 'var(--accent)' : 'var(--text-secondary)',
+                marginBottom: 8,
+                fontWeight: isNow ? 600 : 400,
+              }}
+            >
+              {isNow ? '现在' : formatHour(hour.time)}
+            </div>
+            <div
+              style={{
+                fontSize: 20,
+                marginBottom: 6,
+                display: 'flex',
+                justifyContent: 'center',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <WeatherIcon size={20} />
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+              {Math.round(hour.temperature)}°
+            </div>
+            {hour.precipitationProbability > 0 && (
+              <div style={{ fontSize: 10, color: '#5ac8fa', fontWeight: 500 }}>
+                {Math.round(hour.precipitationProbability)}%
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ==================== 信息卡片组件 ====================
+function InfoCard({
+  icon,
+  label,
+  value,
+  subValue,
+  accentColor,
+  delay = 0,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  subValue?: string
+  accentColor?: string
+  delay?: number
+}) {
+  return (
+    <div
+      style={{
+        padding: 14,
+        borderRadius: 12,
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        animation: `fadeSlideUp 0.4s ease-out ${delay}s both`,
+      }}
+      className="hover-lift"
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 8,
+          color: accentColor || 'var(--text-secondary)',
+        }}
+      >
+        {icon}
+        <span style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          {label}
+        </span>
+      </div>
+      <div style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2 }}>{value}</div>
+      {subValue && <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>{subValue}</div>}
+    </div>
   )
 }
 
@@ -162,32 +406,30 @@ const Weather = memo(function Weather() {
   const [selectedIndex, setSelectedIndex] = useState<number>(0)
   const [current, setCurrent] = useState<CurrentWeather | null>(null)
   const [forecast, setForecast] = useState<DailyForecast[]>([])
+  const [hourly, setHourly] = useState<HourlyForecast[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  // 搜索状态
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<CityInfo[]>([])
   const [searching, setSearching] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const addNotification = useStore((s) => s.addNotification)
 
-  // 从 localStorage 载入默认城市
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const saved: { name: string; country: string; latitude: number; longitude: number } = JSON.parse(raw)
-        // 在当前 cities 中查找是否存在同名城市
         const idx = cities.findIndex(
           (c) => Math.abs(c.latitude - saved.latitude) < 0.1 && Math.abs(c.longitude - saved.longitude) < 0.1
         )
         if (idx >= 0) {
           setSelectedIndex(idx)
         } else {
-          // 将保存的城市添加到列表
           const newCity: CityInfo = {
             name: saved.name,
             country: saved.country,
@@ -203,63 +445,89 @@ const Weather = memo(function Weather() {
     }
   }, [])
 
-  // 保存默认城市到 localStorage
   const saveDefaultCity = useCallback((city: CityInfo) => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ name: city.name, country: city.country, latitude: city.latitude, longitude: city.longitude })
+        JSON.stringify({
+          name: city.name,
+          country: city.country,
+          latitude: city.latitude,
+          longitude: city.longitude,
+        })
       )
     } catch {
       // 忽略
     }
   }, [])
 
-  // 获取真实天气数据（Open-Meteo）
-  const fetchWeather = useCallback(async (city: CityInfo) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const url =
-        `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}` +
-        `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,pressure_msl,weather_code` +
-        `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
-        `&timezone=auto&forecast_days=7`
+  const fetchWeather = useCallback(
+    async (city: CityInfo) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const url =
+          `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}` +
+          `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,pressure_msl,weather_code,visibility,uv_index,is_day` +
+          `&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation,precipitation_probability,is_day` +
+          `&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max` +
+          `&timezone=auto&forecast_days=7`
 
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
+        const res = await fetch(url)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
 
-      const cur: CurrentWeather = {
-        temperature: data.current?.temperature_2m ?? 0,
-        apparentTemperature: data.current?.apparent_temperature ?? 0,
-        relativeHumidity: data.current?.relative_humidity_2m ?? 0,
-        windSpeed: data.current?.wind_speed_10m ?? 0,
-        windDirection: data.current?.wind_direction_10m ?? 0,
-        pressure: data.current?.pressure_msl ?? 0,
-        weatherCode: data.current?.weather_code ?? 0,
+        const cur: CurrentWeather = {
+          temperature: data.current?.temperature_2m ?? 0,
+          apparentTemperature: data.current?.apparent_temperature ?? 0,
+          relativeHumidity: data.current?.relative_humidity_2m ?? 0,
+          windSpeed: data.current?.wind_speed_10m ?? 0,
+          windDirection: data.current?.wind_direction_10m ?? 0,
+          pressure: data.current?.pressure_msl ?? 0,
+          weatherCode: data.current?.weather_code ?? 0,
+          visibility: (data.current?.visibility ?? 0) / 1000,
+          uvIndex: data.current?.uv_index ?? 0,
+          isDay: data.current?.is_day === 1,
+        }
+
+        const hourlyData: HourlyForecast[] = (data.hourly?.time ?? []).map((d: string, i: number) => ({
+          time: d,
+          temperature: data.hourly?.temperature_2m?.[i] ?? 0,
+          weatherCode: data.hourly?.weather_code?.[i] ?? 0,
+          windSpeed: data.hourly?.wind_speed_10m?.[i] ?? 0,
+          precipitation: data.hourly?.precipitation?.[i] ?? 0,
+          precipitationProbability: data.hourly?.precipitation_probability?.[i] ?? 0,
+          isDay: data.hourly?.is_day?.[i] === 1,
+        }))
+
+        const daily: DailyForecast[] = (data.daily?.time ?? []).map((d: string, i: number) => ({
+          date: d,
+          temperatureMax: data.daily?.temperature_2m_max?.[i] ?? 0,
+          temperatureMin: data.daily?.temperature_2m_min?.[i] ?? 0,
+          weatherCode: data.daily?.weather_code?.[i] ?? 0,
+          sunrise: data.daily?.sunrise?.[i] ?? '',
+          sunset: data.daily?.sunset?.[i] ?? '',
+          uvIndexMax: data.daily?.uv_index_max?.[i] ?? 0,
+          precipitationSum: data.daily?.precipitation_sum?.[i] ?? 0,
+          precipitationProbabilityMax: data.daily?.precipitation_probability_max?.[i] ?? 0,
+          windSpeedMax: data.daily?.wind_speed_10m_max?.[i] ?? 0,
+        }))
+
+        setCurrent(cur)
+        setHourly(hourlyData)
+        setForecast(daily)
+        setLastUpdated(new Date())
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '请求失败'
+        setError(`天气数据获取失败：${msg}`)
+        addNotification({ title: '天气', message: '天气数据获取失败', type: 'error' })
+      } finally {
+        setLoading(false)
       }
+    },
+    [addNotification]
+  )
 
-      const daily: DailyForecast[] = (data.daily?.time ?? []).map((d: string, i: number) => ({
-        date: d,
-        temperatureMax: data.daily?.temperature_2m_max?.[i] ?? 0,
-        temperatureMin: data.daily?.temperature_2m_min?.[i] ?? 0,
-        weatherCode: data.daily?.weather_code?.[i] ?? 0,
-      }))
-
-      setCurrent(cur)
-      setForecast(daily)
-      setLastUpdated(new Date())
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : '请求失败'
-      setError(`天气数据获取失败：${msg}`)
-      addNotification({ title: '天气', message: '天气数据获取失败', type: 'error' })
-    } finally {
-      setLoading(false)
-    }
-  }, [addNotification])
-
-  // 选中城市改变时获取天气
   useEffect(() => {
     const city = cities[selectedIndex]
     if (city) {
@@ -268,7 +536,6 @@ const Weather = memo(function Weather() {
     }
   }, [selectedIndex, cities, fetchWeather, saveDefaultCity])
 
-  // 搜索城市
   const handleSearch = useCallback(async () => {
     const q = searchQuery.trim()
     if (!q) return
@@ -279,13 +546,15 @@ const Weather = memo(function Weather() {
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      const results: CityInfo[] = (data.results ?? []).map((r: { name: string; country: string; admin1?: string; latitude: number; longitude: number }) => ({
-        name: r.name,
-        country: r.country || '',
-        admin1: r.admin1,
-        latitude: r.latitude,
-        longitude: r.longitude,
-      }))
+      const results: CityInfo[] = (data.results ?? []).map(
+        (r: { name: string; country: string; admin1?: string; latitude: number; longitude: number }) => ({
+          name: r.name,
+          country: r.country || '',
+          admin1: r.admin1,
+          latitude: r.latitude,
+          longitude: r.longitude,
+        })
+      )
       setSearchResults(results)
       if (results.length === 0) {
         setError('未找到匹配的城市')
@@ -298,190 +567,870 @@ const Weather = memo(function Weather() {
     }
   }, [searchQuery])
 
-  const selectCity = useCallback((city: CityInfo, fromSearch = false) => {
-    const existingIdx = cities.findIndex(
-      (c) => Math.abs(c.latitude - city.latitude) < 0.01 && Math.abs(c.longitude - city.longitude) < 0.01
-    )
-    if (existingIdx >= 0) {
-      setSelectedIndex(existingIdx)
-    } else {
-      // 把新城市插入到前面
-      setCities((prev) => [city, ...prev])
-      setSelectedIndex(0)
-    }
-    if (fromSearch) {
-      setShowSearch(false)
-      setSearchQuery('')
-      setSearchResults([])
-    }
-  }, [cities])
+  const selectCity = useCallback(
+    (city: CityInfo, fromSearch = false) => {
+      const existingIdx = cities.findIndex(
+        (c) => Math.abs(c.latitude - city.latitude) < 0.01 && Math.abs(c.longitude - city.longitude) < 0.01
+      )
+      if (existingIdx >= 0) {
+        setSelectedIndex(existingIdx)
+      } else {
+        setCities((prev) => [city, ...prev])
+        setSelectedIndex(0)
+      }
+      if (fromSearch) {
+        setShowSearch(false)
+        setSearchQuery('')
+        setSearchResults([])
+      }
+    },
+    [cities]
+  )
 
-  // 温度趋势高低温
+  const removeCity = useCallback(
+    (index: number, e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (cities.length <= 1) return
+      setCities((prev) => prev.filter((_, i) => i !== index))
+      if (index === selectedIndex) {
+        setSelectedIndex(0)
+      } else if (index < selectedIndex) {
+        setSelectedIndex((prev) => prev - 1)
+      }
+    },
+    [cities, selectedIndex]
+  )
+
   const highs = forecast.map((f) => f.temperatureMax)
   const lows = forecast.map((f) => f.temperatureMin)
-
   const currentCity = cities[selectedIndex]
+  const todayForecast = forecast[0]
 
   return (
-    <div className="app-shell" style={{ height: '100%', overflowY: 'auto', padding: 16, background: 'linear-gradient(135deg, #1e1e3c 0%, #2a2a4a 100%)', color: '#fff' }}>
-      {/* 顶部：搜索和城市切换 */}
-      <div className="app-card" style={{ padding: 16, marginBottom: 16, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-          <input
-            className="app-input"
-            type="text"
-            placeholder="🔍 搜索城市（如 Paris / 巴黎 / 东京）"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setShowSearch(true)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
-            style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', outline: 'none', fontSize: 13 }}
-          />
-          <button className="app-button" onClick={handleSearch} disabled={searching} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(124, 108, 240, 0.3)', color: '#fff', border: '1px solid rgba(124, 108, 240, 0.5)', cursor: 'pointer', fontSize: 13 }}>
-            {searching ? '搜索中...' : '搜索'}
+    <div
+      style={{
+        height: '100%',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        padding: 20,
+        background:
+          'linear-gradient(180deg, var(--window-bg) 0%, var(--desktop-bg) 100%)',
+        color: 'var(--text-primary)',
+        position: 'relative',
+      }}
+    >
+      <style>{`
+        @keyframes fadeSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes weatherIconFloat {
+          0%, 100% {
+            transform: translateY(0) scale(1);
+          }
+          50% {
+            transform: translateY(-6px) scale(1.02);
+          }
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .weather-scroll::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .weather-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .weather-scroll::-webkit-scrollbar-thumb {
+          background: var(--scrollbar-thumb);
+          border-radius: 3px;
+        }
+        .weather-scroll::-webkit-scrollbar-thumb:hover {
+          background: var(--scrollbar-thumb-hover);
+        }
+        .hover-lift {
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                      box-shadow 0.25s ease,
+                      border-color 0.25s ease;
+        }
+        .hover-lift:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        .city-chip {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .city-chip:hover {
+          transform: translateY(-1px);
+        }
+        .search-result-item {
+          transition: all 0.15s ease;
+        }
+        .search-result-item:hover {
+          background: var(--accent-bg);
+          transform: translateX(4px);
+        }
+        .temp-number {
+          background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      `}</style>
+
+      {/* 搜索和城市切换区域 */}
+      <div
+        style={{
+          marginBottom: 20,
+          animation: 'fadeSlideUp 0.4s ease-out',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: 10,
+            alignItems: 'center',
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-secondary)',
+                pointerEvents: 'none',
+              }}
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="搜索城市..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowSearch(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch()
+              }}
+              className="app-input"
+              style={{
+                width: '100%',
+                padding: '10px 12px 10px 38px',
+                borderRadius: 12,
+                border: '1px solid var(--glass-border)',
+                background: 'var(--glass-bg)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                fontSize: 13,
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease',
+              }}
+            />
+          </div>
+          <button
+            onClick={handleSearch}
+            disabled={searching}
+            className="app-button"
+            style={{
+              padding: '10px 18px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, var(--accent) 0%, #a29bfe 100%)',
+              color: '#fff',
+              border: 'none',
+              cursor: searching ? 'wait' : 'pointer',
+              fontSize: 13,
+              fontWeight: 500,
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            {searching ? (
+              <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+            ) : (
+              <Search size={14} />
+            )}
+            {searching ? '搜索中' : '搜索'}
           </button>
         </div>
 
         {/* 搜索结果 */}
         {showSearch && searchResults.length > 0 && (
-          <div style={{ marginBottom: 12, padding: 8, borderRadius: 8, background: 'rgba(0,0,0,0.2)' }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 6 }}>搜索结果：</div>
+          <div
+            style={{
+              marginBottom: 12,
+              padding: 8,
+              borderRadius: 12,
+              background: 'var(--window-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--shadow-medium)',
+              animation: 'fadeSlideUp 0.25s ease-out',
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                color: 'var(--text-secondary)',
+                marginBottom: 6,
+                padding: '0 8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontWeight: 500,
+              }}
+            >
+              搜索结果
+            </div>
             {searchResults.map((city, i) => (
               <button
                 key={`sr-${i}`}
                 onClick={() => selectCity(city, true)}
-                style={{ display: 'block', width: '100%', textAlign: 'left', padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 13 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                className="search-result-item"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  marginBottom: 2,
+                  borderRadius: 8,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
               >
-                <span style={{ fontWeight: 600 }}>{city.name}</span>
-                {city.admin1 && <span style={{ color: 'rgba(255,255,255,0.6)', marginLeft: 6 }}>{city.admin1}</span>}
-                <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: 6 }}>{city.country}</span>
+                <MapPin size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontWeight: 600 }}>{city.name}</span>
+                  {city.admin1 && (
+                    <span style={{ color: 'var(--text-secondary)', marginLeft: 6, fontSize: 12 }}>
+                      {city.admin1}
+                    </span>
+                  )}
+                  <span style={{ color: 'var(--text-secondary)', marginLeft: 6, fontSize: 12 }}>
+                    {city.country}
+                  </span>
+                </div>
               </button>
             ))}
           </div>
         )}
 
-        {/* 多城市切换 chips */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {/* 城市切换 chips */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
           {cities.map((city, i) => (
-            <button
+            <div
               key={`${city.name}-${i}`}
-              onClick={() => setSelectedIndex(i)}
-              className="chip"
+              className="city-chip"
               style={{
-                padding: '6px 12px',
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 14px',
                 borderRadius: 20,
-                border: '1px solid ' + (i === selectedIndex ? 'rgba(124, 108, 240, 0.8)' : 'rgba(255,255,255,0.15)'),
-                background: i === selectedIndex ? 'rgba(124, 108, 240, 0.25)' : 'rgba(255,255,255,0.05)',
-                color: '#fff',
+                border:
+                  i === selectedIndex
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--glass-border)',
+                background:
+                  i === selectedIndex
+                    ? 'linear-gradient(135deg, var(--accent-bg) 0%, rgba(155, 138, 240, 0.1) 100%)'
+                    : 'var(--glass-bg)',
+                color: 'var(--text-primary)',
                 cursor: 'pointer',
                 fontSize: 12,
                 fontWeight: i === selectedIndex ? 600 : 400,
+                backdropFilter: 'blur(10px)',
               }}
+              onClick={() => setSelectedIndex(i)}
             >
-              {city.name}
-              {city.admin1 ? ` · ${city.admin1}` : city.country ? ` · ${city.country}` : ''}
-            </button>
+              {i === selectedIndex && (
+                <MapPin size={12} style={{ color: 'var(--accent)' }} />
+              )}
+              <span>
+                {city.name}
+                {city.admin1 ? ` · ${city.admin1}` : city.country ? ` · ${city.country}` : ''}
+              </span>
+              {cities.length > 1 && (
+                <button
+                  onClick={(e) => removeCity(i, e)}
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 14,
+                    lineHeight: 1,
+                    padding: 0,
+                    opacity: i === selectedIndex ? 1 : 0,
+                    transition: 'opacity 0.2s ease, color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1'
+                    e.currentTarget.style.color = 'var(--error)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = i === selectedIndex ? '1' : '0'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
           ))}
           <button
             onClick={() => fetchWeather(currentCity)}
             disabled={loading}
-            className="app-button"
-            style={{ padding: '6px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', cursor: loading ? 'wait' : 'pointer', fontSize: 12 }}
+            className="app-button city-chip"
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              background: 'var(--glass-bg)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
+              cursor: loading ? 'wait' : 'pointer',
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              backdropFilter: 'blur(10px)',
+            }}
           >
-            {loading ? '加载中...' : '🔄 刷新'}
+            <RefreshCw
+              size={12}
+              style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}
+            />
+            {loading ? '刷新中' : '刷新'}
           </button>
         </div>
       </div>
 
       {/* 错误提示 */}
       {error && !loading && (
-        <div className="app-card" style={{ padding: 12, marginBottom: 16, borderRadius: 10, background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5', fontSize: 13 }}>
-          ⚠️ {error}
+        <div
+          style={{
+            padding: 14,
+            marginBottom: 16,
+            borderRadius: 12,
+            background: 'var(--error-bg)',
+            border: '1px solid var(--error)',
+            color: 'var(--error)',
+            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            animation: 'fadeSlideUp 0.3s ease-out',
+          }}
+        >
+          <span>⚠️</span>
+          <span>{error}</span>
         </div>
       )}
 
       {/* 当前天气概览 */}
       {current && currentCity && (
-        <div className="app-card" style={{ padding: 24, marginBottom: 16, borderRadius: 16, background: 'linear-gradient(135deg, rgba(124, 108, 240, 0.25) 0%, rgba(79, 70, 229, 0.15) 100%)', border: '1px solid rgba(124, 108, 240, 0.3)' }}>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>📍 {currentCity.name}{currentCity.country ? `, ${currentCity.country}` : ''}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <div style={{ fontSize: 72, lineHeight: 1 }}>{getWeatherIcon(current.weatherCode)}</div>
+        <div
+          style={{
+            position: 'relative',
+            padding: 28,
+            marginBottom: 20,
+            borderRadius: 20,
+            background:
+              'linear-gradient(135deg, rgba(155, 138, 240, 0.15) 0%, rgba(79, 70, 229, 0.08) 100%)',
+            border: '1px solid var(--glass-border)',
+            backdropFilter: 'blur(20px)',
+            overflow: 'hidden',
+            animation: 'fadeSlideUp 0.5s ease-out 0.1s both',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: -50,
+              right: -50,
+              width: 200,
+              height: 200,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)',
+              opacity: 0.1,
+              pointerEvents: 'none',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -30,
+              left: -30,
+              width: 150,
+              height: 150,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, #00d6c1 0%, transparent 70%)',
+              opacity: 0.08,
+              pointerEvents: 'none',
+            }}
+          />
+
+          <div
+            style={{
+              fontSize: 12,
+              color: 'var(--text-secondary)',
+              marginBottom: 4,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <MapPin size={14} style={{ color: 'var(--accent)' }} />
+            {currentCity.name}
+            {currentCity.country ? `, ${currentCity.country}` : ''}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, position: 'relative' }}>
+            <div
+              style={{
+                fontSize: 80,
+                lineHeight: 1,
+                animation: 'weatherIconFloat 4s ease-in-out infinite',
+                filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.2))',
+              }}
+            >
+              {getWeatherIcon(current.weatherCode, current.isDay)}
+            </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 48, fontWeight: 300, lineHeight: 1.1 }}>{Math.round(current.temperature)}°C</div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>
-                {getWeatherDescription(current.weatherCode)} · 体感 {Math.round(current.apparentTemperature)}°C
+              <div
+                className="temp-number"
+                style={{
+                  fontSize: 56,
+                  fontWeight: 200,
+                  lineHeight: 1.1,
+                  letterSpacing: '-2px',
+                }}
+              >
+                {Math.round(current.temperature)}°
+              </div>
+              <div
+                style={{
+                  fontSize: 16,
+                  color: 'var(--text-secondary)',
+                  marginTop: 4,
+                }}
+              >
+                {getWeatherDescription(current.weatherCode)}
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                体感温度 {Math.round(current.apparentTemperature)}°C
               </div>
               {lastUpdated && (
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-secondary)',
+                    marginTop: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    opacity: 0.7,
+                  }}
+                >
+                  <Clock size={11} />
                   更新于 {lastUpdated.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               )}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* 详细指标卡片 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 20 }}>
-            {[
-              { label: '湿度', value: `${current.relativeHumidity}%`, icon: <Droplets size={14} /> },
-              { label: '气压', value: `${Math.round(current.pressure)} hPa`, icon: <Gauge size={14} /> },
-              { label: '风速', value: `${Math.round(current.windSpeed)} km/h`, icon: <Wind size={14} /> },
-              { label: '风向', value: `${Math.round(current.windDirection)}° ${getWindDirectionText(current.windDirection)}`, icon: <Compass size={14} /> },
-              { label: '体感温度', value: `${Math.round(current.apparentTemperature)}°C`, icon: <Thermometer size={14} /> },
-              { label: '当前温度', value: `${Math.round(current.temperature)}°C`, icon: <Thermometer size={14} /> },
-            ].map((item) => (
-              <div key={item.label} className="app-card" style={{ padding: 10, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>{item.icon} {item.label}</div>
-                <div style={{ fontSize: 15, fontWeight: 600 }}>{item.value}</div>
-              </div>
-            ))}
+      {/* 小时预报 */}
+      {hourly.length > 0 && (
+        <div
+          style={{
+            padding: 18,
+            marginBottom: 20,
+            borderRadius: 16,
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            backdropFilter: 'blur(10px)',
+            animation: 'fadeSlideUp 0.4s ease-out 0.15s both',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              marginBottom: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: 'var(--text-primary)',
+            }}
+          >
+            <Clock size={16} style={{ color: 'var(--accent)' }} />
+            24小时预报
+          </div>
+          <HourlyForecastList hourly={hourly} />
+        </div>
+      )}
+
+      {/* 详细信息卡片网格 */}
+      {current && todayForecast && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: 12,
+            marginBottom: 20,
+          }}
+        >
+          <InfoCard
+            icon={<Droplets size={18} />}
+            label="湿度"
+            value={`${current.relativeHumidity}%`}
+            subValue={current.relativeHumidity > 70 ? '较潮湿' : current.relativeHumidity < 30 ? '干燥' : '舒适'}
+            delay={0.2}
+          />
+          <InfoCard
+            icon={<Wind size={18} />}
+            label="风速"
+            value={`${Math.round(current.windSpeed)} km/h`}
+            subValue={`${getWindDirectionText(current.windDirection)}风`}
+            delay={0.23}
+          />
+          <InfoCard
+            icon={<Gauge size={18} />}
+            label="气压"
+            value={`${Math.round(current.pressure)} hPa`}
+            delay={0.26}
+          />
+          <InfoCard
+            icon={<Eye size={18} />}
+            label="能见度"
+            value={`${current.visibility.toFixed(1)} km`}
+            subValue={current.visibility >= 10 ? '优' : current.visibility >= 5 ? '良好' : '一般'}
+            delay={0.29}
+          />
+          <InfoCard
+            icon={<SunMedium size={18} style={{ color: getUVColor(current.uvIndex) }} />}
+            label="紫外线"
+            value={`${current.uvIndex.toFixed(1)}`}
+            subValue={getUVLevel(current.uvIndex)}
+            accentColor={getUVColor(current.uvIndex)}
+            delay={0.32}
+          />
+          <InfoCard
+            icon={<Compass size={18} />}
+            label="风向"
+            value={getWindDirectionText(current.windDirection)}
+            subValue={`${Math.round(current.windDirection)}°`}
+            delay={0.35}
+          />
+        </div>
+      )}
+
+      {/* 日出日落卡片 */}
+      {todayForecast && todayForecast.sunrise && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 12,
+            marginBottom: 20,
+            animation: 'fadeSlideUp 0.4s ease-out 0.3s both',
+          }}
+        >
+          <div
+            style={{
+              padding: 18,
+              borderRadius: 16,
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.2)',
+              backdropFilter: 'blur(10px)',
+            }}
+            className="hover-lift"
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 8,
+                color: '#f59e0b',
+              }}
+            >
+              <Sunrise size={20} />
+              <span style={{ fontSize: 12, fontWeight: 500 }}>日出</span>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {formatTime(todayForecast.sunrise)}
+            </div>
+          </div>
+          <div
+            style={{
+              padding: 18,
+              borderRadius: 16,
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%)',
+              border: '1px solid rgba(139, 92, 246, 0.2)',
+              backdropFilter: 'blur(10px)',
+            }}
+            className="hover-lift"
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 8,
+                color: '#8b5cf6',
+              }}
+            >
+              <Sunset size={20} />
+              <span style={{ fontSize: 12, fontWeight: 500 }}>日落</span>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {formatTime(todayForecast.sunset)}
+            </div>
           </div>
         </div>
       )}
 
-      {/* 温度趋势 Sparkline */}
+      {/* 温度趋势 */}
       {forecast.length > 0 && (
-        <div className="app-card" style={{ padding: 16, marginBottom: 16, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>📈 未来 7 天温度趋势</div>
+        <div
+          style={{
+            padding: 18,
+            marginBottom: 20,
+            borderRadius: 16,
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            backdropFilter: 'blur(10px)',
+            animation: 'fadeSlideUp 0.4s ease-out 0.35s both',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              marginBottom: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: 'var(--text-primary)',
+            }}
+          >
+            <Thermometer size={16} style={{ color: 'var(--accent)' }} />
+            未来 7 天温度趋势
+          </div>
           <TemperatureSparkline highs={highs} lows={lows} />
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ width: 10, height: 2, background: '#ff7a59', display: 'inline-block' }} />
+          <div
+            style={{
+              display: 'flex',
+              gap: 20,
+              justifyContent: 'center',
+              marginTop: 12,
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span
+                style={{
+                  width: 12,
+                  height: 2,
+                  background: '#ff7a59',
+                  display: 'inline-block',
+                  borderRadius: 1,
+                }}
+              />
               最高温
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ width: 10, height: 2, background: '#5ac8fa', display: 'inline-block' }} />
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span
+                style={{
+                  width: 12,
+                  height: 2,
+                  background: '#5ac8fa',
+                  display: 'inline-block',
+                  borderRadius: 1,
+                }}
+              />
               最低温
             </span>
           </div>
         </div>
       )}
 
-      {/* 7 天预报 */}
+      {/* 7 天预报列表 */}
       {forecast.length > 0 && (
-        <div className="app-card" style={{ padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>📅 未来 7 天预报</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {forecast.map((day, i) => (
-              <div key={day.date} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 6px', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
-                <div style={{ width: 90, fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{formatDate(day.date, i)}</div>
-                <div style={{ fontSize: 24, width: 32, textAlign: 'center' }}>{getWeatherIcon(day.weatherCode)}</div>
-                <div style={{ flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{getWeatherDescription(day.weatherCode)}</div>
-                <div style={{ fontSize: 13, color: '#5ac8fa', minWidth: 40, textAlign: 'right' }}>{Math.round(day.temperatureMin)}°</div>
-                <div style={{ width: 40, height: 2, background: 'linear-gradient(to right, #5ac8fa, #ff7a59)', borderRadius: 2 }} />
-                <div style={{ fontSize: 13, color: '#ff7a59', minWidth: 40, textAlign: 'right' }}>{Math.round(day.temperatureMax)}°</div>
-              </div>
-            ))}
+        <div
+          style={{
+            padding: 18,
+            borderRadius: 16,
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            backdropFilter: 'blur(10px)',
+            animation: 'fadeSlideUp 0.4s ease-out 0.4s both',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              marginBottom: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: 'var(--text-primary)',
+            }}
+          >
+            <CloudSun size={16} style={{ color: 'var(--accent)' }} />
+            未来 7 天预报
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {forecast.map((day, i) => {
+              const WeatherIcon = getWeatherLucideIcon(day.weatherCode, true)
+              return (
+                <div
+                  key={day.date}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 12px',
+                    borderRadius: 10,
+                    background: 'transparent',
+                    transition: 'background 0.15s ease',
+                    animation: `fadeSlideUp 0.3s ease-out ${0.4 + i * 0.05}s both`,
+                  }}
+                  className="hover-lift"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--accent-subtle)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 80,
+                      fontSize: 12,
+                      color: i === 0 ? 'var(--accent)' : 'var(--text-primary)',
+                      fontWeight: i === 0 ? 600 : 500,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {formatDate(day.date, i)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 22,
+                      width: 32,
+                      textAlign: 'center',
+                      flexShrink: 0,
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    <WeatherIcon size={22} />
+                  </div>
+                  <div
+                    style={{
+                      flex: 1,
+                      fontSize: 12,
+                      color: 'var(--text-secondary)',
+                      minWidth: 0,
+                    }}
+                  >
+                    {getWeatherDescription(day.weatherCode)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: '#5ac8fa',
+                      minWidth: 36,
+                      textAlign: 'right',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {Math.round(day.temperatureMin)}°
+                  </div>
+                  <div
+                    style={{
+                      width: '30%',
+                      maxWidth: 100,
+                      height: 4,
+                      background: 'linear-gradient(to right, #5ac8fa, #ff7a59)',
+                      borderRadius: 2,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: '#ff7a59',
+                      minWidth: 36,
+                      textAlign: 'right',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {Math.round(day.temperatureMax)}°
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
 
       {/* Loading 空态 */}
       {loading && !current && (
-        <div style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.5)' }}>
-          <div style={{ fontSize: 48, marginBottom: 12, animation: 'spin 1s linear infinite' }}>⛅</div>
-          <div>正在加载天气数据...</div>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 56,
+              marginBottom: 16,
+              animation: 'spin 2s linear infinite',
+              opacity: 0.6,
+            }}
+          >
+            ⛅
+          </div>
+          <div style={{ fontSize: 14, marginBottom: 4 }}>正在加载天气数据...</div>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>请稍候</div>
         </div>
       )}
     </div>
