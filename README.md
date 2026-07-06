@@ -189,18 +189,30 @@ tree            # 目录树
 ### 网络命令
 
 ```bash
-weather [城市]  # 天气查询
-news [关键词]   # Hacker News 新闻
-crypto          # 加密货币行情
-ip / ipinfo     # IP 信息查询
-dns <域名>      # DNS 查询
-github <repo>   # GitHub 仓库信息
-ghuser <用户>   # GitHub 用户信息
-translate <lang> <text>  # 翻译
-dict <单词>     # 英文词典
-stock <代码>    # 股票行情
-shorten <URL>   # 短链接生成
-whois <域名>    # WHOIS 查询
+weather [城市]          # 实时天气
+weather-forecast [城市] # 7天天气预报
+weather-alerts [城市]   # 天气预警与健康建议
+weather-uv [城市]       # 紫外线指数与防护建议
+news [关键词]           # Hacker News 新闻
+news-top                # Hacker News 头条
+news-tech               # 技术新闻
+news-ai                 # AI 相关新闻
+crypto                  # 加密货币行情
+crypto-alerts           # 加密货币价格预警
+crypto-gainers          # 24小时涨幅榜
+crypto-losers           # 24小时跌幅榜
+ip / ipinfo             # IP 信息查询
+dns <域名>              # DNS 查询
+github <repo>           # GitHub 仓库信息
+ghuser <用户>           # GitHub 用户信息
+github-trending         # GitHub 热门仓库
+github-stars <用户>     # GitHub 用户星标统计
+translate <lang> <text> # 翻译
+dict <单词>             # 英文词典
+stock <代码>              # 股票行情
+stock-alerts            # 主要股票行情预警
+shorten <URL>           # 短链接生成
+whois <域名>            # WHOIS 查询
 ```
 
 ### 开发工具
