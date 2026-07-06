@@ -70,6 +70,8 @@ export default function Terminal() {
   const updateFileContent = useStore((s) => s.updateFileContent)
   const getWindows = useStore((s) => s.windows)
   const closeWindow = useStore((s) => s.closeWindow)
+  const openApp = useStore((s) => s.openApp)
+  const apps = useStore((s) => s.apps)
   const theme = useStore((s) => s.theme)
 
   const [cwd, setCwd] = useState('/home/user')
@@ -176,7 +178,7 @@ export default function Terminal() {
         '网络工具': ['ping', 'weather', 'news', 'crypto', 'translate', 'ipinfo'],
         '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password'],
         '趣味命令': ['cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'banner', 'lolcat', 'starwars', 'matrix', 'asciiart', 'joke', 'advice', 'flip', 'rps'],
-        '其他': ['search', 'alias', 'history', 'welcome'],
+        '其他': ['search', 'alias', 'history', 'welcome', 'open', 'app'],
       }
 
       const helpOutput = [
@@ -219,6 +221,49 @@ export default function Terminal() {
         } else {
           setHistory(prev => [...prev, { input: cmd, output: 'alias: 无效的别名定义' }])
         }
+      }
+      return
+    }
+
+    if (command === 'open' || command === 'app' || command === 'launch') {
+      if (args.length === 0) {
+        const appList = apps.slice(0, 30).map((a, i) => `${(i + 1).toString().padStart(2)}. ${a.id.padEnd(25)} ${a.name}`).join('\n')
+        const openOutput = [
+          '📱 应用启动器',
+          '═'.repeat(50),
+          '',
+          '用法: open <应用ID>',
+          '',
+          '可用应用 (前30个):',
+          appList,
+          '',
+          `共 ${apps.length} 个应用可用`,
+          '提示: 使用 "open list" 查看全部应用',
+        ].join('\n')
+        setHistory(prev => [...prev, { input: cmd, output: openOutput }])
+        return
+      }
+
+      if (args[0] === 'list' || args[0] === 'ls') {
+        const allApps = apps.map((a, i) => `${(i + 1).toString().padStart(3)}. ${a.id.padEnd(30)} ${a.name} [${a.category}]`).join('\n')
+        setHistory(prev => [...prev, { input: cmd, output: allApps }])
+        return
+      }
+
+      const appId = args[0]
+      const foundApp = apps.find(a => a.id === appId || a.name.toLowerCase().includes(appId.toLowerCase()))
+      
+      if (foundApp) {
+        openApp(foundApp.id)
+        setHistory(prev => [...prev, { input: cmd, output: `✅ 正在打开 ${foundApp.name}...` }])
+      } else {
+        const suggestions = apps.filter(a => a.id.includes(appId.toLowerCase()) || a.name.toLowerCase().includes(appId.toLowerCase())).slice(0, 5)
+        let output = `❌ 未找到应用 "${appId}"`
+        if (suggestions.length > 0) {
+          output += '\n\n你可能想找的应用:\n'
+          output += suggestions.map(a => `  ${a.id} - ${a.name}`).join('\n')
+        }
+        setHistory(prev => [...prev, { input: cmd, output }])
       }
       return
     }

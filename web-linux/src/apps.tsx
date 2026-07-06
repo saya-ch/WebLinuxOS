@@ -999,10 +999,22 @@ function ChinesePoetryIcon() {
   )
 }
 
+function SmartDevFlowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+      <path d="M2 17l10 5 10-5" />
+      <path d="M2 12l10 5 10-5" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 // 注意（校验提示）：以下所有条目在 src/apps/ 下均应存在同名 .tsx 组件文件，
 // 且每个 id 必须全局唯一。如新增注册，请先确认组件文件已就位。
 // （当前 200 项已完成组件存在性与 id 去重校验，无异常。）
 export const appRegistry: AppDefinition[] = [
+  { id: 'smart-dev-flow', name: '智能开发工作台', icon: <SmartDevFlowIcon />, component: 'SmartDevFlow', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'dev-toolbox', name: '开发者工具箱', icon: <DevToolboxIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'unified-dashboard', name: '统一数据仪表盘', icon: <UnifiedDashboardIcon />, component: 'UnifiedDashboard', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'task-manager-plus', name: '任务管理器 Plus', icon: <TaskManagerPlusIcon />, component: 'TaskManagerPlus', category: 'office', defaultWidth: 1300, defaultHeight: 900, minWidth: 900, minHeight: 650, resizable: true, multiple: false },

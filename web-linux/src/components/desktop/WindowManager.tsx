@@ -98,6 +98,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevToolbox: () => import('../../apps/DevToolbox'),
   DevTools: () => import('../../apps/DevTools'),
   DevOpsTools: () => import('../../apps/DevOpsTools'),
+  SmartDevFlow: () => import('../../apps/SmartDevFlow'),
   APILab: () => import('../../apps/APILab'),
   APITesterPro: () => import('../../apps/APITesterPro'),
   ApiTester: () => import('../../apps/ApiTester'),
