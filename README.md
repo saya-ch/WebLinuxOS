@@ -41,6 +41,7 @@ WebLinuxOS 是一个完全运行在浏览器中的 Web 操作系统，使用 Rea
 | **动态壁纸** | 粒子效果、渐变、动态背景 |
 | **全局搜索** | 命令面板快速访问应用和文件 |
 | **桌面小部件** | 时钟、天气、系统监控、便签、番茄钟 |
+| **工作空间管理器** | 保存/恢复窗口布局，多工作流配置，一键切换工作模式 |
 
 ### 智能AI中心 (SmartAIHub)
 
@@ -96,7 +97,8 @@ WebLinuxOS 是一个完全运行在浏览器中的 Web 操作系统，使用 Rea
 | 应用 | API 来源 | 说明 |
 |------|----------|------|
 | 天气 | Open-Meteo | 实时天气与预报，无需 API Key |
-| 新闻 | Hacker News (Algolia) | 技术新闻聚合 |
+| 新闻聚合中心 | Hacker News / Dev.to / Reddit | 多源技术新闻聚合，分类搜索收藏 |
+| 数据可视化仪表盘 | CoinGecko / REST Countries | 加密货币、国家信息、系统性能可视化 |
 | 加密货币 | CoinGecko | 实时行情与市场数据 |
 | 股票 | Alpha Vantage | 股票行情查询 |
 | IP 查询 | ipapi.co | IP 地理位置 |
@@ -370,6 +372,9 @@ web-linux/
 - [Open-Meteo](https://open-meteo.com/) - 免费天气 API
 - [CoinGecko](https://www.coingecko.com/) - 加密货币数据 API
 - [Hacker News](https://news.ycombinator.com/) - 技术新闻
+- [Dev.to](https://dev.to/) - 开发者社区文章
+- [Reddit](https://www.reddit.com/) - 社区新闻聚合
+- [REST Countries](https://restcountries.com/) - 国家信息 API
 - [ipapi.co](https://ipapi.co/) - IP 地理位置
 - [MyMemory](https://mymemory.translated.net/) - 翻译 API
 - [Dictionary API](https://dictionaryapi.dev/) - 英文词典
