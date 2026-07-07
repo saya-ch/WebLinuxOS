@@ -1142,7 +1142,7 @@ const DesktopWidgets = memo(function DesktopWidgets({ visible }: { visible: bool
   )
 })
 
-const WIDGET_TITLES: Record<WidgetId, string> = {
+export const WIDGET_TITLES: Record<WidgetId, string> = {
   clock: '时钟',
   pulse: '系统脉搏',
   weather: '实时天气',

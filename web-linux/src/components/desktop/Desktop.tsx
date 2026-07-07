@@ -5,6 +5,7 @@ import DesktopWidgets, {
   getWidgetVisibility,
   setWidgetVisibility,
   WIDGET_IDS,
+  WIDGET_TITLES,
   type WidgetId,
 } from './DesktopWidgets'
 import { loadFromStorage, debouncedSaveToStorage } from '../../store/storageUtils'
@@ -437,14 +438,6 @@ const Desktop = memo(function Desktop() {
     return () => window.removeEventListener('weblinux-widgets-change', handler)
   }, [])
 
-  const widgetLabelMap: Record<string, string> = {
-    clock: '时钟',
-    pulse: '系统脉搏',
-    weather: '实时天气',
-    focus: '专注计时器',
-    note: '便签',
-  }
-
   const menuItems: MenuEntry[] = useMemo(() => [
     { label: '打开终端', icon: <TerminalIcon size={16} />, action: () => openApp('terminal') },
     { label: '打开文件管理器', icon: <FolderIcon size={16} />, action: () => openApp('files') },
@@ -466,7 +459,7 @@ const Desktop = memo(function Desktop() {
     { type: 'separator' as const },
     { label: widgetsVisible ? '隐藏桌面小部件' : '显示桌面小部件', icon: <SparklesIcon size={16} />, action: toggleWidgets },
     ...WIDGET_IDS.map((id) => ({
-      label: `${widgetVisibility[id] ? '✓' : '　'} ${widgetLabelMap[id]}`,
+      label: `${widgetVisibility[id] ? '✓' : '　'} ${WIDGET_TITLES[id]}`,
       icon: <span style={{ width: 16, display: 'inline-flex', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: widgetVisibility[id] ? 'var(--accent)' : 'transparent', border: widgetVisibility[id] ? 'none' : '1px solid var(--text-secondary)' }} /></span>,
       action: () => handleToggleWidget(id),
     })),
