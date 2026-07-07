@@ -83,6 +83,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CodeSnippetShare: () => import('../../apps/CodeSnippetShare'),
   AIChat: () => import('../../apps/AIChat'),
   ChatAI: () => import('../../apps/ChatAI'),
+  AIChatEnhanced: () => import('../../apps/AIChatEnhanced'),
   AIChatAssistant: () => import('../../apps/AIChatAssistant'),
   AIHelper: () => import('../../apps/AIHelper'),
   AIAssistant: () => import('../../apps/AIAssistant'),
