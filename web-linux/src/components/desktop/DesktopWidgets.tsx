@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import { loadFromStorage, debouncedSaveToStorage } from '../../store/storageUtils'
 
-export type WidgetId = 'clock' | 'pulse' | 'weather' | 'note' | 'focus' | 'systemMonitor' | 'quickLaunch' | 'musicPlayer'
+export type WidgetId = 'clock' | 'pulse' | 'weather' | 'note' | 'focus' | 'systemMonitor' | 'quickLaunch' | 'musicPlayer' | 'airQuality' | 'dailyPoem'
 
 interface WidgetLayout {
   id: WidgetId
@@ -18,6 +18,8 @@ interface WidgetState {
   focusMinutes: number
   quickLaunchApps: string[]
   musicTrack: { title: string; artist: string; playing: boolean; progress: number }
+  poemIndex: number
+  aqiCity: string
 }
 
 const WIDGET_STORAGE_KEY = 'weblinux-widgets-v2'
@@ -30,10 +32,12 @@ const DEFAULT_LAYOUT: WidgetLayout[] = [
   { id: 'weather', visible: true, x: 24, y: 188, width: WIDGET_DEFAULT_WIDTH, height: 160 },
   { id: 'pulse', visible: true, x: 328, y: 24, width: WIDGET_DEFAULT_WIDTH, height: 160 },
   { id: 'focus', visible: true, x: 328, y: 208, width: WIDGET_DEFAULT_WIDTH, height: 200 },
-  { id: 'note', visible: false, x: 632, y: 24, width: WIDGET_DEFAULT_WIDTH, height: 180 },
-  { id: 'systemMonitor', visible: false, x: 632, y: 228, width: WIDGET_DEFAULT_WIDTH, height: 200 },
-  { id: 'quickLaunch', visible: false, x: 24, y: 372, width: WIDGET_DEFAULT_WIDTH, height: 140 },
-  { id: 'musicPlayer', visible: false, x: 328, y: 432, width: WIDGET_DEFAULT_WIDTH, height: 160 },
+  { id: 'airQuality', visible: false, x: 632, y: 24, width: WIDGET_DEFAULT_WIDTH, height: 160 },
+  { id: 'dailyPoem', visible: false, x: 632, y: 212, width: WIDGET_DEFAULT_WIDTH, height: 180 },
+  { id: 'note', visible: false, x: 24, y: 432, width: WIDGET_DEFAULT_WIDTH, height: 180 },
+  { id: 'systemMonitor', visible: false, x: 328, y: 432, width: WIDGET_DEFAULT_WIDTH, height: 200 },
+  { id: 'quickLaunch', visible: false, x: 632, y: 416, width: WIDGET_DEFAULT_WIDTH, height: 140 },
+  { id: 'musicPlayer', visible: false, x: 24, y: 632, width: WIDGET_DEFAULT_WIDTH, height: 160 },
 ]
 
 function loadWidgetState(): WidgetState {
@@ -65,6 +69,8 @@ function loadWidgetState(): WidgetState {
           progress: raw.musicTrack.progress ?? 0,
         }
       : { title: '夜曲', artist: '周杰伦', playing: false, progress: 0.35 },
+    poemIndex: typeof raw.poemIndex === 'number' ? raw.poemIndex : 0,
+    aqiCity: typeof raw.aqiCity === 'string' ? raw.aqiCity : '北京',
   }
 }
 
@@ -772,6 +778,138 @@ const MusicPlayerWidget = memo(function MusicPlayerWidget() {
   )
 })
 
+const AQI_CATEGORIES = [
+  { range: [0, 50], category: '优', color: '#00e400' },
+  { range: [51, 100], category: '良', color: '#ffff00' },
+  { range: [101, 150], category: '轻度污染', color: '#ff7e00' },
+  { range: [151, 200], category: '中度污染', color: '#ff0000' },
+  { range: [201, 300], category: '重度污染', color: '#99004c' },
+  { range: [301, 500], category: '严重污染', color: '#7e0023' },
+]
+
+function getAQICategory(aqi: number) {
+  for (const cat of AQI_CATEGORIES) {
+    if (aqi >= cat.range[0] && aqi <= cat.range[1]) return cat
+  }
+  return AQI_CATEGORIES[AQI_CATEGORIES.length - 1]
+}
+
+const AQI_CITIES = [
+  { name: '北京', coords: [39.9042, 116.4074] },
+  { name: '上海', coords: [31.2304, 121.4737] },
+  { name: '广州', coords: [23.1291, 113.2644] },
+  { name: '深圳', coords: [22.5431, 114.0579] },
+  { name: '杭州', coords: [30.2741, 120.1551] },
+  { name: '成都', coords: [30.5728, 104.0668] },
+]
+
+const AirQualityWidget = memo(function AirQualityWidget({ city, onCityChange }: { city: string; onCityChange: (c: string) => void }) {
+  const [aqi, setAqi] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState<string | null>(null)
+  const [pm25, setPm25] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchData() {
+      setLoading(true)
+      setErr(null)
+      try {
+        const cityData = AQI_CITIES.find(c => c.name === city) || AQI_CITIES[0]
+        const [lat, lon] = cityData.coords
+        const res = await fetch(
+          `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5`
+        )
+        if (!res.ok) throw new Error('获取失败')
+        const data = await res.json()
+        if (!cancelled) {
+          setAqi(Math.round(data.current?.us_aqi ?? 0))
+          setPm25(Math.round(data.current?.pm2_5 ?? 0))
+        }
+      } catch (e) {
+        if (!cancelled) setErr((e as Error).message || '获取失败')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    fetchData()
+    const t = setInterval(fetchData, 30 * 60 * 1000)
+    return () => { cancelled = true; clearInterval(t) }
+  }, [city])
+
+  const category = aqi !== null ? getAQICategory(aqi) : null
+
+  if (loading) {
+    return <div className="dw-aqi dw-loading"><div className="dw-weather-spinner" />正在获取空气质量…</div>
+  }
+  if (err || aqi === null) {
+    return <div className="dw-aqi dw-error">空气质量暂不可用</div>
+  }
+
+  return (
+    <div className="dw-aqi">
+      <div className="dw-aqi-header">
+        <div className="dw-aqi-city">
+          <select
+            value={city}
+            onChange={(e) => onCityChange(e.target.value)}
+            className="dw-aqi-city-select"
+          >
+            {AQI_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+          </select>
+        </div>
+        <div className="dw-aqi-label">AQI</div>
+      </div>
+      <div className="dw-aqi-main">
+        <div className="dw-aqi-value" style={{ color: category?.color }}>{aqi}</div>
+        <div className="dw-aqi-category" style={{ background: category?.color }}>{category?.category}</div>
+      </div>
+      <div className="dw-aqi-details">
+        <div className="dw-aqi-detail-item">
+          <span className="dw-aqi-detail-icon">🌫</span>
+          <span className="dw-aqi-detail-value">{pm25}</span>
+          <span className="dw-aqi-detail-unit">μg/m³ PM2.5</span>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+const DAILY_POEMS = [
+  { title: '静夜思', author: '李白', dynasty: '唐', content: '床前明月光，\n疑是地上霜。\n举头望明月，\n低头思故乡。' },
+  { title: '登鹳雀楼', author: '王之涣', dynasty: '唐', content: '白日依山尽，\n黄河入海流。\n欲穷千里目，\n更上一层楼。' },
+  { title: '相思', author: '王维', dynasty: '唐', content: '红豆生南国，\n春来发几枝。\n愿君多采撷，\n此物最相思。' },
+  { title: '春晓', author: '孟浩然', dynasty: '唐', content: '春眠不觉晓，\n处处闻啼鸟。\n夜来风雨声，\n花落知多少。' },
+  { title: '江雪', author: '柳宗元', dynasty: '唐', content: '千山鸟飞绝，\n万径人踪灭。\n孤舟蓑笠翁，\n独钓寒江雪。' },
+  { title: '游子吟', author: '孟郊', dynasty: '唐', content: '慈母手中线，\n游子身上衣。\n临行密密缝，\n意恐迟迟归。\n谁言寸草心，\n报得三春晖。' },
+  { title: '望庐山瀑布', author: '李白', dynasty: '唐', content: '日照香炉生紫烟，\n遥看瀑布挂前川。\n飞流直下三千尺，\n疑是银河落九天。' },
+  { title: '出塞', author: '王昌龄', dynasty: '唐', content: '秦时明月汉时关，\n万里长征人未还。\n但使龙城飞将在，\n不教胡马度阴山。' },
+  { title: '送元二使安西', author: '王维', dynasty: '唐', content: '渭城朝雨浥轻尘，\n客舍青青柳色新。\n劝君更尽一杯酒，\n西出阳关无故人。' },
+  { title: '悯农', author: '李绅', dynasty: '唐', content: '锄禾日当午，\n汗滴禾下土。\n谁知盘中餐，\n粒粒皆辛苦。' },
+]
+
+const DailyPoemWidget = memo(function DailyPoemWidget({ index, onNext }: { index: number; onNext: () => void }) {
+  const poem = DAILY_POEMS[index % DAILY_POEMS.length]
+
+  return (
+    <div className="dw-poem">
+      <div className="dw-poem-header">
+        <span className="dw-poem-title">📜 每日诗词</span>
+        <button className="dw-poem-refresh" onClick={onNext} title="换一首">↻</button>
+      </div>
+      <div className="dw-poem-content">
+        <div className="dw-poem-name">{poem.title}</div>
+        <div className="dw-poem-author">【{poem.dynasty}】{poem.author}</div>
+        <div className="dw-poem-text">
+          {poem.content.split('\n').map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+})
+
 interface WidgetShellProps {
   id: WidgetId
   title: string
@@ -939,6 +1077,22 @@ const DesktopWidgets = memo(function DesktopWidgets({ visible }: { visible: bool
     })
   }, [persistState])
 
+  const setPoemIndex = useCallback((idx: number) => {
+    setState((prev) => {
+      const next = { ...prev, poemIndex: idx }
+      persistState(next)
+      return next
+    })
+  }, [persistState])
+
+  const setAqiCity = useCallback((city: string) => {
+    setState((prev) => {
+      const next = { ...prev, aqiCity: city }
+      persistState(next)
+      return next
+    })
+  }, [persistState])
+
   const handleResize = useCallback((id: WidgetId, width: number, height: number, x?: number, y?: number) => {
     const patch: Partial<WidgetLayout> = { width, height }
     if (x !== undefined) patch.x = x
@@ -978,6 +1132,8 @@ const DesktopWidgets = memo(function DesktopWidgets({ visible }: { visible: bool
             {l.id === 'systemMonitor' && <SystemMonitorWidget />}
             {l.id === 'quickLaunch' && <QuickLaunchWidget />}
             {l.id === 'musicPlayer' && <MusicPlayerWidget />}
+            {l.id === 'airQuality' && <AirQualityWidget city={state.aqiCity} onCityChange={setAqiCity} />}
+            {l.id === 'dailyPoem' && <DailyPoemWidget index={state.poemIndex} onNext={() => setPoemIndex(state.poemIndex + 1)} />}
           </WidgetShell>
         )
       })}
@@ -995,6 +1151,8 @@ const WIDGET_TITLES: Record<WidgetId, string> = {
   systemMonitor: '系统监控',
   quickLaunch: '快捷启动',
   musicPlayer: '音乐播放器',
+  airQuality: '空气质量',
+  dailyPoem: '每日诗词',
 }
 
 export function getWidgetVisibility(): Record<WidgetId, boolean> {
@@ -1023,6 +1181,6 @@ export function toggleAllWidgets(visible: boolean) {
   window.dispatchEvent(new CustomEvent('weblinux-widgets-change'))
 }
 
-export const WIDGET_IDS: WidgetId[] = ['clock', 'pulse', 'weather', 'focus', 'note', 'systemMonitor', 'quickLaunch', 'musicPlayer']
+export const WIDGET_IDS: WidgetId[] = ['clock', 'pulse', 'weather', 'focus', 'note', 'systemMonitor', 'quickLaunch', 'musicPlayer', 'airQuality', 'dailyPoem']
 
 export default DesktopWidgets

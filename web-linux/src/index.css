@@ -9,7 +9,7 @@ html {
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Outfit', 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans SC', 'Outfit', 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
@@ -7074,6 +7074,201 @@ a:hover {
 }
 
 /* ============================================================
+   空气质量小部件
+   ============================================================ */
+.dw-aqi {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 4px 2px;
+}
+
+.dw-aqi.dw-loading,
+.dw-aqi.dw-error {
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  gap: 10px;
+}
+
+.dw-aqi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.dw-aqi-city-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.dw-aqi-city-select:hover {
+  border-color: rgba(139, 124, 240, 0.4);
+  background: rgba(139, 124, 240, 0.08);
+}
+
+.dw-aqi-city-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dw-aqi-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dw-aqi-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+}
+
+.dw-aqi-value {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 20px currentColor;
+}
+
+.dw-aqi-category {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dw-aqi-details {
+  margin-top: auto;
+}
+
+.dw-aqi-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 11.5px;
+}
+
+.dw-aqi-detail-icon {
+  font-size: 14px;
+}
+
+.dw-aqi-detail-value {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.dw-aqi-detail-unit {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 10px;
+}
+
+/* ============================================================
+   每日诗词小部件
+   ============================================================ */
+.dw-poem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 4px 2px;
+}
+
+.dw-poem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.dw-poem-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dw-poem-refresh {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.dw-poem-refresh:hover {
+  color: var(--accent);
+  border-color: rgba(139, 124, 240, 0.4);
+  background: rgba(139, 124, 240, 0.08);
+  transform: rotate(180deg);
+}
+
+.dw-poem-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.dw-poem-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Noto Serif SC', serif;
+}
+
+.dw-poem-author {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: 'Noto Serif SC', serif;
+}
+
+.dw-poem-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  font-family: 'Noto Serif SC', serif;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
    浅色主题适配
    ============================================================ */
 :root.light .dw-shell {
@@ -7155,8 +7350,19 @@ a:hover {
 :root.light .dw-sysmon-gauge,
 :root.light .dw-weather-meta-item,
 :root.light .dw-sysmon-stat,
-:root.light .dw-quick-item {
+:root.light .dw-quick-item,
+:root.light .dw-aqi-detail-item,
+:root.light .dw-aqi-city-select {
   border-color: rgba(0, 0, 0, 0.06);
+}
+
+:root.light .dw-aqi-city-select {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+:root.light .dw-poem-refresh {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 /* ============================================================
