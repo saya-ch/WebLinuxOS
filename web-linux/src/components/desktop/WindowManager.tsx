@@ -89,6 +89,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIAssistant: () => import('../../apps/AIAssistant'),
   AIAssistantPro: () => import('../../apps/AIAssistantPro'),
   AICodeAssistant: () => import('../../apps/AICodeAssistant'),
+  AICodeCompanion: () => import('../../apps/AICodeCompanion'),
   AICodeTutor: () => import('../../apps/AICodeTutor'),
   AIGenerator: () => import('../../apps/AIGenerator'),
   AIPromptLibrary: () => import('../../apps/AIPromptLibrary'),

@@ -31,6 +31,8 @@ import type { AppDefinition } from './types'
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // 新增增强应用（v16.0迭代）
   { id: 'ai-chat-enhanced', name: 'AI聊天增强', icon: <ChatIcon />, component: 'AIChatEnhanced', category: 'utilities', defaultWidth: 800, defaultHeight: 600, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+  // 新增AI Code Companion（v17.0迭代）
+  { id: 'ai-code-companion', name: 'AI Code Companion', icon: <SparklesIcon />, component: 'AICodeCompanion', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

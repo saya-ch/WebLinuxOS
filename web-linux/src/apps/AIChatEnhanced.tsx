@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Send, Bot, User, Sparkles, Trash2, Copy, Check, Settings, History, Download, Brain, Zap } from 'lucide-react'
+import { Send, Bot, User, Sparkles, Trash2, Copy, Check, History, Download, Brain, Zap } from 'lucide-react'
 
 interface Message {
   id: string
