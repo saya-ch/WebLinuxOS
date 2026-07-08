@@ -1910,69 +1910,6 @@ registerCommand('ping', {
   examples: ['ping google.com', 'ping github.com']
 })
 
-registerCommand('shorten', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔗 URL短链接生成器',
-          '═'.repeat(40),
-          '',
-          '用法: shorten <长链接>',
-          '',
-          '示例:',
-          '  shorten https://github.com/saya-ch/WebLinuxOS',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const url = args.join(' ')
-    
-    try {
-      const response = await fetch(`https://api.shrtco.de/v2/shorten?url=${encodeURIComponent(url)}`, { mode: 'cors' })
-      const data = await response.json() as Record<string, unknown>
-      
-      const result = data.result as Record<string, string> || {}
-      
-      return {
-        output: [
-          '🔗 URL短链接生成结果',
-          '═'.repeat(40),
-          '',
-          `  原始链接: ${url}`,
-          '',
-          `  短链接: ${result.full_short_link}`,
-          `  短链接2: ${result.full_short_link2}`,
-          `  短链接3: ${result.full_short_link3}`,
-          '',
-          '数据来源: shrtcode API',
-          '',
-        ].join('\n')
-      }
-    } catch {
-      return {
-        output: [
-          '🔗 URL短链接生成结果',
-          '═'.repeat(40),
-          '',
-          `  原始链接: ${url}`,
-          '',
-          '⚠️ 短链接服务暂时不可用',
-          '',
-          '可手动访问: https://tinyurl.com/create.php?url=' + encodeURIComponent(url),
-          '',
-        ].join('\n')
-      }
-    }
-  },
-  description: '生成URL短链接',
-  usage: 'shorten <长链接>',
-  examples: ['shorten https://github.com/saya-ch/WebLinuxOS']
-})
-
 registerCommand('weather-search', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context

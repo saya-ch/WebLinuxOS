@@ -266,7 +266,20 @@ flip            # 抛硬币
 rps             # 石头剪刀布
 ```
 
-> 输入 `help` 查看完整命令列表（150+命令）
+### 智能工具命令
+```bash
+system-status   # 系统状态和资源使用信息
+timer <秒数>    # 启动倒计时器
+pomodoro [工作分钟] [休息分钟] # Pomodoro番茄钟
+search-files <模式> # 搜索文件系统
+world-clock     # 全球主要城市时间
+crypto-summary  # 加密货币实时行情概览
+news-summary    # Hacker News热门新闻摘要
+translate <语言> <文本> # 翻译文本
+url-shorten <URL> # 缩短长URL
+```
+
+> 输入 `help` 查看完整命令列表（160+命令）
 
 ---
 
@@ -397,6 +410,21 @@ web-linux/
 ---
 
 ## 更新日志
+
+### v19.1.0 (2026-07-08) - 智能工具与生产力增强
+- **新增智能工具命令**：9个实用终端命令，提升工作效率
+  - `system-status`：系统状态和资源使用信息（内存、CPU、网络、屏幕分辨率等）
+  - `timer <秒数>`：启动倒计时器，支持浏览器通知提醒
+  - `pomodoro [工作分钟] [休息分钟]`：Pomodoro番茄钟，支持工作/休息循环
+  - `search-files <模式>`：搜索虚拟文件系统中的文件和文件夹
+  - `world-clock`：显示全球8个主要城市时间，含工作状态提示
+  - `crypto-summary`：加密货币实时行情概览（BTC/ETH/SOL等）
+  - `news-summary`：Hacker News热门新闻摘要（前5条）
+  - `translate <语言> <文本>`：多语言翻译（基于MyMemory API）
+  - `url-shorten <URL>`：URL缩短服务（Bitly + TinyURL双备份）
+- **修复bug**：修复apiCommands.ts中重复注册的shorten命令
+- **增强稳定性**：优化命令系统的错误处理和API请求缓存机制
+- **性能优化**：改进终端命令加载机制，减少初始加载时间
 
 ### v19.0.0 (2026-07-08) - WorldPulse 全球脉搏仪表盘
 - **新增 WorldPulse 旗舰应用**：实时全球情报仪表盘，让 WebLinuxOS 拥有实际信息中心价值
