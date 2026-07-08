@@ -471,3 +471,255 @@ registerCommand('clear', {
   usage: 'clear',
   examples: ['clear']
 })
+
+registerCommand('regex', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🔍 正则表达式测试工具',
+          '═'.repeat(50),
+          '',
+          '用法: regex <正则表达式> <测试文本>',
+          '',
+          '示例:',
+          '  regex ^[a-zA-Z]+$ hello',
+          '  regex \\d+ 123abc456',
+          '  regex email@example\\.com test@example.com',
+          '',
+          '提示: 特殊字符需要转义',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const pattern = args[0]
+    const text = args.slice(1).join(' ')
+    
+    try {
+      const regex = new RegExp(pattern)
+      const matches = text.match(regex)
+      const testResult = regex.test(text)
+      
+      const output: string[] = []
+      output.push('🔍 正则表达式测试结果')
+      output.push('═'.repeat(50))
+      output.push('')
+      output.push(`正则: /${pattern}/`)
+      output.push(`测试: "${text}"`)
+      output.push('')
+      output.push(`匹配: ${testResult ? '✅ 匹配成功' : '❌ 匹配失败'}`)
+      
+      if (matches) {
+        output.push('')
+        output.push('匹配结果:')
+        matches.forEach((match, index) => {
+          output.push(`  ${index + 1}. "${match}"`)
+        })
+      }
+      
+      output.push('')
+      
+      return { output: output.join('\n') }
+    } catch {
+      return { output: `错误: 无效的正则表达式: ${pattern}` }
+    }
+  },
+  description: '正则表达式测试',
+  usage: 'regex <正则> <文本>',
+  examples: ['regex ^[a-z]+$ hello', 'regex \\d+ 123abc']
+})
+
+registerCommand('diff', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '📝 文本比较工具',
+          '═'.repeat(50),
+          '',
+          '用法: diff <文本1> <文本2>',
+          '',
+          '示例:',
+          '  diff "hello world" "hello there"',
+          '  diff "apple" "banana"',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const text1 = args[0]
+    const text2 = args.slice(1).join(' ')
+    
+    const output: string[] = []
+    output.push('📝 文本比较结果')
+    output.push('═'.repeat(50))
+    output.push('')
+    
+    if (text1 === text2) {
+      output.push('✅ 两个文本完全相同')
+      output.push('')
+      return { output: output.join('\n') }
+    }
+    
+    output.push(`文本1: "${text1}"`)
+    output.push(`文本2: "${text2}"`)
+    output.push('')
+    output.push('差异分析:')
+    
+    const maxLen = Math.max(text1.length, text2.length)
+    let differing = false
+    
+    for (let i = 0; i < maxLen; i++) {
+      const char1 = text1[i] || ''
+      const char2 = text2[i] || ''
+      
+      if (char1 !== char2) {
+        if (!differing) {
+          output.push('')
+          output.push(`  位置 ${i}:`)
+          differing = true
+        }
+        output.push(`    文本1: "${char1 || '(空)'}"`)
+        output.push(`    文本2: "${char2 || '(空)'}"`)
+      }
+    }
+    
+    output.push('')
+    output.push(`文本1长度: ${text1.length} 字符`)
+    output.push(`文本2长度: ${text2.length} 字符`)
+    output.push(`差异字符数: ${Array.from({ length: maxLen }, (_, i) => text1[i] !== text2[i]).filter(Boolean).length}`)
+    output.push('')
+    
+    return { output: output.join('\n') }
+  },
+  description: '比较两个文本的差异',
+  usage: 'diff <文本1> <文本2>',
+  examples: ['diff "hello" "hallo"']
+})
+
+registerCommand('count', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📊 字符统计工具',
+          '═'.repeat(50),
+          '',
+          '用法: count <文本>',
+          '',
+          '示例:',
+          '  count "Hello World"',
+          '  count "这是一段测试文本"',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const text = args.join(' ')
+    
+    const charCount = text.length
+    const charCountNoSpace = text.replace(/\s/g, '').length
+    const wordCount = text.trim() ? text.split(/\s+/).length : 0
+    const lineCount = text.split('\n').length
+    const letterCount = (text.match(/[a-zA-Z]/g) || []).length
+    const digitCount = (text.match(/\d/g) || []).length
+    const chineseCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length
+    const punctuationCount = (text.match(/[.,!?;:'"，。！？；：""''、]/g) || []).length
+    
+    const output: string[] = []
+    output.push('📊 字符统计结果')
+    output.push('═'.repeat(50))
+    output.push('')
+    output.push(`原始文本: "${text}"`)
+    output.push('')
+    output.push(`总字符数: ${charCount}`)
+    output.push(`不含空格: ${charCountNoSpace}`)
+    output.push(`单词数: ${wordCount}`)
+    output.push(`行数: ${lineCount}`)
+    output.push(`英文字母: ${letterCount}`)
+    output.push(`数字: ${digitCount}`)
+    output.push(`中文字符: ${chineseCount}`)
+    output.push(`标点符号: ${punctuationCount}`)
+    output.push('')
+    
+    return { output: output.join('\n') }
+  },
+  description: '统计文本字符信息',
+  usage: 'count <文本>',
+  examples: ['count "Hello World"']
+})
+
+registerCommand('url', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🔗 URL工具',
+          '═'.repeat(50),
+          '',
+          '用法:',
+          '  url encode <URL>',
+          '  url decode <编码后的URL>',
+          '',
+          '示例:',
+          '  url encode https://example.com?a=1&b=2',
+          '  url decode https%3A%2F%2Fexample.com',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const action = args[0].toLowerCase()
+    const text = args.slice(1).join(' ')
+    
+    if (action === 'encode') {
+      try {
+        const encoded = encodeURIComponent(text)
+        return {
+          output: [
+            '🔗 URL编码结果',
+            '═'.repeat(50),
+            '',
+            `原始: ${text}`,
+            '',
+            `编码: ${encoded}`,
+            '',
+          ].join('\n')
+        }
+      } catch {
+        return { output: '错误: 编码失败' }
+      }
+    } else if (action === 'decode') {
+      try {
+        const decoded = decodeURIComponent(text)
+        return {
+          output: [
+            '🔗 URL解码结果',
+            '═'.repeat(50),
+            '',
+            `编码: ${text}`,
+            '',
+            `原始: ${decoded}`,
+            '',
+          ].join('\n')
+        }
+      } catch {
+        return { output: '错误: 无效的编码字符串' }
+      }
+    } else {
+      return { output: `未知操作: ${action}` }
+    }
+  },
+  description: 'URL编码/解码',
+  usage: 'url <encode|decode> <URL>',
+  examples: ['url encode https://example.com', 'url decode https%3A%2F%2F']
+})

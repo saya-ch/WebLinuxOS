@@ -575,13 +575,12 @@ registerCommand('cp', {
         copyFile(sourceNode.id, parentNode.id)
         if (fileName !== sourceNode.name && renameFile) {
           setTimeout(() => {
-            const updatedFiles = files
-            const parent = findNodeByPath(updatedFiles, parentPath)
+            const parent = findNodeByPath(files, parentPath)
             if (parent?.children) {
               const newFile = parent.children.find(c => c.name === sourceNode.name)
               if (newFile) renameFile(newFile.id, fileName)
             }
-          }, 50)
+          }, 100)
         }
         return { output: '' }
       }
@@ -631,13 +630,12 @@ registerCommand('mv', {
         moveFile(sourceNode.id, parentNode.id)
         if (fileName !== sourceNode.name && renameFile) {
           setTimeout(() => {
-            const updatedFiles = files
-            const parent = findNodeByPath(updatedFiles, parentPath)
+            const parent = findNodeByPath(files, parentPath)
             if (parent?.children) {
               const movedFile = parent.children.find(c => c.name === sourceNode.name)
               if (movedFile) renameFile(movedFile.id, fileName)
             }
-          }, 50)
+          }, 100)
         }
         return { output: '' }
       }

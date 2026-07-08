@@ -8,7 +8,6 @@ registerCommand('system-status', {
     const usedMemory = memory ? (memory.usedJSHeapSize / 1024 / 1024).toFixed(2) : 'N/A'
     const totalMemory = memory ? (memory.totalJSHeapSize / 1024 / 1024).toFixed(2) : 'N/A'
     const cpuCores = navigator.hardwareConcurrency || 'N/A'
-    const userAgent = navigator.userAgent
     const language = navigator.language
     const online = navigator.onLine ? '在线' : '离线'
     const platform = navigator.platform
@@ -190,7 +189,7 @@ registerCommand('search-files', {
 })
 
 registerCommand('world-clock', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
+  handler: async (): Promise<CommandResult> => {
     const timezones = [
       { name: '北京', timezone: 'Asia/Shanghai', offset: '+08:00' },
       { name: '东京', timezone: 'Asia/Tokyo', offset: '+09:00' },
@@ -248,7 +247,7 @@ registerCommand('world-clock', {
 })
 
 registerCommand('crypto-summary', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
+  handler: async (): Promise<CommandResult> => {
     try {
       const data = await fetchWithCache(
         'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,ripple,cardano,dogecoin,polygon&order=market_cap_desc&per_page=8&page=1&sparkline=false&price_change_percentage=24h',
@@ -263,7 +262,7 @@ registerCommand('crypto-summary', {
       output.push('名称'.padEnd(12) + '| 价格(USD)'.padEnd(18) + '| 24h涨跌幅'.padEnd(14) + '| 市值排名')
       output.push('-'.repeat(70))
 
-      data.forEach((coin, index) => {
+      data.forEach((coin) => {
         const name = (coin.name as string).padEnd(12)
         const symbol = coin.symbol as string
         const price = `$${(coin.current_price as number).toLocaleString()}`.padEnd(18)
@@ -290,7 +289,7 @@ registerCommand('crypto-summary', {
 })
 
 registerCommand('news-summary', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
+  handler: async (): Promise<CommandResult> => {
     try {
       const data = await fetchWithCache(
         'https://hacker-news.firebaseio.com/v0/topstories.json',
