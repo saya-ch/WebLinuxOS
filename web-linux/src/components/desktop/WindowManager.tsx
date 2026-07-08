@@ -291,6 +291,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   UtilityToolkit: () => import('../../apps/UtilityToolkit'),
   // === v13.0 新增智能AI中心 ===
   SmartAIHub: () => import('../../apps/SmartAIHub'),
+  // === v19.0 新增实时全球情报仪表盘 ===
+  WorldPulse: () => import('../../apps/WorldPulse'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
@@ -382,6 +384,7 @@ function preloadComponents() {
     'Calendar',
     'About',
     'Weather',
+    'WorldPulse',
   ]
 
   const secondaryComponents = [

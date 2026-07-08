@@ -3,12 +3,12 @@ node_modules/
 web-linux/node_modules/
 
 # Build output - These are deployed to GitHub Pages
-# dist/
-# assets/
-# index.html
-# favicon.svg
-# icons.svg
-# .nojekyll
+# Note: root-level assets/, index.html, favicon.svg, icons.svg, .nojekyll,
+# manifest.json, 404.html ARE tracked because they are the deployed site
+# content (rebuilt locally and committed; the GitHub Actions workflow also
+# rebuilds them on every push to main).
+dist/
+dogfood-output/
 
 # Development
 .env

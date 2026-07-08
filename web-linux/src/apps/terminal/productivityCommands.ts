@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { useStore } from '../../store'
 
 const todoStore: { id: number; text: string; completed: boolean; createdAt: Date }[] = [
   { id: 1, text: '完成 WebLinuxOS 开发', completed: false, createdAt: new Date() },
@@ -457,4 +458,97 @@ registerCommand('countdown', {
   description: '计算到指定日期的倒计时',
   usage: 'countdown <日期>',
   examples: ['countdown 2025-01-01', 'countdown 2024-12-25']
+})
+
+// === v19.0 新增：WorldPulse 启动与全局应用启动器 ===
+registerCommand('worldpulse', {
+  handler: (): CommandResult => {
+    const state = useStore.getState()
+    const existing = state.windows.find((w) => w.appId === 'world-pulse')
+    if (existing) {
+      state.focusWindow(existing.id)
+      if (existing.minimized) {
+        useStore.setState((s) => ({
+          windows: s.windows.map((w) =>
+            w.id === existing.id ? { ...w, minimized: false } : w
+          ),
+        }))
+      }
+      const winDesktop = Object.entries(state.windowsPerDesktop)
+        .find(([, ids]) => ids.includes(existing.id))?.[0]
+      if (winDesktop && Number(winDesktop) !== state.currentDesktop) {
+        state.switchDesktop(Number(winDesktop))
+      }
+      return { output: 'WorldPulse 全球脉搏已聚焦到前台' }
+    }
+    state.openApp('world-pulse')
+    return {
+      output: [
+        '启动 WorldPulse 全球脉搏仪表盘',
+        '═'.repeat(48),
+        '',
+        '正在加载实时全球情报数据:',
+        '  - 加密货币市场行情 (CoinGecko)',
+        '  - 全球主要城市天气 (Open-Meteo)',
+        '  - 国际空间站实时位置 (wheretheiss.at)',
+        '  - 全球汇率快讯 (open.er-api.com)',
+        '  - Hacker News 热门榜单 (Firebase)',
+        '',
+        '提示: 使用 launch <应用ID> 可启动其他应用',
+      ].join('\n'),
+    }
+  },
+  description: '启动 WorldPulse 实时全球情报仪表盘',
+  usage: 'worldpulse',
+  examples: ['worldpulse'],
+})
+
+registerCommand('launch', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    if (args.length === 0) {
+      const apps = useStore.getState().apps
+      const output: string[] = [
+        '启动器：可用应用列表',
+        '═'.repeat(50),
+        '',
+      ]
+      const categories = new Map<string, typeof apps>()
+      for (const app of apps) {
+        const cat = app.category || 'other'
+        if (!categories.has(cat)) categories.set(cat, [])
+        categories.get(cat)!.push(app)
+      }
+      const categoryLabels: Record<string, string> = {
+        system: '系统',
+        utilities: '实用工具',
+        internet: '网络',
+        productivity: '生产力',
+        media: '媒体',
+        games: '游戏',
+        development: '开发',
+        other: '其他',
+      }
+      for (const [cat, appList] of categories) {
+        output.push(`【${categoryLabels[cat] || cat}】`)
+        for (const app of appList) {
+          output.push(`  ${app.id.padEnd(28)} ${app.name}`)
+        }
+        output.push('')
+      }
+      output.push('用法: launch <应用ID>')
+      output.push('示例: launch world-pulse')
+      return { output: output.join('\n') }
+    }
+    const appId = args[0]
+    const apps = useStore.getState().apps
+    if (!apps.find((a) => a.id === appId)) {
+      return { output: `未找到应用: "${appId}"\n输入 launch 查看所有可用应用` }
+    }
+    useStore.getState().openApp(appId)
+    return { output: `已启动应用: ${appId}` }
+  },
+  description: '启动指定应用，或列出所有可用应用',
+  usage: 'launch [应用ID]',
+  examples: ['launch', 'launch world-pulse', 'launch terminal'],
 })

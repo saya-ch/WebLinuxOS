@@ -1355,4 +1355,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'web-ide', name: 'WebIDE 在线开发环境', icon: <Code2Icon />, component: 'WebIDE', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'global-search', name: '全局搜索中心', icon: <SearchIcon />, component: 'GlobalSearch', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 750, minHeight: 550, resizable: true, multiple: false },
   { id: 'wikipedia-explorer', name: '维基百科探索', icon: <WikipediaReaderIcon />, component: 'WikipediaExplorer', category: 'internet', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // === v19.0 新增实时全球情报仪表盘（集成多个免费公开 API） ===
+  { id: 'world-pulse', name: 'WorldPulse 全球脉搏', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg>, component: 'WorldPulse', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false },
 ]

@@ -2,7 +2,7 @@ import type { DesktopIcon, FileNode } from '../types'
 import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
-  ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon
+  ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon, GlobeIcon
 } from '../icons'
 
 export const defaultDesktopIcons: DesktopIcon[] = [
@@ -21,6 +21,7 @@ export const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'icon-clipboard', appId: 'clipboard-manager', name: '剪贴板管理', icon: <ClipboardIcon />, x: 260, y: 120 },
   { id: 'icon-commands', appId: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, x: 260, y: 220 },
   { id: 'icon-network', appId: 'network-explorer', name: '网络探索', icon: <ApiLabIcon />, x: 260, y: 420 },
+  { id: 'icon-world-pulse', appId: 'world-pulse', name: 'WorldPulse', icon: <GlobeIcon />, x: 380, y: 520 },
 ]
 
 export const defaultFiles: FileNode[] = [
@@ -51,6 +52,6 @@ export const defaultFiles: FileNode[] = [
   ] },
 ]
 
-export const defaultPinnedApps = ['terminal', 'files', 'browser', 'settings']
+export const defaultPinnedApps = ['terminal', 'files', 'browser', 'settings', 'world-pulse']
 
 export const defaultTotalDesktops = 4
