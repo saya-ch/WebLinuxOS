@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 
-type TabKey = 'base64' | 'url' | 'json' | 'regex' | 'uuid' | 'timestamp' | 'color'
+type TabKey = 'base64' | 'url' | 'json' | 'regex' | 'uuid' | 'timestamp' | 'color' | 'hash' | 'jwt' | 'html' | 'lorem'
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'base64', label: 'Base64', icon: '🔐' },
@@ -10,6 +10,10 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'uuid', label: 'UUID/密码', icon: '🆔' },
   { key: 'timestamp', label: '时间戳', icon: '⏰' },
   { key: 'color', label: '颜色', icon: '🎨' },
+  { key: 'hash', label: '哈希', icon: '🔒' },
+  { key: 'jwt', label: 'JWT', icon: '🎫' },
+  { key: 'html', label: 'HTML实体', icon: '📄' },
+  { key: 'lorem', label: '占位文本', icon: '📝' },
 ]
 
 function unicodeToBase64(str: string): string {
@@ -164,6 +168,10 @@ const DevToolboxPro: React.FC = () => {
         {activeTab === 'uuid' && <UuidPasswordTool />}
         {activeTab === 'timestamp' && <TimestampTool />}
         {activeTab === 'color' && <ColorTool />}
+        {activeTab === 'hash' && <HashTool />}
+        {activeTab === 'jwt' && <JwtTool />}
+        {activeTab === 'html' && <HtmlEntityTool />}
+        {activeTab === 'lorem' && <LoremIpsumTool />}
       </div>
     </div>
   )
@@ -1205,6 +1213,647 @@ function ColorTool() {
             />
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+async function computeHash(text: string, algorithm: 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512'): Promise<string> {
+  try {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(text)
+    const hashBuffer = await crypto.subtle.digest(algorithm, data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  } catch {
+    return '不支持'
+  }
+}
+
+function simpleMD5(string: string): string {
+  function rotateLeft(n: number, s: number): number { return (n << s) | (n >>> (32 - s)) }
+  function addUnsigned(x: number, y: number): number {
+    const lsw = (x & 0xFFFF) + (y & 0xFFFF)
+    const msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+    return (msw << 16) | (lsw & 0xFFFF)
+  }
+  function F(x: number, y: number, z: number): number { return (x & y) | ((~x) & z) }
+  function G(x: number, y: number, z: number): number { return (x & z) | (y & (~z)) }
+  function H(x: number, y: number, z: number): number { return x ^ y ^ z }
+  function I(x: number, y: number, z: number): number { return y ^ (x | (~z)) }
+  function FF(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
+    a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac))
+    return addUnsigned(rotateLeft(a, s), b)
+  }
+  function GG(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
+    a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac))
+    return addUnsigned(rotateLeft(a, s), b)
+  }
+  function HH(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
+    a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac))
+    return addUnsigned(rotateLeft(a, s), b)
+  }
+  function II(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
+    a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac))
+    return addUnsigned(rotateLeft(a, s), b)
+  }
+  function convertToWordArray(str: string): number[] {
+    const wordCount = (((str.length + 8) - ((str.length + 8) % 64)) / 64 + 1) * 16
+    const wordArray: number[] = new Array(wordCount - 1).fill(0)
+    let bytePos = 0, byteCount = 0
+    while (byteCount < str.length) {
+      const wordArrayPos = (byteCount - (byteCount % 4)) / 4
+      bytePos = (byteCount % 4) * 8
+      wordArray[wordArrayPos] = (wordArray[wordArrayPos] | (str.charCodeAt(byteCount) << bytePos))
+      byteCount++
+    }
+    const wordArrayPos = (byteCount - (byteCount % 4)) / 4
+    bytePos = (byteCount % 4) * 8
+    wordArray[wordArrayPos] = wordArray[wordArrayPos] | (0x80 << bytePos)
+    wordArray[wordCount - 2] = str.length << 3
+    wordArray[wordCount - 1] = str.length >>> 29
+    return wordArray
+  }
+  function wordToHex(lvalue: number): string {
+    let result = ''
+    for (let i = 0; i <= 3; i++) {
+      result += ((lvalue >> (i * 8 + 4)) & 0x0F).toString(16) + ((lvalue >> (i * 8)) & 0x0F).toString(16)
+    }
+    return result
+  }
+  const x = convertToWordArray(string)
+  let a = 0x67452301, b = 0xEFCDAB89, c = 0x98BADCFE, d = 0x10325476
+  for (let k = 0; k < x.length; k += 16) {
+    const AA = a, BB = b, CC = c, DD = d
+    a = FF(a, b, c, d, x[k + 0], 7, 0xD76AA478)
+    d = FF(d, a, b, c, x[k + 1], 12, 0xE8C7B756)
+    c = FF(c, d, a, b, x[k + 2], 17, 0x242070DB)
+    b = FF(b, c, d, a, x[k + 3], 22, 0xC1BDCEEE)
+    a = FF(a, b, c, d, x[k + 4], 7, 0xF57C0FAF)
+    d = FF(d, a, b, c, x[k + 5], 12, 0x4787C62A)
+    c = FF(c, d, a, b, x[k + 6], 17, 0xA8304613)
+    b = FF(b, c, d, a, x[k + 7], 22, 0xFD469501)
+    a = FF(a, b, c, d, x[k + 8], 7, 0x698098D8)
+    d = FF(d, a, b, c, x[k + 9], 12, 0x8B44F7AF)
+    c = FF(c, d, a, b, x[k + 10], 17, 0xFFFF5BB1)
+    b = FF(b, c, d, a, x[k + 11], 22, 0x895CD7BE)
+    a = FF(a, b, c, d, x[k + 12], 7, 0x6B901122)
+    d = FF(d, a, b, c, x[k + 13], 12, 0xFD987193)
+    c = FF(c, d, a, b, x[k + 14], 17, 0xA679438E)
+    b = FF(b, c, d, a, x[k + 15], 22, 0x49B40821)
+    a = GG(a, b, c, d, x[k + 1], 5, 0xF61E2562)
+    d = GG(d, a, b, c, x[k + 6], 9, 0xC040B340)
+    c = GG(c, d, a, b, x[k + 11], 14, 0x265E5A51)
+    b = GG(b, c, d, a, x[k + 0], 20, 0xE9B6C7AA)
+    a = GG(a, b, c, d, x[k + 5], 5, 0xD62F105D)
+    d = GG(d, a, b, c, x[k + 10], 9, 0x02441453)
+    c = GG(c, d, a, b, x[k + 15], 14, 0xD8A1E681)
+    b = GG(b, c, d, a, x[k + 4], 20, 0xE7D3FBC8)
+    a = GG(a, b, c, d, x[k + 9], 5, 0x21E1CDE6)
+    d = GG(d, a, b, c, x[k + 14], 9, 0xC33707D6)
+    c = GG(c, d, a, b, x[k + 3], 14, 0xF4D50D87)
+    b = GG(b, c, d, a, x[k + 8], 20, 0x455A14ED)
+    a = GG(a, b, c, d, x[k + 13], 5, 0xA9E3E905)
+    d = GG(d, a, b, c, x[k + 2], 9, 0xFCEFA3F8)
+    c = GG(c, d, a, b, x[k + 7], 14, 0x676F02D9)
+    b = GG(b, c, d, a, x[k + 12], 20, 0x8D2A4C8A)
+    a = HH(a, b, c, d, x[k + 5], 4, 0xFFFA3942)
+    d = HH(d, a, b, c, x[k + 8], 11, 0x8771F681)
+    c = HH(c, d, a, b, x[k + 11], 16, 0x6D9D6122)
+    b = HH(b, c, d, a, x[k + 14], 23, 0xFDE5380C)
+    a = HH(a, b, c, d, x[k + 1], 4, 0xA4BEEA44)
+    d = HH(d, a, b, c, x[k + 4], 11, 0x4BDECFA9)
+    c = HH(c, d, a, b, x[k + 7], 16, 0xF6BB4B60)
+    b = HH(b, c, d, a, x[k + 10], 23, 0xBEBFBC70)
+    a = HH(a, b, c, d, x[k + 13], 4, 0x289B7EC6)
+    d = HH(d, a, b, c, x[k + 0], 11, 0xEAA127FA)
+    c = HH(c, d, a, b, x[k + 3], 16, 0xD4EF3085)
+    b = HH(b, c, d, a, x[k + 6], 23, 0x04881D05)
+    a = HH(a, b, c, d, x[k + 9], 4, 0xD9D4D039)
+    d = HH(d, a, b, c, x[k + 12], 11, 0xE6DB99E5)
+    c = HH(c, d, a, b, x[k + 15], 16, 0x1FA27CF8)
+    b = HH(b, c, d, a, x[k + 2], 23, 0xC4AC5665)
+    a = II(a, b, c, d, x[k + 0], 6, 0xF4292244)
+    d = II(d, a, b, c, x[k + 7], 10, 0x432AFF97)
+    c = II(c, d, a, b, x[k + 14], 15, 0xAB9423A7)
+    b = II(b, c, d, a, x[k + 5], 21, 0xFC93A039)
+    a = II(a, b, c, d, x[k + 12], 6, 0x655B59C3)
+    d = II(d, a, b, c, x[k + 3], 10, 0x8F0CCC92)
+    c = II(c, d, a, b, x[k + 10], 15, 0xFFEFF47D)
+    b = II(b, c, d, a, x[k + 1], 21, 0x85845DD1)
+    a = II(a, b, c, d, x[k + 8], 6, 0x6FA87E4F)
+    d = II(d, a, b, c, x[k + 15], 10, 0xFE2CE6E0)
+    c = II(c, d, a, b, x[k + 6], 15, 0xA3014314)
+    b = II(b, c, d, a, x[k + 13], 21, 0x4E0811A1)
+    a = II(a, b, c, d, x[k + 4], 6, 0xF7537E82)
+    d = II(d, a, b, c, x[k + 11], 10, 0xBD3AF235)
+    c = II(c, d, a, b, x[k + 2], 15, 0x2AD7D2BB)
+    b = II(b, c, d, a, x[k + 9], 21, 0xEB86D391)
+    a = addUnsigned(a, AA)
+    b = addUnsigned(b, BB)
+    c = addUnsigned(c, CC)
+    d = addUnsigned(d, DD)
+  }
+  return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase()
+}
+
+function HashTool() {
+  const [text, setText] = useState('Hello, WebLinuxOS!')
+  const [md5, setMd5] = useState('')
+  const [sha1, setSha1] = useState('')
+  const [sha256, setSha256] = useState('')
+  const [sha512, setSha512] = useState('')
+  const [computing, setComputing] = useState(false)
+
+  useEffect(() => {
+    const compute = async () => {
+      setComputing(true)
+      setMd5(simpleMD5(text))
+      setSha1(await computeHash(text, 'SHA-1'))
+      setSha256(await computeHash(text, 'SHA-256'))
+      setSha512(await computeHash(text, 'SHA-512'))
+      setComputing(false)
+    }
+    compute()
+  }, [text])
+
+  const hashItems = [
+    { name: 'MD5', value: md5, bits: 128 },
+    { name: 'SHA-1', value: sha1, bits: 160 },
+    { name: 'SHA-256', value: sha256, bits: 256 },
+    { name: 'SHA-512', value: sha512, bits: 512 },
+  ]
+
+  return (
+    <div className="app-card" style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>哈希生成器</h3>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <span className="chip">MD5 / SHA-1</span>
+          <span className="chip">SHA-256 / SHA-512</span>
+        </div>
+      </div>
+
+      <textarea
+        className="app-textarea"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="输入要计算哈希的文本..."
+        style={{
+          padding: 10,
+          minHeight: 120,
+          fontFamily: 'monospace',
+          fontSize: 13,
+          resize: 'vertical',
+        }}
+      />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+          {text.length} 字符 {computing && ' · 计算中...'}
+        </span>
+        <button onClick={() => setText('')} className="app-button" style={{ padding: '6px 14px', fontSize: 12 }}>清空</button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {hashItems.map((item) => (
+          <div key={item.name} style={{
+            padding: 12,
+            borderRadius: 8,
+            background: 'var(--window-bg-secondary)',
+            border: '1px solid var(--window-border)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{item.name}</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{item.bits} bit</span>
+                <CopyButton value={item.value} />
+              </div>
+            </div>
+            <div style={{
+              fontFamily: 'monospace',
+              fontSize: 12,
+              wordBreak: 'break-all',
+              color: 'var(--text-secondary)',
+              lineHeight: 1.5,
+              userSelect: 'all',
+            }}>
+              {item.value || '计算中...'}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+interface JWTPayload {
+  header: Record<string, unknown> | null
+  payload: Record<string, unknown> | null
+  signature: string
+  valid: boolean
+  error?: string
+}
+
+function decodeJWT(token: string): JWTPayload {
+  const result: JWTPayload = {
+    header: null,
+    payload: null,
+    signature: '',
+    valid: false,
+  }
+
+  if (!token || !token.includes('.')) {
+    result.error = '无效的 JWT 格式'
+    return result
+  }
+
+  const parts = token.split('.')
+  if (parts.length !== 3) {
+    result.error = 'JWT 应包含 3 个部分'
+    return result
+  }
+
+  try {
+    const decodeBase64Url = (str: string): string => {
+      let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
+      while (base64.length % 4) base64 += '='
+      return decodeURIComponent(escape(atob(base64)))
+    }
+
+    result.header = JSON.parse(decodeBase64Url(parts[0]))
+    result.payload = JSON.parse(decodeBase64Url(parts[1]))
+    result.signature = parts[2]
+    result.valid = true
+  } catch (err) {
+    result.error = err instanceof Error ? err.message : '解码失败'
+  }
+
+  return result
+}
+
+function JwtTool() {
+  const [token, setToken] = useState('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MTYyMzkwMjIsInJvbGUiOiJhZG1pbiIsImVtYWlsIjoiam9obi5kb2VAZXhhbXBsZS5jb20ifQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
+  const decoded = useMemo(() => decodeJWT(token), [token])
+
+  const formatDate = (timestamp: number) => {
+    if (!timestamp) return 'N/A'
+    return new Date(timestamp * 1000).toLocaleString()
+  }
+
+  return (
+    <div className="app-card" style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>JWT 解码器</h3>
+        <span className="chip">Header.Payload.Signature</span>
+      </div>
+
+      <textarea
+        className="app-textarea"
+        value={token}
+        onChange={(e) => setToken(e.target.value)}
+        placeholder="粘贴 JWT token..."
+        style={{
+          padding: 10,
+          minHeight: 100,
+          fontFamily: 'monospace',
+          fontSize: 12,
+          resize: 'vertical',
+        }}
+      />
+
+      {decoded.error && (
+        <div style={{
+          padding: 12,
+          borderRadius: 8,
+          background: 'rgba(220, 53, 69, 0.1)',
+          border: '1px solid rgba(220, 53, 69, 0.3)',
+          color: '#dc3545',
+          fontSize: 13,
+        }}>
+          ⚠️ {decoded.error}
+        </div>
+      )}
+
+      {decoded.valid && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, overflow: 'auto' }}>
+          <div style={{
+            padding: 12,
+            borderRadius: 8,
+            background: 'var(--window-bg-secondary)',
+            border: '1px solid var(--window-border)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Header (头部)</span>
+              <CopyButton value={JSON.stringify(decoded.header, null, 2)} />
+            </div>
+            <pre style={{
+              margin: 0,
+              fontFamily: 'monospace',
+              fontSize: 12,
+              color: 'var(--text-secondary)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all',
+            }}>
+              {JSON.stringify(decoded.header, null, 2)}
+            </pre>
+          </div>
+
+          <div style={{
+            padding: 12,
+            borderRadius: 8,
+            background: 'var(--window-bg-secondary)',
+            border: '1px solid var(--window-border)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Payload (载荷)</span>
+              <CopyButton value={JSON.stringify(decoded.payload, null, 2)} />
+            </div>
+            <pre style={{
+              margin: 0,
+              fontFamily: 'monospace',
+              fontSize: 12,
+              color: 'var(--text-secondary)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all',
+            }}>
+              {JSON.stringify(decoded.payload, null, 2)}
+            </pre>
+            {decoded.payload && typeof decoded.payload === 'object' && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--window-border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {decoded.payload.iat !== undefined && (
+                  <div style={{ fontSize: 12, display: 'flex', gap: 8 }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>签发时间:</span>
+                    <span>{formatDate(decoded.payload.iat as number)}</span>
+                  </div>
+                )}
+                {decoded.payload.exp !== undefined && (
+                  <div style={{ fontSize: 12, display: 'flex', gap: 8 }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>过期时间:</span>
+                    <span style={{ color: Number(decoded.payload.exp) * 1000 < Date.now() ? '#dc3545' : 'inherit' }}>
+                      {formatDate(decoded.payload.exp as number)}
+                      {Number(decoded.payload.exp) * 1000 < Date.now() ? ' (已过期)' : ''}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div style={{
+            padding: 12,
+            borderRadius: 8,
+            background: 'var(--window-bg-secondary)',
+            border: '1px solid var(--window-border)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Signature (签名)</span>
+              <CopyButton value={decoded.signature} />
+            </div>
+            <div style={{
+              fontFamily: 'monospace',
+              fontSize: 12,
+              color: 'var(--text-secondary)',
+              wordBreak: 'break-all',
+            }}>
+              {decoded.signature}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function htmlEncode(str: string): string {
+  const div = document.createElement('div')
+  div.appendChild(document.createTextNode(str))
+  return div.innerHTML
+}
+
+function htmlDecode(str: string): string {
+  const doc = new DOMParser().parseFromString(str, 'text/html')
+  return doc.documentElement.textContent || ''
+}
+
+function HtmlEntityTool() {
+  const [text, setText] = useState('<div class="container">\n  <h1>Hello, "World"!</h1>\n  <p>This & that</p>\n</div>')
+  const encoded = useMemo(() => htmlEncode(text), [text])
+
+  return (
+    <div className="app-card" style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>HTML 实体编解码</h3>
+        <span className="chip">&amp; &lt; &gt; &quot;</span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1, minHeight: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0 }}>
+          <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>原文</label>
+          <textarea
+            className="app-textarea"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="输入 HTML 文本..."
+            style={{
+              flex: 1,
+              minHeight: 200,
+              padding: 10,
+              fontFamily: 'monospace',
+              fontSize: 13,
+              resize: 'vertical',
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{text.length} 字符</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setText('')} className="app-button" style={{ padding: '6px 14px', fontSize: 12 }}>清空</button>
+              <CopyButton value={text} />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0 }}>
+          <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>HTML 实体编码</label>
+          <textarea
+            className="app-textarea"
+            value={encoded}
+            onChange={(e) => setText(htmlDecode(e.target.value))}
+            placeholder="或在此粘贴编码文本以解码..."
+            style={{
+              flex: 1,
+              minHeight: 200,
+              padding: 10,
+              fontFamily: 'monospace',
+              fontSize: 13,
+              resize: 'vertical',
+              background: '#1a1a2e',
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{encoded.length} 字符</span>
+            <CopyButton value={encoded} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const LOREM_WORDS = [
+  'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
+  'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore',
+  'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam', 'quis', 'nostrud',
+  'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo',
+  'consequat', 'duis', 'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
+  'velit', 'esse', 'cillum', 'fugiat', 'nulla', 'pariatur', 'excepteur', 'sint',
+  'occaecat', 'cupidatat', 'non', 'proident', 'sunt', 'culpa', 'qui', 'officia',
+  'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum',
+  'sed', 'ut', 'perspiciatis', 'unde', 'omnis', 'iste', 'natus', 'error',
+  'sit', 'voluptatem', 'accusantium', 'doloremque', 'laudantium', 'totam', 'rem',
+  'aperiam', 'eaque', 'ipsa', 'quae', 'ab', 'illo', 'inventore', 'veritatis',
+  'beatae', 'vitae', 'dicta', 'sunt', 'explicabo', 'nemo', 'enim', 'ipsam',
+  'quia', 'voluptas', 'aspernatur', 'aut', 'odit', 'aut', 'fugit', 'sed',
+  'quia', 'consequuntur', 'magni', 'dolores', 'eos', 'qui', 'ratione',
+  'voluptatem', 'sequi', 'nesciunt', 'neque', 'porro', 'quisquam', 'est',
+  'qui', 'dolorem', 'ipsum', 'quia', 'dolor', 'sit', 'amet', 'consectetur',
+  'adipisci', 'velit', 'sed', 'quia', 'non', 'numquam', 'eius', 'modi',
+  'tempora', 'incidunt', 'ut', 'labore', 'et', 'dolore', 'magnam', 'aliquam',
+  'quaerat', 'voluptatem', 'ut', 'enim', 'ad', 'minima', 'veniam',
+]
+
+function generateLorem(type: 'words' | 'sentences' | 'paragraphs', count: number): string {
+  const rand = (n: number) => Math.floor(Math.random() * n)
+  const pickWord = (): string => LOREM_WORDS[rand(LOREM_WORDS.length)]
+
+  const generateSentence = (): string => {
+    const wordCount = 5 + rand(15)
+    const words: string[] = []
+    for (let i = 0; i < wordCount; i++) {
+      words.push(pickWord())
+    }
+    const sentence = words.join(' ')
+    return sentence.charAt(0).toUpperCase() + sentence.slice(1) + '.'
+  }
+
+  const generateParagraph = (): string => {
+    const sentenceCount = 3 + rand(6)
+    const sentences: string[] = []
+    for (let i = 0; i < sentenceCount; i++) {
+      sentences.push(generateSentence())
+    }
+    return sentences.join(' ')
+  }
+
+  if (type === 'words') {
+    const words: string[] = []
+    for (let i = 0; i < count; i++) {
+      words.push(pickWord())
+    }
+    return words.join(' ')
+  }
+
+  if (type === 'sentences') {
+    const sentences: string[] = []
+    for (let i = 0; i < count; i++) {
+      sentences.push(generateSentence())
+    }
+    return sentences.join(' ')
+  }
+
+  const paragraphs: string[] = []
+  for (let i = 0; i < count; i++) {
+    paragraphs.push(generateParagraph())
+  }
+  return paragraphs.join('\n\n')
+}
+
+function LoremIpsumTool() {
+  const [type, setType] = useState<'words' | 'sentences' | 'paragraphs'>('paragraphs')
+  const [count, setCount] = useState(3)
+  const [text, setText] = useState('')
+
+  useEffect(() => {
+    setText(generateLorem(type, count))
+  }, [type, count])
+
+  const regenerate = () => {
+    setText(generateLorem(type, count))
+  }
+
+  return (
+    <div className="app-card" style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>Lorem Ipsum 占位文本</h3>
+        <span className="chip">随机生成</span>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['words', 'sentences', 'paragraphs'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setType(t)}
+              className="app-button"
+              style={{
+                padding: '6px 14px',
+                fontSize: 12,
+                background: type === t ? 'var(--accent)' : 'transparent',
+                color: type === t ? '#fff' : 'var(--text-primary)',
+                border: `1px solid ${type === t ? 'var(--accent)' : 'var(--window-border)'}`,
+              }}
+            >
+              {t === 'words' ? '单词' : t === 'sentences' ? '句子' : '段落'}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>数量:</span>
+          <input
+            type="number"
+            value={count}
+            onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+            min={1}
+            max={100}
+            style={{
+              width: 60,
+              padding: '6px 8px',
+              borderRadius: 6,
+              border: '1px solid var(--window-border)',
+              background: 'var(--window-bg)',
+              color: 'var(--text-primary)',
+              fontSize: 12,
+            }}
+          />
+        </div>
+        <button onClick={regenerate} className="app-button" style={{ padding: '6px 14px', fontSize: 12 }}>
+          🔄 重新生成
+        </button>
+      </div>
+
+      <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        <textarea
+          className="app-textarea"
+          value={text}
+          readOnly
+          style={{
+            width: '100%',
+            height: '100%',
+            minHeight: 200,
+            padding: 12,
+            fontSize: 13,
+            lineHeight: 1.7,
+            resize: 'none',
+            cursor: 'text',
+          }}
+        />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+          {text.split(/\s+/).filter(Boolean).length} 词 · {text.length} 字符
+        </span>
+        <CopyButton value={text} />
       </div>
     </div>
   )

@@ -1,5 +1,13 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useStore } from '../store'
+
+interface Pyodide {
+  runPython: (code: string) => unknown
+}
+
+interface WindowWithPyodide extends Window {
+  loadPyodide?: (options?: { indexURL?: string }) => Promise<Pyodide>
+}
 
 interface CodeAnalysis {
   language: string
@@ -12,6 +20,42 @@ interface CodeAnalysis {
   suggestions: string[]
   securityIssues: string[]
   performanceTips: string[]
+}
+
+interface OutputLine {
+  message: string
+  type: 'info' | 'success' | 'error' | 'log'
+  time: string
+}
+
+let pyodideInstance: Pyodide | null = null
+let pyodideLoading: Promise<Pyodide> | null = null
+
+async function loadPyodideRuntime(): Promise<Pyodide> {
+  if (pyodideInstance) return pyodideInstance
+  if (pyodideLoading) return pyodideLoading
+
+  pyodideLoading = (async () => {
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js'
+    document.head.appendChild(script)
+
+    await new Promise<void>((resolve, reject) => {
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load Pyodide'))
+    })
+
+    const win = window as unknown as WindowWithPyodide
+    if (win.loadPyodide) {
+      pyodideInstance = await win.loadPyodide({
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/'
+      })
+      return pyodideInstance
+    }
+    throw new Error('Pyodide not available')
+  })()
+
+  return pyodideLoading
 }
 
 const LANGUAGE_PATTERNS = {
@@ -83,18 +127,15 @@ function analyzeComplexity(code: string, language: string): 'low' | 'medium' | '
   
   let complexityScore = 0
   
-  // 基础复杂度：行数
   const lines = code.split('\n').length
   complexityScore += lines > 100 ? 2 : lines > 50 ? 1 : 0
   
-  // 关键词复杂度
   for (const keyword of config.complexityKeywords) {
     if (code.toLowerCase().includes(keyword.toLowerCase())) {
       complexityScore += 1
     }
   }
   
-  // 嵌套深度
   let maxNesting = 0
   let currentNesting = 0
   for (const char of code) {
@@ -130,7 +171,6 @@ function generateExplanation(code: string, language: string, analysis: Partial<C
     explanations.push(`代码复杂度较低，结构简洁明了。`)
   }
   
-  // 语言特定分析
   if (language === 'javascript') {
     if (code.includes('async') || code.includes('await')) {
       explanations.push(`使用了异步编程模式，适合处理I/O密集型操作。`)
@@ -155,7 +195,6 @@ function generateExplanation(code: string, language: string, analysis: Partial<C
 function generateSuggestions(code: string, language: string): string[] {
   const suggestions: string[] = []
   
-  // 通用建议
   if (code.split('\n').length > 100) {
     suggestions.push('建议将长文件拆分为多个模块，提高可维护性')
   }
@@ -164,7 +203,6 @@ function generateSuggestions(code: string, language: string): string[] {
     suggestions.push('建议添加注释以提高代码可读性')
   }
   
-  // 语言特定建议
   if (language === 'javascript') {
     if (code.includes('var ')) {
       suggestions.push('建议使用 const/let 替代 var，遵循现代JavaScript最佳实践')
@@ -192,24 +230,20 @@ function generateSuggestions(code: string, language: string): string[] {
 function detectSecurityIssues(code: string, language: string): string[] {
   const issues: string[] = []
   
-  // SQL注入检测
   if (code.includes('eval(') || code.includes('exec(')) {
     issues.push('检测到 eval/exec 使用，存在代码注入风险')
   }
   
-  // 硬编码敏感信息
   if (code.match(/password\s*=\s*['"].+['"]/i) || 
       code.match(/api_key\s*=\s*['"].+['"]/i) ||
       code.match(/secret\s*=\s*['"].+['"]/i)) {
     issues.push('检测到硬编码的敏感信息，建议使用环境变量')
   }
   
-  // XSS风险
   if (language === 'javascript' && code.includes('innerHTML')) {
     issues.push('innerHTML 可能导致XSS攻击，建议使用textContent')
   }
   
-  // 未加密传输
   if (code.includes('http://') && !code.includes('localhost')) {
     issues.push('检测到HTTP协议，建议使用HTTPS确保安全传输')
   }
@@ -270,26 +304,142 @@ export default function CodeInterpreter() {
   const [code, setCode] = useState('')
   const [analysis, setAnalysis] = useState<CodeAnalysis | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'suggestions' | 'security' | 'performance'>('overview')
-  
+  const [isRunning, setIsRunning] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'suggestions' | 'security' | 'performance' | 'execution'>('overview')
+  const [output, setOutput] = useState<OutputLine[]>([])
+  const outputRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight
+    }
+  }, [output])
+
+  const addOutput = (message: string, type: 'info' | 'success' | 'error' | 'log' = 'log') => {
+    setOutput(prev => [...prev, { message, type, time: new Date().toLocaleTimeString() }])
+  }
+
+  const clearOutput = () => setOutput([])
+
   const handleAnalyze = useCallback(() => {
     if (!code.trim()) return
     
     setIsAnalyzing(true)
     
-    // 模拟分析延迟，增加用户体验
     setTimeout(() => {
       const result = analyzeCode(code)
       setAnalysis(result)
       setIsAnalyzing(false)
     }, 500)
   }, [code])
-  
+
+  const runJavaScript = useCallback(() => {
+    setIsRunning(true)
+    clearOutput()
+    setActiveTab('execution')
+    
+    const logCapture: string[] = []
+    const originalConsole = { ...console }
+    
+    console.log = (...args) => {
+      const msg = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ')
+      logCapture.push(msg)
+      addOutput(msg, 'log')
+    }
+    
+    console.error = (...args) => {
+      const msg = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ')
+      logCapture.push(msg)
+      addOutput(msg, 'error')
+    }
+
+    try {
+      const result = new Function(code)()
+      if (result !== undefined) {
+        addOutput(String(result), 'success')
+      }
+      addOutput('✓ JavaScript 代码执行完成', 'success')
+    } catch (err) {
+      addOutput(`Error: ${err instanceof Error ? err.message : String(err)}`, 'error')
+    } finally {
+      Object.assign(console, originalConsole)
+      setIsRunning(false)
+    }
+  }, [code])
+
+  const runPython = useCallback(async () => {
+    setIsRunning(true)
+    clearOutput()
+    setActiveTab('execution')
+    addOutput('Python 运行时正在加载...', 'info')
+    
+    try {
+      const pyodide = await loadPyodideRuntime()
+      
+      pyodide.runPython(`
+        import sys
+        from io import StringIO
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+      `)
+      
+      addOutput('Python 运行时已就绪，正在执行代码...', 'info')
+      
+      const result = pyodide.runPython(code)
+      const stdout = pyodide.runPython('sys.stdout.getvalue()') as unknown
+      const stderr = pyodide.runPython('sys.stderr.getvalue()') as unknown
+      
+      if (stderr && typeof stderr === 'string' && stderr.trim()) {
+        stderr.split('\n').forEach((line: string) => {
+          if (line) addOutput(line, 'error')
+        })
+      }
+      
+      if (stdout && typeof stdout === 'string' && stdout.trim()) {
+        stdout.split('\n').forEach((line: string) => {
+          if (line) addOutput(line, 'log')
+        })
+      }
+      
+      if (result !== undefined && result !== null && result !== '') {
+        addOutput(String(result), 'success')
+      }
+      
+      addOutput('✓ Python 代码执行完成', 'success')
+    } catch (err) {
+      addOutput(`Python Error: ${err instanceof Error ? err.message : String(err)}`, 'error')
+    } finally {
+      setIsRunning(false)
+    }
+  }, [code])
+
+  const handleRun = useCallback(() => {
+    if (!code.trim()) return
+    
+    const language = detectLanguage(code)
+    
+    if (language === 'javascript') {
+      runJavaScript()
+    } else if (language === 'python') {
+      runPython()
+    } else {
+      clearOutput()
+      setActiveTab('execution')
+      addOutput(`⚠️ ${language.toUpperCase()} 暂不支持直接执行`, 'info')
+      addOutput('支持的语言: JavaScript, Python', 'info')
+    }
+  }, [code, runJavaScript, runPython])
+
   const handleClear = useCallback(() => {
     setCode('')
     setAnalysis(null)
+    clearOutput()
   }, [])
-  
+
   const handleLoadSample = useCallback((sampleType: string) => {
     const samples: Record<string, string> = {
       javascript: `// React组件示例
@@ -319,32 +469,31 @@ function Counter() {
 
 export default Counter;`,
       python: `# Python数据分析示例
-import pandas as pd
-import numpy as np
+import math
 
-class DataAnalyzer:
-    def __init__(self, data_path):
-        self.data = pd.read_csv(data_path)
-        self.results = {}
-    
-    def analyze(self):
-        """执行数据分析"""
-        self.results['mean'] = self.data.mean()
-        self.results['std'] = self.data.std()
-        self.results['correlation'] = self.data.corr()
-        return self.results
-    
-    def filter_outliers(self, column, threshold=3):
-        """过滤异常值"""
-        z_scores = np.abs(
-            (self.data[column] - self.data[column].mean()) 
-            / self.data[column].std()
-        )
-        return self.data[z_scores < threshold]
+def fibonacci(n):
+    """计算斐波那契数列"""
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
 
-# 使用示例
-analyzer = DataAnalyzer('data.csv')
-results = analyzer.analyze()`,
+def is_prime(n):
+    """判断素数"""
+    if n < 2:
+        return False
+    for i in range(2, int(math.sqrt(n)) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+print("斐波那契数列前10项:")
+for i in range(10):
+    print(f"F({i}) = {fibonacci(i)}")
+
+print("\\n1-50之间的素数:")
+primes = [x for x in range(1, 51) if is_prime(x)]
+print(primes)
+print(f"共有 {len(primes)} 个素数")`,
       html: `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -389,8 +538,18 @@ results = analyzer.analyze()`,
     
     setCode(samples[sampleType] || '')
     setAnalysis(null)
+    clearOutput()
   }, [])
-  
+
+  const getOutputColor = (type: string) => {
+    switch (type) {
+      case 'success': return theme === 'dark' ? '#00b894' : '#00a085'
+      case 'error': return theme === 'dark' ? '#d63031' : '#dc3545'
+      case 'info': return theme === 'dark' ? '#74b9ff' : '#007aff'
+      default: return theme === 'dark' ? '#e0e0e8' : '#1c1c1e'
+    }
+  }
+
   return (
     <div className="code-interpreter" style={{
       padding: '20px',
@@ -405,7 +564,9 @@ results = analyzer.analyze()`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '8px'
+        marginBottom: '8px',
+        flexWrap: 'wrap',
+        gap: '12px'
       }}>
         <h2 style={{
           margin: 0,
@@ -415,7 +576,7 @@ results = analyzer.analyze()`,
         }}>
           AI 代码解释器
         </h2>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={() => handleLoadSample('javascript')}
             style={{
@@ -467,17 +628,19 @@ results = analyzer.analyze()`,
         flex: 1,
         minHeight: 0
       }}>
-        {/* 代码输入区 */}
         <div style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '8px',
+          minWidth: 0
         }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '8px'
           }}>
             <span style={{ fontSize: '14px', fontWeight: 500 }}>代码输入</span>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -494,6 +657,23 @@ results = analyzer.analyze()`,
                 }}
               >
                 清空
+              </button>
+              <button
+                onClick={handleRun}
+                disabled={isRunning || !code.trim()}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: isRunning ? '#666' : '#00b894',
+                  color: '#fff',
+                  cursor: isRunning ? 'wait' : 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  opacity: !code.trim() ? 0.5 : 1
+                }}
+              >
+                {isRunning ? '运行中...' : '▶ 运行'}
               </button>
               <button
                 onClick={handleAnalyze}
@@ -518,7 +698,7 @@ results = analyzer.analyze()`,
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="在此粘贴或输入代码..."
+            placeholder="在此粘贴或输入代码...\n支持 JavaScript 和 Python 代码执行"
             style={{
               flex: 1,
               padding: '12px',
@@ -529,12 +709,12 @@ results = analyzer.analyze()`,
               fontSize: '13px',
               fontFamily: 'Monaco, Menlo, monospace',
               resize: 'none',
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              minHeight: '200px'
             }}
           />
         </div>
         
-        {/* 分析结果区 */}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -543,19 +723,20 @@ results = analyzer.analyze()`,
           borderRadius: '8px',
           border: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
           background: theme === 'dark' ? '#0d0d1a' : '#fff',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          minWidth: 0
         }}>
-          {analysis ? (
+          {(analysis || output.length > 0) ? (
             <>
-              {/* 标签页导航 */}
               <div style={{
                 display: 'flex',
                 gap: '4px',
                 padding: '8px 12px',
                 borderBottom: `1px solid ${theme === 'dark' ? '#3a3a5e' : '#ddd'}`,
-                background: theme === 'dark' ? '#1a1a2e' : '#f5f5f5'
+                background: theme === 'dark' ? '#1a1a2e' : '#f5f5f5',
+                flexWrap: 'wrap'
               }}>
-                {(['overview', 'suggestions', 'security', 'performance'] as const).map(tab => (
+                {(['overview', 'suggestions', 'security', 'performance', 'execution'] as const).map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -564,7 +745,7 @@ results = analyzer.analyze()`,
                       borderRadius: '4px',
                       border: 'none',
                       background: activeTab === tab 
-                        ? '#6366f1' 
+                        ? (tab === 'execution' ? '#00b894' : '#6366f1') 
                         : (theme === 'dark' ? '#3a3a5e' : '#e0e0e0'),
                       color: activeTab === tab ? '#fff' : (theme === 'dark' ? '#ccc' : '#666'),
                       cursor: 'pointer',
@@ -574,20 +755,19 @@ results = analyzer.analyze()`,
                   >
                     {tab === 'overview' ? '概览' : 
                      tab === 'suggestions' ? '建议' : 
-                     tab === 'security' ? '安全' : '性能'}
+                     tab === 'security' ? '安全' : 
+                     tab === 'performance' ? '性能' : '执行结果'}
                   </button>
                 ))}
               </div>
               
-              {/* 内容区 */}
               <div style={{
                 flex: 1,
                 padding: '16px',
                 overflow: 'auto'
-              }}>
-                {activeTab === 'overview' && (
+              }} ref={activeTab === 'execution' ? outputRef : null}>
+                {activeTab === 'overview' && analysis && (
                   <div>
-                    {/* 语言和复杂度指标 */}
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(2, 1fr)',
@@ -636,7 +816,6 @@ results = analyzer.analyze()`,
                       </div>
                     </div>
                     
-                    {/* 解释 */}
                     <div style={{
                       padding: '12px',
                       borderRadius: '6px',
@@ -649,7 +828,7 @@ results = analyzer.analyze()`,
                   </div>
                 )}
                 
-                {activeTab === 'suggestions' && (
+                {activeTab === 'suggestions' && analysis && (
                   <div>
                     {analysis.suggestions.length > 0 ? (
                       <ul style={{ 
@@ -686,7 +865,7 @@ results = analyzer.analyze()`,
                   </div>
                 )}
                 
-                {activeTab === 'security' && (
+                {activeTab === 'security' && analysis && (
                   <div>
                     {analysis.securityIssues.length > 0 ? (
                       <ul style={{ 
@@ -727,7 +906,7 @@ results = analyzer.analyze()`,
                   </div>
                 )}
                 
-                {activeTab === 'performance' && (
+                {activeTab === 'performance' && analysis && (
                   <div>
                     {analysis.performanceTips.length > 0 ? (
                       <ul style={{ 
@@ -763,6 +942,38 @@ results = analyzer.analyze()`,
                     )}
                   </div>
                 )}
+                
+                {activeTab === 'execution' && (
+                  <div style={{
+                    fontFamily: 'Monaco, Menlo, monospace',
+                    fontSize: '13px',
+                    lineHeight: 1.6
+                  }}>
+                    {output.length > 0 ? (
+                      output.map((line, i) => (
+                        <div key={i} style={{
+                          padding: '2px 0',
+                          color: getOutputColor(line.type),
+                          display: 'flex',
+                          gap: '8px'
+                        }}>
+                          <span style={{ opacity: 0.5, fontSize: '11px' }}>[{line.time}]</span>
+                          <span style={{ flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                            {line.message}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{
+                        padding: '20px',
+                        textAlign: 'center',
+                        color: '#888'
+                      }}>
+                        点击"运行"按钮执行代码查看输出
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (
@@ -772,9 +983,17 @@ results = analyzer.analyze()`,
               alignItems: 'center',
               justifyContent: 'center',
               color: '#888',
-              fontSize: '14px'
+              fontSize: '14px',
+              textAlign: 'center',
+              padding: '20px'
             }}>
-              输入代码并点击"开始分析"查看结果
+              <div>
+                <div style={{ marginBottom: '8px' }}>输入代码并选择操作</div>
+                <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                  支持 JavaScript / Python 代码执行<br />
+                  支持多语言静态代码分析
+                </div>
+              </div>
             </div>
           )}
         </div>
