@@ -24,7 +24,7 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>WebLinuxOS - Web Linux 桌面环境</title>
     <script>
       try {
@@ -40,53 +40,92 @@
       #preload {
         position: fixed;
         inset: 0;
-        background: linear-gradient(135deg, #0a0a18 0%, #161630 40%, #0f0f23 70%, #161630 100%);
+        background:
+          radial-gradient(ellipse at top left, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+          radial-gradient(ellipse at bottom right, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+          radial-gradient(ellipse at center, rgba(155, 138, 240, 0.03) 0%, transparent 70%),
+          linear-gradient(135deg, #05050a 0%, #0a0a1a 30%, #0f0f28 60%, #161640 100%);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 99999;
+        animation: bgPulse 4s ease-in-out infinite;
       }
       #preload .logo {
         font-size: 80px;
         margin-bottom: 20px;
-        animation: logoFloat 1.5s ease-in-out infinite;
+        animation: logoFloat 1.5s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate;
       }
       #preload .text {
-        font-size: 32px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #e0e0e8 0%, #a29bfe 50%, #8b7cf0 100%);
+        font-family: 'Cabinet Grotesk', 'Geist', sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #f0f0ff 0%, #c4b5fd 30%, #a78bfa 50%, #8b7cf0 70%, #7c6cf0 100%);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
+        animation: textGradient 3s ease-in-out infinite alternate;
       }
       #preload .sub {
-        font-size: 14px;
-        color: #a0a0c8;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        color: #8a8ab8;
+        text-transform: uppercase;
+      }
+      #preload .progress {
+        margin-top: 24px;
+        width: 120px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      #preload .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #8b7cf0 0%, #06b6d4 50%, #8b7cf0 100%);
+        animation: progressSlide 1.5s ease-in-out infinite;
       }
       @keyframes logoFloat {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-4px) rotate(-2deg); }
+        75% { transform: translateY(-4px) rotate(2deg); }
+      }
+      @keyframes logoGlow {
+        0% { filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3)); }
+        100% { filter: drop-shadow(0 0 16px rgba(139, 92, 246, 0.5)); }
+      }
+      @keyframes textGradient {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+      }
+      @keyframes bgPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.98; }
+      }
+      @keyframes progressSlide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
       }
     </style>
-    <script type="module" crossorigin src="/WebLinuxOS/assets/index-Cwazw03O.js"></script>
+    <script type="module" crossorigin src="/WebLinuxOS/assets/index-DZCNhEMh.js"></script>
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/rolldown-runtime-NMqb_1LM.js">
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIAssistant-CF9kq7aM.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIAssistantEnhanced-DTNUpr0W.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIChatEnhanced-VTuMajph.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AILearningCompanion-BPgmK_dC.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIPromptLibrary-Di0iuEpF.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-MusicStudio-DMpbXL6H.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/component-desktop-CSo9RdzI.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-AIAssistantEnhanced-DtUe3z43.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-MusicStudio-D60HqDdf.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/component-desktop-CXnNySka.js">
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-react-CN-PlphI.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-ActivityTracker-B9K_fcxE.js">
-    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-GlobalSearch-Dnc6pSTd.js">
-    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-8jRRepIg.css">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-ActivityTracker-CHBgocpF.js">
+    <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/app-GlobalSearch-3pMz4aOx.js">
+    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-C882kvcz.css">
   </head>
   <body>
     <div id="preload">
-      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 20px; animation: logoFloat 1.5s ease-in-out infinite;">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 20px; animation: logoFloat 1.5s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate;">
         <circle cx="40" cy="40" r="38" fill="#1a1a2e" stroke="#8b7cf0" stroke-width="2"/>
         <ellipse cx="40" cy="35" rx="18" ry="16" fill="#3d3d5c"/>
         <ellipse cx="40" cy="33" rx="14" ry="12" fill="#4a4a6a"/>
@@ -100,6 +139,9 @@
       </svg>
       <div class="text">WebLinuxOS</div>
       <div class="sub">正在加载桌面环境...</div>
+      <div class="progress">
+        <div class="progress-bar"></div>
+      </div>
     </div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1a1a2e;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">

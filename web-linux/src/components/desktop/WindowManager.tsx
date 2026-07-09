@@ -300,6 +300,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WorldPulse: () => import('../../apps/WorldPulse'),
   // === v23.0 新增开发者工具箱 ===
   DevKit: () => import('../../apps/DevKit'),
+  // === v25.0 新增灵感流 ===
+  IdeaStream: () => import('../../apps/IdeaStream'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
