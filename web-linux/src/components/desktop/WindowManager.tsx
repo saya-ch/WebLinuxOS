@@ -276,6 +276,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v8.0.0 新增应用 ===
   DevHub: () => import('../../apps/DevHub'),
   AIAssistantEnhanced: () => import('../../apps/AIAssistantEnhanced'),
+  AIAssistantUltra: () => import('../../apps/AIAssistantUltra'),
   APIExplorerEnhanced: () => import('../../apps/APIExplorerEnhanced'),
   // === v8.1.0 新增公共 API 集成应用 ===
   AstroDaily: () => import('../../apps/AstroDaily'),

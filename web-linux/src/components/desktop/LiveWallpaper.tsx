@@ -9,6 +9,8 @@ interface Particle {
   vy: number
   size: number
   opacity: number
+  color: string
+  phase: number
 }
 
 const LiveWallpaper = memo(function LiveWallpaper() {
@@ -21,14 +23,23 @@ const LiveWallpaper = memo(function LiveWallpaper() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const initParticles = useCallback((count: number = 60): Particle[] => {
+    const colors = [
+      'rgba(139, 92, 246, 1)',    // Purple
+      'rgba(6, 182, 212, 1)',      // Cyan
+      'rgba(155, 138, 240, 1)',   // Light purple
+      'rgba(124, 108, 240, 1)',   // Deep purple
+      'rgba(168, 85, 247, 1)',    // Violet
+    ]
     return Array.from({ length: count }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
       vx: (Math.random() - 0.5) * 0.15,
       vy: (Math.random() - 0.5) * 0.15,
-      size: Math.random() * 4 + 2,
-      opacity: Math.random() * 0.5 + 0.3
+      size: Math.random() * 5 + 1.5,
+      opacity: Math.random() * 0.7 + 0.3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      phase: Math.random() * Math.PI * 2
     }))
   }, [])
 
