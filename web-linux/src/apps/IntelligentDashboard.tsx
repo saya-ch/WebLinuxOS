@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, memo } from 'react'
 import {
   Wind, Droplets, TrendingUp, TrendingDown, Clock, Calendar,
   Quote, Coffee, Brain, Sparkles, RefreshCw, Globe, Zap,
-  Heart, Star, Target, Award, BookOpen, Music, Camera
+  Heart, Star, Target, Award, BookOpen, Music, Camera,
+  Briefcase, DollarSign, MessageCircle
 } from 'lucide-react'
 
 interface WeatherData {
@@ -25,6 +26,25 @@ interface CryptoData {
 interface QuoteData {
   content: string
   author: string
+}
+
+interface ExchangeRate {
+  from: string
+  to: string
+  rate: number
+}
+
+interface NewsItem {
+  title: string
+  source: string
+  url: string
+}
+
+interface GitHubRepo {
+  name: string
+  description: string
+  stars: number
+  language: string
 }
 
 const defaultWeather: WeatherData = {
@@ -113,6 +133,13 @@ const IntelligentDashboard = memo(function IntelligentDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [weatherLoading, setWeatherLoading] = useState(false)
   const [cryptoLoading, setCryptoLoading] = useState(false)
+  
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRate[]>([])
+  const [ratesLoading, setRatesLoading] = useState(false)
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([])
+  const [newsLoading, setNewsLoading] = useState(false)
+  const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
+  const [githubLoading, setGithubLoading] = useState(false)
 
   const todayIndex = (getDayOfWeek() + 6) % 7
 
@@ -214,18 +241,95 @@ const IntelligentDashboard = memo(function IntelligentDashboard() {
     setCryptoLoading(false)
   }, [])
 
+  const fetchExchangeRates = useCallback(async () => {
+    setRatesLoading(true)
+    try {
+      const response = await fetch('https://open.er-api.com/v6/latest/USD')
+      if (response.ok) {
+        const data = await response.json()
+        const targets = ['CNY', 'EUR', 'JPY', 'GBP']
+        setExchangeRates(targets.map(to => ({
+          from: 'USD',
+          to,
+          rate: data.rates[to]
+        })))
+      }
+    } catch (e) {
+      setExchangeRates([
+        { from: 'USD', to: 'CNY', rate: 7.24 },
+        { from: 'USD', to: 'EUR', rate: 0.92 },
+        { from: 'USD', to: 'JPY', rate: 149.8 },
+        { from: 'USD', to: 'GBP', rate: 0.79 },
+      ])
+    }
+    setRatesLoading(false)
+  }, [])
+
+  const fetchNews = useCallback(async () => {
+    setNewsLoading(true)
+    try {
+      const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json')
+      if (response.ok) {
+        const ids = await response.json()
+        const topIds = ids.slice(0, 5)
+        const stories = await Promise.all(topIds.map(async (id: number) => {
+          const res = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`)
+          return res.json()
+        }))
+        setNewsItems(stories.map(s => ({
+          title: s.title,
+          source: 'Hacker News',
+          url: s.url || `https://news.ycombinator.com/item?id=${s.id}`
+        })))
+      }
+    } catch (e) {
+      setNewsItems([
+        { title: 'WebLinuxOS: 浏览器中的完整Linux桌面体验', source: 'GitHub', url: '#' },
+        { title: 'React 19 新特性解析', source: 'Tech News', url: '#' },
+        { title: 'TypeScript 6.0 发布', source: 'Dev.to', url: '#' },
+      ])
+    }
+    setNewsLoading(false)
+  }, [])
+
+  const fetchGitHubTrending = useCallback(async () => {
+    setGithubLoading(true)
+    try {
+      const response = await fetch('https://api.github.com/search/repositories?q=created:>2024-01-01&sort=stars&order=desc')
+      if (response.ok) {
+        const data = await response.json()
+        setGithubRepos(data.items.slice(0, 4).map((item: { name: string; description?: string; stargazers_count: number; language?: string }) => ({
+          name: item.name,
+          description: item.description || '',
+          stars: item.stargazers_count,
+          language: item.language || 'Unknown'
+        })))
+      }
+    } catch (e) {
+      setGithubRepos([
+        { name: 'WebLinuxOS', description: '浏览器中的完整Linux桌面体验', stars: 1200, language: 'TypeScript' },
+        { name: 'React', description: '用于构建用户界面的JavaScript库', stars: 220000, language: 'JavaScript' },
+        { name: 'TypeScript', description: 'JavaScript的超集', stars: 95000, language: 'TypeScript' },
+      ])
+    }
+    setGithubLoading(false)
+  }, [])
+
   const refreshAll = useCallback(async () => {
     setIsRefreshing(true)
-    await Promise.all([fetchWeather(), fetchCryptos()])
+    await Promise.all([fetchWeather(), fetchCryptos(), fetchExchangeRates(), fetchNews(), fetchGitHubTrending()])
     setQuote(getRandomItem(motivationalQuotes))
     setFunFact(getRandomItem(funFacts))
     setTimeout(() => setIsRefreshing(false), 500)
-  }, [fetchWeather, fetchCryptos])
+  }, [fetchWeather, fetchCryptos, fetchExchangeRates, fetchNews, fetchGitHubTrending])
 
   useEffect(() => {
     fetchWeather()
     fetchCryptos()
-  }, [fetchWeather, fetchCryptos])
+    fetchExchangeRates()
+    fetchNews()
+    fetchGitHubTrending()
+  }, [fetchWeather, fetchCryptos, fetchExchangeRates, fetchNews, fetchGitHubTrending])
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -396,7 +500,6 @@ const IntelligentDashboard = memo(function IntelligentDashboard() {
               borderRadius: 16,
               background: 'linear-gradient(135deg, rgba(29, 209, 161, 0.1) 0%, rgba(0, 210, 211, 0.1) 100%)',
               border: '1px solid var(--window-border)',
-              gridColumn: 'span 1',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -446,9 +549,44 @@ const IntelligentDashboard = memo(function IntelligentDashboard() {
             <div className="dashboard-card" style={{
               padding: 24,
               borderRadius: 16,
+              background: 'linear-gradient(135deg, rgba(72, 219, 251, 0.1) 0%, rgba(0, 210, 211, 0.1) 100%)',
+              border: '1px solid var(--window-border)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  实时汇率
+                  {ratesLoading && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 400, color: 'var(--text-secondary)' }}>刷新中...</span>}
+                </h3>
+                <DollarSign size={18} style={{ color: '#48dbfb' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {exchangeRates.map((rate) => (
+                  <div key={rate.to} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    background: 'rgba(255, 255, 255, 0.03)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{rate.from}</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>→</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{rate.to}</span>
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#48dbfb' }}>
+                      {rate.rate.toFixed(4)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="dashboard-card" style={{
+              padding: 24,
+              borderRadius: 16,
               background: 'linear-gradient(135deg, rgba(155, 138, 240, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
               border: '1px solid var(--window-border)',
-              gridColumn: 'span 1',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                 <Quote size={18} style={{ color: '#f093fb' }} />
@@ -475,7 +613,6 @@ const IntelligentDashboard = memo(function IntelligentDashboard() {
               borderRadius: 16,
               background: 'linear-gradient(135deg, rgba(254, 202, 87, 0.1) 0%, rgba(255, 159, 243, 0.1) 100%)',
               border: '1px solid var(--window-border)',
-              gridColumn: 'span 1',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                 <Zap size={18} style={{ color: '#feca57' }} />
@@ -484,6 +621,95 @@ const IntelligentDashboard = memo(function IntelligentDashboard() {
               <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.8 }}>
                 💡 {funFact}
               </p>
+            </div>
+
+            <div className="dashboard-card" style={{
+              padding: 24,
+              borderRadius: 16,
+              background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(254, 202, 87, 0.1) 100%)',
+              border: '1px solid var(--window-border)',
+              gridColumn: 'span 2',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  技术新闻
+                  {newsLoading && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 400, color: 'var(--text-secondary)' }}>刷新中...</span>}
+                </h3>
+                <MessageCircle size={18} style={{ color: '#ff6b6b' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {newsItems.map((news, index) => (
+                  <a
+                    key={index}
+                    href={news.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '10px 14px',
+                      borderRadius: 8,
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
+                    }}
+                  >
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                        {news.title}
+                      </p>
+                      <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{news.source}</p>
+                    </div>
+                    <span style={{ fontSize: 16, color: 'var(--accent)' }}>→</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div className="dashboard-card" style={{
+              padding: 24,
+              borderRadius: 16,
+              background: 'linear-gradient(135deg, rgba(29, 209, 161, 0.1) 0%, rgba(72, 219, 251, 0.1) 100%)',
+              border: '1px solid var(--window-border)',
+              gridColumn: 'span 2',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  GitHub 热门项目
+                  {githubLoading && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 400, color: 'var(--text-secondary)' }}>刷新中...</span>}
+                </h3>
+                <Briefcase size={18} style={{ color: '#1dd1a1' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                {githubRepos.map((repo, index) => (
+                  <div key={index} style={{
+                    padding: '14px 16px',
+                    borderRadius: 10,
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid var(--window-border)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 18 }}>📦</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{repo.name}</span>
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
+                      {repo.description}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 11, color: '#ffc107' }}>⭐ {repo.stars.toLocaleString()}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{repo.language}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
