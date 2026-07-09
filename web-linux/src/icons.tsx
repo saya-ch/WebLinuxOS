@@ -11,6 +11,7 @@ import {
   ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
+  Star, Tag, Save,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -104,6 +105,9 @@ export const BellIcon = Bell
 export const PinIcon = Pin
 export const PinOffIcon = PinOff
 export const TrashIcon = Trash2
+export const StarIcon = Star
+export const TagIcon = Tag
+export const SaveIcon = Save
 export const CopyIcon = Copy
 export const GripIcon = GripVertical
 export const ChevronUpIcon = ChevronUp
@@ -147,6 +151,7 @@ export const TabletIcon = Tablet
 export const SplitSquareHorizontalIcon = SplitSquareHorizontal
 
 export { ChevronRight, ChevronDown, Plus, Volume2, VolumeX }
+export const PlusIcon = Plus
 
 export default {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,

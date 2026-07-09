@@ -119,6 +119,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SmartSearch: () => import('../../apps/SmartSearch'),
   SmartNotes: () => import('../../apps/SmartNotes'),
   SmartNotesEnhanced: () => import('../../apps/SmartNotesEnhanced'),
+  SmartNotesPro: () => import('../../apps/SmartNotesPro'),
   SmartDashboard: () => import('../../apps/SmartDashboard'),
   IntelligentDashboard: () => import('../../apps/IntelligentDashboard'),
   SmartHub: () => import('../../apps/SmartHub'),
