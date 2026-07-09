@@ -298,6 +298,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SmartAIHub: () => import('../../apps/SmartAIHub'),
   // === v19.0 新增实时全球情报仪表盘 ===
   WorldPulse: () => import('../../apps/WorldPulse'),
+  // === v23.0 新增开发者工具箱 ===
+  DevKit: () => import('../../apps/DevKit'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}

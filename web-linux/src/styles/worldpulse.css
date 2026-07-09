@@ -653,6 +653,179 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* ---------- Tab 切换 ---------- */
+.wp-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--wp-border);
+  background: rgba(8, 10, 18, 0.4);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.wp-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--wp-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.wp-tab:hover {
+  color: var(--wp-text);
+  background: rgba(124, 108, 240, 0.1);
+}
+
+.wp-tab.active {
+  color: var(--wp-text);
+  background: rgba(124, 108, 240, 0.18);
+  border-color: var(--wp-border-hi);
+}
+
+.wp-tab.active svg { color: var(--wp-violet); }
+
+/* ---------- 空气质量卡片 ---------- */
+.wp-aqi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.wp-aqi-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.wp-aqi-item:last-child { border-bottom: none; }
+
+.wp-aqi-city {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.wp-aqi-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.wp-aqi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.wp-aqi-label {
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* ---------- GitHub 热门仓库卡片 ---------- */
+.wp-github-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.wp-github-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.wp-github-item:hover { background: rgba(124, 108, 240, 0.1); }
+
+.wp-github-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--wp-cyan);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wp-github-desc {
+  font-size: 11px;
+  color: var(--wp-dim);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wp-github-meta {
+  display: flex;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--wp-dim);
+}
+
+.wp-github-lang {
+  color: var(--wp-amber);
+}
+
+/* ---------- 冷知识卡片 ---------- */
+.wp-funfact {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.wp-funfact-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.wp-funfact-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--wp-text);
+  flex: 1;
+}
+
+/* ---------- ISS 脉冲动画增强 ---------- */
+.wp-iss-pulse {
+  animation: wp-iss-pulse 2s ease-out infinite;
+}
+
+@keyframes wp-iss-pulse {
+  0% { r: 5; opacity: 0.6; }
+  100% { r: 18; opacity: 0; }
+}
+
 /* ---------- 响应式 ---------- */
 @media (max-width: 1100px) {
   .wp-grid { grid-template-columns: repeat(6, 1fr); }
