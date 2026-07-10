@@ -303,6 +303,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevKit: () => import('../../apps/DevKit'),
   // === v25.0 新增灵感流 ===
   IdeaStream: () => import('../../apps/IdeaStream'),
+  // === v27.0 新增创新应用 ===
+  NexusAI: () => import('../../apps/NexusAI'),
+  DevForge: () => import('../../apps/DevForge'),
 }
 
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
