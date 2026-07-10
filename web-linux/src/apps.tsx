@@ -29,6 +29,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 新增智能代码助手（v28.0创新功能）
+  { id: 'intelligent-code-assistant', name: '智能代码助手', icon: <SparklesIcon />, component: 'IntelligentCodeAssistant', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // 新增增强应用（v16.0迭代）
   { id: 'ai-chat-enhanced', name: 'AI聊天增强', icon: <ChatIcon />, component: 'AIChatEnhanced', category: 'utilities', defaultWidth: 800, defaultHeight: 600, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   // 新增AI Code Companion（v17.0迭代）

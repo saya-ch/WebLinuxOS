@@ -80,6 +80,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CodeReviewer: () => import('../../apps/CodeReviewer'),
   CodeGenerator: () => import('../../apps/CodeGenerator'),
   IntelligentCodeGenerator: () => import('../../apps/IntelligentCodeGenerator'),
+  IntelligentCodeAssistant: () => import('../../apps/IntelligentCodeAssistant'),
   CodeInterpreter: () => import('../../apps/CodeInterpreter'),
   CodeSnippetsManager: () => import('../../apps/CodeSnippetsManager'),
   CodeSnippetShare: () => import('../../apps/CodeSnippetShare'),
