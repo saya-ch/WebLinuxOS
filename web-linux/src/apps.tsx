@@ -35,6 +35,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'ai-code-companion', name: 'AI Code Companion', icon: <SparklesIcon />, component: 'AICodeCompanion', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   // 新增DevKit开发者工具箱（v23.0迭代）
   { id: 'dev-kit', name: 'DevKit 开发者工具箱', icon: <WrenchIcon />, component: 'DevKit', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // 新增CyberHub赛博格控制中心（v26.0迭代）
+  { id: 'cyber-hub', name: 'CyberHub 控制中心', icon: <ActivityIcon />, component: 'CyberHub', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

@@ -1,0 +1,525 @@
+/* ============================================================
+   WebLinuxOS - Retro-Futuristic Cyberpunk Theme
+   融合80年代赛博朋克美学与现代玻璃拟态技术
+   ============================================================ */
+
+/* ---------- 独特字体选择 ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  /* 霓虹色系 - 独特的赛博朋克配色 */
+  --neon-cyan: #00d9ff;
+  --neon-pink: #ff0080;
+  --neon-purple: #b967ff;
+  --neon-yellow: #ffd700;
+  --neon-green: #00ff88;
+  --neon-red: #ff3366;
+  
+  /* 深色基底 */
+  --cyber-dark: #0a0e1a;
+  --cyber-medium: #1a1f3a;
+  --cyber-light: #2d3a5f;
+  
+  /* 玻璃效果 */
+  --glass-bg: rgba(26, 31, 58, 0.85);
+  --glass-border: rgba(0, 217, 255, 0.3);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  
+  /* 动画速度 */
+  --glow-duration: 2s;
+  --pulse-duration: 3s;
+}
+
+/* ---------- 全局字体应用 ---------- */
+.desktop-root {
+  font-family: 'Rajdhani', sans-serif;
+  color: #ffffff;
+}
+
+/* 窗口标题使用 Orbitron 科技感字体 */
+.window-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* 终端使用 Share Tech Mono 复古终端字体 */
+.terminal-output {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 霓虹发光效果 ---------- */
+.neon-border {
+  box-shadow: 
+    0 0 5px var(--neon-cyan),
+    0 0 10px var(--neon-cyan),
+    0 0 20px var(--neon-cyan),
+    inset 0 0 5px rgba(0, 217, 255, 0.1);
+  animation: neonGlow var(--glow-duration) infinite alternate;
+}
+
+.neon-border-pink {
+  box-shadow: 
+    0 0 5px var(--neon-pink),
+    0 0 10px var(--neon-pink),
+    0 0 20px var(--neon-pink);
+  animation: neonGlowPink var(--glow-duration) infinite alternate;
+}
+
+@keyframes neonGlow {
+  0% {
+    box-shadow: 
+      0 0 5px var(--neon-cyan),
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan),
+      inset 0 0 5px rgba(0, 217, 255, 0.1);
+  }
+  100% {
+    box-shadow: 
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan),
+      0 0 40px var(--neon-cyan),
+      inset 0 0 10px rgba(0, 217, 255, 0.2);
+  }
+}
+
+@keyframes neonGlowPink {
+  0% {
+    box-shadow: 
+      0 0 5px var(--neon-pink),
+      0 0 10px var(--neon-pink);
+  }
+  100% {
+    box-shadow: 
+      0 0 10px var(--neon-pink),
+      0 0 20px var(--neon-pink),
+      0 0 30px var(--neon-pink);
+  }
+}
+
+/* ---------- 玻璃拟态效果 ---------- */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 32px var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-intense {
+  background: rgba(10, 14, 26, 0.9);
+  backdrop-filter: blur(40px) saturate(200%);
+  border: 2px solid rgba(0, 217, 255, 0.5);
+  box-shadow: 
+    0 0 20px rgba(0, 217, 255, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+/* ---------- 赛博格网格背景 ---------- */
+.cyber-grid-bg {
+  position: fixed;
+  inset: 0;
+  background: 
+    linear-gradient(90deg, rgba(0, 217, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(0, 217, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridScroll 20s linear infinite;
+  z-index: -10;
+}
+
+@keyframes gridScroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(50px); }
+}
+
+/* ---------- 扫描线效果 ---------- */
+.scanline-overlay {
+  position: fixed;
+  inset: 0;
+  background: 
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 217, 255, 0.02) 50%,
+      transparent 100%
+    );
+  background-size: 100% 4px;
+  animation: scanlines 8s linear infinite;
+  z-index: -5;
+  pointer-events: none;
+}
+
+@keyframes scanlines {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* ---------- 窗口组件增强 ---------- */
+.window-cyber {
+  border: 2px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  
+  /* 霓虹边框动画 */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 2px solid transparent;
+    border-image: linear-gradient(
+      90deg, 
+      var(--neon-cyan), 
+      var(--neon-pink), 
+      var(--neon-purple)
+    ) 1;
+    animation: borderRotate 4s linear infinite;
+    z-index: -1;
+  }
+}
+
+@keyframes borderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ---------- 桌面图标增强 ---------- */
+.desktop-icon-cyber {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-5px) scale(1.05);
+    
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      border: 2px solid var(--neon-cyan);
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--neon-cyan);
+      animation: iconPulse 1s infinite;
+      z-index: -1;
+    }
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ---------- 任务栏赛博格风格 ---------- */
+.taskbar-cyber {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 14, 26, 0.95) 0%,
+    rgba(26, 31, 58, 0.9) 100%
+  );
+  backdrop-filter: blur(30px);
+  border-top: 2px solid var(--neon-cyan);
+  box-shadow: 
+    0 -5px 20px rgba(0, 217, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  .taskbar-item {
+    &:hover {
+      background: rgba(0, 217, 255, 0.1);
+      border-bottom: 2px solid var(--neon-cyan);
+    }
+    
+    &.active {
+      background: rgba(0, 217, 255, 0.2);
+      border-bottom: 3px solid var(--neon-cyan);
+      box-shadow: 0 -5px 15px rgba(0, 217, 255, 0.3);
+    }
+  }
+}
+
+/* ---------- Spotlight搜索增强 ---------- */
+.global-search-cyber {
+  background: rgba(10, 14, 26, 0.98);
+  backdrop-filter: blur(50px);
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 
+    0 0 30px rgba(0, 217, 255, 0.3),
+    0 20px 60px rgba(0, 0, 0, 0.8);
+  animation: searchAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  .search-input {
+    background: transparent;
+    border: none;
+    color: var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+    caret-color: var(--neon-pink);
+    
+    &:focus {
+      outline: none;
+      &::placeholder {
+        color: rgba(0, 217, 255, 0.5);
+      }
+    }
+  }
+  
+  .search-result {
+    &:hover {
+      background: rgba(0, 217, 255, 0.1);
+      border-left: 3px solid var(--neon-cyan);
+    }
+    
+    &.selected {
+      background: rgba(0, 217, 255, 0.2);
+      border-left: 4px solid var(--neon-pink);
+      box-shadow: inset 0 0 20px rgba(0, 217, 255, 0.1);
+    }
+  }
+}
+
+@keyframes searchAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- WorldPulse仪表盘增强 ---------- */
+.worldpulse-card-cyber {
+  background: rgba(26, 31, 58, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  
+  /* 数据更新闪烁效果 */
+  &.updating {
+    animation: dataFlash 0.5s ease-out;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(0, 217, 255, 0.05) 100%
+    );
+    animation: shimmer 3s infinite;
+  }
+  
+  .card-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .card-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 24px;
+    color: #ffffff;
+    
+    &.positive {
+      color: var(--neon-green);
+    }
+    
+    &.negative {
+      color: var(--neon-red);
+    }
+  }
+}
+
+@keyframes dataFlash {
+  0% { border-color: var(--neon-cyan); }
+  50% { border-color: var(--neon-pink); }
+  100% { border-color: var(--neon-cyan); }
+}
+
+@keyframes shimmer {
+  0% { opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+/* ---------- 终端赛博格风格 ---------- */
+.terminal-cyber {
+  background: rgba(10, 14, 26, 0.98);
+  border: 2px solid var(--neon-cyan);
+  
+  .terminal-header {
+    background: linear-gradient(90deg, var(--cyber-medium), var(--cyber-dark));
+    border-bottom: 1px solid var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+  }
+  
+  .terminal-body {
+    background: 
+      radial-gradient(ellipse at top, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+      var(--cyber-dark);
+  }
+  
+  .terminal-input {
+    background: transparent;
+    border: none;
+    color: var(--neon-green);
+    caret-color: var(--neon-pink);
+    font-family: 'Share Tech Mono', monospace;
+    
+    &::placeholder {
+      color: rgba(0, 255, 136, 0.4);
+    }
+  }
+  
+  /* 命令输出样式 */
+  .cmd-output {
+    color: var(--neon-cyan);
+    
+    &.error {
+      color: var(--neon-red);
+    }
+    
+    &.success {
+      color: var(--neon-green);
+    }
+    
+    &.warning {
+      color: var(--neon-yellow);
+    }
+  }
+}
+
+/* ---------- DevKit工具箱增强 ---------- */
+.devkit-panel-cyber {
+  .sidebar {
+    background: rgba(10, 14, 26, 0.95);
+    border-right: 2px solid var(--neon-cyan);
+    
+    .tool-item {
+      &:hover {
+        background: rgba(0, 217, 255, 0.1);
+        border-left: 3px solid var(--neon-pink);
+      }
+      
+      &.active {
+        background: rgba(0, 217, 255, 0.2);
+        border-left: 4px solid var(--neon-cyan);
+      }
+    }
+  }
+  
+  .tool-content {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    
+    .input-field {
+      background: rgba(10, 14, 26, 0.8);
+      border: 1px solid rgba(0, 217, 255, 0.3);
+      color: #ffffff;
+      
+      &:focus {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+      }
+    }
+    
+    .output-display {
+      background: rgba(10, 14, 26, 0.9);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      font-family: 'Share Tech Mono', monospace;
+    }
+  }
+}
+
+/* ---------- 脉冲动画效果 ---------- */
+.pulse-animation {
+  animation: pulse var(--pulse-duration) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* ---------- 数据流动效果 ---------- */
+.data-flow {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--neon-cyan),
+      transparent
+    );
+    animation: dataStream 2s linear infinite;
+  }
+}
+
+@keyframes dataStream {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ---------- 亮色主题适配 ---------- */
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 217, 255, 0.5);
+}
+
+.light .neon-border {
+  box-shadow: 
+    0 0 8px var(--neon-cyan),
+    0 0 16px var(--neon-cyan);
+}
+
+.light .window-cyber {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 217, 255, 0.6);
+}
+
+/* ---------- 响应式优化 ---------- */
+@media (max-width: 768px) {
+  .cyber-grid-bg {
+    background-size: 30px 30px;
+  }
+  
+  .neon-border {
+    box-shadow: 
+      0 0 4px var(--neon-cyan),
+      0 0 8px var(--neon-cyan);
+  }
+  
+  .window-cyber::before {
+    inset: -1px;
+    border-width: 1px;
+  }
+}
+
+/* ---------- 自定义光标 ---------- */
+.custom-cursor {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="%2300d9ff" opacity="0.8"/><circle cx="16" cy="16" r="4" fill="%23ff0080"/></svg>') 16 16, auto;
+}
+
+.custom-cursor-click {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="%2300d9ff" opacity="0.9"/><circle cx="16" cy="16" r="6" fill="%23ff0080"/></svg>') 16 16, auto;
+}

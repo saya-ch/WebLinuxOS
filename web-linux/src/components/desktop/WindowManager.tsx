@@ -98,6 +98,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SystemAssistant: () => import('../../apps/SystemAssistant'),
   DevAssistant: () => import('../../apps/DevAssistant'),
   DevToolbox: () => import('../../apps/DevToolbox'),
+  CyberHub: () => import('../../apps/CyberHub'),
   DevTools: () => import('../../apps/DevTools'),
   DevOpsTools: () => import('../../apps/DevOpsTools'),
   SmartDevFlow: () => import('../../apps/SmartDevFlow'),
