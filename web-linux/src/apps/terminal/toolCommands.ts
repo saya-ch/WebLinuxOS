@@ -1343,8 +1343,9 @@ registerCommand('grep', {
           if (pattern.test(line)) {
             matchesFound++
             const lineNum = showLineNumbers ? `${index + 1}:` : ''
-            const escapedLine = line.replace(/\u001b\[[0-9;]*m/g, '')
-            const ansiEscape = '\u001b'
+            const escapePattern = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
+            const escapedLine = line.replace(escapePattern, '')
+            const ansiEscape = String.fromCharCode(27)
             const highlighted = escapedLine.replace(pattern, (match) => `${ansiEscape}[32m${match}${ansiEscape}[0m`)
             results.push(`${path}:${lineNum}${highlighted}`)
           }
@@ -2101,7 +2102,7 @@ registerCommand('lorem', {
       return sentences.join(' ')
     }
     
-    let output = ''
+    let output: string
     
     if (type === 'words') {
       const wordList: string[] = []
@@ -2574,9 +2575,9 @@ registerCommand('bmi', {
     
     const bmi = weight / (height * height)
     
-    let category = ''
-    let emoji = ''
-    let color = ''
+    let category: string
+    let emoji: string
+    let color: string
     
     if (bmi < 18.5) {
       category = '偏瘦'

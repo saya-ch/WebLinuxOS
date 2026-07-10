@@ -441,7 +441,7 @@ function UtilityHub() {
     }
     
     // 简单的XML格式化
-    let formatted = input.replace(/></g, '>\n<')
+    const formatted = input.replace(/></g, '>\n<')
     const lines = formatted.split('\n')
     let indent = 0
     const result = lines.map(line => {

@@ -159,7 +159,7 @@ export default function NewsHub() {
       }
 
       const results = await Promise.all(promises);
-      let allNews = results.flat();
+      const allNews = results.flat();
 
       if (sortBy === 'hot') {
         allNews.sort((a, b) => (b.points || 0) - (a.points || 0));

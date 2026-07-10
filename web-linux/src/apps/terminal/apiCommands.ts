@@ -2469,7 +2469,7 @@ registerCommand('weather-alerts', {
       output.push('═'.repeat(60))
       output.push('')
       
-      let alerts: string[] = []
+      const alerts: string[] = []
       
       if (temp > 35) alerts.push(`🌡️ 高温预警: ${temp}°C，请避免长时间户外活动`)
       if (temp < -10) alerts.push(`❄️ 低温预警: ${temp}°C，请注意保暖`)

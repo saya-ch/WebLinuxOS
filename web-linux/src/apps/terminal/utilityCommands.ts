@@ -17,7 +17,33 @@ async function fetchWithCache<T>(url: string): Promise<T> {
 
   const data = await response.json()
   apiCache.set(url, { data, timestamp: Date.now() })
-  return data
+  return data as T
+}
+
+interface GeoCity {
+  latitude: number
+  longitude: number
+  name: string
+  country: string
+}
+
+interface GeoSearchResult {
+  results?: GeoCity[]
+}
+
+interface OpenMeteoCurrent {
+  temperature: number
+  windspeed: number
+  weathercode: number
+}
+
+interface OpenMeteoData {
+  current_weather: OpenMeteoCurrent
+}
+
+interface ExchangeData {
+  rates: Record<string, number>
+  time_last_update_utc: string
 }
 
 registerCommand('base64-encode', {
@@ -165,18 +191,18 @@ registerCommand('weather', {
 
     try {
       const city = context.args.join(' ')
-      const geoData = await fetchWithCache<any[]>(
+      const geoData = await fetchWithCache<GeoSearchResult>(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`
       )
 
-      if (!geoData || geoData.length === 0) {
+      if (!geoData.results || geoData.results.length === 0) {
         return {
           output: `未找到城市: ${city}`
         }
       }
 
-      const { latitude, longitude, name: cityName, country } = geoData[0]
-      const weatherData = await fetchWithCache<any>(
+      const { latitude, longitude, name: cityName, country } = geoData.results[0]
+      const weatherData = await fetchWithCache<OpenMeteoData>(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m`
       )
 
@@ -249,7 +275,7 @@ registerCommand('timezone', {
 registerCommand('currency', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     try {
-      const data = await fetchWithCache<any>(
+      const data = await fetchWithCache<ExchangeData>(
         'https://open.er-api.com/v6/latest/USD'
       )
 

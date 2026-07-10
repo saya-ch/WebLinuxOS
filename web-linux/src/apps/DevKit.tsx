@@ -631,7 +631,7 @@ function MarkdownTool() {
   const [markdown, setMarkdown] = useState('# 欢迎使用 WebLinuxOS\n\n这是一个**功能强大**的 *Web 操作系统*。\n\n## 特性\n\n- 🖥️ 完整的桌面环境\n- 🪟 窗口管理系统\n- 📱 响应式设计\n- 🔧 200+ 应用程序\n\n## 代码示例\n\n```javascript\nconsole.log("Hello, WebLinuxOS!");\n```\n\n> 简洁不代表简单')
 
   const renderMarkdown = (text: string) => {
-    let html = text
+    const html = text
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')

@@ -4,6 +4,7 @@ import Window from './Window'
 import ErrorBoundary from '../ErrorBoundary'
 import type { WindowState, AppDefinition } from '../../types'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface WindowComponent {
   win: WindowState
   Component: React.LazyExoticComponent<React.ComponentType<any>>
@@ -15,6 +16,7 @@ interface WindowComponent {
  * 这是组件解析的首选方式，比动态拼接路径的 `import()` 更可靠，
  * 也便于后续的静态分析和 Tree Shaking。
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
   Terminal: () => import('../../apps/Terminal'),
   FileManager: () => import('../../apps/FileManager'),
@@ -308,10 +310,12 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevForge: () => import('../../apps/DevForge'),
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
 const preloadedComponents = new Set<string>()
 const loadingStates = new Map<string, 'loading' | 'loaded' | 'error'>()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loadComponent(name: string): React.LazyExoticComponent<React.ComponentType<any>> {
   if (componentCache[name]) {
     return componentCache[name]

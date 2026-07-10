@@ -86,9 +86,9 @@ export default function IPLookup() {
     try {
       // 优先使用 ipapi.co
       const endpoint = target ? `${PRIMARY_API}/${encodeURIComponent(target)}/json/` : `${PRIMARY_API}/json/`
-      let res = await fetch(endpoint)
+      const res = await fetch(endpoint)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      let body: any = await res.json()
+      const body: any = await res.json()
 
       // ipapi.co 在某些情况下返回 { error: true, reason: 'reserved range' }
       if (body && body.error) {

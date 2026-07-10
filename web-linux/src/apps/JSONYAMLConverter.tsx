@@ -138,7 +138,7 @@ export default function JSONYAMLConverter() {
       const colonIndex = content.indexOf(':')
       if (colonIndex !== -1) {
         const key = content.slice(0, colonIndex).trim()
-        let value = content.slice(colonIndex + 1).trim()
+        const value = content.slice(colonIndex + 1).trim()
 
         // 处理缩进和嵌套
         if (indent < currentIndent) {

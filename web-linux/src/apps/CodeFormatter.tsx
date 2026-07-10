@@ -234,7 +234,7 @@ function formatHTML(input: string, indent: number): string {
   const selfClose = /^(br|hr|img|input|link|meta|area|base|col|embed|source|track|wbr)(\s|\/|>)/i
   let level = 0
   const out: string[] = []
-  for (let raw of tokens) {
+  for (const raw of tokens) {
     const t = raw.trim()
     if (!t) continue
     if (/^<!/.test(t)) {

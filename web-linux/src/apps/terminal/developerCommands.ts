@@ -17,7 +17,64 @@ async function fetchWithCache<T>(url: string): Promise<T> {
 
   const data = await response.json()
   apiCache.set(url, { data, timestamp: Date.now() })
+  return data as T
+}
+
+async function fetchTextWithCache(url: string): Promise<string> {
+  const cached = apiCache.get(url)
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data as string
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
+
+  const data = await response.text()
+  apiCache.set(url, { data, timestamp: Date.now() })
   return data
+}
+
+interface NpmPackage {
+  name: string
+  version: string
+  description?: string
+  score?: { final?: number }
+  downloads?: { lastMonth?: number }
+}
+
+interface NpmSearchResult {
+  objects: { package: NpmPackage }[]
+}
+
+interface IpInfo {
+  ip: string
+}
+
+interface IpGeo {
+  status?: string
+  country?: string
+  city?: string
+  lat?: number
+  lon?: number
+  isp?: string
+  org?: string
+}
+
+interface LeetCodeProblem {
+  difficulty: { level: number }
+  stat: {
+    frontend_question_id: number
+    question__title: string
+    total_acs: number
+    total_submitted: number
+    question__title_slug: string
+  }
+}
+
+interface LeetCodeData {
+  stat_status_pairs: LeetCodeProblem[]
 }
 
 registerCommand('npm-search', {
@@ -30,7 +87,7 @@ registerCommand('npm-search', {
 
     try {
       const query = context.args.join(' ')
-      const data = await fetchWithCache<any>(
+      const data = await fetchWithCache<NpmSearchResult>(
         `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(query)}&size=5`
       )
 
@@ -40,7 +97,7 @@ registerCommand('npm-search', {
         }
       }
 
-      const results = data.objects.map((item: any) => {
+      const results = data.objects.map((item) => {
         const pkg = item.package
         return `  📦 ${pkg.name}@${pkg.version}\n     🌟 ${pkg.score?.final?.toFixed(2) || 'N/A'}\n     📥 ${pkg.downloads?.lastMonth ? pkg.downloads.lastMonth.toLocaleString() : 'N/A'} 次下载/月\n     📝 ${pkg.description || '无描述'}`
       })
@@ -62,10 +119,10 @@ registerCommand('npm-search', {
 registerCommand('ip-info', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const data = await fetchWithCache<any>('https://api.ipify.org?format=json')
+      const data = await fetchWithCache<IpInfo>('https://api.ipify.org?format=json')
       const ip = data.ip
 
-      const geoData = await fetchWithCache<any>(
+      const geoData = await fetchWithCache<IpGeo>(
         `https://ip-api.com/json/${ip}`
       )
 
@@ -94,11 +151,11 @@ registerCommand('leetcode', {
     const difficulty = context.args[0]?.toLowerCase() || 'easy'
     
     try {
-      const data = await fetchWithCache<any>(
+      const data = await fetchWithCache<LeetCodeData>(
         `https://leetcode.com/api/problems/all/`
       )
 
-      const problems = data.stat_status_pairs.filter((item: any) => {
+      const problems = data.stat_status_pairs.filter((item) => {
         const level = item.difficulty.level
         if (difficulty === 'easy') return level === 1
         if (difficulty === 'medium') return level === 2
@@ -135,14 +192,14 @@ registerCommand('tldr', {
 
     try {
       const cmd = context.args[0]
-      const data = await fetchWithCache<any>(
+      const data = await fetchTextWithCache(
         `https://raw.githubusercontent.com/tldr-pages/tldr/main/pages/common/${cmd}.md`
       )
 
       return {
         output: `📖 ${cmd} 用法速查:\n\n${data.replace(/`/g, '')}`
       }
-    } catch (error) {
+    } catch {
       const cmd = context.args[0]
       return {
         output: `未找到命令 "${cmd}" 的速查文档`

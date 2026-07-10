@@ -303,10 +303,10 @@ export default function GameTetris() {
 
   const rotate = useCallback(() => {
     const piece = pieceRef.current
-    let rotated = rotateShape(piece.shape)
+    const rotated = rotateShape(piece.shape)
     // Wall kick
-    let kicks = [0, -1, 1, -2, 2]
-    for (let kick of kicks) {
+    const kicks = [0, -1, 1, -2, 2]
+    for (const kick of kicks) {
       if (!isCollision(rotated, piece.x + kick, piece.y)) {
         pieceRef.current = { ...piece, shape: rotated, x: piece.x + kick }
         drawBoard()

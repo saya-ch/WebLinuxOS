@@ -39,43 +39,35 @@ jobs:
         working-directory: ./web-linux
         run: npm run deploy
 
-      - name: Move build output to root
-        run: |
-          # vite.config.ts 中 outDir = '../dist'，构建产物位于仓库根目录的 dist/ 子目录
-          if [ -d ./dist ]; then
-            cp -r ./dist/* ./
-            cp -r ./dist/.nojekyll ./ 2>/dev/null || true
-          fi
-          touch ./.nojekyll
-          if [ ! -f ./404.html ] && [ -f ./index.html ]; then
-            cp ./index.html ./404.html
-          fi
-          echo ""
-          echo "--- Deployment inventory ---"
-          echo "Root files:"
-          ls -1 ./ | head -30
-          echo ""
-          echo "Asset files count:"
-          ls ./assets 2>/dev/null | wc -l || echo 0
-
       - name: Verify build output
         run: |
-          echo "--- Checking index.html exists ---"
-          test -f ./index.html && echo "OK: index.html exists" || (echo "FAIL: index.html missing" && exit 1)
-          echo "--- Checking assets folder ---"
-          test -d ./assets && echo "OK: assets/ exists" || (echo "FAIL: assets/ missing" && exit 1)
-          echo "--- Checking favicon ---"
-          test -f ./favicon.svg && echo "OK: favicon.svg exists" || echo "WARN: favicon missing"
-          echo "--- Checking manifest ---"
-          test -f ./manifest.json && echo "OK: manifest.json exists" || echo "WARN: manifest.json missing"
+          echo "--- Checking dist/index.html exists ---"
+          test -f ./dist/index.html && echo "OK: dist/index.html exists" || (echo "FAIL: dist/index.html missing" && exit 1)
+          echo "--- Checking dist/assets folder ---"
+          test -d ./dist/assets && echo "OK: dist/assets/ exists" || (echo "FAIL: dist/assets/ missing" && exit 1)
+          echo "--- Checking dist/favicon ---"
+          test -f ./dist/favicon.svg && echo "OK: dist/favicon.svg exists" || echo "WARN: dist/favicon.svg missing"
+          echo "--- Checking dist/manifest ---"
+          test -f ./dist/manifest.json && echo "OK: dist/manifest.json exists" || echo "WARN: dist/manifest.json missing"
+          echo "--- Checking dist/.nojekyll ---"
+          test -f ./dist/.nojekyll && echo "OK: dist/.nojekyll exists" || echo "WARN: dist/.nojekyll missing"
+          echo ""
+          echo "--- Deployment inventory ---"
+          echo "Dist root files:"
+          ls -1 ./dist/ | head -30
+          echo ""
+          echo "Asset files count:"
+          ls ./dist/assets 2>/dev/null | wc -l || echo 0
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          static_site_generator: vite
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./
+          path: ./dist
 
   deploy:
     environment:

@@ -324,7 +324,7 @@ export default function WhiteboardPro() {
     redrawAll();
   }, [redrawAll]);
 
-  const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getMousePos = (e: React.MouseEvent<HTMLElement>) => {
     const { canvas } = getCanvasContext() || {};
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
@@ -508,19 +508,19 @@ export default function WhiteboardPro() {
     link.click();
   };
 
-  const handleStickyMouseDown = (e: React.MouseEvent, stickyId: string) => {
+  const handleStickyMouseDown = (e: React.MouseEvent<HTMLElement>, stickyId: string) => {
     e.stopPropagation();
     const sticky = stickyNotes.find(s => s.id === stickyId);
     if (!sticky) return;
     setDraggingSticky(stickyId);
     setSelectedStickyId(stickyId);
-    const { x, y } = getMousePos(e as any);
+    const { x, y } = getMousePos(e);
     setDragOffset({ x: x - sticky.x, y: y - sticky.y });
   };
 
-  const handleStickyDrag = (e: React.MouseEvent) => {
+  const handleStickyDrag = (e: React.MouseEvent<HTMLElement>) => {
     if (!draggingSticky) return;
-    const { x, y } = getMousePos(e as any);
+    const { x, y } = getMousePos(e);
     setStickyNotes(prev => prev.map(s =>
       s.id === draggingSticky
         ? { ...s, x: x - dragOffset.x, y: y - dragOffset.y }

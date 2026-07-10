@@ -23,7 +23,55 @@ async function fetchWithCache<T>(url: string): Promise<T> {
 
   const data = await response.json()
   apiCache.set(url, { data, timestamp: Date.now() })
-  return data
+  return data as T
+}
+
+interface CryptoPrice {
+  usd: number
+  usd_24h_change?: number
+}
+
+interface CryptoData {
+  [coin: string]: CryptoPrice
+}
+
+interface GeoCity {
+  latitude: number
+  longitude: number
+  name: string
+  country: string
+}
+
+interface GeoSearchResult {
+  results?: GeoCity[]
+}
+
+interface OpenMeteoCurrent {
+  temperature: number
+  windspeed: number
+  weathercode: number
+}
+
+interface OpenMeteoData {
+  current_weather: OpenMeteoCurrent
+}
+
+interface ExchangeData {
+  rates: Record<string, number>
+  time_last_update_utc: string
+}
+
+interface GitHubUser {
+  login: string
+  name?: string
+  bio?: string
+  location?: string
+  company?: string
+  public_repos: number
+  followers: number
+  following: number
+  created_at: string
+  html_url: string
 }
 
 // 注册命令：查询实时加密货币价格（CoinGecko免费API）
@@ -31,7 +79,7 @@ registerCommand('crypto', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     try {
       const coinId = context.args[0]?.toLowerCase() || 'bitcoin'
-      const data = await fetchWithCache<any>(
+      const data = await fetchWithCache<CryptoData>(
         `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true`
       )
 
@@ -72,20 +120,20 @@ registerCommand('weather-live', {
       const city = context.args.join(' ')
 
       // 先获取城市坐标
-      const geoData = await fetchWithCache<any[]>(
+      const geoData = await fetchWithCache<GeoSearchResult>(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`
       )
 
-      if (!geoData || geoData.length === 0) {
+      if (!geoData.results || geoData.results.length === 0) {
         return {
           output: `未找到城市: ${city}`
         }
       }
 
-      const { latitude, longitude, name: cityName, country } = geoData[0]
+      const { latitude, longitude, name: cityName, country } = geoData.results[0]
 
       // 获取天气数据
-      const weatherData = await fetchWithCache<any>(
+      const weatherData = await fetchWithCache<OpenMeteoData>(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m`
       )
 
@@ -131,7 +179,7 @@ registerCommand('weather-live', {
 registerCommand('exchange', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     try {
-      const data = await fetchWithCache<any>(
+      const data = await fetchWithCache<ExchangeData>(
         'https://open.er-api.com/v6/latest/USD'
       )
 
@@ -189,7 +237,7 @@ registerCommand('github-user', {
 
     try {
       const username = context.args[0]
-      const data = await fetchWithCache<any>(`https://api.github.com/users/${username}`)
+      const data = await fetchWithCache<GitHubUser>(`https://api.github.com/users/${username}`)
 
       return {
         output: `GitHub 用户: ${data.login}\n\n  👤 名称: ${data.name || 'N/A'}\n  📝 简介: ${data.bio || 'N/A'}\n  📍 位置: ${data.location || 'N/A'}\n  🏢 公司: ${data.company || 'N/A'}\n  📦 仓库: ${data.public_repos}\n  👥 关注者: ${data.followers}\n  ➡️ 正在关注: ${data.following}\n  📅 注册时间: ${new Date(data.created_at).toLocaleDateString('zh-CN')}\n\n🔗 ${data.html_url}`

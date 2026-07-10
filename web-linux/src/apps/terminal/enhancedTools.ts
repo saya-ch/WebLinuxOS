@@ -684,11 +684,12 @@ registerCommand('encode', {
       case 'url-safe':
         result = btoa(text).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
         break
-      case 'html':
+      case 'html': {
         const div = document.createElement('div')
         div.textContent = text
         result = div.innerHTML
         break
+      }
       default:
         return { output: `encode: 不支持的编码类型 '${type}'` }
     }
@@ -745,15 +746,17 @@ registerCommand('decode', {
         case 'url':
           result = decodeURIComponent(encoded)
           break
-        case 'url-safe':
+        case 'url-safe': {
           const padded = encoded.padEnd(encoded.length + (4 - encoded.length % 4) % 4, '=')
           result = atob(padded.replace(/-/g, '+').replace(/_/g, '/'))
           break
-        case 'html':
+        }
+        case 'html': {
           const div = document.createElement('div')
           div.innerHTML = encoded
           result = div.textContent || ''
           break
+        }
         default:
           return { output: `decode: 不支持的解码类型 '${type}'` }
       }

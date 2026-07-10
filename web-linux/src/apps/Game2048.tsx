@@ -197,7 +197,7 @@ export default function Game2048() {
     const { board: nb, score: s, moved } = move(board, dir)
     if (!moved) return
 
-    let newBoard = addRandom(nb)
+    const newBoard = addRandom(nb)
     setBoard(newBoard)
     setScore(prev => {
       const ns = prev + s

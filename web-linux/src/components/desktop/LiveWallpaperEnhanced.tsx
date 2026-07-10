@@ -96,10 +96,9 @@ const LiveWallpaperEnhanced = memo(function LiveWallpaperEnhanced() {
             let newY = p.y + p.vy
             let newVx = p.vx
             let newVy = p.vy
-            let newOpacity = p.opacity
 
             // 脉冲效果
-            newOpacity = 0.5 + 0.4 * Math.sin(currentTime / 1000 + p.phase)
+            const newOpacity = 0.5 + 0.4 * Math.sin(currentTime / 1000 + p.phase)
 
             // 边界反弹
             if (newX < 0 || newX > 100) {

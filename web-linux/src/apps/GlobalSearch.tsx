@@ -87,7 +87,7 @@ function safeCalculate(expr: string): number | null {
     const safe = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '')
     // 简单百分号处理：50% -> (50/100)
     const normalized = safe.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)')
-    // eslint-disable-next-line no-new-func
+     
     const result = Function('"use strict"; return (' + normalized + ')')()
     if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
       return result

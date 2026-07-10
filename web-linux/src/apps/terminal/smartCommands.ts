@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import type { FileNode } from '../../types'
 import { fetchWithCache } from '../../utils/apiCache'
 
 registerCommand('system-status', {
@@ -145,7 +146,7 @@ registerCommand('search-files', {
 
     const results: { path: string; name: string; type: string }[] = []
 
-    const searchNode = (node: any, currentPath: string) => {
+    const searchNode = (node: FileNode, currentPath: string) => {
       const fullPath = currentPath === '/' ? `/${node.name}` : `${currentPath}/${node.name}`
       
       if (node.name.toLowerCase().includes(searchPattern.toLowerCase())) {
@@ -157,7 +158,7 @@ registerCommand('search-files', {
       }
 
       if (node.type === 'folder' && node.children) {
-        node.children.forEach((child: any) => searchNode(child, fullPath))
+        node.children.forEach((child) => searchNode(child, fullPath))
       }
     }
 
@@ -225,7 +226,7 @@ registerCommand('world-clock', {
       })
 
       const hour = parseInt(time.split(':')[0])
-      let status = ''
+      let status: string
       if (hour >= 9 && hour < 18) status = '🏢 工作时间'
       else if (hour >= 0 && hour < 6) status = '🌙 深夜'
       else if (hour >= 6 && hour < 9) status = '🌅 早晨'

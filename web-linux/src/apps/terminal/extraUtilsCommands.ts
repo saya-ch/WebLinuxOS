@@ -454,7 +454,7 @@ registerCommand('lorem', {
       }
     }
 
-    let result = ''
+    let result: string
 
     if (type === 'words') {
       const words: string[] = []
@@ -562,7 +562,7 @@ registerCommand('hex', {
     if (action === 'from') {
       const baseStr = args[1]
       const numStr = args[2]
-      let fromBase = 10
+      let fromBase: number
 
       if (baseStr === 'bin' || baseStr === '2') fromBase = 2
       else if (baseStr === 'oct' || baseStr === '8') fromBase = 8

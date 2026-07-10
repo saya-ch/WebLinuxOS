@@ -421,7 +421,7 @@ export default function GitHubTrending() {
         queries.push('stars:>10000')
       }
 
-      let finalItems: GitHubRepo[] = []
+      const finalItems: GitHubRepo[] = []
       let lastError: Error | null = null
 
       for (const query of queries) {

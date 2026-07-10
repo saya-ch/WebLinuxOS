@@ -191,7 +191,7 @@ export default function WorkspaceManager() {
         workspace.lastUsedAt = Date.now();
         setWorkspaces((prev) => [workspace, ...prev]);
         showNotification('success', '已导入工作空间');
-      } catch (err) {
+      } catch {
         showNotification('error', '导入失败，文件格式不正确');
       }
     };

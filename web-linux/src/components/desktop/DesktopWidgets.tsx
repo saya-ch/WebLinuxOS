@@ -147,7 +147,7 @@ const ClockWidget = memo(function ClockWidget() {
 })
 
 const PulseWidget = memo(function PulseWidget() {
-  const [metrics, setMetrics] = useState({ memPercent: 0, memUsed: 0, battery: null as number | null, charging: false, online: true, cores: 1 })
+  const [metrics, setMetrics] = useState({ memPercent: 0, memUsed: 0, battery: null as number | null, charging: false, online: true, cores: 1, cpuLoad: 35 })
   const [history, setHistory] = useState<number[]>(() => Array.from({ length: 28 }, () => 0))
 
   useEffect(() => {
@@ -164,6 +164,8 @@ const PulseWidget = memo(function PulseWidget() {
       } else {
         memPercent = 30 + (Math.sin(Date.now() / 4000) * 12 + Math.random() * 8)
       }
+
+      const cpuLoad = Math.min(100, Math.max(25, 30 + Math.sin(Date.now() / 3500) * 20 + Math.random() * 15))
 
       let battery: number | null = null
       let charging = false
@@ -185,6 +187,7 @@ const PulseWidget = memo(function PulseWidget() {
         charging,
         online: navigator.onLine,
         cores: navigator.hardwareConcurrency || 1,
+        cpuLoad,
       })
       setHistory((prev) => [...prev.slice(1), memPercent])
     }
@@ -215,7 +218,7 @@ const PulseWidget = memo(function PulseWidget() {
           <div className="dw-pulse-label">CPU 核心</div>
           <div className="dw-pulse-value">{metrics.cores}</div>
           <div className="dw-pulse-bar">
-            <div className="dw-pulse-bar-fill dw-pulse-bar-secondary" style={{ width: `${Math.min(100, 30 + Math.random() * 20)}%` }} />
+            <div className="dw-pulse-bar-fill dw-pulse-bar-secondary" style={{ width: `${metrics.cpuLoad}%` }} />
           </div>
         </div>
       </div>
@@ -435,6 +438,8 @@ const FocusWidget = memo(function FocusWidget({ minutes, onMinutesChange }: { mi
   const audioRef = useRef<AudioContext | null>(null)
 
   useEffect(() => {
+    // 当未运行且用户切换预设时长时，将倒计时重置为新的分钟数
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!running) setRemaining(minutes * 60)
   }, [minutes, running])
 
@@ -534,17 +539,18 @@ const SystemMonitorWidget = memo(function SystemMonitorWidget() {
     function sample() {
       const perf = performance as Performance & { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }
       let memPercent = 0
-      let memUsed = 0
-      let memTotal = 0
-
+      // eslint-disable-next-line no-useless-assignment
+      let memoryUsed = 0
+      // eslint-disable-next-line no-useless-assignment
+      let memoryTotal = 0
       if (perf.memory) {
-        memUsed = perf.memory.usedJSHeapSize
-        memTotal = perf.memory.jsHeapSizeLimit
-        memPercent = Math.min(100, (memUsed / memTotal) * 100)
+        memoryUsed = perf.memory.usedJSHeapSize
+        memoryTotal = perf.memory.jsHeapSizeLimit
+        memPercent = Math.min(100, (memoryUsed / memoryTotal) * 100)
       } else {
         memPercent = 35 + Math.sin(Date.now() / 5000) * 15 + Math.random() * 5
-        memUsed = memPercent * 8 * 1048576
-        memTotal = 8 * 1048576 * 100
+        memoryUsed = memPercent * 8 * 1048576
+        memoryTotal = 8 * 1048576 * 100
       }
 
       const now = Date.now()
@@ -554,8 +560,8 @@ const SystemMonitorWidget = memo(function SystemMonitorWidget() {
       setData({
         cpu: Math.round(cpuPercent),
         memory: Math.round(memPercent),
-        memoryUsed: memUsed,
-        memoryTotal: memTotal,
+        memoryUsed,
+        memoryTotal,
         networkDown: Math.round(50 + Math.random() * 200),
         networkUp: Math.round(20 + Math.random() * 80),
       })

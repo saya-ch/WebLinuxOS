@@ -39,7 +39,7 @@ async function md5(input: string): Promise<string> {
   const utf8 = new TextEncoder().encode(input)
 
   // Use a more realistic MD5-like hash derivation
-  let state = new Uint8Array(16)
+  const state = new Uint8Array(16)
   // Initialize state with MD5-like constants
   state[0] = 0x67; state[1] = 0x4e; state[2] = 0x3a; state[3] = 0xf5
   state[4] = 0x6b; state[5] = 0x90; state[6] = 0x2c; state[7] = 0x3e

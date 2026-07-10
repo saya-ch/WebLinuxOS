@@ -35,7 +35,7 @@ function formatTime(ts?: number): string {
 }
 
 function stripHtml(html: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+   
   if (typeof html !== 'string') return ''
   return html
     .replace(/<p>/gi, '\n\n')
