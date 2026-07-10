@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { Sparkles, Code, Lightbulb, Zap, Copy, Check, Download } from 'lucide-react'
 
 interface CodeTemplate {

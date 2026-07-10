@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Zap, 
   Sparkles, 
@@ -6,10 +6,7 @@ import {
   Wifi, 
   Battery, 
   Settings,
-  Volume2,
   Palette,
-  Sun,
-  Moon,
   Activity,
   Terminal,
   Search,
@@ -25,13 +22,13 @@ import {
 // 快速访问工具栏
 export function QuickAccessToolbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [quickApps, setQuickApps] = useState([
+  const quickApps = [
     { id: 'terminal', name: '终端', icon: Terminal },
     { id: 'intelligent-code-assistant', name: '智能代码助手', icon: Sparkles },
     { id: 'settings', name: '设置', icon: Settings },
     { id: 'file-manager', name: '文件管理器', icon: Grid },
     { id: 'text-editor', name: '文本编辑器', icon: List },
-  ])
+  ]
 
   return (
     <div className="quick-access-toolbar" style={{

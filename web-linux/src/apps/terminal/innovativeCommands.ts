@@ -207,7 +207,6 @@ registerCommand('perf', {
     const action = context.args[0]
     
     if (action === 'start') {
-      const startTime = performance.now()
       return {
         output: `⏱ 性能监控已启动
 开始时间: ${new Date().toLocaleTimeString()}
@@ -220,7 +219,6 @@ registerCommand('perf', {
     }
     
     if (action === 'stop') {
-      const endTime = performance.now()
       const memoryUsage = (performance as any).memory?.usedJSHeapSize
         ? Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024)
         : null
@@ -241,8 +239,8 @@ registerCommand('perf', {
     : 'N/A'}
 
 📊 浏览器性能:
-  • 页面加载时间: ${performance.timing.loadEventEnd - performance.timing.navigationStart} ms
-  • DOM 解析时间: ${performance.timing.domComplete - performance.timing.domInteractive} ms
+  • 页面加载时间: ${performance.timing?.loadEventEnd - performance.timing?.navigationStart || 'N/A'} ms
+  • DOM 解析时间: ${performance.timing?.domComplete - performance.timing?.domInteractive || 'N/A'} ms
 
 💡 性能建议:
   1. 考虑使用 Web Worker 处理耗时任务
@@ -276,7 +274,7 @@ registerCommand('perf', {
 
 // 网络状态检查命令
 registerCommand('netcheck', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
+  handler: async (): Promise<CommandResult> => {
     const online = navigator.onLine
     const connection = (navigator as any).connection
     
@@ -332,7 +330,7 @@ registerCommand('netcheck', {
 
 // 项目统计命令
 registerCommand('stats', {
-  handler: (context: CommandContext): CommandResult => {
+  handler: (): CommandResult => {
     const apps = (window as any).__WEBLINUXOS_APPS__ || []
     const commands = Object.keys((window as any).__WEBLINUXOS_COMMANDS__ || {})
     

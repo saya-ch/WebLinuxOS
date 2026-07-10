@@ -54,6 +54,7 @@ WebLinuxOS 是一个在浏览器中运行的 Linux 风格桌面环境，使用 R
 | WorldPulse | 实时数据仪表盘：加密货币、天气、空气质量、ISS、汇率、Hacker News |
 | NexusAI | 本地模拟的 AI 助手界面，支持多模式对话 |
 | 笔记 / 便签 | Markdown 笔记、便签墙、待办事项 |
+| 工作空间中心 | 应用快速访问、系统状态、实时天气、快捷便签、分类导航 |
 | 游戏 | 贪吃蛇、俄罗斯方块、2048、记忆游戏、打砖块 |
 
 ### 网络与数据（公开 API）
@@ -241,6 +242,15 @@ npm run build       # 生产构建
 - [Open-Meteo](https://open-meteo.com/) / [CoinGecko](https://www.coingecko.com/) / [Hacker News](https://news.ycombinator.com/) / [GitHub API](https://docs.github.com/en/rest) / [wheretheiss.at](https://wheretheiss.at/) / [open.er-api.com](https://www.exchangerate-api.com/)
 
 ## 更新日志
+
+### v28.0.0 (2026-07-10)
+
+- 新增工作空间中心应用：集成应用快速访问、系统状态监控、实时天气（Open-Meteo API）、快捷便签、分类导航五大功能
+- 优化工作空间中心 UI：渐变配色、毛玻璃效果、流畅动画、响应式布局
+- 快捷便签支持本地持久化存储，多色彩便签卡片
+- 修复 TypeScript 编译错误：清理未使用的导入与变量
+- 新增系统标签页，快速访问系统工具
+- 增强系统状态卡片，支持点击跳转至系统监视器
 
 ### v27.0.0 (2026-07-10)
 

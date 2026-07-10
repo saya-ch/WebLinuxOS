@@ -1066,10 +1066,22 @@ function SmartAIHubIcon() {
   )
 }
 
+function WorkspaceHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  )
+}
+
 // 注意（校验提示）：以下所有条目在 src/apps/ 下均应存在同名 .tsx 组件文件，
 // 且每个 id 必须全局唯一。如新增注册，请先确认组件文件已就位。
 // （当前 201 项已完成组件存在性与 id 去重校验，无异常。）
 export const appRegistry: AppDefinition[] = [
+  { id: 'workspace-hub', name: '工作空间中心', icon: <WorkspaceHubIcon />, component: 'WorkspaceHub', category: 'system', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-ai-hub', name: '智能AI中心', icon: <SmartAIHubIcon />, component: 'SmartAIHub', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-dev-flow', name: '智能开发工作台', icon: <SmartDevFlowIcon />, component: 'SmartDevFlow', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'dev-toolbox', name: '开发者工具箱', icon: <DevToolboxIcon />, component: 'DevToolbox', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
