@@ -100,6 +100,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AITaskAssistant: () => import('../../apps/AITaskAssistant'),
   SystemAssistant: () => import('../../apps/SystemAssistant'),
   DevAssistant: () => import('../../apps/DevAssistant'),
+  DevWorkbench: () => import('../../apps/DevWorkbench'),
   DevToolbox: () => import('../../apps/DevToolbox'),
   DevToolboxCentral: () => import('../../apps/DevToolboxCentral'),
   LiveInfoCenter: () => import('../../apps/LiveInfoCenter'),

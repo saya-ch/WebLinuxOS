@@ -1,0 +1,1090 @@
+/* DevWorkbench - 智能开发者工作台样式 */
+/* 设计风格：赛博朋克科技风 - Neon accents + Modern Tech UI */
+
+.dev-workbench {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+  color: #e0e0e0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  overflow: hidden;
+  position: relative;
+}
+
+.dev-workbench::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 255, 0.03) 2px,
+      rgba(0, 255, 255, 0.03) 4px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.workbench-header {
+  padding: 24px 32px;
+  background: rgba(0, 0, 0, 0.6);
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.workbench-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #00ffff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.header-description {
+  font-size: 14px;
+  color: #888;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+.workbench-tabs {
+  display: flex;
+  padding: 8px 32px 0;
+  background: rgba(0, 0, 0, 0.4);
+  gap: 12px;
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 24px;
+  background: rgba(26, 26, 46, 0.8);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.tab:hover::before {
+  left: 100%;
+}
+
+.tab:hover {
+  color: #00ffff;
+  border-color: rgba(0, 255, 255, 0.5);
+  background: rgba(0, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.tab.active {
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.15);
+  border-color: #00ffff;
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.4),
+    inset 0 0 20px rgba(0, 255, 255, 0.1);
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.workbench-content {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.3) rgba(0, 0, 0, 0.3);
+}
+
+.workbench-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.workbench-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.workbench-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.workbench-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+/* ========== 代码模板库样式 ========== */
+.templates-section {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.templates-toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 300px;
+  position: relative;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #00ffff;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 12px 12px 44px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  color: #e0e0e0;
+  font-size: 14px;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.search-box input::placeholder {
+  color: #666;
+}
+
+.category-filter {
+  display: flex;
+  gap: 8px;
+}
+
+.category-btn {
+  padding: 8px 16px;
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-btn:hover {
+  color: #00ffff;
+  border-color: rgba(0, 255, 255, 0.4);
+}
+
+.category-btn.active {
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+  border-color: #00ffff;
+}
+
+.add-btn, .export-btn, .refresh-btn, .analyze-btn {
+  padding: 10px 20px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.add-btn:hover, .export-btn:hover, .refresh-btn:hover, .analyze-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.template-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 20px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.template-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.template-card:hover::before {
+  opacity: 1;
+}
+
+.template-card:hover {
+  border-color: #00ffff;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+  transform: translateY(-4px);
+}
+
+.template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.template-info h3 {
+  font-size: 18px;
+  color: #00ffff;
+  margin: 0 0 4px 0;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.template-language {
+  font-size: 12px;
+  color: #ff00ff;
+  padding: 4px 8px;
+  background: rgba(255, 0, 255, 0.1);
+  border: 1px solid rgba(255, 0, 255, 0.3);
+  display: inline-block;
+}
+
+.template-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.copy-btn, .delete-btn {
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.copy-btn:hover {
+  color: #00ffff;
+  border-color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.delete-btn:hover {
+  color: #ff4444;
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.template-description {
+  color: #888;
+  font-size: 14px;
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.template-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  padding: 4px 12px;
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.tag:hover {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.4);
+}
+
+.template-code {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  padding: 12px;
+  margin: 0;
+  font-size: 13px;
+  color: #e0e0e0;
+  overflow-x: auto;
+  max-height: 200px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.3) rgba(0, 0, 0, 0.5);
+}
+
+.template-code::-webkit-scrollbar {
+  height: 6px;
+}
+
+.template-code::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.template-code::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.template-code code {
+  color: inherit;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* ========== API Mock服务样式 ========== */
+.mock-section {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.mock-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mock-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 20px;
+}
+
+.mock-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 20px;
+  transition: all 0.4s;
+  position: relative;
+}
+
+.mock-card:hover {
+  border-color: #00ffff;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3);
+  transform: translateY(-4px);
+}
+
+.mock-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mock-method {
+  padding: 6px 12px;
+  background: rgba(0, 255, 255, 0.2);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.mock-method.GET {
+  color: #4ade80;
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.mock-method.POST {
+  color: #fbbf24;
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.mock-method.PUT {
+  color: #60a5fa;
+  border-color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.mock-method.DELETE {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.mock-method.PATCH {
+  color: #a78bfa;
+  border-color: #a78bfa;
+  background: rgba(167, 139, 250, 0.1);
+}
+
+.mock-path {
+  color: #888;
+  font-size: 14px;
+}
+
+.mock-header h3 {
+  font-size: 16px;
+  color: #00ffff;
+  margin: 0;
+  flex: 1;
+}
+
+.mock-config {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.config-item {
+  font-size: 13px;
+  color: #888;
+}
+
+.config-item strong {
+  color: #00ffff;
+}
+
+.mock-response {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  padding: 12px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: #e0e0e0;
+  overflow-x: auto;
+  max-height: 150px;
+}
+
+.mock-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.test-btn, .edit-btn {
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.test-btn:hover {
+  color: #4ade80;
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.edit-btn:hover {
+  color: #00ffff;
+  border-color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.mock-test-result {
+  margin-top: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  padding: 16px;
+}
+
+.mock-test-result pre {
+  color: #4ade80;
+  font-size: 14px;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ========== 知识图谱样式 ========== */
+.knowledge-section {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.knowledge-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.knowledge-graph {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 40px;
+  margin-bottom: 24px;
+  min-height: 400px;
+  position: relative;
+}
+
+.graph-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.knowledge-node {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  padding: 16px;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.knowledge-node:hover {
+  border-color: #00ffff;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+  transform: translateY(-4px) scale(1.02);
+}
+
+.category-前端 {
+  border-color: rgba(0, 255, 255, 0.5);
+}
+
+.category-语言 {
+  border-color: rgba(255, 0, 255, 0.5);
+}
+
+.category-后端 {
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+.category-架构 {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.node-title {
+  font-size: 16px;
+  color: #00ffff;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.node-content {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.node-category {
+  font-size: 11px;
+  color: #00ffff;
+  padding: 4px 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.knowledge-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.knowledge-item {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.knowledge-item:hover {
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.knowledge-item h4 {
+  font-size: 16px;
+  color: #00ffff;
+  margin: 0 0 8px 0;
+}
+
+.knowledge-item p {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.knowledge-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.category-tag {
+  padding: 4px 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #00ffff;
+  font-size: 12px;
+}
+
+.connections-count {
+  color: #888;
+  font-size: 12px;
+}
+
+/* ========== 智能分析样式 ========== */
+.analysis-section {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.analysis-input {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.analysis-input h2 {
+  font-size: 20px;
+  color: #00ffff;
+  margin: 0 0 16px 0;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.analysis-input textarea {
+  width: 100%;
+  min-height: 300px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  padding: 16px;
+  font-size: 14px;
+  color: #e0e0e0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  resize: vertical;
+  transition: all 0.3s;
+  margin-bottom: 16px;
+}
+
+.analysis-input textarea:focus {
+  outline: none;
+  border-color: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.analysis-result {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 24px;
+  animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.result-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.overall-score {
+  text-align: center;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  margin: 0 auto 12px;
+  position: relative;
+}
+
+.score-circle::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  background: inherit;
+  z-index: -1;
+  filter: blur(10px);
+}
+
+.score-circle span {
+  font-size: 48px;
+  font-weight: 700;
+  color: #e0e0e0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.overall-score h3 {
+  font-size: 18px;
+  color: #00ffff;
+  margin: 0;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.metric-card:hover {
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.metric-card svg {
+  width: 24px;
+  height: 24px;
+  color: #00ffff;
+  margin-bottom: 8px;
+}
+
+.metric-card h4 {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 8px 0;
+}
+
+.metric-value {
+  font-size: 24px;
+  color: #00ffff;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.metric-bar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: rgba(0, 255, 255, 0.5);
+  transition: width 0.6s ease-out;
+}
+
+.bar-fill.good {
+  background: rgba(74, 222, 128, 0.5);
+}
+
+.suggestions-section {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(0, 255, 255, 0.2);
+  padding: 16px;
+}
+
+.suggestions-section h3 {
+  font-size: 18px;
+  color: #00ffff;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.suggestions-list li {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 3px solid rgba(0, 255, 255, 0.3);
+  margin-bottom: 8px;
+  color: #e0e0e0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.suggestions-list li:hover {
+  border-left-color: #00ffff;
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.suggestions-list li svg {
+  width: 18px;
+  height: 18px;
+  color: #00ffff;
+}
+
+/* ========== 模态框样式 ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  padding: 32px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  color: #00ffff;
+  margin: 0 0 24px 0;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+  width: 100%;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.modal-form input:focus,
+.modal-form select:focus,
+.modal-form textarea:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.modal-form select {
+  cursor: pointer;
+}
+
+.modal-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.save-btn {
+  padding: 12px 24px;
+  background: rgba(0, 255, 255, 0.2);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.save-btn:hover {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+.cancel-btn {
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.cancel-btn:hover {
+  color: #e0e0e0;
+  border-color: rgba(0, 255, 255, 0.5);
+  background: rgba(0, 255, 255, 0.05);
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .templates-grid,
+  .mock-list,
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .workbench-header {
+    padding: 16px 20px;
+  }
+
+  .workbench-header h1 {
+    font-size: 24px;
+  }
+
+  .workbench-tabs {
+    padding: 8px 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    flex: 1 1 auto;
+    min-width: 120px;
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .workbench-content {
+    padding: 16px 20px;
+  }
+
+  .templates-toolbar,
+  .mock-toolbar,
+  .knowledge-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    min-width: 100%;
+    order: -1;
+  }
+
+  .templates-grid,
+  .mock-list,
+  .knowledge-list,
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: 20px;
+    width: 95%;
+  }
+}
