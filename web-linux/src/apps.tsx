@@ -1394,4 +1394,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'dev-toolbox-central', name: '核心工具箱', icon: <Code2Icon />, component: 'DevToolboxCentral', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'live-info-center', name: '实时信息中心', icon: <ActivityIcon />, component: 'LiveInfoCenter', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'markdown-editor-pro', name: 'Markdown 编辑器 Pro', icon: <FileTextIcon />, component: 'MarkdownEditorPro', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // === v30.0 新增实时协作文档编辑器 ===
+  { id: 'realtime-doc-editor', name: '实时协作文档编辑器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2"/></svg>, component: 'RealtimeDocumentEditor', category: 'office', defaultWidth: 1300, defaultHeight: 900, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
 ]

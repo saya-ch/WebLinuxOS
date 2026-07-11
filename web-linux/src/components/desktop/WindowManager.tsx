@@ -311,6 +311,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v27.0 新增创新应用 ===
   NexusAI: () => import('../../apps/NexusAI'),
   DevForge: () => import('../../apps/DevForge'),
+  // === v30.0 新增实时协作文档编辑器 ===
+  RealtimeDocumentEditor: () => import('../../apps/RealtimeDocumentEditor'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
