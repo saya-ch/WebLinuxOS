@@ -41,6 +41,16 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'cyber-hub', name: 'CyberHub 控制中心', icon: <ActivityIcon />, component: 'CyberHub', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // 新增智能开发者工作台（v31.0创新功能）
   { id: 'dev-workbench', name: '智能开发者工作台', icon: <RocketIcon />, component: 'DevWorkbench', category: 'development', defaultWidth: 1400, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
+  // 新增系统诊断与性能分析（v32.0创新功能）
+  { id: 'system-diagnostics-pro', name: '系统诊断分析', icon: <ActivityIcon />, component: 'SystemDiagnosticsPro', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // 新增AI智能工作流助手（v32.0创新功能）
+  { id: 'ai-workflow-assistant', name: 'AI工作流助手', icon: <SparklesIcon />, component: 'AIWorkflowAssistant', category: 'utilities', defaultWidth: 800, defaultHeight: 650, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+  // 新增代码片段库（v32.0创新功能）
+  { id: 'code-snippet-library', name: '代码片段库', icon: <Code2Icon />, component: 'CodeSnippetLibrary', category: 'development', defaultWidth: 900, defaultHeight: 600, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // 新增API Explorer Pro（v32.0创新功能）
+  { id: 'api-explorer-pro', name: 'API Explorer Pro', icon: <ApiLabIcon />, component: 'APIExplorerPro', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // 新增在线资源聚合器（v32.0创新功能）
+  { id: 'online-resource-hub', name: '在线资源聚合器', icon: <BrowserIcon />, component: 'OnlineResourceHub', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

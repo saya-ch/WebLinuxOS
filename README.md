@@ -53,6 +53,9 @@ WebLinuxOS 是一个在浏览器中运行的 Linux 风格桌面环境，使用 R
 | DevForge / DevKit | JSON、Base64、哈希、UUID、时间戳、颜色、正则等开发工具 |
 | WorldPulse | 实时数据仪表盘：加密货币、天气、空气质量、ISS、汇率、Hacker News |
 | NexusAI | 本地模拟的 AI 助手界面，支持多模式对话 |
+| 系统诊断分析 | 实时性能监控、系统健康评分、诊断建议 |
+| AI工作流助手 | 智能分析工作习惯、提供生产力优化建议 |
+| 代码片段库 | 管理代码片段、支持多语言分类和快速复制 |
 | 笔记 / 便签 | Markdown 笔记、便签墙、待办事项 |
 | 工作空间中心 | 应用快速访问、系统状态、实时天气、快捷便签、分类导航 |
 | 游戏 | 贪吃蛇、俄罗斯方块、2048、记忆游戏、打砖块 |
@@ -242,6 +245,14 @@ npm run build       # 生产构建
 - [Open-Meteo](https://open-meteo.com/) / [CoinGecko](https://www.coingecko.com/) / [Hacker News](https://news.ycombinator.com/) / [GitHub API](https://docs.github.com/en/rest) / [wheretheiss.at](https://wheretheiss.at/) / [open.er-api.com](https://www.exchangerate-api.com/)
 
 ## 更新日志
+
+### v32.0.0 (2026-07-12)
+
+- 新增系统诊断与性能分析器：实时监控CPU、内存、GPU、网络延迟、磁盘读写等性能指标，提供系统健康评分和诊断建议
+- 新增AI智能工作流助手：基于工作习惯智能分析，提供生产力优化建议、专注模式提醒、自动化任务推荐
+- 新增代码片段库：管理常用代码片段，支持多语言、分类标签、收藏功能、快速复制，预置实用代码模板
+- 修复图标系统：新增 Target、TrendingUp、Lightbulb、Bookmark、CheckCircle、BarChart3、ArrowRight 等图标导出
+- 优化组件懒加载：完善 WindowManager 组件映射，确保新应用正确加载
 
 ### v31.0.0 (2026-07-11)
 

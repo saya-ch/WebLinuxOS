@@ -314,6 +314,12 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevForge: () => import('../../apps/DevForge'),
   // === v30.0 新增实时协作文档编辑器 ===
   RealtimeDocumentEditor: () => import('../../apps/RealtimeDocumentEditor'),
+  // === v32.0 新增创新应用 ===
+  SystemDiagnosticsPro: () => import('../../apps/SystemDiagnosticsPro'),
+  AIWorkflowAssistant: () => import('../../apps/AIWorkflowAssistant'),
+  CodeSnippetLibrary: () => import('../../apps/CodeSnippetLibrary'),
+  APIExplorerPro: () => import('../../apps/APIExplorerPro'),
+  OnlineResourceHub: () => import('../../apps/OnlineResourceHub'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -8,10 +8,11 @@ import {
   Minus, Square, X, Plus, Volume2, VolumeX, Moon, FileImage, FileJson, FileCode,
   PlayCircle, Gamepad2, Gamepad, Sparkles, Wand2, Keyboard, Mic2, GraduationCap, Wrench, Cpu,
   File as FileIconL, AppWindow, Network, Pin, PinOff, Trash2, Copy, GripVertical,
-  ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
+  ChevronUp, ChevronLeft, ChevronRight, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
-  Star, Tag, Save, Monitor, Power,
+  Star, Tag, Save, Monitor, Power, Target, TrendingUp, Lightbulb, Bookmark, ArrowRight,
+  CheckCircle, BarChart3,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -104,6 +105,7 @@ export const BellIcon = Bell
 export const PinIcon = Pin
 export const PinOffIcon = PinOff
 export const TrashIcon = Trash2
+export const Trash2Icon = Trash2
 export const CopyIcon = Copy
 export const GripVerticalIcon = GripVertical
 export const ChevronUpIcon = ChevronUp
@@ -147,3 +149,31 @@ export const SquareIcon = Square
 export const XIcon = X
 export const MonitorIcon = Monitor
 export const PowerIcon = Power
+export const TargetIcon = Target
+export const TrendingUpIcon = TrendingUp
+export const LightbulbIcon = Lightbulb
+export const BookmarkIcon = Bookmark
+export const ArrowRightIcon = ArrowRight
+export const CheckCircleIcon = CheckCircle
+export const BarChart3Icon = BarChart3
+export const StarOffIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    <line x1="2" y1="2" x2="22" y2="22" />
+  </svg>
+)
+export const ChevronRightIcon = ChevronRight
+export const BookmarkCheckIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none">
+    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+    <polyline points="9 11 12 14 15 8" />
+  </svg>
+)
+export const RocketIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none">
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.11 22.11 0 0 1-4.19 1.98" />
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  </svg>
+)
