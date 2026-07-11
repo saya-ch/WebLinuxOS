@@ -10,20 +10,22 @@ interface Bookmark {
   url: string
   title: string
   addedAt: Date
+  category?: string
 }
 
-// 预设的快速访问网站
 const QUICK_ACCESS = [
   { url: 'https://www.google.com', title: 'Google', icon: '🔍' },
   { url: 'https://www.github.com', title: 'GitHub', icon: '🐙' },
   { url: 'https://www.wikipedia.org', title: 'Wikipedia', icon: '📚' },
   { url: 'https://www.youtube.com', title: 'YouTube', icon: '📺' },
   { url: 'https://www.reddit.com', title: 'Reddit', icon: '🔴' },
-  { url: 'https://www.twitter.com', title: 'Twitter', icon: '🐦' },
-  { url: 'https://www.stackoverflow.com', title: 'Stack Overflow', icon: '💻' },
-  { url: 'https://www.medium.com', title: 'Medium', icon: '📝' },
-  { url: 'https://www.hackernews.com', title: 'Hacker News', icon: '📰' },
-  { url: 'https://www.producthunt.com', title: 'Product Hunt', icon: '🚀' },
+  { url: 'https://twitter.com', title: 'Twitter', icon: '🐦' },
+  { url: 'https://stackoverflow.com', title: 'Stack Overflow', icon: '💻' },
+  { url: 'https://medium.com', title: 'Medium', icon: '📝' },
+  { url: 'https://news.ycombinator.com', title: 'Hacker News', icon: '📰' },
+  { url: 'https://producthunt.com', title: 'Product Hunt', icon: '🚀' },
+  { url: 'https://codepen.io', title: 'CodePen', icon: '✏️' },
+  { url: 'https://codesandbox.io', title: 'CodeSandbox', icon: '📦' },
 ]
 
 const WebBrowser = memo(function WebBrowser() {
@@ -51,6 +53,8 @@ const WebBrowser = memo(function WebBrowser() {
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [currentTitle, setCurrentTitle] = useState('Web Browser')
   const [error, setError] = useState<string | null>(null)
+  const [favicon, setFavicon] = useState('🌐')
+  const [zoom, setZoom] = useState(100)
   
   const iframeRef = useRef<HTMLIFrameElement>(null)
   
@@ -72,13 +76,10 @@ const WebBrowser = memo(function WebBrowser() {
   const navigateTo = useCallback((targetUrl: string) => {
     let finalUrl = targetUrl.trim()
     
-    // 如果没有协议，添加https
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-      // 检查是否是域名
       if (finalUrl.includes('.') && !finalUrl.includes(' ')) {
         finalUrl = 'https://' + finalUrl
       } else {
-        // 作为搜索查询
         finalUrl = `https://www.google.com/search?q=${encodeURIComponent(finalUrl)}`
       }
     }
@@ -88,7 +89,6 @@ const WebBrowser = memo(function WebBrowser() {
     setIsLoading(true)
     setError(null)
     
-    // 添加到历史
     const newHistoryItem: HistoryItem = {
       url: finalUrl,
       title: finalUrl.split('/')[2] || finalUrl,
@@ -97,10 +97,24 @@ const WebBrowser = memo(function WebBrowser() {
     setHistory(prev => [...prev.slice(historyIndex + 1), newHistoryItem])
     setHistoryIndex(prev => prev + 1)
     
-    // 模拟加载完成
     setTimeout(() => {
       setIsLoading(false)
-      setCurrentTitle(finalUrl.split('/')[2] || 'Web Browser')
+      const hostname = finalUrl.split('/')[2] || 'Web Browser'
+      setCurrentTitle(hostname)
+      const faviconMap: Record<string, string> = {
+        'www.google.com': '🔍',
+        'github.com': '🐙',
+        'www.wikipedia.org': '📚',
+        'www.youtube.com': '📺',
+        'twitter.com': '🐦',
+        'stackoverflow.com': '💻',
+        'news.ycombinator.com': '📰',
+        'medium.com': '📝',
+        'codepen.io': '✏️',
+        'codesandbox.io': '📦',
+        'producthunt.com': '🚀',
+      }
+      setFavicon(faviconMap[hostname] || '🌐')
     }, 500)
   }, [historyIndex])
   
@@ -172,6 +186,10 @@ const WebBrowser = memo(function WebBrowser() {
   
   // 检查是否已收藏
   const isBookmarked = bookmarks.some(b => b.url === url)
+  
+  // 缩放控制
+  const zoomIn = useCallback(() => setZoom(z => Math.min(z + 10, 200)), [])
+  const zoomOut = useCallback(() => setZoom(z => Math.max(z - 10, 50)), [])
   
   return (
     <div style={{
@@ -261,7 +279,7 @@ const WebBrowser = memo(function WebBrowser() {
             placeholder="输入网址或搜索..."
             style={{
               width: '100%',
-              padding: '10px 14px',
+              padding: '10px 14px 10px 38px',
               borderRadius: 8,
               border: '1px solid #30363d',
               background: '#0d1117',
@@ -271,6 +289,15 @@ const WebBrowser = memo(function WebBrowser() {
               transition: 'border-color 0.2s'
             }}
           />
+          <span style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: 14
+          }}>
+            {favicon}
+          </span>
           {isLoading && (
             <div style={{
               position: 'absolute',
@@ -331,6 +358,43 @@ const WebBrowser = memo(function WebBrowser() {
             }}
           >
             📜
+          </button>
+        </div>
+        
+        {/* 缩放控制 */}
+        <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <button
+            onClick={zoomOut}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 4,
+              border: '1px solid #30363d',
+              background: 'transparent',
+              color: '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 12,
+              transition: 'all 0.2s'
+            }}
+          >
+            −
+          </button>
+          <span style={{ fontSize: 12, color: '#8b949e', minWidth: 45, textAlign: 'center' }}>
+            {zoom}%
+          </span>
+          <button
+            onClick={zoomIn}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 4,
+              border: '1px solid #30363d',
+              background: 'transparent',
+              color: '#c9d1d9',
+              cursor: 'pointer',
+              fontSize: 12,
+              transition: 'all 0.2s'
+            }}
+          >
+            +
           </button>
         </div>
       </div>
@@ -524,20 +588,28 @@ const WebBrowser = memo(function WebBrowser() {
               </button>
             </div>
           ) : (
-            <iframe
-              ref={iframeRef}
-              src={url}
-              title="Web Browser"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
-              style={{
-                flex: 1,
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                background: '#fff'
-              }}
-              onError={handleIframeError}
-            />
+            <div style={{
+              flex: 1,
+              overflow: 'auto',
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: 'top left',
+              width: `${100 / (zoom / 100)}%`,
+              height: `${100 / (zoom / 100)}%`
+            }}>
+              <iframe
+                ref={iframeRef}
+                src={url}
+                title="Web Browser"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  background: '#fff'
+                }}
+                onError={handleIframeError}
+              />
+            </div>
           )}
         </div>
       </div>
