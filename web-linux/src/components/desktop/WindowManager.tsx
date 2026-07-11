@@ -101,6 +101,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SystemAssistant: () => import('../../apps/SystemAssistant'),
   DevAssistant: () => import('../../apps/DevAssistant'),
   DevToolbox: () => import('../../apps/DevToolbox'),
+  DevToolboxCentral: () => import('../../apps/DevToolboxCentral'),
+  LiveInfoCenter: () => import('../../apps/LiveInfoCenter'),
+  MarkdownEditorPro: () => import('../../apps/MarkdownEditorPro'),
   CyberHub: () => import('../../apps/CyberHub'),
   DevTools: () => import('../../apps/DevTools'),
   DevOpsTools: () => import('../../apps/DevOpsTools'),
@@ -248,7 +251,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   GameTetris: () => import('../../apps/GameTetris'),
   PasswordManagerEnhanced: () => import('../../apps/PasswordManagerEnhanced'),
   DevToolboxPro: () => import('../../apps/DevToolboxPro'),
-  MarkdownEditorPro: () => import('../../apps/MarkdownEditorPro'),
   SystemMonitorPro: () => import('../../apps/SystemMonitorPro'),
   PomodoroPro: () => import('../../apps/PomodoroPro'),
   // === 新增创新应用 ===
