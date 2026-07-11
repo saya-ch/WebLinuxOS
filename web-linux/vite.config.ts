@@ -5,13 +5,15 @@ import { resolve } from 'path'
 
 export default defineConfig(() => {
   const outDir = process.env.OUTPUT_DIR || '../dist'
-  const targetPublicDir = resolve(__dirname, outDir, 'public')
+  const basePath = process.env.VITE_BASE_PATH || '/WebLinuxOS/'
+
+  const targetPublicDir = resolve(__dirname, outDir)
 
   if (!existsSync(targetPublicDir)) {
     mkdirSync(targetPublicDir, { recursive: true })
   }
 
-  const publicFiles = ['favicon.svg', 'icons.svg', 'manifest.json', '.nojekyll']
+  const publicFiles = ['favicon.svg', 'icons.svg', 'manifest.json', '.nojekyll', '404.html']
   publicFiles.forEach(file => {
     const src = resolve(__dirname, 'public', file)
     const dest = resolve(targetPublicDir, file)
@@ -22,7 +24,7 @@ export default defineConfig(() => {
 
   return {
     plugins: [react()],
-    base: process.env.VITE_BASE_PATH || '/WebLinuxOS/',
+    base: basePath,
     build: {
       outDir,
       emptyOutDir: true,

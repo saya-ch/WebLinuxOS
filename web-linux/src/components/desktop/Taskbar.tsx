@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
-import { TerminalIcon, SearchIcon, WifiIcon, Volume2, VolumeX, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon } from '../../icons'
+import { TerminalIcon, SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon } from '../../icons'
 
 interface WindowContextMenuProps {
   winId: string
@@ -431,9 +431,9 @@ const Taskbar = memo(function Taskbar() {
   }
 
   const getVolumeIcon = () => {
-    if (volume === 0) return <VolumeX size={14} />
-    if (volume < 50) return <Volume2 size={14} />
-    return <Volume2 size={14} />
+    if (volume === 0) return <VolumeXIcon size={14} />
+    if (volume < 50) return <Volume2Icon size={14} />
+    return <Volume2Icon size={14} />
   }
 
   const handleDesktopSwitch = useCallback(
@@ -809,7 +809,7 @@ const Taskbar = memo(function Taskbar() {
           </div>
 
           <div className="quick-settings-slider">
-            <Volume2 size={14} />
+            <Volume2Icon size={14} />
             <input
               type="range"
               min="0"

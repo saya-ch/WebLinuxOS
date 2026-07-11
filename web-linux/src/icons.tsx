@@ -4,14 +4,14 @@ import {
   ListTodo, Server, Wifi, WifiOff, Shield, User, Camera, Palette, LayoutGrid, Presentation, Mail, MessageSquare,
   Users, CheckSquare, Lock, CloudBackup, Archive, Search, Sun, Type, BookOpen, Languages, MapPin,
   Mic, Bluetooth, Battery, Info, HelpCircle, Command, Pipette,
-  Blocks, MessageCircle, ClipboardList, Zap, Timer, Heart, Wallpaper, GitBranch, StickyNote, Atom, Pencil, RefreshCw, ChevronRight,
-  ChevronDown, Minus, Square, X, Plus, Volume2, VolumeX, Moon, FileImage, FileJson, FileCode,
+  Blocks, MessageCircle, ClipboardList, Zap, Timer, Heart, Wallpaper, GitBranch, StickyNote, Atom, Pencil, RefreshCw,
+  Minus, Square, X, Plus, Volume2, VolumeX, Moon, FileImage, FileJson, FileCode,
   PlayCircle, Gamepad2, Gamepad, Sparkles, Wand2, Keyboard, Mic2, GraduationCap, Wrench, Cpu,
   File as FileIconL, AppWindow, Network, Pin, PinOff, Trash2, Copy, GripVertical,
   ChevronUp, ChevronLeft, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
-  Star, Tag, Save,
+  Star, Tag, Save, Monitor, Power,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -101,15 +101,11 @@ export const ChartIcon = Blocks
 export const ApiLabIcon = Network
 export const BellIcon = Bell
 
-// Additional icons for UI (replacing emojis)
 export const PinIcon = Pin
 export const PinOffIcon = PinOff
 export const TrashIcon = Trash2
-export const StarIcon = Star
-export const TagIcon = Tag
-export const SaveIcon = Save
 export const CopyIcon = Copy
-export const GripIcon = GripVertical
+export const GripVerticalIcon = GripVertical
 export const ChevronUpIcon = ChevronUp
 export const ChevronLeftIcon = ChevronLeft
 export const ExternalLinkIcon = ExternalLink
@@ -118,7 +114,7 @@ export const UploadIcon = Upload
 export const EyeIcon = Eye
 export const EyeOffIcon = EyeOff
 export const CheckIcon = Check
-export const AlertIcon = AlertTriangle
+export const AlertTriangleIcon = AlertTriangle
 export const FlameIcon = Flame
 export const CoffeeIcon = Coffee
 export const DatabaseIcon = Database
@@ -128,43 +124,26 @@ export const BugIcon = Bug
 export const BinaryIcon = Binary
 export const HashIcon = Hash
 export const TypeOutlineIcon = TypeOutline
-export const LinuxIcon = Terminal
-export const MenuIcon = ListTodo
-export const FileManagerIcon = Folder
-export const MonitorIcon = AppWindow
-export const PowerIcon = Zap
-export const NetworkIcon = Network
-export const NotificationIcon = Bell
-export const MinusIcon = Minus
-export const SquareIcon = Square
-export const XIcon = X
-export const RefreshCwIcon = RefreshCw
-export const MoonIcon = Moon
-export const SunIcon = Sun
-export const ZapIcon = Zap
 export const PlayIcon = Play
 export const PauseIcon = Pause
-export const ShareIcon = Share2
-export const UsersIcon = Users
+export const Share2Icon = Share2
 export const SmartphoneIcon = Smartphone
 export const TabletIcon = Tablet
 export const SplitSquareHorizontalIcon = SplitSquareHorizontal
-
-export { ChevronRight, ChevronDown, Plus, Volume2, VolumeX }
+export const StarIcon = Star
+export const TagIcon = Tag
+export const SaveIcon = Save
+export const Volume2Icon = Volume2
+export const VolumeXIcon = VolumeX
+export const SunIcon = Sun
+export const MoonIcon = Moon
+export const RefreshCwIcon = RefreshCw
+export const ZapIcon = Zap
+export const UsersIcon = Users
+export const ShareIcon = Share2
 export const PlusIcon = Plus
-
-export default {
-  FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
-  CalendarIcon, ClockIcon, CloudRainIcon, ActivityIcon, SettingsIcon,
-  NoteIcon, ImageIcon, MusicIcon, VideoIcon, PDFIcon, CodeIcon,
-  PackageIcon, ShoppingCartIcon, HardDriveIcon, ListTodoIcon, ServerIcon,
-  WifiIcon, ShieldIcon, UserIcon, CameraIcon, PaintIcon, GridIcon,
-  PresentationIcon, MailIcon, MessageIcon, ContactsIcon, CheckListIcon,
-  LockIcon, BackupIcon, ZipIcon, FileSearchIcon, TypeIcon,
-  BookIcon, LanguagesIcon, MapPinIcon, VideoRecorderIcon, MicIcon,
-  BluetoothIcon, BatteryIcon, InfoIcon, HelpIcon, CommandIcon,
-  ColorPickerIcon, MagnifierIcon, SnakeIcon, TetrisIcon, ChatIcon, BoardIcon,
-  ClipboardIcon, LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
-  WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
-  CpuIcon
-}
+export const MinusIcon = Minus
+export const SquareIcon = Square
+export const XIcon = X
+export const MonitorIcon = Monitor
+export const PowerIcon = Power
