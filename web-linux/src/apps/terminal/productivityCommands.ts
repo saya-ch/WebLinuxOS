@@ -1,554 +1,548 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
-import { useStore } from '../../store'
 
-const todoStore: { id: number; text: string; completed: boolean; createdAt: Date }[] = [
-  { id: 1, text: '完成 WebLinuxOS 开发', completed: false, createdAt: new Date() },
-  { id: 2, text: '优化系统性能', completed: false, createdAt: new Date() },
-  { id: 3, text: '添加新应用程序', completed: true, createdAt: new Date() },
-]
-
-let nextId = 4
-
-registerCommand('todo', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      const output: string[] = []
-      output.push('📝 待办事项列表')
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      const pending = todoStore.filter(t => !t.completed)
-      const completed = todoStore.filter(t => t.completed)
-      
-      if (pending.length > 0) {
-        output.push('【待完成】')
-        pending.forEach(todo => {
-          output.push(`  ${todo.id}. ${todo.text}`)
-        })
-        output.push('')
-      }
-      
-      if (completed.length > 0) {
-        output.push('【已完成】')
-        completed.forEach(todo => {
-          output.push(`  ✅ ${todo.id}. ${todo.text}`)
-        })
-        output.push('')
-      }
-      
-      if (todoStore.length === 0) {
-        output.push('  暂无待办事项')
-        output.push('')
-      }
-      
-      output.push(`总计: ${todoStore.length} 项 (${completed.length} 已完成)`)
-      output.push('')
-      output.push('用法: todo add <事项> | todo done <ID> | todo delete <ID>')
-      
-      return { output: output.join('\n') }
-    }
-    
-    const action = args[0].toLowerCase()
-    
-    if (action === 'add') {
-      const text = args.slice(1).join(' ')
-      if (!text) {
-        return { output: '用法: todo add <事项>\n示例: todo add 完成项目文档' }
-      }
-      
-      todoStore.push({ id: nextId++, text, completed: false, createdAt: new Date() })
-      return { output: `✅ 已添加待办事项: "${text}"` }
-    }
-    
-    if (action === 'done') {
-      const id = parseInt(args[1])
-      if (isNaN(id)) {
-        return { output: '用法: todo done <ID>\n示例: todo done 1' }
-      }
-      
-      const todo = todoStore.find(t => t.id === id)
-      if (!todo) {
-        return { output: `未找到 ID 为 ${id} 的待办事项` }
-      }
-      
-      todo.completed = true
-      return { output: `✅ 已完成: "${todo.text}"` }
-    }
-    
-    if (action === 'delete') {
-      const id = parseInt(args[1])
-      if (isNaN(id)) {
-        return { output: '用法: todo delete <ID>\n示例: todo delete 1' }
-      }
-      
-      const index = todoStore.findIndex(t => t.id === id)
-      if (index === -1) {
-        return { output: `未找到 ID 为 ${id} 的待办事项` }
-      }
-      
-      const deleted = todoStore.splice(index, 1)[0]
-      return { output: `🗑️ 已删除: "${deleted.text}"` }
-    }
-    
-    return { output: `未知操作: ${action}\n用法: todo [add|done|delete]` }
-  },
-  description: '管理待办事项',
-  usage: 'todo [add|done|delete] [参数]',
-  examples: ['todo', 'todo add 完成报告', 'todo done 1', 'todo delete 2']
-})
-
-const pomodoroState = {
-  running: false,
-  duration: 25,
-  timeLeft: 25 * 60,
-  breaksCompleted: 0,
-  totalPomodoros: 0,
+interface Note {
+  id: string
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
 }
 
-registerCommand('pomodoro', {
+interface Task {
+  id: string
+  title: string
+  completed: boolean
+  priority: 'low' | 'medium' | 'high'
+  dueDate?: string
+  createdAt: string
+}
+
+function getNotes(): Note[] {
+  const stored = localStorage.getItem('weblinux-notes')
+  return stored ? JSON.parse(stored) : []
+}
+
+function saveNotes(notes: Note[]): void {
+  localStorage.setItem('weblinux-notes', JSON.stringify(notes))
+}
+
+function getTasks(): Task[] {
+  const stored = localStorage.getItem('weblinux-tasks')
+  return stored ? JSON.parse(stored) : []
+}
+
+function saveTasks(tasks: Task[]): void {
+  localStorage.setItem('weblinux-tasks', JSON.stringify(tasks))
+}
+
+registerCommand('notes', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    
+    const notes = getNotes()
+
     if (args.length === 0) {
-      const status = pomodoroState.running ? '运行中' : '已停止'
-      const minutes = Math.floor(pomodoroState.timeLeft / 60)
-      const seconds = pomodoroState.timeLeft % 60
-      
+      if (notes.length === 0) {
+        return {
+          output: [
+            '📝 笔记管理',
+            '═'.repeat(40),
+            '',
+            '暂无笔记',
+            '',
+            '用法:',
+            '  notes list        - 列出所有笔记',
+            '  notes view <ID>   - 查看笔记内容',
+            '  notes add <标题>  - 创建新笔记',
+            '  notes edit <ID>   - 编辑笔记',
+            '  notes delete <ID> - 删除笔记',
+            '',
+          ].join('\n')
+        }
+      }
+
+      const output: string[] = []
+      output.push('📝 笔记列表')
+      output.push('═'.repeat(50))
+      output.push('')
+      output.push(`${notes.length} 条笔记`)
+      output.push('')
+
+      notes.forEach((note, index) => {
+        const date = new Date(note.updatedAt).toLocaleDateString('zh-CN')
+        output.push(`${(index + 1).toString().padStart(3)}. ${note.title}`)
+        output.push(`     更新: ${date} | ID: ${note.id.slice(0, 8)}`)
+        output.push(`     预览: ${note.content.slice(0, 50)}${note.content.length > 50 ? '...' : ''}`)
+        output.push('')
+      })
+
+      output.push('使用 "notes view <ID>" 查看详细内容')
+      return { output: output.join('\n') }
+    }
+
+    const subcommand = args[0]
+
+    if (subcommand === 'list') {
+      const output: string[] = []
+      output.push('📝 笔记列表')
+      output.push('═'.repeat(50))
+      output.push('')
+
+      if (notes.length === 0) {
+        output.push('暂无笔记')
+        return { output: output.join('\n') }
+      }
+
+      notes.forEach((note, index) => {
+        const date = new Date(note.updatedAt).toLocaleDateString('zh-CN')
+        output.push(`${(index + 1).toString().padStart(3)}. ${note.title}`)
+        output.push(`     ID: ${note.id} | 更新: ${date}`)
+        output.push('')
+      })
+
+      return { output: output.join('\n') }
+    }
+
+    if (subcommand === 'add') {
+      const title = args.slice(1).join(' ')
+      if (!title) {
+        return { output: '错误: 请输入笔记标题\n用法: notes add <标题>' }
+      }
+
+      const newNote: Note = {
+        id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        content: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      saveNotes([newNote, ...notes])
       return {
         output: [
-          '🍅 番茄工作法',
+          '📝 创建笔记',
           '═'.repeat(40),
           '',
-          `状态: ${status}`,
-          `剩余时间: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
-          `完成番茄数: ${pomodoroState.totalPomodoros}`,
-          `连续休息次数: ${pomodoroState.breaksCompleted}`,
+          `已创建笔记: "${title}"`,
+          `ID: ${newNote.id}`,
           '',
-          '用法: pomodoro start | pomodoro stop | pomodoro reset',
+          '使用 "notes edit <ID> <内容>" 添加内容',
+          '',
         ].join('\n')
       }
     }
-    
-    const action = args[0].toLowerCase()
-    
-    if (action === 'start') {
-      if (pomodoroState.running) {
-        return { output: '番茄钟已在运行中' }
-      }
-      pomodoroState.running = true
-      return { output: '🍅 番茄钟已启动！专注工作 25 分钟。' }
-    }
-    
-    if (action === 'stop') {
-      pomodoroState.running = false
-      return { output: '⏹️ 番茄钟已停止' }
-    }
-    
-    if (action === 'reset') {
-      pomodoroState.running = false
-      pomodoroState.timeLeft = pomodoroState.duration * 60
-      pomodoroState.breaksCompleted = 0
-      return { output: '🔄 番茄钟已重置' }
-    }
-    
-    return { output: `未知操作: ${action}\n用法: pomodoro [start|stop|reset]` }
-  },
-  description: '番茄工作法计时器',
-  usage: 'pomodoro [start|stop|reset]',
-  examples: ['pomodoro', 'pomodoro start', 'pomodoro stop', 'pomodoro reset']
-})
 
-const noteStore: { id: number; title: string; content: string; createdAt: Date }[] = []
-let noteId = 1
+    if (subcommand === 'view') {
+      const id = args[1]
+      if (!id) {
+        return { output: '错误: 请输入笔记ID\n用法: notes view <ID>' }
+      }
 
-registerCommand('note', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      const output: string[] = []
-      output.push('📓 笔记管理')
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      if (noteStore.length === 0) {
-        output.push('  暂无笔记')
-      } else {
-        noteStore.forEach(note => {
-          output.push(`  ${note.id}. ${note.title}`)
-          output.push(`     ${note.createdAt.toLocaleString('zh-CN')}`)
-          output.push('')
-        })
-      }
-      
-      output.push('用法: note add <标题> <内容> | note view <ID> | note delete <ID>')
-      
-      return { output: output.join('\n') }
-    }
-    
-    const action = args[0].toLowerCase()
-    
-    if (action === 'add') {
-      const title = args[1]
-      const content = args.slice(2).join(' ')
-      
-      if (!title) {
-        return { output: '用法: note add <标题> <内容>\n示例: note add 会议记录 今天讨论了项目进度' }
-      }
-      
-      noteStore.push({ id: noteId++, title, content: content || '', createdAt: new Date() })
-      return { output: `📝 已添加笔记: "${title}"` }
-    }
-    
-    if (action === 'view') {
-      const id = parseInt(args[1])
-      if (isNaN(id)) {
-        return { output: '用法: note view <ID>\n示例: note view 1' }
-      }
-      
-      const note = noteStore.find(n => n.id === id)
+      const note = notes.find(n => n.id === id || n.id.startsWith(id))
       if (!note) {
-        return { output: `未找到 ID 为 ${id} 的笔记` }
+        return { output: `未找到ID为 "${id}" 的笔记` }
       }
-      
+
       return {
         output: [
-          `📓 ${note.title}`,
+          `📝 ${note.title}`,
           '═'.repeat(50),
+          '',
+          `ID: ${note.id}`,
+          `创建: ${new Date(note.createdAt).toLocaleString('zh-CN')}`,
+          `更新: ${new Date(note.updatedAt).toLocaleString('zh-CN')}`,
+          '',
+          '---',
           '',
           note.content || '(无内容)',
           '',
-          `创建时间: ${note.createdAt.toLocaleString('zh-CN')}`,
         ].join('\n')
       }
     }
-    
-    if (action === 'delete') {
-      const id = parseInt(args[1])
-      if (isNaN(id)) {
-        return { output: '用法: note delete <ID>\n示例: note delete 1' }
+
+    if (subcommand === 'edit') {
+      const id = args[1]
+      const content = args.slice(2).join(' ')
+      if (!id) {
+        return { output: '错误: 请输入笔记ID\n用法: notes edit <ID> <内容>' }
       }
-      
-      const index = noteStore.findIndex(n => n.id === id)
-      if (index === -1) {
-        return { output: `未找到 ID 为 ${id} 的笔记` }
+
+      const noteIndex = notes.findIndex(n => n.id === id || n.id.startsWith(id))
+      if (noteIndex === -1) {
+        return { output: `未找到ID为 "${id}" 的笔记` }
       }
-      
-      const deleted = noteStore.splice(index, 1)[0]
-      return { output: `🗑️ 已删除笔记: "${deleted.title}"` }
+
+      notes[noteIndex] = {
+        ...notes[noteIndex],
+        content,
+        updatedAt: new Date().toISOString(),
+      }
+
+      saveNotes(notes)
+      return {
+        output: [
+          '📝 编辑笔记',
+          '═'.repeat(40),
+          '',
+          `已更新笔记: "${notes[noteIndex].title}"`,
+          '',
+        ].join('\n')
+      }
     }
-    
-    return { output: `未知操作: ${action}\n用法: note [add|view|delete]` }
+
+    if (subcommand === 'delete') {
+      const id = args[1]
+      if (!id) {
+        return { output: '错误: 请输入笔记ID\n用法: notes delete <ID>' }
+      }
+
+      const noteIndex = notes.findIndex(n => n.id === id || n.id.startsWith(id))
+      if (noteIndex === -1) {
+        return { output: `未找到ID为 "${id}" 的笔记` }
+      }
+
+      const deleted = notes.splice(noteIndex, 1)[0]
+      saveNotes(notes)
+      return {
+        output: [
+          '🗑️ 删除笔记',
+          '═'.repeat(40),
+          '',
+          `已删除笔记: "${deleted.title}"`,
+          '',
+        ].join('\n')
+      }
+    }
+
+    return {
+      output: [
+        '📝 笔记管理',
+        '═'.repeat(40),
+        '',
+        '未知子命令',
+        '',
+        '可用子命令:',
+        '  list        - 列出所有笔记',
+        '  view <ID>   - 查看笔记内容',
+        '  add <标题>  - 创建新笔记',
+        '  edit <ID>   - 编辑笔记',
+        '  delete <ID> - 删除笔记',
+        '',
+      ].join('\n')
+    }
   },
-  description: '管理快速笔记',
-  usage: 'note [add|view|delete] [参数]',
-  examples: ['note', 'note add 想法 新功能建议', 'note view 1', 'note delete 2']
+  description: '笔记管理工具',
+  usage: 'notes [list|view|add|edit|delete] [参数]',
+  examples: ['notes', 'notes list', 'notes add 今日计划', 'notes view <ID>', 'notes edit <ID> 内容']
 })
 
-const projectStore: { id: string; name: string; description: string; tasks: { id: number; text: string; done: boolean }[]; createdAt: Date }[] = []
-
-registerCommand('project', {
+registerCommand('tasks', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    
+    const tasks = getTasks()
+
     if (args.length === 0) {
+      const pending = tasks.filter(t => !t.completed)
+      const completed = tasks.filter(t => t.completed)
+
       const output: string[] = []
-      output.push('📋 项目管理')
+      output.push('✅ 任务管理')
       output.push('═'.repeat(50))
       output.push('')
-      
-      if (projectStore.length === 0) {
-        output.push('  暂无项目')
-      } else {
-        projectStore.forEach(project => {
-          const done = project.tasks.filter(t => t.done).length
-          const total = project.tasks.length
-          output.push(`  ${project.name}`)
-          output.push(`     描述: ${project.description || '无'}`)
-          output.push(`     进度: ${done}/${total} 任务完成`)
+      output.push(`待完成: ${pending.length} | 已完成: ${completed.length}`)
+      output.push('')
+
+      if (pending.length > 0) {
+        output.push('【待完成】')
+        pending.forEach((task, index) => {
+          const priorityColor = task.priority === 'high' ? '\x1b[31m' : task.priority === 'medium' ? '\x1b[33m' : '\x1b[32m'
+          const priorityLabel = task.priority === 'high' ? '高' : task.priority === 'medium' ? '中' : '低'
+          output.push(`${(index + 1).toString().padStart(3)}. ${task.title}`)
+          output.push(`     优先级: ${priorityColor}${priorityLabel}\x1b[0m`)
+          if (task.dueDate) {
+            output.push(`     截止: ${task.dueDate}`)
+          }
           output.push('')
         })
       }
-      
-      output.push('用法: project create <名称> | project add-task <名称> <任务> | project done <名称> <任务ID>')
-      
+
+      if (completed.length > 0) {
+        output.push('【已完成】')
+        completed.slice(0, 5).forEach((task) => {
+          output.push(`   ✓ ${task.title}`)
+        })
+        if (completed.length > 5) {
+          output.push(`   ... 还有 ${completed.length - 5} 个已完成任务`)
+        }
+      }
+
+      if (tasks.length === 0) {
+        output.push('暂无任务')
+      }
+
+      output.push('')
+      output.push('用法:')
+      output.push('  tasks add <任务> [-p high|medium|low] [--due 日期]')
+      output.push('  tasks done <ID>')
+      output.push('  tasks delete <ID>')
+      output.push('  tasks clear')
+
       return { output: output.join('\n') }
     }
-    
-    const action = args[0].toLowerCase()
-    
-    if (action === 'create') {
-      const name = args.slice(1).join(' ')
-      if (!name) {
-        return { output: '用法: project create <项目名称>\n示例: project create 网站重构' }
+
+    const subcommand = args[0]
+
+    if (subcommand === 'add') {
+      const priorityIndex = args.indexOf('-p')
+      const dueIndex = args.indexOf('--due')
+
+      let priority: 'low' | 'medium' | 'high' = 'medium'
+      let dueDate: string | undefined
+
+      if (priorityIndex !== -1 && args[priorityIndex + 1]) {
+        const p = args[priorityIndex + 1].toLowerCase()
+        if (p === 'high' || p === 'medium' || p === 'low') {
+          priority = p
+        }
       }
-      
-      projectStore.push({
-        id: name.toLowerCase().replace(/\s+/g, '-'),
-        name,
-        description: '',
-        tasks: [],
-        createdAt: new Date()
+
+      if (dueIndex !== -1 && args[dueIndex + 1]) {
+        dueDate = args[dueIndex + 1]
+      }
+
+      const titleArgs = args.slice(1).filter((_, i) => {
+        const idx = i + 1
+        return idx !== priorityIndex && idx !== priorityIndex + 1 && idx !== dueIndex && idx !== dueIndex + 1
       })
-      return { output: `📋 已创建项目: "${name}"` }
+      const title = titleArgs.join(' ')
+
+      if (!title) {
+        return { output: '错误: 请输入任务内容\n用法: tasks add <任务> [-p high|medium|low] [--due 日期]' }
+      }
+
+      const newTask: Task = {
+        id: `task-${Date.now()}`,
+        title,
+        completed: false,
+        priority,
+        dueDate,
+        createdAt: new Date().toISOString(),
+      }
+
+      saveTasks([newTask, ...tasks])
+
+      const priorityLabel = priority === 'high' ? '高' : priority === 'medium' ? '中' : '低'
+      return {
+        output: [
+          '✅ 添加任务',
+          '═'.repeat(40),
+          '',
+          `已添加任务: "${title}"`,
+          `优先级: ${priorityLabel}`,
+          dueDate ? `截止日期: ${dueDate}` : '',
+          '',
+        ].filter(Boolean).join('\n')
+      }
     }
-    
-    if (action === 'add-task') {
-      const projectName = args[1]
-      const taskText = args.slice(2).join(' ')
-      
-      if (!projectName || !taskText) {
-        return { output: '用法: project add-task <项目名称> <任务内容>\n示例: project add-task 网站重构 设计新UI' }
+
+    if (subcommand === 'done') {
+      const id = args[1]
+      if (!id) {
+        return { output: '错误: 请输入任务ID\n用法: tasks done <ID>' }
       }
-      
-      const project = projectStore.find(p => p.name === projectName || p.id === projectName)
-      if (!project) {
-        return { output: `未找到项目: "${projectName}"` }
+
+      const taskIndex = tasks.findIndex(t => t.id === id || t.id.startsWith(id))
+      if (taskIndex === -1) {
+        return { output: `未找到ID为 "${id}" 的任务` }
       }
-      
-      project.tasks.push({ id: project.tasks.length + 1, text: taskText, done: false })
-      return { output: `✅ 已添加任务到 "${project.name}": "${taskText}"` }
+
+      tasks[taskIndex].completed = true
+      saveTasks(tasks)
+
+      return {
+        output: [
+          '✅ 完成任务',
+          '═'.repeat(40),
+          '',
+          `已完成: "${tasks[taskIndex].title}"`,
+          '',
+        ].join('\n')
+      }
     }
-    
-    if (action === 'done') {
-      const projectName = args[1]
-      const taskId = parseInt(args[2])
-      
-      if (!projectName || isNaN(taskId)) {
-        return { output: '用法: project done <项目名称> <任务ID>\n示例: project done 网站重构 1' }
+
+    if (subcommand === 'delete') {
+      const id = args[1]
+      if (!id) {
+        return { output: '错误: 请输入任务ID\n用法: tasks delete <ID>' }
       }
-      
-      const project = projectStore.find(p => p.name === projectName || p.id === projectName)
-      if (!project) {
-        return { output: `未找到项目: "${projectName}"` }
+
+      const taskIndex = tasks.findIndex(t => t.id === id || t.id.startsWith(id))
+      if (taskIndex === -1) {
+        return { output: `未找到ID为 "${id}" 的任务` }
       }
-      
-      const task = project.tasks.find(t => t.id === taskId)
-      if (!task) {
-        return { output: `未找到任务 ID: ${taskId}` }
+
+      const deleted = tasks.splice(taskIndex, 1)[0]
+      saveTasks(tasks)
+
+      return {
+        output: [
+          '🗑️ 删除任务',
+          '═'.repeat(40),
+          '',
+          `已删除: "${deleted.title}"`,
+          '',
+        ].join('\n')
       }
-      
-      task.done = true
-      const done = project.tasks.filter(t => t.done).length
-      const total = project.tasks.length
-      return { output: `✅ 任务完成！项目进度: ${done}/${total}` }
     }
-    
-    if (action === 'delete') {
-      const projectName = args.slice(1).join(' ')
-      if (!projectName) {
-        return { output: '用法: project delete <项目名称>\n示例: project delete 旧项目' }
+
+    if (subcommand === 'clear') {
+      saveTasks([])
+      return {
+        output: [
+          '🗑️ 清空任务',
+          '═'.repeat(40),
+          '',
+          '已清空所有任务',
+          '',
+        ].join('\n')
       }
-      
-      const index = projectStore.findIndex(p => p.name === projectName || p.id === projectName)
-      if (index === -1) {
-        return { output: `未找到项目: "${projectName}"` }
-      }
-      
-      const deleted = projectStore.splice(index, 1)[0]
-      return { output: `🗑️ 已删除项目: "${deleted.name}"` }
     }
-    
-    return { output: `未知操作: ${action}\n用法: project [create|add-task|done|delete]` }
+
+    return {
+      output: [
+        '✅ 任务管理',
+        '═'.repeat(40),
+        '',
+        '未知子命令',
+        '',
+        '可用子命令:',
+        '  add <任务> [-p high|medium|low] [--due 日期] - 添加任务',
+        '  done <ID>                                  - 标记完成',
+        '  delete <ID>                                - 删除任务',
+        '  clear                                      - 清空所有',
+        '',
+      ].join('\n')
+    }
   },
-  description: '轻量级项目管理',
-  usage: 'project [create|add-task|done|delete] [参数]',
-  examples: ['project', 'project create 新项目', 'project add-task 新项目 任务1', 'project done 新项目 1']
+  description: '任务管理工具',
+  usage: 'tasks [add|done|delete|clear] [参数]',
+  examples: ['tasks', 'tasks add 完成项目报告 -p high', 'tasks done <ID>', 'tasks delete <ID>', 'tasks clear']
 })
 
 registerCommand('calendar', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    const now = new Date()
-    const year = args.length >= 2 ? parseInt(args[1]) : now.getFullYear()
-    const month = args.length >= 1 ? (parseInt(args[0]) - 1) : now.getMonth()
-    
-    if (isNaN(year) || isNaN(month) || month < 0 || month > 11) {
-      return { output: '用法: calendar [月份] [年份]\n示例: calendar, calendar 12 2024' }
+    const today = new Date()
+    let year = today.getFullYear()
+    let month = today.getMonth()
+
+    if (args.length === 1) {
+      const arg = args[0]
+      if (arg.length === 4 && !isNaN(parseInt(arg))) {
+        year = parseInt(arg)
+      } else if (arg.length <= 2 && !isNaN(parseInt(arg))) {
+        month = parseInt(arg) - 1
+      }
+    } else if (args.length === 2) {
+      year = parseInt(args[0]) || year
+      month = (parseInt(args[1]) || month + 1) - 1
     }
-    
-    const firstDay = new Date(year, month, 1).getDay()
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const today = now.getDate()
-    const isCurrentMonth = year === now.getFullYear() && month === now.getMonth()
-    
-    const months = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
-    const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-    
+
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startDay = firstDay.getDay()
+
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+
     const output: string[] = []
-    output.push(`📅 ${year}年 ${months[month]}`)
-    output.push('═'.repeat(40))
+    output.push(`📅 ${year}年 ${monthNames[month]}`)
+    output.push('═'.repeat(28))
     output.push('')
-    
-    output.push('  ' + weekdays.join('   '))
-    
-    let line = '   '
-    for (let i = 0; i < firstDay; i++) {
-      line += '    '
+    output.push('  ' + weekDays.join('  '))
+    output.push('')
+
+    let line = ''
+    for (let i = 0; i < startDay; i++) {
+      line += '   '
     }
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayStr = isCurrentMonth && day === today ? `\x1b[32m${day.toString().padStart(2)}\x1b[0m` : day.toString().padStart(2)
-      line += `${dayStr}   `
+      const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear()
+      const dayStr = isToday ? `\x1b[1;32m${day.toString().padStart(2)}\x1b[0m` : day.toString().padStart(2)
+      line += ` ${dayStr}`
       
-      if ((firstDay + day) % 7 === 0) {
+      if ((startDay + day) % 7 === 0) {
         output.push(line)
-        line = '   '
+        line = ''
       }
     }
-    
-    if (line.trim()) {
+
+    if (line) {
       output.push(line)
     }
-    
+
     output.push('')
-    
+    output.push(`当前日期: ${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`)
+    output.push(`本月天数: ${daysInMonth}天`)
+    output.push(`星期${['日', '一', '二', '三', '四', '五', '六'][today.getDay()]}`)
+    output.push('')
+
     return { output: output.join('\n') }
   },
   description: '显示日历',
-  usage: 'calendar [月份] [年份]',
-  examples: ['calendar', 'calendar 12 2024']
+  usage: 'calendar [年份] [月份]',
+  examples: ['calendar', 'calendar 2024', 'calendar 2024 12']
 })
 
-registerCommand('countdown', {
-  handler: (context: CommandContext): CommandResult => {
+registerCommand('timer', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
-    
-    if (args.length === 0) {
-      return { output: '用法: countdown <日期>\n示例: countdown 2025-01-01' }
-    }
-    
-    const targetDate = new Date(args.join(' '))
-    if (isNaN(targetDate.getTime())) {
-      return { output: '错误: 无效的日期格式，请使用 YYYY-MM-DD' }
-    }
-    
-    const now = new Date()
-    const diff = targetDate.getTime() - now.getTime()
-    
-    if (diff < 0) {
-      return { output: '目标日期已过！' }
-    }
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-    
-    return {
-      output: [
-        '⏰ 倒计时',
-        '═'.repeat(40),
-        '',
-        `目标日期: ${targetDate.toLocaleDateString('zh-CN')}`,
-        '',
-        `剩余时间:`,
-        `  ${days} 天`,
-        `  ${hours} 小时`,
-        `  ${minutes} 分钟`,
-        `  ${seconds} 秒`,
-        '',
-        `总计: ${days * 24 + hours} 小时`,
-      ].join('\n')
-    }
-  },
-  description: '计算到指定日期的倒计时',
-  usage: 'countdown <日期>',
-  examples: ['countdown 2025-01-01', 'countdown 2024-12-25']
-})
 
-// === v19.0 新增：WorldPulse 启动与全局应用启动器 ===
-registerCommand('worldpulse', {
-  handler: (): CommandResult => {
-    const state = useStore.getState()
-    const existing = state.windows.find((w) => w.appId === 'world-pulse')
-    if (existing) {
-      state.focusWindow(existing.id)
-      if (existing.minimized) {
-        useStore.setState((s) => ({
-          windows: s.windows.map((w) =>
-            w.id === existing.id ? { ...w, minimized: false } : w
-          ),
-        }))
-      }
-      const winDesktop = Object.entries(state.windowsPerDesktop)
-        .find(([, ids]) => ids.includes(existing.id))?.[0]
-      if (winDesktop && Number(winDesktop) !== state.currentDesktop) {
-        state.switchDesktop(Number(winDesktop))
-      }
-      return { output: 'WorldPulse 全球脉搏已聚焦到前台' }
-    }
-    state.openApp('world-pulse')
-    return {
-      output: [
-        '启动 WorldPulse 全球脉搏仪表盘',
-        '═'.repeat(48),
-        '',
-        '正在加载实时全球情报数据:',
-        '  - 加密货币市场行情 (CoinGecko)',
-        '  - 全球主要城市天气 (Open-Meteo)',
-        '  - 国际空间站实时位置 (wheretheiss.at)',
-        '  - 全球汇率快讯 (open.er-api.com)',
-        '  - Hacker News 热门榜单 (Firebase)',
-        '',
-        '提示: 使用 launch <应用ID> 可启动其他应用',
-      ].join('\n'),
-    }
-  },
-  description: '启动 WorldPulse 实时全球情报仪表盘',
-  usage: 'worldpulse',
-  examples: ['worldpulse'],
-})
-
-registerCommand('launch', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
     if (args.length === 0) {
-      const apps = useStore.getState().apps
-      const output: string[] = [
-        '启动器：可用应用列表',
-        '═'.repeat(50),
-        '',
-      ]
-      const categories = new Map<string, typeof apps>()
-      for (const app of apps) {
-        const cat = app.category || 'other'
-        if (!categories.has(cat)) categories.set(cat, [])
-        categories.get(cat)!.push(app)
+      return {
+        output: [
+          '⏱️ 计时器',
+          '═'.repeat(40),
+          '',
+          '用法: timer <秒数>',
+          '',
+          '示例:',
+          '  timer 60     - 倒计时60秒',
+          '  timer 180    - 倒计时3分钟',
+          '  timer 300    - 倒计时5分钟',
+          '',
+        ].join('\n')
       }
-      const categoryLabels: Record<string, string> = {
-        system: '系统',
-        utilities: '实用工具',
-        internet: '网络',
-        productivity: '生产力',
-        media: '媒体',
-        games: '游戏',
-        development: '开发',
-        other: '其他',
-      }
-      for (const [cat, appList] of categories) {
-        output.push(`【${categoryLabels[cat] || cat}】`)
-        for (const app of appList) {
-          output.push(`  ${app.id.padEnd(28)} ${app.name}`)
-        }
-        output.push('')
-      }
-      output.push('用法: launch <应用ID>')
-      output.push('示例: launch world-pulse')
-      return { output: output.join('\n') }
     }
-    const appId = args[0]
-    const apps = useStore.getState().apps
-    if (!apps.find((a) => a.id === appId)) {
-      return { output: `未找到应用: "${appId}"\n输入 launch 查看所有可用应用` }
+
+    const seconds = parseInt(args[0])
+    if (isNaN(seconds) || seconds <= 0) {
+      return { output: '错误: 请输入有效的秒数' }
     }
-    useStore.getState().openApp(appId)
-    return { output: `已启动应用: ${appId}` }
+
+    const output: string[] = []
+    output.push(`⏱️ 倒计时 ${seconds} 秒`)
+    output.push('═'.repeat(40))
+    output.push('')
+
+    for (let i = seconds; i >= 0; i--) {
+      const minutes = Math.floor(i / 60)
+      const secs = i % 60
+      output.push(`剩余时间: ${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`)
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+
+    output.push('')
+    output.push('⏰ 时间到！')
+    output.push('')
+
+    return { output: output.join('\n') }
   },
-  description: '启动指定应用，或列出所有可用应用',
-  usage: 'launch [应用ID]',
-  examples: ['launch', 'launch world-pulse', 'launch terminal'],
+  description: '倒计时计时器',
+  usage: 'timer <秒数>',
+  examples: ['timer 60', 'timer 180', 'timer 300']
 })
