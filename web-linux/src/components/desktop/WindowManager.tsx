@@ -320,6 +320,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CodeSnippetLibrary: () => import('../../apps/CodeSnippetLibrary'),
   APIExplorerPro: () => import('../../apps/APIExplorerPro'),
   OnlineResourceHub: () => import('../../apps/OnlineResourceHub'),
+  DevConsole: () => import('../../apps/DevConsole'),
+  LiveDashboard: () => import('../../apps/LiveDashboard'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

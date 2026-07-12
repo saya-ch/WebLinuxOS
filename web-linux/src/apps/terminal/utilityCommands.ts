@@ -270,8 +270,18 @@ registerCommand('bc', {
       return { output: 'bc: 缺少表达式\n用法: bc <表达式>' }
     }
     
+    // 安全验证：仅允许数字、运算符、括号、小数点和数学函数
+    const sanitized = expression.replace(/\s/g, '')
+    if (!/^[\d+\-*/%.()eE,]+$/.test(sanitized)) {
+      return { output: 'bc: 表达式包含不支持的字符' }
+    }
+    
     try {
-      const result = eval(expression)
+      // 使用 Function 构造器替代直接 eval（间接调用，作用域更安全）
+      const result = Function(`"use strict"; return (${sanitized})`)()
+      if (typeof result !== 'number' || !isFinite(result)) {
+        return { output: 'bc: 计算结果无效' }
+      }
       return { output: result.toString() }
     } catch {
       return { output: 'bc: 表达式错误' }

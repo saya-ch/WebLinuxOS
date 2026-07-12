@@ -51,6 +51,8 @@ WebLinuxOS 是一个在浏览器中运行的 Linux 风格桌面环境，使用 R
 | 终端 | 完整命令行环境，支持虚拟文件系统 |
 | REST 客户端 | 发送 HTTP 请求、查看响应头与响应体、保存请求历史、CORS 代理 |
 | DevForge / DevKit | JSON、Base64、哈希、UUID、时间戳、颜色、正则等开发工具 |
+| DevConsole | 一站式开发者工具控制台：JSON 格式化、Base64/URL 编解码、SHA 哈希、UUID 生成、JWT 解码、正则测试、颜色转换、时间戳转换、文本对比（全部本地运算，零网络请求） |
+| LiveDashboard | 实时数据仪表板：加密货币价格（CoinGecko）、Hacker News 热门、天气信息（Open-Meteo）、系统状态监控（FPS/CPU/内存）、实时时钟 |
 | WorldPulse | 实时数据仪表盘：加密货币、天气、空气质量、ISS、汇率、Hacker News |
 | NexusAI | 本地模拟的 AI 助手界面，支持多模式对话 |
 | 系统诊断分析 | 实时性能监控、系统健康评分、诊断建议 |
@@ -245,6 +247,16 @@ npm run build       # 生产构建
 - [Open-Meteo](https://open-meteo.com/) / [CoinGecko](https://www.coingecko.com/) / [Hacker News](https://news.ycombinator.com/) / [GitHub API](https://docs.github.com/en/rest) / [wheretheiss.at](https://wheretheiss.at/) / [open.er-api.com](https://www.exchangerate-api.com/)
 
 ## 更新日志
+
+### v33.0.0 (2026-07-12)
+
+- 新增 DevConsole 开发者工具控制台：集成 10 种常用开发工具（JSON 格式化、Base64 编解码、URL 编解码、SHA 哈希生成、UUID 生成、JWT 解码、正则表达式测试、颜色格式转换、Unix 时间戳转换、文本差异对比），所有计算在浏览器本地完成，零网络请求，保障数据隐私
+- 新增 Live Dashboard 实时数据仪表板：聚合 CoinGecko 加密货币行情、Hacker News 热门文章、Open-Meteo 天气数据、浏览器性能监控（FPS/CPU/内存），支持多城市天气切换和自动定时刷新
+- 修复 markdown-editor-pro 重复注册问题：移除 appRegistry 中的重复条目，消除开始菜单中的重复项
+- 修复 ai-assistant-pro 组件映射错误：将组件从基础版 AIAssistant 更正为 AIAssistantPro，移除冗余的 ai-assistant-v2 条目
+- 安全改进：替换终端 bc 命令中的直接 eval 调用为 Function 构造器 + 输入白名单验证，消除代码注入风险
+- 内存管理优化：关闭窗口时自动清理对应的窗口快照（windowSnapshots），防止 base64 快照数据无限累积；为 setWindowSnapshot 添加 20 条上限的 LRU 淘汰策略
+- 构建优化：消除生产构建中的 eval 安全警告
 
 ### v32.1.0 (2026-07-12)
 

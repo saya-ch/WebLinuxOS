@@ -436,9 +436,13 @@ export const useStore = create<Store>((set, get) => ({
     Object.keys(newWindowsPerDesktop).forEach((d) => {
       newWindowsPerDesktop[Number(d)] = newWindowsPerDesktop[Number(d)].filter((wid) => wid !== id)
     })
+    // 清理窗口快照以释放内存
+    const newSnapshots = { ...s.windowSnapshots }
+    delete newSnapshots[id]
     return {
       windows: s.windows.filter((w) => w.id !== id),
-      windowsPerDesktop: newWindowsPerDesktop
+      windowsPerDesktop: newWindowsPerDesktop,
+      windowSnapshots: newSnapshots,
     }
   }),
 
@@ -1117,9 +1121,17 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   setWindowSnapshot: (windowId: string, snapshot: string) =>
-    set((s) => ({
-      windowSnapshots: { ...s.windowSnapshots, [windowId]: snapshot },
-    })),
+    set((s) => {
+      const newSnapshots = { ...s.windowSnapshots, [windowId]: snapshot }
+      // 限制快照数量上限为 20，超出时删除最早的条目
+      const MAX_SNAPSHOTS = 20
+      const keys = Object.keys(newSnapshots)
+      if (keys.length > MAX_SNAPSHOTS) {
+        const toRemove = keys.slice(0, keys.length - MAX_SNAPSHOTS)
+        toRemove.forEach(k => delete newSnapshots[k])
+      }
+      return { windowSnapshots: newSnapshots }
+    }),
 
   removeWindowSnapshot: (windowId: string) =>
     set((s) => {
