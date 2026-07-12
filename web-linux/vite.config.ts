@@ -37,6 +37,10 @@ export default defineConfig(() => {
       reportCompressedSize: false,
       modulePreload: {
         polyfill: false,
+        resolveDependencies: (_filename, deps) => {
+          const criticalModules = ['vendor-react', 'vendor-zustand', 'component-desktop']
+          return deps.filter(dep => criticalModules.some(m => dep.includes(m)))
+        },
       },
       esbuild: {
         supported: {
@@ -74,6 +78,18 @@ export default defineConfig(() => {
             if (id.includes('node_modules/@codemirror')) {
               return 'vendor-codemirror'
             }
+            if (id.includes('node_modules/chart.js')) {
+              return 'vendor-chart'
+            }
+            if (id.includes('node_modules/date-fns')) {
+              return 'vendor-date'
+            }
+            if (id.includes('node_modules/lodash')) {
+              return 'vendor-lodash'
+            }
+            if (id.includes('node_modules/uuid')) {
+              return 'vendor-uuid'
+            }
             if (id.includes('src/apps/')) {
               const match = id.match(/src\/apps\/([A-Za-z][A-Za-z0-9_-]*)\.tsx/)
               if (match) return `app-${match[1]}`
@@ -84,6 +100,15 @@ export default defineConfig(() => {
             if (id.includes('src/components/')) {
               const match = id.match(/src\/components\/([A-Za-z][A-Za-z0-9_-]*)\//)
               if (match) return `component-${match[1]}`
+            }
+            if (id.includes('src/store/')) {
+              return 'core-store'
+            }
+            if (id.includes('src/types/')) {
+              return 'core-types'
+            }
+            if (id.includes('src/utils/')) {
+              return 'core-utils'
             }
             return undefined
           },
@@ -97,6 +122,9 @@ export default defineConfig(() => {
       include: ['react', 'react-dom', 'zustand', 'lucide-react'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
+      esbuildOptions: {
+        target: 'es2022',
+      },
     },
     server: {
       port: 5173,
@@ -108,11 +136,15 @@ export default defineConfig(() => {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
         'Cross-Origin-Opener-Policy': 'same-origin',
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     },
     preview: {
       port: 4173,
       open: false,
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
     },
   }
 })

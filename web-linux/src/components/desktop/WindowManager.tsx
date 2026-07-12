@@ -322,6 +322,28 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   OnlineResourceHub: () => import('../../apps/OnlineResourceHub'),
   DevConsole: () => import('../../apps/DevConsole'),
   LiveDashboard: () => import('../../apps/LiveDashboard'),
+  // === 补充缺失的组件映射 ===
+  AILearningCompanion: () => import('../../apps/AILearningCompanion'),
+  APIHealthMonitor: () => import('../../apps/APIHealthMonitor'),
+  CodeSnippetHub: () => import('../../apps/CodeSnippetHub'),
+  CreativeInspirationWorkshop: () => import('../../apps/CreativeInspirationWorkshop'),
+  DataVizDashboard: () => import('../../apps/DataVizDashboard'),
+  DevEcosystem: () => import('../../apps/DevEcosystem'),
+  DevToolkit: () => import('../../apps/DevToolkit'),
+  Game2048: () => import('../../apps/Game2048'),
+  GameBreakout: () => import('../../apps/GameBreakout'),
+  GameMemory: () => import('../../apps/GameMemory'),
+  Help: () => import('../../apps/Help'),
+  MarkdownCollaborator: () => import('../../apps/MarkdownCollaborator'),
+  NewsHub: () => import('../../apps/NewsHub'),
+  RealTimeDashboardEnhanced: () => import('../../apps/RealTimeDashboardEnhanced'),
+  SmartOverview: () => import('../../apps/SmartOverview'),
+  TimeManagementMaster: () => import('../../apps/TimeManagementMaster'),
+  UtilityCenter: () => import('../../apps/UtilityCenter'),
+  WebIDE: () => import('../../apps/WebIDE'),
+  WikipediaExplorer: () => import('../../apps/WikipediaExplorer'),
+  WorkspaceHub: () => import('../../apps/WorkspaceHub'),
+  WorkspaceManager: () => import('../../apps/WorkspaceManager'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

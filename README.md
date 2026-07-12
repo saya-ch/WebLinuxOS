@@ -2,7 +2,7 @@
 
 # WebLinuxOS
 
-A Linux-style desktop environment in the browser
+A fully functional Linux-style desktop environment in the browser
 
 [![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -18,91 +18,81 @@ A Linux-style desktop environment in the browser
 
 ## About
 
-WebLinuxOS is a Linux-style desktop environment that runs entirely in the browser, built with React 19 and TypeScript. It provides complete window management, a virtual file system, a terminal emulator with over 150 commands, and a rich suite of built-in applications. All data is persisted to browser localStorage by default.
+WebLinuxOS brings a complete Linux-style desktop experience to your browser. Built with React 19 and TypeScript, it delivers a feature-rich operating system interface without any installation required. The project combines the familiarity of a traditional desktop environment with the flexibility of web technology, offering real utility for developers and power users alike.
 
-**Core Features**
+**What makes WebLinuxOS different:**
 
-- **Browser as Desktop**: No installation required. Open the web page and get a complete desktop experience
-- **Virtual File System**: Create, edit, delete, copy, and move files and directories with localStorage persistence
-- **Terminal Emulator**: 150+ commands covering file operations, network queries, development tools, system information, and fun utilities
-- **Window Management**: Drag, resize, minimize, maximize, multi-workspace support with keyboard shortcuts
-- **Developer Toolkit**: JSON formatter, Base64/URL encoding, hash generation, regex testing, QR code generation, REST client, and more
-- **Public API Integration**: Real-time data from weather, air quality, cryptocurrency, exchange rates, GitHub, Hacker News, and ISS tracking
-- **Themes and Wallpapers**: Dark/light themes, live wallpapers, and desktop widgets
+- No setup needed - open the page and start working immediately
+- Data persistence through browser localStorage
+- Terminal with over 150 commands for power users
+- Integrated development tools and real-time data dashboards
+- True window management with snapping, resizing, and workspace support
 
 ---
 
 ## Features
 
-### Core System
+### Core Desktop Environment
 
-| Module | Description |
-|--------|-------------|
-| Window Management | Multi-window, drag-and-resize, minimize/maximize, z-index layering, workspace isolation |
-| Virtual File System | localStorage persistence with common file operations |
-| Terminal | 150+ commands with history, auto-completion, aliases |
-| Multi-workspace | Up to 9 virtual desktops with cross-workspace window movement |
-| Global Search | Ctrl+K to search applications, files, and commands |
-| Desktop Widgets | Clock, weather, system monitor, sticky notes, pomodoro timer |
+| Feature | Description |
+|---------|-------------|
+| **Window Management** | Drag, resize, minimize, maximize, snap-to-edge, multi-window layering |
+| **Virtual File System** | Full file operations with localStorage persistence |
+| **Terminal** | 150+ commands with history, auto-completion, and aliases |
+| **Multi-workspace** | Up to 9 virtual desktops with keyboard navigation |
+| **Global Search** | Instant search across applications, files, and commands |
+| **Theme System** | Dark/light mode with smooth transitions |
 
-### Applications
+### Built-in Applications
 
-| Application | Functionality |
-|-------------|---------------|
-| File Manager | Tree directory view, file preview, context menu, drag operations |
-| Terminal | Full command-line environment with virtual file system integration |
-| REST Client | Send HTTP requests, view response headers and body, save request history |
-| DevConsole | All-in-one developer console with 10 tools (JSON formatter, Base64/URL encoding, SHA hash, UUID generation, JWT decode, regex testing, color conversion, timestamp conversion, text diff) - all local computation, zero network requests |
-| LiveDashboard | Real-time dashboard with cryptocurrency prices (CoinGecko), Hacker News top stories, weather (Open-Meteo), system metrics (FPS/CPU/memory), real-time clock |
-| WorldPulse | Real-time data dashboard with cryptocurrency, weather, air quality, ISS, exchange rates, Hacker News |
-| Code Snippet Library | Manage code snippets with multi-language categorization and quick copy |
-| Notes / Sticky Notes | Markdown notes, sticky note wall, to-do list |
-| Workspace Hub | Quick access to applications, system status, weather, quick notes, categorized navigation |
-| Games | Snake, Tetris, 2048, Memory Game |
+| Application | Capabilities |
+|-------------|--------------|
+| **File Manager** | Tree view, file preview, drag operations, context menus |
+| **Terminal** | Full command-line with virtual file system integration |
+| **DevConsole** | JSON formatter, Base64/URL encoding, hash generation, regex testing, JWT decode, UUID generation, color conversion, text diff - all local |
+| **REST Client** | HTTP request testing with response inspection |
+| **LiveDashboard** | Real-time cryptocurrency, weather, news, system metrics |
+| **WorldPulse** | Global data dashboard with weather, air quality, ISS tracking, exchange rates |
+| **Code Snippet Library** | Multi-language snippet management |
+| **Notes** | Markdown editor with sticky notes and to-do lists |
+| **Workspace Hub** | Unified access to applications, system status, quick notes |
+| **Games** | Snake, Tetris, 2048, Memory Game |
 
-### Network and Data APIs
+### Real-time Data Integration
 
-| Feature | Source | Description |
-|---------|--------|-------------|
-| Weather | Open-Meteo | Real-time weather and forecasts for cities worldwide |
-| Air Quality | Open-Meteo Air Quality | AQI and pollutant data for major cities |
-| Cryptocurrency | CoinGecko | Market prices and 24h changes |
-| Exchange Rates | open.er-api.com | Major currency exchange rates |
-| ISS Tracking | wheretheiss.at | Real-time ISS position |
-| Hacker News | Firebase API | Top technology articles |
+| Service | Provider | Usage |
+|---------|----------|-------|
+| Weather | Open-Meteo | Current conditions and forecasts |
+| Air Quality | Open-Meteo | AQI and pollutant data |
+| Cryptocurrency | CoinGecko | Market prices and trends |
+| Exchange Rates | open.er-api.com | Currency conversion |
+| ISS Tracking | wheretheiss.at | Real-time space station position |
+| Hacker News | Firebase API | Top technology stories |
 | GitHub | GitHub API | Repository and user information |
 | Translation | MyMemory | Multi-language translation |
-
-Public APIs may be affected by network conditions and CORS policies. Some requests may require a CORS proxy.
-
----
-
-## Live Demo
-
-**Visit**: [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
-
-### Quick Start Guide
-
-1. **Open Applications**: Click desktop icons or find in the start menu
-2. **Global Search**: Press Ctrl+K to search applications, files, and commands
-3. **Open Terminal**: Press Ctrl+T, type `help` for command list
-4. **File Manager**: Press Ctrl+E to open file manager
-5. **Switch Workspace**: Press Ctrl+Alt+1-9
-6. **Close/Minimize Window**: Ctrl+Q / Ctrl+M
 
 ---
 
 ## Getting Started
 
-### Prerequisites
+### Quick Start
 
-- Node.js >= 20
-- npm
+Visit the [live demo](https://saya-ch.github.io/WebLinuxOS/) to experience WebLinuxOS immediately in your browser.
 
-### Installation
+**Keyboard Shortcuts:**
+
+- `Ctrl + K` - Global search
+- `Ctrl + T` - Open terminal
+- `Ctrl + E` - Open file manager
+- `Ctrl + W` - Close window
+- `Ctrl + M` - Minimize window
+- `Ctrl + Shift + M` - Maximize window
+- `Ctrl + Alt + 1-9` - Switch workspace
+
+### Local Development
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 
@@ -112,13 +102,13 @@ npm install
 # Start development server
 npm run dev
 
-# Open browser at http://localhost:5173/WebLinuxOS/
+# Open http://localhost:5173/WebLinuxOS/ in your browser
 ```
 
 ### Build for Production
 
 ```bash
-npm run build        # Build to ../dist
+npm run build        # Build to ../dist directory
 npm run preview      # Preview production build locally
 ```
 
@@ -126,25 +116,51 @@ npm run preview      # Preview production build locally
 
 ## Terminal Commands
 
+WebLinuxOS includes over 150 terminal commands. Here are some highlights:
+
 ```bash
 # System Information
-whoami / hostname / uname / date / uptime
+whoami   # Current user
+hostname # System hostname
+uname    # System details
+date     # Current date and time
+uptime   # System uptime
 
 # File Operations
-ls / cd / pwd / cat / touch / mkdir / rm / cp / mv / tree / find / grep
+ls       # List directory contents
+cd       # Change directory
+pwd      # Print working directory
+cat      # Display file contents
+touch    # Create empty file
+mkdir    # Create directory
+rm       # Remove file/directory
+cp       # Copy files
+mv       # Move files
+find     # Search for files
+grep     # Search text in files
 
 # Network and APIs
-weather [city]        # Real-time weather
+weather [city]        # Get real-time weather
 crypto                # Cryptocurrency prices
-news [keyword]        # Hacker News
-translate <lang> <text> # Translation
+news                  # Hacker News top stories
+translate <lang> <text> # Translate text
 github <repo>         # GitHub repository info
 
 # Development Tools
-json / base64 / hash / uuid / regex / calc / timestamp / jwt / hex
+json                  # JSON formatter
+base64                # Base64 encode/decode
+hash                  # Generate SHA hashes
+uuid                  # Generate UUIDs
+regex                 # Test regular expressions
+calc                  # Calculator
+timestamp             # Convert timestamps
+jwt                   # JWT decoder
 
 # System
-open <app> / launch [app-id] / worldpulse / system-status
+open <app>            # Open application
+launch [app-id]       # Launch specific app
+worldpulse            # Open global dashboard
+system-status         # System metrics
 
 # Help
 help                  # View complete command list
@@ -172,7 +188,7 @@ web-linux/
 ├── src/
 │   ├── apps/              # Application components
 │   │   ├── terminal/      # Terminal command system
-│   │   ├── Terminal.tsx
+│   │   ├── Terminal.tsx   # Terminal UI
 │   │   ├── FileManager.tsx
 │   │   └── ...
 │   ├── components/
@@ -199,13 +215,13 @@ web-linux/
 
 ---
 
-## Core Design
+## Core Design Principles
 
-- **Component Lazy Loading**: React.lazy for on-demand loading, reducing initial bundle size
-- **Code Splitting**: Vite-based splitting by application, component, and dependency
-- **State Persistence**: localStorage stores files, themes, settings, window layouts
-- **API Caching**: Built-in cache layer to reduce duplicate requests
-- **Theme System**: CSS variable-driven, supporting dark/light mode switching
+- **Performance First**: Component lazy loading and code splitting reduce initial load time
+- **Data Privacy**: Most tools operate locally in the browser with zero network requests
+- **Persistence**: User data persists across sessions via localStorage
+- **Extensible**: Easy to add new applications and terminal commands
+- **Themeable**: CSS variable-driven theming for dark/light modes
 
 ---
 
@@ -222,51 +238,50 @@ web-linux/
 
 ## Contributing
 
-1. Fork this repository
+We welcome contributions from the community. Here's how to get started:
+
+1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m "Describe your changes"`
-4. Push to branch: `git push origin feature/your-feature`
+3. Commit changes with descriptive messages
+4. Push to your fork: `git push origin feature/your-feature`
 5. Open a Pull Request
 
-Before submitting, ensure:
+Before submitting, run these checks:
 
 ```bash
 npm run typecheck   # TypeScript type checking
 npm run lint        # ESLint checking
-npm run build       # Production build
+npm run build       # Production build verification
 ```
 
----
+### Adding Applications
 
-## Adding Applications
-
-1. Create application component in `src/apps/`
-2. Register in `src/apps.tsx` (ensure unique ID)
+1. Create your component in `src/apps/`
+2. Register it in `src/apps.tsx` with a unique ID
 3. Add lazy loading mapping in `src/components/desktop/WindowManager.tsx`
 
----
-
-## Adding Terminal Commands
+### Adding Terminal Commands
 
 1. Create or modify command files in `src/apps/terminal/`
-2. Register using `registerCommand`
+2. Register using the `registerCommand` function
 3. Import in `src/apps/terminal/index.ts`
 
 ---
 
 ## License
 
-This project is open source under the MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
 ## Acknowledgments
 
-Thanks to the following open source projects and free API services:
+Thanks to the following open source projects and services:
 
-- React / TypeScript / Vite / Zustand
-- Lucide Icons / Marked
-- Open-Meteo / CoinGecko / Hacker News / GitHub API / wheretheiss.at / open.er-api.com
+- React, TypeScript, Vite, Zustand
+- Lucide Icons, Marked
+- Open-Meteo, CoinGecko, Hacker News API, GitHub API
+- wheretheiss.at, open.er-api.com, MyMemory
 
 ---
 
@@ -295,10 +310,10 @@ Thanks to the following open source projects and free API services:
 ### v31.0.0 (2026-07-11)
 
 - Added intelligent developer workbench: Integrated code template library, API Mock service, knowledge graph, and intelligent code analysis
-  - Code template library: 5 high-quality TypeScript templates, with search, category filtering, one-click copy
-  - API Mock service: Visual API simulator supporting GET/POST/PUT/DELETE/PATCH methods, configurable status codes and delays
-  - Knowledge graph: 7 interconnected technical knowledge points with category tags and connection visualization
-  - Intelligent code analysis: Auto-evaluate code quality with complexity, maintainability, performance, security metrics and improvement suggestions
+- Code template library: 5 high-quality TypeScript templates, with search, category filtering, one-click copy
+- API Mock service: Visual API simulator supporting GET/POST/PUT/DELETE/PATCH methods, configurable status codes and delays
+- Knowledge graph: 7 interconnected technical knowledge points with category tags and connection visualization
+- Intelligent code analysis: Auto-evaluate code quality with complexity, maintainability, performance, security metrics and improvement suggestions
 - Cyberpunk tech-style UI design: Neon color scheme and modern interaction design
 - Responsive layout optimization: Support for multiple screen sizes
 
