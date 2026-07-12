@@ -1,5 +1,57 @@
 # WebLinuxOS 改进总结
 
+## v33.0.0 改进 (2026-07-12)
+
+### 新增功能
+
+#### DevConsole 开发者工具控制台
+- 集成 10 种常用开发工具于统一界面
+- JSON 格式化/压缩/验证/转义
+- Base64 编解码（支持 UTF-8）
+- URL 编解码
+- SHA-1/SHA-256/SHA-512 哈希生成（基于 Web Crypto API）
+- UUID v4 批量生成（支持大写、最多 100 个）
+- JWT Token 解码（本地解码，不上传服务器）
+- 正则表达式测试（支持捕获组、标志位）
+- 颜色格式转换（HEX/RGB/HSL/RGB%）
+- Unix 时间戳双向转换（自动识别秒/毫秒）
+- 文本差异对比（逐行高亮增删）
+- 所有计算在浏览器本地完成，零网络请求，保障数据隐私
+
+#### Live Dashboard 实时数据仪表板
+- 接入 CoinGecko API 展示 8 种主流加密货币实时价格（每分钟刷新）
+- 接入 Hacker News Firebase API 展示 Top 10 热门文章（每 5 分钟刷新）
+- 接入 Open-Meteo API 展示 7 个城市天气信息（每 10 分钟刷新）
+- 浏览器性能监控：FPS 实时测量、CPU 核心数、设备内存、网络状态
+- 实时时钟与 Unix 时间戳显示
+
+### Bug 修复
+
+1. **markdown-editor-pro 重复注册**：appRegistry 中存在两个 id='markdown-editor-pro' 的条目（第 1314 行和第 1397 行），导致开始菜单出现重复项。已移除第 1397 行的重复条目。
+2. **ai-assistant-pro 组件映射错误**：ai-assistant-pro 的 component 字段错误地指向基础版 'AIAssistant' 而非 'AIAssistantPro'。已更正为 AIAssistantPro 组件，并移除冗余的 ai-assistant-v2 条目（与 ai-assistant-pro 同名且指向同一组件）。
+
+### 安全改进
+
+- **消除 eval 注入风险**：终端 `bc` 计算器命令使用直接 `eval()` 执行用户输入，存在代码注入风险。已替换为 `Function` 构造器 + 输入白名单验证（仅允许数字、运算符、括号、小数点），消除注入风险并解决生产构建的安全警告。
+
+### 内存管理优化
+
+1. **windowSnapshots 自动清理**：关闭窗口时未清理对应的 Canvas 快照（base64 字符串，280×160），导致长时间使用后内存持续增长。已在 closeWindow 中添加快照清理逻辑。
+2. **windowSnapshots LRU 上限**：为 setWindowSnapshot 添加 20 条上限的 LRU 淘汰策略，防止快照数据无限累积。
+
+### 构建验证
+
+- TypeScript 类型检查通过
+- Vite 生产构建成功（10.75s）
+- eval 安全警告已消除
+- 新增 DevConsole (22KB) 和 LiveDashboard (14KB) 代码分割块
+- GitHub Actions 部署成功
+- 线上站点 https://saya-ch.github.io/WebLinuxOS/ 正常访问（HTTP 200）
+
+---
+
+## v32.1.0 改进 (2026-07-12)
+
 ## 改进日期
 2026-05-30
 
