@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { copyFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
   const outDir = process.env.OUTPUT_DIR || '../dist'
   const basePath = process.env.VITE_BASE_PATH || '/WebLinuxOS/'
 
@@ -22,6 +22,8 @@ export default defineConfig(() => {
     }
   })
 
+  const isProduction = mode === 'production'
+
   return {
     plugins: [react()],
     base: basePath,
@@ -29,9 +31,9 @@ export default defineConfig(() => {
       outDir,
       emptyOutDir: true,
       publicDir: false,
-      sourcemap: false,
-      minify: 'terser',
-      cssMinify: true,
+      sourcemap: isProduction ? false : 'inline',
+      minify: isProduction ? 'terser' : false,
+      cssMinify: isProduction,
       target: 'es2022',
       chunkSizeWarningLimit: 2000,
       reportCompressedSize: false,
@@ -46,7 +48,7 @@ export default defineConfig(() => {
         supported: {
           'top-level-await': true,
         },
-        drop: ['console', 'debugger'],
+        drop: isProduction ? ['console', 'debugger'] : [],
       },
       rollupOptions: {
         output: {
@@ -122,9 +124,9 @@ export default defineConfig(() => {
       include: ['react', 'react-dom', 'zustand', 'lucide-react'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
-      esbuildOptions: {
-        target: 'es2022',
-      },
+    },
+    resolve: {
+      conditions: ['es2022'],
     },
     server: {
       port: 5173,
@@ -132,6 +134,8 @@ export default defineConfig(() => {
       host: true,
       hmr: {
         overlay: true,
+        clientPort: 5173,
+        protocol: 'ws',
       },
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',

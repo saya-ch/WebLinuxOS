@@ -287,15 +287,20 @@ Thanks to the following open source projects and services:
 
 ## Changelog
 
-### v33.0.0 (2026-07-12)
+### v33.1.0 (2026-07-12)
 
-- Added DevConsole developer tool console: Integrated 10 common development tools (JSON formatter, Base64 encoding/decoding, URL encoding/decoding, SHA hash generation, UUID generation, JWT decoding, regex testing, color format conversion, Unix timestamp conversion, text diff). All computation done locally in browser, zero network requests, ensuring data privacy
-- Added Live Dashboard real-time data dashboard: Aggregates CoinGecko cryptocurrency prices, Hacker News top stories, Open-Meteo weather data, browser performance monitoring (FPS/CPU/memory), supports multi-city weather switching and automatic timed refresh
-- Fixed markdown-editor-pro duplicate registration issue: Removed duplicate entries from appRegistry, eliminated duplicates in start menu
-- Fixed ai-assistant-pro component mapping error: Corrected component from basic AIAssistant to AIAssistantPro, removed redundant ai-assistant-v2 entry
-- Security improvement: Replaced direct eval calls in terminal bc command with Function constructor + input whitelist validation, eliminating code injection risk
-- Memory management optimization: Auto-cleanup window snapshots when closing windows to prevent base64 snapshot data from accumulating indefinitely; added LRU eviction strategy with 20-item limit for setWindowSnapshot
-- Build optimization: Eliminated eval security warnings in production build
+- Enhanced terminal API commands: Added `news`, `currency`, `crypto`, `translate`, `timezone`, `ipinfo`, `qr`, `password`, `uuid`, `timestamp` commands with real-time data integration
+- News API integration: Fetch top headlines from NewsAPI across multiple categories (general, business, technology, science, health, entertainment, sports)
+- Currency exchange API: Real-time exchange rates from exchangerate-api.com supporting USD, CNY, EUR, JPY, GBP and more
+- Cryptocurrency tracking: Real-time Bitcoin, Ethereum, Solana prices from CoinGecko with 24h change, high/low, market cap data
+- Multi-language translation: Powered by MyMemory API supporting English, Chinese, Japanese, Korean, French, German, Spanish, Russian, Portuguese, Italian
+- Timezone lookup: WorldTimeAPI integration for accurate time across 50+ global cities
+- IP information: Automatic IP detection and geolocation from ipapi.co
+- QR code generation: Instant QR code creation via qrserver.com API
+- Password generator: Secure random password generation with customizable length and special character options
+- UUID generator: RFC-compliant UUID v4 generation
+- Timestamp converter: Convert between Unix timestamps and human-readable dates
+- Vite configuration optimization: Fixed development mode console.log stripping, improved HMR WebSocket configuration, optimized build settings for development vs production environments
 
 ### v32.1.0 (2026-07-12)
 
