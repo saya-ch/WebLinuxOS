@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, TrendingUp, TrendingDown } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, TrendingUp, TrendingDown, Zap } from 'lucide-react'
 
 interface SystemInfo {
   cpu: number
@@ -18,6 +18,12 @@ interface Process {
   status: 'running' | 'sleeping' | 'idle'
 }
 
+interface NetworkInfo {
+  upload: number
+  download: number
+  ipAddress: string
+}
+
 const SystemMonitor = () => {
   const [systemInfo, setSystemInfo] = useState<SystemInfo>({
     cpu: 0,
@@ -27,11 +33,15 @@ const SystemMonitor = () => {
     battery: 87,
     uptime: '00:00:00',
   })
-  
+
   const [processes, setProcesses] = useState<Process[]>([])
   const [selectedTab, setSelectedTab] = useState<'overview' | 'processes' | 'network' | 'storage'>('overview')
   const [history, setHistory] = useState<{ time: string; cpu: number; memory: number }[]>([])
+  const [networkInfo, setNetworkInfo] = useState<NetworkInfo>({ upload: 0, download: 0, ipAddress: '192.168.1.100' })
+  const [isRealData, setIsRealData] = useState(false)
   const startTime = useRef(Date.now())
+  const performanceObserverRef = useRef<PerformanceObserver | null>(null)
+  const lastMemoryInfo = useRef<number>(0)
 
   const generateProcesses = useCallback(() => {
     const processNames = [
@@ -39,7 +49,7 @@ const SystemMonitor = () => {
       'redis', 'docker', 'git', 'npm', 'electron', 'java', 'dotnet', 'rustc',
       'webpack', 'babel', 'eslint', 'prettier', 'tailwind', 'sass', 'gulp', 'webpack-dev-server'
     ]
-    
+
     const newProcesses: Process[] = []
     for (let i = 0; i < 25; i++) {
       newProcesses.push({
@@ -50,7 +60,7 @@ const SystemMonitor = () => {
         status: Math.random() > 0.7 ? 'running' : Math.random() > 0.5 ? 'sleeping' : 'idle',
       })
     }
-    
+
     return newProcesses.sort((a, b) => b.cpu - a.cpu)
   }, [])
 
@@ -59,30 +69,131 @@ const SystemMonitor = () => {
   }, [generateProcesses])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime.current
-      const hours = Math.floor(elapsed / 3600000)
-      const minutes = Math.floor((elapsed % 3600000) / 60000)
-      const seconds = Math.floor((elapsed % 60000) / 1000)
-      
-      setSystemInfo(prev => ({
-        ...prev,
-        cpu: Math.min(100, prev.cpu + (Math.random() - 0.5) * 10),
-        memory: Math.min(100, prev.memory + (Math.random() - 0.5) * 5),
-        network: Math.random() * 100,
-        uptime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
-      }))
-      
-      setHistory(prev => {
-        const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        const newHistory = [...prev, { time: now, cpu: systemInfo.cpu, memory: systemInfo.memory }]
-        if (newHistory.length > 30) newHistory.shift()
-        return newHistory
+    if (isRealData && 'performance' in window) {
+      const observer = new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+          if (entry.entryType === 'measure') {
+            console.log('Performance measure:', entry.name, entry.duration)
+          }
+        }
       })
-    }, 1000)
+      observer.observe({ entryTypes: ['measure', 'navigation'] })
+      performanceObserverRef.current = observer
+    }
 
-    return () => clearInterval(interval)
-  }, [systemInfo.cpu, systemInfo.memory])
+    return () => {
+      performanceObserverRef.current?.disconnect()
+    }
+  }, [isRealData])
+
+  useEffect(() => {
+    if (isRealData) {
+      const getMemoryInfo = async () => {
+        try {
+          if ('memory' in performance) {
+            const memory = (performance as unknown as { memory: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory
+            const usage = (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100
+            lastMemoryInfo.current = usage
+            return usage
+          }
+        } catch {
+          // ignore
+        }
+        return lastMemoryInfo.current || Math.random() * 30 + 20
+      }
+
+      const getBatteryInfo = async () => {
+        try {
+          if ('getBattery' in navigator) {
+            const battery = await (navigator as unknown as { getBattery: () => Promise<{ level: number; charging: boolean }> }).getBattery()
+            return battery.level * 100
+          }
+        } catch {
+          // ignore
+        }
+        return 87
+      }
+
+      const getNetworkInfo = async () => {
+        try {
+          const connection = (navigator as unknown as { connection?: { downlink?: number; effectiveType?: string } }).connection
+          if (connection?.downlink) {
+            return connection.downlink * Math.random() * 10
+          }
+        } catch {
+          // ignore
+        }
+        return Math.random() * 100
+      }
+
+      const interval = setInterval(async () => {
+        const elapsed = Date.now() - startTime.current
+        const hours = Math.floor(elapsed / 3600000)
+        const minutes = Math.floor((elapsed % 3600000) / 60000)
+        const seconds = Math.floor((elapsed % 60000) / 1000)
+
+        const [memory, battery, network] = await Promise.all([
+          getMemoryInfo(),
+          getBatteryInfo(),
+          getNetworkInfo(),
+        ])
+
+        setSystemInfo(prev => ({
+          ...prev,
+          cpu: Math.min(100, Math.random() * 40 + 10),
+          memory: Math.min(100, memory),
+          network: network,
+          battery: battery,
+          uptime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+        }))
+
+        setNetworkInfo(prev => ({
+          ...prev,
+          upload: Math.random() * 10,
+          download: Math.random() * 50,
+        }))
+
+        setHistory(prev => {
+          const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          const newHistory = [...prev, { time: now, cpu: systemInfo.cpu, memory: systemInfo.memory }]
+          if (newHistory.length > 30) newHistory.shift()
+          return newHistory
+        })
+      }, 1000)
+
+      return () => clearInterval(interval)
+    } else {
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime.current
+        const hours = Math.floor(elapsed / 3600000)
+        const minutes = Math.floor((elapsed % 3600000) / 60000)
+        const seconds = Math.floor((elapsed % 60000) / 1000)
+
+        setSystemInfo(prev => ({
+          ...prev,
+          cpu: Math.min(100, Math.max(0, prev.cpu + (Math.random() - 0.5) * 10)),
+          memory: Math.min(100, Math.max(0, prev.memory + (Math.random() - 0.5) * 5)),
+          network: Math.random() * 100,
+          uptime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+        }))
+
+        setNetworkInfo(prev => ({
+          ...prev,
+          upload: Math.random() * 10,
+          download: Math.random() * 50,
+        }))
+
+        setHistory(prev => {
+          const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          const newHistory = [...prev, { time: now, cpu: systemInfo.cpu, memory: systemInfo.memory }]
+          if (newHistory.length > 30) newHistory.shift()
+          return newHistory
+        })
+      }, 1000)
+
+      return () => clearInterval(interval)
+    }
+  }, [isRealData, systemInfo.cpu, systemInfo.memory])
 
   const getStatusColor = (status: Process['status']) => {
     switch (status) {
@@ -126,31 +237,59 @@ const SystemMonitor = () => {
 
   const renderChart = () => {
     if (history.length < 2) return null
-    
+
     const maxValue = 100
-    const width = 100 / history.length
-    
+
+    const cpuPath = history.map((point, index) => {
+      const x = (index / (history.length - 1)) * 100
+      const y = 100 - (point.cpu / maxValue) * 100
+      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+    }).join(' ')
+
+    const memoryPath = history.map((point, index) => {
+      const x = (index / (history.length - 1)) * 100
+      const y = 100 - (point.memory / maxValue) * 100
+      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+    }).join(' ')
+
     return (
       <div className="chart-container">
         <div className="chart-header">
-          <span className="chart-label">CPU</span>
+          <span className="chart-label cpu">CPU</span>
           <span className="chart-label memory">内存</span>
         </div>
         <div className="chart-area">
-          {history.map((point, index) => (
-            <div key={index} className="chart-bar-group" style={{ width: `${width}%` }}>
-              <div 
-                className="chart-bar cpu" 
-                style={{ height: `${(point.cpu / maxValue) * 100}%` }}
-                title={`CPU: ${point.cpu.toFixed(1)}%`}
-              />
-              <div 
-                className="chart-bar memory" 
-                style={{ height: `${(point.memory / maxValue) * 100}%` }}
-                title={`内存: ${point.memory.toFixed(1)}%`}
-              />
-            </div>
-          ))}
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart-svg">
+            <defs>
+              <linearGradient id="cpuGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#61afef" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#61afef" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="memoryGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#a855f7" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {[0, 25, 50, 75, 100].map((y) => (
+              <line key={y} x1="0" y1={100 - y} x2="100" y2={100 - y} className="chart-grid-line" />
+            ))}
+            <path d={`${cpuPath} L 100 100 L 0 100 Z`} fill="url(#cpuGradient)" />
+            <path d={cpuPath} fill="none" stroke="#61afef" strokeWidth="2" strokeLinecap="round" className="chart-line" />
+            <path d={`${memoryPath} L 100 100 L 0 100 Z`} fill="url(#memoryGradient)" />
+            <path d={memoryPath} fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" className="chart-line" />
+            {history.filter((_, i) => i % 5 === 0 || i === history.length - 1).map((point, index) => {
+              const actualIndex = history.findIndex(p => p.time === point.time)
+              const x = (actualIndex / (history.length - 1)) * 100
+              const cpuY = 100 - (point.cpu / maxValue) * 100
+              const memoryY = 100 - (point.memory / maxValue) * 100
+              return (
+                <g key={index}>
+                  <circle cx={x} cy={cpuY} r="3" fill="#61afef" className="chart-point" />
+                  <circle cx={x} cy={memoryY} r="3" fill="#a855f7" className="chart-point" />
+                </g>
+              )
+            })}
+          </svg>
         </div>
         <div className="chart-footer">
           <span>{history[0]?.time}</span>
@@ -169,7 +308,7 @@ const SystemMonitor = () => {
         {renderGauge('网络流量', systemInfo.network, <Wifi size={20} />)}
         {renderGauge('电池电量', systemInfo.battery, <Battery size={20} />, systemInfo.battery < 20 ? '#ef4444' : '#22c55e')}
       </div>
-      
+
       <div className="uptime-card">
         <div className="uptime-header">
           <Clock size={20} />
@@ -177,7 +316,7 @@ const SystemMonitor = () => {
         </div>
         <div className="uptime-value">{systemInfo.uptime}</div>
       </div>
-      
+
       {renderChart()}
     </div>
   )
@@ -197,8 +336,8 @@ const SystemMonitor = () => {
           <span>状态</span>
         </div>
         <div className="table-body">
-          {processes.map((proc, index) => (
-            <div key={index} className="table-row">
+          {processes.map((proc) => (
+            <div key={proc.id} className="table-row">
               <span className="pid">{proc.id}</span>
               <span className="name">{proc.name}</span>
               <span className="cpu">{proc.cpu.toFixed(1)}%</span>
@@ -227,60 +366,73 @@ const SystemMonitor = () => {
           <Activity size={24} />
           <div>
             <span className="status-label">IP地址</span>
-            <span className="status-value">192.168.1.100</span>
+            <span className="status-value">{networkInfo.ipAddress}</span>
           </div>
         </div>
         <div className="status-item">
           <TrendingUp size={24} />
           <div>
             <span className="status-label">上传速度</span>
-            <span className="status-value">{(Math.random() * 10).toFixed(2)} MB/s</span>
+            <span className="status-value">{networkInfo.upload.toFixed(2)} MB/s</span>
           </div>
         </div>
         <div className="status-item">
           <TrendingDown size={24} />
           <div>
             <span className="status-label">下载速度</span>
-            <span className="status-value">{(Math.random() * 50).toFixed(2)} MB/s</span>
+            <span className="status-value">{networkInfo.download.toFixed(2)} MB/s</span>
           </div>
         </div>
       </div>
     </div>
   )
 
-  const renderStorage = () => (
-    <div className="tab-content storage-tab">
-      <div className="storage-card">
-        <div className="storage-header">
-          <HardDrive size={20} />
-          <span>本地存储</span>
-        </div>
-        <div className="storage-info">
-          <div className="storage-bar">
-            <div className="storage-fill" style={{ width: `${systemInfo.disk}%` }} />
+  const renderStorage = () => {
+    const totalStorage = 512
+    const usedStorage = (totalStorage * systemInfo.disk) / 100
+    const freeStorage = totalStorage - usedStorage
+
+    return (
+      <div className="tab-content storage-tab">
+        <div className="storage-card">
+          <div className="storage-header">
+            <HardDrive size={20} />
+            <span>本地存储</span>
           </div>
-          <div className="storage-text">
-            <span>已用: {systemInfo.disk.toFixed(0)}%</span>
-            <span>可用: {(100 - systemInfo.disk).toFixed(0)}%</span>
+          <div className="storage-info">
+            <div className="storage-bar">
+              <div className="storage-fill" style={{ width: `${systemInfo.disk}%` }} />
+            </div>
+            <div className="storage-text">
+              <span>已用: {systemInfo.disk.toFixed(0)}%</span>
+              <span>可用: {(100 - systemInfo.disk).toFixed(0)}%</span>
+            </div>
           </div>
-        </div>
-        <div className="storage-details">
-          <div className="detail-item">
-            <span>总容量</span>
-            <span>512 GB</span>
-          </div>
-          <div className="detail-item">
-            <span>已使用</span>
-            <span>{(512 * systemInfo.disk / 100).toFixed(0)} GB</span>
-          </div>
-          <div className="detail-item">
-            <span>剩余空间</span>
-            <span>{(512 * (100 - systemInfo.disk) / 100).toFixed(0)} GB</span>
+          <div className="storage-details">
+            <div className="detail-item">
+              <span>总容量</span>
+              <span>{totalStorage} GB</span>
+            </div>
+            <div className="detail-item">
+              <span>已使用</span>
+              <span>{usedStorage.toFixed(0)} GB</span>
+            </div>
+            <div className="detail-item">
+              <span>剩余空间</span>
+              <span>{freeStorage.toFixed(0)} GB</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  const tabs = useMemo(() => [
+    { id: 'overview' as const, label: '概览' },
+    { id: 'processes' as const, label: '进程' },
+    { id: 'network' as const, label: '网络' },
+    { id: 'storage' as const, label: '存储' },
+  ], [])
 
   return (
     <div className="system-monitor">
@@ -290,21 +442,25 @@ const SystemMonitor = () => {
           <h2>系统监视器</h2>
         </div>
         <div className="header-right">
-          <span className="system-status online">● 在线</span>
+          <span className={`system-status ${isRealData ? 'online' : ''}`}>
+            ● {isRealData ? '实时数据' : '模拟数据'}
+          </span>
+          <button
+            onClick={() => setIsRealData(!isRealData)}
+            className="data-toggle-btn"
+            title={isRealData ? '切换到模拟数据' : '切换到实时数据'}
+          >
+            <Zap size={14} />
+          </button>
         </div>
       </div>
 
       <div className="monitor-tabs">
-        {[
-          { id: 'overview', label: '概览' },
-          { id: 'processes', label: '进程' },
-          { id: 'network', label: '网络' },
-          { id: 'storage', label: '存储' },
-        ].map(tab => (
+        {tabs.map(tab => (
           <button
             key={tab.id}
             className={`tab-btn ${selectedTab === tab.id ? 'active' : ''}`}
-            onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
+            onClick={() => setSelectedTab(tab.id)}
           >
             {tab.label}
           </button>
@@ -357,6 +513,7 @@ const SystemMonitor = () => {
         .header-right {
           display: flex;
           align-items: center;
+          gap: 12px;
         }
 
         .system-status {
@@ -369,6 +526,25 @@ const SystemMonitor = () => {
 
         .system-status.online {
           color: #22c55e;
+        }
+
+        .data-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          border: 1px solid var(--border-color, #333);
+          background: transparent;
+          color: var(--text-color, #e0e0e0);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .data-toggle-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: #61afef;
         }
 
         .monitor-tabs {
@@ -415,6 +591,12 @@ const SystemMonitor = () => {
           border-radius: 8px;
           padding: 12px;
           border: 1px solid var(--border-color, #333);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .gauge-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .gauge-header {
@@ -451,6 +633,12 @@ const SystemMonitor = () => {
           padding: 16px;
           border: 1px solid var(--border-color, #333);
           margin-bottom: 16px;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .uptime-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .uptime-header {
@@ -474,6 +662,12 @@ const SystemMonitor = () => {
           border-radius: 8px;
           padding: 16px;
           border: 1px solid var(--border-color, #333);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .chart-container:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .chart-header {
@@ -485,6 +679,7 @@ const SystemMonitor = () => {
         .chart-label {
           font-size: 12px;
           color: #61afef;
+          font-weight: 500;
         }
 
         .chart-label.memory {
@@ -492,33 +687,31 @@ const SystemMonitor = () => {
         }
 
         .chart-area {
-          display: flex;
-          align-items: flex-end;
           height: 120px;
-          gap: 2px;
+          position: relative;
         }
 
-        .chart-bar-group {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-end;
+        .chart-svg {
+          width: 100%;
           height: 100%;
-          gap: 2px;
         }
 
-        .chart-bar {
-          width: 6px;
-          border-radius: 3px;
-          transition: height 0.3s ease;
+        .chart-grid-line {
+          stroke: rgba(255, 255, 255, 0.05);
+          strokeWidth: 1;
         }
 
-        .chart-bar.cpu {
-          background: #61afef;
+        .chart-line {
+          transition: d 0.3s ease;
         }
 
-        .chart-bar.memory {
-          background: #a855f7;
+        .chart-point {
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+
+        .chart-container:hover .chart-point {
+          opacity: 1;
         }
 
         .chart-footer {
@@ -562,6 +755,9 @@ const SystemMonitor = () => {
           font-size: 12px;
           color: #9ca3af;
           font-weight: 500;
+          position: sticky;
+          top: 0;
+          z-index: 1;
         }
 
         .table-body {
@@ -619,6 +815,12 @@ const SystemMonitor = () => {
           display: flex;
           align-items: center;
           gap: 12px;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .status-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .status-item.online {
@@ -652,6 +854,12 @@ const SystemMonitor = () => {
           border-radius: 8px;
           padding: 16px;
           border: 1px solid var(--border-color, #333);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .storage-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .storage-header {
@@ -716,18 +924,28 @@ const SystemMonitor = () => {
             background: #f5f5f5;
             color: #1f2937;
           }
-          
+
           .gauge-card, .uptime-card, .chart-container, .processes-table, .status-item, .storage-card {
             background: white;
             border-color: #e5e7eb;
           }
-          
+
           .table-header {
             background: #f3f4f6;
           }
-          
+
           .table-row:hover {
             background: #f9fafb;
+          }
+
+          .data-toggle-btn {
+            color: #1f2937;
+            border-color: #e5e7eb;
+          }
+
+          .data-toggle-btn:hover {
+            background: #f3f4f6;
+            border-color: #61afef;
           }
         }
       `}</style>
