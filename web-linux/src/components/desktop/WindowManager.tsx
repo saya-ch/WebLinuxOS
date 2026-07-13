@@ -346,6 +346,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WikipediaExplorer: () => import('../../apps/WikipediaExplorer'),
   WorkspaceHub: () => import('../../apps/WorkspaceHub'),
   WorkspaceManager: () => import('../../apps/WorkspaceManager'),
+  // === v33.0 新增实时数据中心 ===
+  LiveDataHub: () => import('../../apps/LiveDataHub'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
