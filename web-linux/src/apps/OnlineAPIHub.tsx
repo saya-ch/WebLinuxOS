@@ -192,7 +192,7 @@ const fetchJoke = async (): Promise<APIResponse> => {
         delivery: data.delivery
       } as JokeData
     }
-  } catch (error) {
+  } catch {
     // 备用本地笑话
     const jokes = [
       { setup: '为什么程序员总是分不清万圣节和圣诞节？', delivery: '因为 Oct 31 = Dec 25' },
@@ -218,7 +218,7 @@ const fetchFact = async (): Promise<APIResponse> => {
         source: data.source
       } as FactData
     }
-  } catch (error) {
+  } catch {
     // 备用本地知识
     const facts = [
       { text: '蜂蜜永远不会变质，考古学家在埃及金字塔中发现了3000年前的蜂蜜仍然可以食用。', source: '科学事实' },
@@ -283,7 +283,7 @@ const fetchNASA = async (): Promise<APIResponse> => {
         date: data.date
       } as NASAData
     }
-  } catch (error) {
+  } catch {
     const fallbackData = {
       title: 'Hubble Space Telescope',
       explanation: '哈勃太空望远镜是人类有史以来最伟大的科学仪器之一，它已经在地球轨道上运行超过30年，为我们提供了宇宙深处的惊人图像。',
@@ -308,7 +308,7 @@ const fetchNews = async (): Promise<APIResponse> => {
       publishedAt: article.publishedAt
     }))
     return { success: true, data: newsList }
-  } catch (error) {
+  } catch {
     const fallbackNews: NewsData[] = [
       { title: 'WebLinuxOS 6.2.0 发布', description: '全新版本发布，包含120+应用和增强的用户体验', url: '#', source: 'WebLinuxOS', publishedAt: new Date().toISOString() },
       { title: 'AI技术持续发展', description: '人工智能技术在多个领域取得突破性进展', url: '#', source: 'Tech News', publishedAt: new Date().toISOString() },
@@ -357,7 +357,7 @@ const fetchDictionary = async (word: string): Promise<APIResponse> => {
         example: meaning.definitions[0].example
       } as DictionaryData
     }
-  } catch (error) {
+  } catch {
     return { success: false, error: '未找到该单词的定义' }
   }
 }
@@ -410,7 +410,7 @@ const fetchRandomNumber = async (min: number, max: number): Promise<APIResponse>
     if (!response.ok) throw new Error('无法获取随机数')
     const text = await response.text()
     return { success: true, data: { number: parseInt(text.trim()) } }
-  } catch (error) {
+  } catch {
     // 备用方案：使用Math.random
     return { success: true, data: { number: Math.floor(Math.random() * (max - min + 1)) + min } }
   }
@@ -548,7 +548,7 @@ const fetchTranslation = async (text: string, from: string, to: string): Promise
         to
       } as TranslationData
     }
-  } catch (error) {
+  } catch {
     const translations: Record<string, Record<string, string>> = {
       'hello': { 'zh': '你好', 'ja': 'こんにちは', 'ko': '안녕하세요' },
       'world': { 'zh': '世界', 'ja': '世界', 'ko': '세계' },
@@ -593,7 +593,7 @@ const fetchStock = async (symbol: string): Promise<APIResponse> => {
         volume: quote.regularMarketVolume
       } as StockData
     }
-  } catch (error) {
+  } catch {
     const fallbackData: Record<string, StockData> = {
       'AAPL': { symbol: 'AAPL', name: 'Apple', price: 178.50, change: 2.30, changePercent: 1.31, open: 176.20, high: 179.80, low: 175.90, volume: 52340000 },
       'GOOGL': { symbol: 'GOOGL', name: 'Google', price: 141.80, change: -1.20, changePercent: -0.84, open: 143.00, high: 143.50, low: 141.20, volume: 21560000 },
@@ -620,7 +620,7 @@ const fetchHolidays = async (countryCode: string): Promise<APIResponse> => {
       countryCode: item.countryCode
     }))
     return { success: true, data: holidays }
-  } catch (error) {
+  } catch {
     const fallbackHolidays: HolidayData[] = [
       { date: `${new Date().getFullYear()}-01-01`, name: 'New Year', localName: '元旦', countryCode: 'CN' },
       { date: `${new Date().getFullYear()}-01-15`, name: 'Martin Luther King Jr. Day', localName: '马丁·路德·金日', countryCode: 'US' },

@@ -198,7 +198,7 @@ export default function AILearningCompanion() {
     const saved = localStorage.getItem('learning-cards')
     return saved ? JSON.parse(saved) : defaultKnowledgeCards
   })
-  const [paths, _setPaths] = useState<LearningPath[]>(defaultLearningPaths)
+  const [paths] = useState<LearningPath[]>(defaultLearningPaths)
   const [plans, setPlans] = useState<LearningPlan[]>(() => {
     const saved = localStorage.getItem('learning-plans')
     return saved ? JSON.parse(saved) : []

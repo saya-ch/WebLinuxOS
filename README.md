@@ -9,39 +9,48 @@ A fully functional Linux-style desktop environment running entirely in the brows
 
 ---
 
+About
+-----
+
+WebLinuxOS brings a complete Linux desktop experience to your browser. It features a windowed desktop environment with multi-workspace support, a virtual file system, and a powerful terminal with over 150 commands. The project combines the familiarity of Linux with the accessibility of web technology, creating a platform that is both functional and extensible.
+
 Features
 --------
 
 ### Desktop Environment
 
-- **Window Management**: Drag, resize, minimize, maximize, snap-to-edge, multi-window layering with z-index management
-- **Virtual File System**: Full file operations (create, delete, rename, copy, move) with localStorage persistence
-- **Terminal**: 150+ commands with history, auto-completion, aliases, and ANSI color support
-- **Multi-workspace**: Up to 9 virtual desktops with keyboard navigation (`Ctrl+Alt+1-9`)
-- **Global Search**: Instant search across applications, files, and commands (`Ctrl+K`)
-- **Theme System**: Dark/light mode with smooth transitions and CSS variable theming
-- **Desktop Widgets**: Clock, weather, system monitor, focus timer, air quality, daily poem
+- Window management with drag, resize, minimize, maximize, and snap-to-edge capabilities
+- Multi-workspace system supporting up to 9 virtual desktops with keyboard navigation
+- Global search across applications, files, and commands
+- Dark/light theme system with smooth transitions
+- Desktop widgets including clock, weather, system monitor, and focus timer
+- Virtual file system with full CRUD operations and localStorage persistence
+
+### Terminal
+
+- Over 150 commands covering system operations, file management, and API integrations
+- Command history and auto-completion
+- ANSI color support
+- Built-in development tools (JSON formatter, regex tester, base64 encoder)
+- Real-time API commands (weather, cryptocurrency, news, translation)
 
 ### Built-in Applications
 
-| Category | Applications |
-|----------|--------------|
-| **Development** | Terminal, Code Editor, Code Runner, JSON Formatter, JWT Decoder, Regex Tester, UUID Generator, Hash Generator, API Tester |
-| **Productivity** | File Manager, Text Editor, Notes, Calendar, Calculator, Todo List, Pomodoro, Clipboard Manager |
-| **Utilities** | Weather, System Monitor, Disk Utility, Network Monitor, Password Manager, QR Generator, Unit Converter, Currency Converter |
-| **Entertainment** | Music Player, Video Player, Image Viewer, Games (Snake, Tetris, 2048, Memory) |
-| **Data** | Live Dashboard, Cryptocurrency Tracker, News Reader, WorldPulse, GitHub Explorer |
+Development tools: Terminal, Code Editor, Code Runner, JSON Formatter, Regex Tester, JWT Decoder, Hash Generator, API Tester
+Productivity: File Manager, Text Editor, Notes, Calendar, Calculator, Date Calculator, Todo List, Pomodoro, Clipboard Manager
+Utilities: Weather, System Monitor, Password Manager, QR Generator, Unit Converter, Currency Converter, URL Tools, Base64 Tools
+Multimedia: Music Player, Video Player, Image Viewer, Paint
+Data: Cryptocurrency Tracker, News Reader, GitHub Explorer, Live Dashboard
 
 ### Real-time API Integration
 
-- **Weather**: Open-Meteo API with 7-day forecasts and hourly predictions
-- **Air Quality**: AQI data from Open-Meteo
-- **Cryptocurrency**: Real-time prices from CoinGecko
-- **Exchange Rates**: Live currency conversion from open.er-api.com
-- **ISS Tracking**: Real-time space station position
-- **Hacker News**: Top technology stories
-- **GitHub**: Repository and user information
-- **Translation**: Multi-language translation via MyMemory
+- Weather forecasts from Open-Meteo
+- Cryptocurrency prices from CoinGecko
+- Exchange rates from open.er-api.com
+- Hacker News stories
+- GitHub repository information
+- Multi-language translation via MyMemory
+- ISS tracking from wheretheiss.at
 
 Getting Started
 ---------------
@@ -54,16 +63,15 @@ Visit the [live demo](https://saya-ch.github.io/WebLinuxOS/) to start using WebL
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl + K` | Global search |
-| `Ctrl + T` | Open terminal |
-| `Ctrl + E` | Open file manager |
-| `Ctrl + B` | Open browser |
-| `Ctrl + Q` | Close window |
-| `Ctrl + M` | Minimize window |
-| `Alt + Tab` | Cycle windows |
-| `Ctrl + Alt + 1-9` | Switch workspace |
-| `Ctrl + Alt + ArrowLeft/Right` | Switch workspace |
-| `F11` | Fullscreen |
+| Ctrl + K | Global search |
+| Ctrl + T | Open terminal |
+| Ctrl + E | Open file manager |
+| Ctrl + B | Open browser |
+| Ctrl + Q | Close window |
+| Ctrl + M | Minimize window |
+| Alt + Tab | Cycle windows |
+| Ctrl + Alt + 1-9 | Switch workspace |
+| F11 | Fullscreen |
 
 ### Local Development
 
@@ -86,38 +94,36 @@ npm run preview
 Terminal Commands
 -----------------
 
-WebLinuxOS includes over 150 terminal commands. Here are some highlights:
+Here are some of the available terminal commands:
 
 ```bash
 # System
-whoami          # Current user
-hostname        # System hostname
-uname           # System details
-date            # Current date and time
-uptime          # System uptime
-clear           # Clear terminal
+whoami          # Display current user
+hostname        # Display system hostname
+uname -a        # Display system details
+date            # Display current date and time
+uptime          # Display system uptime
+top             # Display process list
+clear           # Clear terminal screen
 
 # File Operations
-ls [options]    # List directory contents
+ls              # List directory contents
 cd <path>       # Change directory
 pwd             # Print working directory
 cat <file>      # Display file contents
 touch <file>    # Create empty file
 mkdir <dir>     # Create directory
-rm <path>       # Remove file/directory
+rm <path>       # Remove file or directory
 cp <src> <dest> # Copy files
 mv <src> <dest> # Move files
-find <path>     # Search for files
-grep <pattern>  # Search text in files
 
 # Network & APIs
 weather [city]          # Get real-time weather
 crypto                  # Cryptocurrency prices
-news                    # Hacker News top stories
+news                    # Top technology stories
 translate <lang> <text> # Translate text
 github <repo>           # GitHub repository info
 ipinfo                  # IP information
-timezone <city>         # Timezone lookup
 
 # Development Tools
 json                    # JSON formatter
@@ -127,12 +133,6 @@ uuid                    # Generate UUIDs
 regex                   # Test regular expressions
 jwt                     # JWT decoder
 calc <expression>       # Calculator
-timestamp               # Convert timestamps
-
-# System
-open <app>              # Open application
-system-status           # System metrics
-worldpulse              # Open global dashboard
 
 # Help
 help                    # View complete command list
@@ -142,13 +142,13 @@ man <command>           # Command manual
 Tech Stack
 ----------
 
-- **React 19** - UI framework
-- **TypeScript** - Type safety
-- **Vite 8** - Build tool
-- **Zustand 5** - State management
-- **Lucide React** - Icons
-- **Marked** - Markdown parsing
-- **Pyodide** - Python runtime (optional)
+- React 19 - UI framework
+- TypeScript - Type safety
+- Vite 8 - Build tool
+- Zustand 5 - State management
+- Lucide React - Icons
+- Marked - Markdown parsing
+- Pyodide - Python runtime (optional)
 
 Project Structure
 -----------------
@@ -158,9 +158,7 @@ web-linux/
 ├── src/
 │   ├── apps/              # Application components
 │   │   ├── terminal/      # Terminal command system
-│   │   ├── Terminal.tsx   # Terminal UI
-│   │   ├── FileManager.tsx
-│   │   └── ...
+│   │   └── ...            # Individual app components
 │   ├── components/
 │   │   ├── desktop/       # Core desktop components
 │   │   │   ├── Window.tsx
@@ -170,13 +168,10 @@ web-linux/
 │   │   │   └── StartMenu.tsx
 │   │   └── ...
 │   ├── store.tsx          # Zustand global state
-│   ├── store/
-│   │   ├── fileUtils.ts   # File system utilities
-│   │   └── storageUtils.ts # Local storage utilities
 │   ├── apps.tsx           # Application registry
 │   ├── App.tsx            # Application entry
 │   └── utils/
-│       └── apiCache.ts    # API caching
+│       └── apiCache.ts    # API caching utilities
 ├── public/                # Static assets
 ├── index.html
 ├── vite.config.ts
@@ -186,12 +181,12 @@ web-linux/
 Design Principles
 -----------------
 
-1. **Performance First**: Component lazy loading, code splitting, and efficient rendering
-2. **Data Privacy**: Most tools operate locally with zero network requests
-3. **Persistence**: User data persists across sessions via localStorage
-4. **Extensible**: Easy to add new applications and terminal commands
-5. **Themeable**: CSS variable-driven theming for dark/light modes
-6. **Accessibility**: Keyboard navigation and screen reader support
+1. Performance First: Component lazy loading, code splitting, and efficient rendering
+2. Data Privacy: Most tools operate locally with zero network requests
+3. Persistence: User data persists across sessions via localStorage
+4. Extensible: Easy to add new applications and terminal commands
+5. Themeable: CSS variable-driven theming for dark/light modes
+6. Accessibility: Keyboard navigation and screen reader support
 
 Browser Support
 ---------------
@@ -204,7 +199,7 @@ Browser Support
 Contributing
 ------------
 
-Contributions are welcome. Please follow these steps:
+Contributions are welcome. Follow these steps:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
@@ -261,10 +256,11 @@ Changelog
 - Updated README with improved structure and documentation
 - Enhanced terminal with better ANSI color support
 - Improved window management with smoother animations
+- Added Date Calculator application
 
 ### v33.1.0
 
-- Enhanced terminal API commands: Added `news`, `currency`, `crypto`, `translate`, `timezone`, `ipinfo`, `qr`, `password`, `uuid`, `timestamp` commands
+- Enhanced terminal API commands: Added news, currency, crypto, translate, timezone, ipinfo, qr, password, uuid, timestamp commands
 - News API integration with multiple categories
 - Currency exchange API with real-time rates
 - Cryptocurrency tracking from CoinGecko

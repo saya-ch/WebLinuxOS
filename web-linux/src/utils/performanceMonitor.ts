@@ -33,7 +33,7 @@ class PerformanceMonitor {
       })
       longTaskObserver.observe({ entryTypes: ['longtask'] })
       this.observers.push(longTaskObserver)
-    } catch (e) {
+    } catch {
       // 忽略不支持的浏览器
     }
   }

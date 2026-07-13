@@ -21,7 +21,9 @@ export default function TodoList() {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed) && parsed.length > 0) return parsed
       }
-    } catch {}
+    } catch {
+      // 忽略解析错误
+    }
     return [
       { id: '1', text: '完成项目开发文档', completed: true, createdAt: '2025-01-15' },
       { id: '2', text: '修复登录页面的样式问题', completed: false, createdAt: '2025-01-15' },
@@ -39,7 +41,9 @@ export default function TodoList() {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-    } catch {}
+    } catch {
+      // 忽略存储错误
+    }
   }, [todos])
 
   const bg = isDark ? '#1a1a2e' : '#f5f5f5'

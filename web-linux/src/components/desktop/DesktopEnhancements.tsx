@@ -294,7 +294,6 @@ export function LayoutSelector({ onLayoutChange }: { onLayoutChange: (layout: st
 export function GlobalSearchBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<string[]>([])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -310,10 +309,8 @@ export function GlobalSearchBar() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      // 模拟搜索结果
-      setSearchResults([
+  const searchResults = searchQuery.trim()
+    ? [
         '终端',
         '智能代码助手',
         '文件管理器',
@@ -321,11 +318,8 @@ export function GlobalSearchBar() {
         '系统设置',
         '计算器',
         '音乐播放器',
-      ].filter(item => item.toLowerCase().includes(searchQuery.toLowerCase())))
-    } else {
-      setSearchResults([])
-    }
-  }, [searchQuery])
+      ].filter(item => item.toLowerCase().includes(searchQuery.toLowerCase()))
+    : []
 
   if (!isSearchOpen) return null
 

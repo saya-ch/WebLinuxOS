@@ -4,10 +4,9 @@ import Window from './Window'
 import ErrorBoundary from '../ErrorBoundary'
 import type { WindowState, AppDefinition } from '../../types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface WindowComponent {
   win: WindowState
-  Component: React.LazyExoticComponent<React.ComponentType<any>>
+  Component: React.LazyExoticComponent<React.ComponentType<Record<string, unknown> | undefined>>
   app: AppDefinition
 }
 
@@ -61,6 +60,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   Base64Tools: () => import('../../apps/Base64Tools'),
   URLTools: () => import('../../apps/URLTools'),
   UnitConverter: () => import('../../apps/UnitConverter'),
+  DateCalculator: () => import('../../apps/DateCalculator'),
   CurrencyConverter: () => import('../../apps/CurrencyConverter'),
   CurrencyLive: () => import('../../apps/CurrencyLive'),
   TimerApp: () => import('../../apps/TimerApp'),

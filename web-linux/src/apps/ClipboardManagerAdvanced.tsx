@@ -107,6 +107,7 @@ export default function ClipboardManager() {
           })
         }
       } catch {
+        // 忽略剪贴板访问错误
       }
     }, 2000)
 

@@ -74,7 +74,9 @@ export default function GitHubExplorer() {
             setTrendingLoading(false)
             return
           }
-        } catch {}
+        } catch {
+          // 忽略错误
+        }
       }
 
       const response = await fetch(
@@ -101,7 +103,9 @@ export default function GitHubExplorer() {
             CACHE_KEY,
             JSON.stringify({ timestamp: Date.now(), items: data.items })
           )
-        } catch {}
+        } catch {
+          // 忽略错误
+        }
       }
     } catch (err) {
       console.error('Failed to fetch trending repos:', err)
@@ -144,7 +148,9 @@ export default function GitHubExplorer() {
             setLoading(false)
             return
           }
-        } catch {}
+        } catch {
+          // 忽略错误
+        }
       }
 
       const response = await fetch(
@@ -180,7 +186,9 @@ export default function GitHubExplorer() {
           timestamp: Date.now(),
           items: data.items,
         }))
-        } catch {}
+        } catch {
+          // 忽略错误
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '搜索时出错，请稍后重试')

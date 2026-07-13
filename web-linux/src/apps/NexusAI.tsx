@@ -252,7 +252,7 @@ export default function NexusAI() {
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, assistantMessage])
-    } catch (error) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {

@@ -34,7 +34,9 @@ function loadStats(): { cycles: number; totalTime: number; sessions: PomodoroSes
 function saveStats(cycles: number, totalTime: number, sessions: PomodoroSession[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ cycles, totalTime, sessions }))
-  } catch {}
+  } catch {
+    // 忽略存储错误
+  }
 }
 
 const Pomodoro: React.FC = () => {
