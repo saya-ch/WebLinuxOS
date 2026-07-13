@@ -1,281 +1,262 @@
 # WebLinuxOS
 
-一个在浏览器中运行的完整Linux桌面环境，提供240+应用程序、虚拟文件系统、终端模拟器和实时API集成。
+> A complete Linux desktop environment running entirely in your browser — 240+ applications, virtual filesystem, terminal emulator, real-time API integrations, and a set of production-grade productivity tools, all without installation.
 
-**在线演示**: https://saya-ch.github.io/WebLinuxOS/
+[![Live Demo](https://img.shields.io/badge/Live-Demo-4ade80?style=for-the-badge&logo=githubpages&logoColor=white)](https://saya-ch.github.io/WebLinuxOS/)
+[![MIT License](https://img.shields.io/badge/License-MIT-22d3ee?style=for-the-badge)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.2-61dafb?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8.0-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-fbbf24?style=for-the-badge)](CONTRIBUTING.md)
 
----
+![WebLinuxOS Desktop](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png)
 
-## 项目亮点
+## Why WebLinuxOS
 
-### 浏览器中的操作系统
-WebLinuxOS 将完整的Linux桌面体验带到浏览器中。无需安装，打开网页即可使用。支持拖拽窗口、虚拟桌面、全局搜索、主题切换等现代化操作系统功能。
+Most web "OS" demos are toy interfaces with one or two hardcoded windows. WebLinuxOS is a serious attempt at building a working desktop environment in the browser — and layering on top of it a set of real, useful applications that you can actually use day-to-day:
 
-### 核心创新
+- **A real desktop environment** with multiple virtual desktops, draggable resizable windows, taskbar, system tray, start menu, global search, command palette, and theme switching.
+- **A real terminal** with 150+ commands including filesystem operations, system monitoring, and direct calls to live public APIs (weather, crypto, news, exchange rates, IP geolocation, Wikipedia, translation).
+- **A real virtual filesystem** persisted to `localStorage` with full CRUD, multi-format preview, and integration with every app.
+- **A real coding lab** that executes JavaScript, TypeScript, Python (via Pyodide), HTML, CSS, Markdown, SQL, JSON and Bash in the browser.
+- **Three new productivity-grade apps** shipping in this release — see below.
 
-#### 实时数据中心
-集成多个真实公开API的一站式数据仪表盘，让WebLinuxOS从操作系统模拟升级为具有实际使用价值的工具平台：
-- **实时天气**: 基于Open-Meteo API，支持多城市切换、24小时预报、7天预报、紫外线指数等
-- **加密货币行情**: CoinGecko API实时价格、24小时涨跌幅、市值、交易量
-- **科技新闻**: Hacker News热榜实时更新
-- **汇率换算**: Frankfurter API支持12种主要货币实时换算
-- **网络状态**: 实时网络连接状态、带宽、延迟检测
+## What's New in v36.0
 
-#### 在线编程实验室
-- 支持9种编程语言（JavaScript, TypeScript, Python, HTML, CSS, Markdown, SQL, JSON, Bash）
-- 实时代码执行和输出预览
-- 多文件编辑和管理
-- 键盘快捷键支持（Ctrl+Enter运行，Ctrl+S保存）
+This release adds three new flagship applications that move WebLinuxOS beyond a simulation and into the territory of an actually useful tool.
 
-#### 240+内置应用
-涵盖开发工具、生产力套件、多媒体应用、系统工具和网络工具：
-- **开发工具**: 代码编辑器、终端、API测试器、代码格式化、Git工具
-- **生产力**: 文件管理器、笔记、日历、任务管理、Markdown编辑器
-- **多媒体**: 音乐播放器、视频播放器、图片查看器、画板
-- **系统工具**: 系统监控、进程管理、网络工具、磁盘分析
-- **实用工具**: 密码管理器、QR生成器、单位转换、货币换算
+### AI Workbench
 
-#### 虚拟文件系统
-- 完整的文件系统实现，支持CRUD操作
-- localStorage持久化存储
-- 文件预览和编辑功能
-- 支持多种文件类型的识别
+A prompt-engineering workbench designed for working with large language models. Built-in templates for code review, technical design documents, blog posts, localization, meeting minutes, data analysis, bug diagnosis, and product ideation. Includes a prompt-quality scorer, automatic enhancement of underspecified prompts, multi-tab workspace, full history with star/favorite, and local persistence.
 
-#### 终端模拟器
-- 150+命令集合
-- 支持文件操作、系统监控、网络工具
-- API集成命令（天气、加密货币、新闻、翻译）
-- ANSI颜色支持和历史记录
+![AI Workbench](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/ai-workbench.png)
 
-## 技术栈
+Features:
+- 8 specialized tools: prompt engineer, optimizer, code assistant, translator, summarizer, analyzer, polisher, brainstormer
+- 8 production-grade templates covering engineering, writing and analysis tasks
+- Token estimation, output history with search, copy/download, multi-tab workflow
+- 100% local — no data sent to any server
 
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| React | 19.2 | UI框架 |
-| TypeScript | 6.0 | 类型安全 |
-| Zustand | 5.0 | 状态管理 |
-| Vite | 8.0 | 构建工具 |
-| Lucide React | - | 图标库 |
-| Marked | - | Markdown解析 |
-| Pyodide | 0.26 | Python运行时 |
+### Knowledge Vine
 
-## 快速开始
+A Zettelkasten-style second brain with bidirectional links, tags, categories, and a force-directed knowledge graph. Use `[[note title]]` to link notes automatically, `#tag` to categorize, and switch to graph view to see your knowledge as an actual network.
 
-### 在线使用
-访问在线演示页面即可直接使用，无需任何安装。
+![Knowledge Vine](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/knowledge-vine.png)
 
-### 本地开发
+Features:
+- 5 categories (concept, project, resource, insight, question) with counts
+- Bidirectional `[[link]]` auto-detection, back-references panel, mention resolution
+- Force-directed knowledge graph with drag, hover highlight, and click-to-open
+- Full-text search across title, content, and tags
+- JSON export for backup, local-first storage
+
+### CodeForge
+
+A developer toolbox that runs entirely in the browser. Eleven focused tools covering the things you actually need when writing code: JSON formatting, Base64/URL encoding, regex testing with live highlight, color conversion, timestamp conversion, cron expression parser, JWT decoder, hash calculator, string utilities, and URL parameter parser.
+
+![CodeForge](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/codeforge.png)
+
+Features:
+- 11 tools with syntax highlighting, error feedback, copy/download
+- Regex tester with real-time match highlighting and capture group display
+- Cron expression parser with natural-language description
+- JWT decoder with expiration warning
+- Color picker with HEX/RGB/HSL conversion and 100-1000 shade palette
+- Hash calculator (SHA-256, SHA-1, MD5)
+- 100% client-side, zero data transmission
+
+## Live Data Hub
+
+Beyond the new apps, the **Live Data Hub** remains one of WebLinuxOS's most useful features — a single dashboard that pulls real data from public APIs:
+
+| Data Source | Provider | Refresh |
+|-------------|----------|---------|
+| Weather (current, hourly, daily, UV index) | Open-Meteo | 5 min |
+| Cryptocurrency prices, market cap, 24h change | CoinGecko | 1 min |
+| Tech news top stories | Hacker News | 2 min |
+| Exchange rates for 30+ currencies | Frankfurter | 10 min |
+| Network status, latency, IP geolocation | ipapi.co | on demand |
+| Wikipedia article summaries | Wikipedia API | on demand |
+| Text translation between 50+ languages | MyMemory | on demand |
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Desktop Shell (WindowManager, Taskbar, StartMenu)           │
+├──────────────────────────────────────────────────────────────┤
+│  Application Registry (apps.tsx, 240+ definitions)           │
+│  ├─ Productivity (FileManager, Notes, Calendar, ...)         │
+│  ├─ Development (CodeEditor, Terminal, CodeForge, ...)       │
+│  ├─ AI & Knowledge (AIWorkbench, KnowledgeVine, ...)         │
+│  ├─ Internet (Browser, LiveDataHub, ...)                     │
+│  ├─ Multimedia (Music, Video, Image, ...)                   │
+│  └─ System (Settings, Monitor, ...)                          │
+├──────────────────────────────────────────────────────────────┤
+│  Global State (Zustand) + Virtual File System                │
+├──────────────────────────────────────────────────────────────┤
+│  React 19.2 + TypeScript 6 + Vite 8 (Rolldown)               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Tech Stack
+
+- **React 19.2** with concurrent rendering and `memo`/`useMemo` performance primitives
+- **TypeScript 6** in strict mode for type safety
+- **Zustand 5** for global state, with debounced persistence
+- **Vite 8** powered by **Rolldown** for fast builds and code splitting
+- **Lucide React** for iconography
+- **Pyodide 0.26** for in-browser Python execution
+- **Marked** for Markdown rendering
+- **Force-directed graph** drawn on Canvas for the knowledge graph
+
+## Getting Started
+
+### Use it online
+
+Open [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/) in any modern browser. No install, no account, no telemetry.
+
+### Run locally
+
 ```bash
-# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
-
-# 安装依赖
 npm install
-
-# 启动开发服务器
 npm run dev
+```
 
-# 构建生产版本
+The dev server will start on `http://localhost:5173`.
+
+### Build and preview
+
+```bash
+npm run build        # production build to dist/
+npm run preview      # serve the production build locally
+```
+
+### Deploy to GitHub Pages
+
+The repository includes a GitHub Actions workflow that automatically builds and deploys on every push to `main`. To enable it for your fork, go to **Settings → Pages** and set the source to **GitHub Actions**.
+
+Manual deploy:
+
+```bash
 npm run build
-
-# 预览生产构建
-npm run preview
+npx gh-pages -d dist
 ```
 
-### 部署到GitHub Pages
-```bash
-# 构建并部署
-npm run deploy
-```
+## Keyboard Shortcuts
 
-## 键盘快捷键
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Shift+L` | Open launcher |
+| `Ctrl+K` | Global search |
+| `Ctrl+P` | Command palette |
+| `Alt+Tab` | Switch windows |
+| `Ctrl+Q` | Close window |
+| `Ctrl+M` | Minimize window |
+| `Ctrl+T` | Open terminal |
+| `Ctrl+E` | Open file manager |
+| `Ctrl+1-9` | Quick-launch app |
+| `Ctrl+Alt+1-9` | Switch virtual desktop |
+| `F11` | Fullscreen |
 
-| 快捷键 | 功能 |
-|--------|------|
-| Ctrl+Shift+L | 打开启动器 |
-| Ctrl+K | 全局搜索 |
-| Ctrl+P | 命令面板 |
-| Alt+Tab | 切换窗口 |
-| Ctrl+Q | 关闭窗口 |
-| Ctrl+M | 最小化窗口 |
-| Ctrl+T | 打开终端 |
-| Ctrl+E | 打开文件管理器 |
-| Ctrl+1-9 | 快速启动应用 |
-| Ctrl+Alt+1-9 | 切换虚拟桌面 |
-| F11 | 全屏模式 |
+## Terminal
 
-## 终端命令示例
+The terminal supports 150+ commands across system, file, network, dev and API categories:
 
 ```bash
-# 系统命令
-whoami              # 显示当前用户
-hostname            # 显示主机名
-uname -a            # 显示系统信息
-date                # 显示日期时间
-uptime              # 显示运行时间
-
-# 文件操作
-ls                  # 列出文件
-cd <path>           # 切换目录
-pwd                 # 显示当前路径
-cat <file>          # 查看文件内容
-mkdir <dir>         # 创建目录
-rm <path>           # 删除文件/目录
-
-# API命令
-weather [city]      # 天气查询
-crypto              # 加密货币价格
-news                # 科技新闻
-translate <text>    # 文本翻译
-github <repo>       # GitHub仓库信息
-
-# 开发工具
-json                # JSON格式化
-base64              # Base64编解码
-hash                # 哈希生成
-uuid                # UUID生成
-calc <expr>         # 计算器
-
-# 帮助
-help                # 查看所有命令
-man <command>       # 命令手册
+whoami                 # current user
+hostname               # system hostname
+uname -a               # kernel info
+uptime                 # system uptime
+ls / pwd / cd / cat    # filesystem
+weather [city]         # current weather
+crypto                 # crypto prices
+news                   # hacker news
+fx 100 USD to EUR      # currency conversion
+translate "hello" zh   # translation
+wiki "Linux"           # wikipedia lookup
+json                   # JSON formatter
+base64                 # base64 encoder
+hash                   # hash generator
+help                   # full command list
 ```
 
-## 项目结构
+## Project Structure
 
 ```
-web-linux/
-├── src/
-│   ├── apps/              # 240+应用组件
-│   │   ├── terminal/      # 终端命令系统
-│   │   ├── OnlineProgrammingLab.tsx  # 在线编程实验室
-│   │   ├── FileManager.tsx           # 文件管理器
-│   │   └── ...             # 其他应用
-│   ├── components/
-│   │   ├── desktop/       # 桌面核心组件
-│   │   │   ├── Desktop.tsx
-│   │   │   ├── Window.tsx
-│   │   │   ├── WindowManager.tsx
-│   │   │   ├── Taskbar.tsx
-│   │   │   └── StartMenu.tsx
-│   │   └── ...
-│   ├── store/             # Zustand状态管理
-│   ├── utils/             # 工具函数
-│   ├── styles/            # 样式文件
-│   ├── App.tsx            # 应用入口
-│   ├── apps.tsx           # 应用注册表
-│   └── store.tsx          # 全局状态
-├── public/                # 静态资源
-├── screenshots/           # 截图
-└── vite.config.ts         # Vite配置
+WebLinuxOS/
+├── web-linux/
+│   ├── src/
+│   │   ├── apps/                     # 240+ application components
+│   │   │   ├── AIWorkbench.tsx       # NEW: Prompt engineering workbench
+│   │   │   ├── KnowledgeVine.tsx     # NEW: Zettelkasten + graph
+│   │   │   ├── CodeForge.tsx         # NEW: Developer toolbox
+│   │   │   ├── LiveDataHub.tsx       # Real-time API dashboard
+│   │   │   ├── OnlineProgrammingLab.tsx
+│   │   │   ├── FileManager.tsx
+│   │   │   ├── terminal/             # 150+ terminal commands
+│   │   │   └── ... (240+ total)
+│   │   ├── components/
+│   │   │   └── desktop/              # WindowManager, Taskbar, Desktop
+│   │   ├── store/                    # Zustand + file utils + storage
+│   │   ├── styles/                   # Theme CSS files
+│   │   ├── apps.tsx                  # App registry
+│   │   ├── store.tsx                 # Global state
+│   │   ├── types.ts                  # TypeScript types
+│   │   └── App.tsx / main.tsx
+│   ├── public/                       # Static assets
+│   ├── screenshots/                  # Documentation screenshots
+│   ├── vite.config.ts
+│   └── package.json
+├── .github/
+│   └── workflows/deploy.yml          # Auto-deploy to GitHub Pages
+└── README.md
 ```
 
-## API集成
+## Browser Support
 
-WebLinuxOS集成了多个公共API：
+WebLinuxOS targets evergreen browsers:
 
-| API | 用途 |
-|-----|------|
-| Open-Meteo | 天气数据（实时、预报、紫外线） |
-| CoinGecko | 加密货币价格和市场数据 |
-| Frankfurter | 汇率换算（12+主要货币） |
-| GitHub API | 仓库信息查询 |
-| Hacker News | 科技新闻热榜 |
-| Wikipedia | 知识库查询 |
-| ipapi.co | IP地址信息 |
-| MyMemory | 翻译服务 |
-
-## 性能优化
-
-- **代码分割**: 每个应用独立打包，按需加载
-- **懒加载**: 使用React.lazy和Suspense延迟加载组件
-- **缓存策略**: API响应缓存，减少网络请求
-- **GPU加速**: 使用CSS transform优化动画性能
-- **虚拟滚动**: 大数据列表使用虚拟滚动
-
-## 浏览器支持
-
-- Chrome 90+
+- Chrome / Edge 90+
 - Firefox 88+
 - Safari 14+
-- Edge 90+
 
-## 贡献指南
+## Privacy
 
-我们欢迎所有形式的贡献！
+Everything runs in your browser. No data is sent to any server except the public API calls explicitly triggered by the user (weather, crypto, news, etc.). The virtual filesystem, notes, knowledge graph, and AI Workbench history are all stored in `localStorage` on your device.
 
-### 添加新应用
-1. 在 `src/apps/` 创建组件文件
-2. 在 `src/apps.tsx` 注册应用
-3. 在 `WindowManager.tsx` 添加懒加载映射
-4. 添加相应的图标和快捷键
+## Contributing
 
-### 添加终端命令
-1. 在 `src/apps/terminal/` 选择合适的命令文件
-2. 使用 `registerCommand` 注册命令
-3. 在 `help` 命令中添加文档
-4. 测试各种输入情况
+Contributions of any size are welcome — bug reports, new apps, new terminal commands, translations, documentation improvements.
 
-### 开发流程
-```bash
-# 创建功能分支
-git checkout -b feature/your-feature
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-app`)
+3. Commit your changes (`git commit -m 'Add my app'`)
+4. Push to the branch (`git push origin feature/my-app`)
+5. Open a Pull Request
 
-# 安装依赖
-npm install
+### Adding a new application
 
-# 开发模式
-npm run dev
+1. Create `src/apps/MyApp.tsx` exporting a memoized component
+2. Create `src/apps/MyApp.css` with scoped styles using CSS variables
+3. Add a registry entry to `src/apps.tsx`
+4. Add the lazy import to `src/components/desktop/WindowManager.tsx`
 
-# 类型检查
-npm run typecheck
+### Adding a terminal command
 
-# 代码检查
-npm run lint
+1. Choose the appropriate file in `src/apps/terminal/`
+2. Register the command with `registerCommand`
+3. Add documentation to the `help` command
 
-# 构建
-npm run build
-```
+## License
 
-## 更新日志
+[MIT](LICENSE) — use it, fork it, learn from it.
 
-### v36.0.0 (2026-07)
-- 新增实时数据中心应用，集成5个真实公开API
-  - 实时天气（Open-Meteo）：多城市、24小时预报、7天预报、紫外线指数
-  - 加密货币行情（CoinGecko）：实时价格、涨跌幅、市值、交易量
-  - 科技新闻（Hacker News）：热榜实时更新
-  - 汇率换算（Frankfurter）：12种主要货币实时换算
-  - 网络状态：连接状态、带宽、延迟检测
-- 应用级缓存机制，减少API请求
-- 自动刷新数据，保持信息实时
-- 优化README文档，新增核心创新介绍
+## Acknowledgments
 
-### v35.0.0 (2026-07)
-- 新增在线编程实验室，支持9种编程语言
-- 改进README文档结构
-- 优化应用加载性能
-- 增强错误处理机制
-
-### v34.0.0 (2026-07)
-- 增强系统监控功能
-- 改进终端ANSI颜色支持
-- 优化窗口动画效果
-- 新增日期计算器
-
-[查看完整更新日志](CHANGELOG.md)
-
-## 许可证
-
-本项目采用MIT许可证开源。
-
-## 致谢
-
-感谢以下开源项目和服务的支持：
-- React, TypeScript, Vite, Zustand
-- Lucide Icons
-- Open-Meteo, CoinGecko, GitHub API等公共服务
-
----
-
-**版本**: 36.0.0 | **最后更新**: 2026年7月 | **维护者**: Saya Ch
+- React, TypeScript, Vite, Zustand, and the broader open-source ecosystem
+- Lucide for the icon set
+- Open-Meteo, CoinGecko, Frankfurter, Hacker News, Wikipedia, and MyMemory for providing free public APIs
+- The Niklas Luhmann estate and the broader Zettelkasten community for the note-taking methodology that inspired Knowledge Vine

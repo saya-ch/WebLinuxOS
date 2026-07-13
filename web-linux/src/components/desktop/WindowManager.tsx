@@ -348,6 +348,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WorkspaceManager: () => import('../../apps/WorkspaceManager'),
   // === v33.0 新增实时数据中心 ===
   LiveDataHub: () => import('../../apps/LiveDataHub'),
+  // === v36.0 新增应用：AI Workbench / Knowledge Vine / CodeForge ===
+  AIWorkbench: () => import('../../apps/AIWorkbench'),
+  KnowledgeVine: () => import('../../apps/KnowledgeVine'),
+  CodeForge: () => import('../../apps/CodeForge'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

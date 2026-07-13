@@ -1402,4 +1402,8 @@ export const appRegistry: AppDefinition[] = [
   { id: 'live-dashboard', name: 'Live Dashboard 实时仪表板', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/><path d="M7 14l2 2 3-4"/></svg>, component: 'LiveDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // === v33.0 新增实时数据中心（集成真实公开API） ===
   { id: 'live-data-hub', name: '实时数据中心', icon: <ActivityIcon />, component: 'LiveDataHub', category: 'internet', defaultWidth: 950, defaultHeight: 780, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
+  // === v36.0 全新一代创新应用：AI Workbench / Knowledge Vine / CodeForge ===
+  { id: 'ai-workbench', name: 'AI Workbench 智能工作台', icon: <SparklesIcon />, component: 'AIWorkbench', category: 'utilities', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
+  { id: 'knowledge-vine', name: 'Knowledge Vine 知识藤蔓', icon: <SmartNotesIcon />, component: 'KnowledgeVine', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
+  { id: 'code-forge', name: 'CodeForge 开发者工具集', icon: <Code2Icon />, component: 'CodeForge', category: 'development', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
 ]
