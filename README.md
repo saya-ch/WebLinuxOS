@@ -1,291 +1,261 @@
-WebLinuxOS
-==========
+# WebLinuxOS
 
-A fully functional Linux-style desktop environment running entirely in the browser.
+一个在浏览器中运行的完整Linux桌面环境，提供240+应用程序、虚拟文件系统、终端模拟器和实时API集成。
 
-![WebLinuxOS Desktop](web-linux/screenshots/06-final-desktop.png)
-
-**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)**
+**在线演示**: https://saya-ch.github.io/WebLinuxOS/
 
 ---
 
-About
------
+## 项目亮点
 
-WebLinuxOS brings a complete Linux desktop experience to your browser. It features a windowed desktop environment with multi-workspace support, a virtual file system, and a powerful terminal with over 150 commands. The project combines the familiarity of Linux with the accessibility of web technology, creating a platform that is both functional and extensible.
+### 浏览器中的操作系统
+WebLinuxOS 将完整的Linux桌面体验带到浏览器中。无需安装，打开网页即可使用。支持拖拽窗口、虚拟桌面、全局搜索、主题切换等现代化操作系统功能。
 
-Features
---------
+### 核心创新
 
-### Desktop Environment
+#### 在线编程实验室
+- 支持9种编程语言（JavaScript, TypeScript, Python, HTML, CSS, Markdown, SQL, JSON, Bash）
+- 实时代码执行和输出预览
+- 多文件编辑和管理
+- 键盘快捷键支持（Ctrl+Enter运行，Ctrl+S保存）
 
-- Window management with drag, resize, minimize, maximize, and snap-to-edge capabilities
-- Multi-workspace system supporting up to 9 virtual desktops with keyboard navigation
-- Global search across applications, files, and commands
-- Dark/light theme system with smooth transitions
-- Desktop widgets including clock, weather, system monitor, and focus timer
-- Virtual file system with full CRUD operations and localStorage persistence
+#### 240+内置应用
+涵盖开发工具、生产力套件、多媒体应用、系统工具和网络工具：
+- **开发工具**: 代码编辑器、终端、API测试器、代码格式化、Git工具
+- **生产力**: 文件管理器、笔记、日历、任务管理、Markdown编辑器
+- **多媒体**: 音乐播放器、视频播放器、图片查看器、画板
+- **系统工具**: 系统监控、进程管理、网络工具、磁盘分析
+- **实用工具**: 密码管理器、QR生成器、单位转换、货币换算
 
-### Terminal
+#### 虚拟文件系统
+- 完整的文件系统实现，支持CRUD操作
+- localStorage持久化存储
+- 文件预览和编辑功能
+- 支持多种文件类型的识别
 
-- Over 150 commands covering system operations, file management, and API integrations
-- Command history and auto-completion
-- ANSI color support
-- Built-in development tools (JSON formatter, regex tester, base64 encoder)
-- Real-time API commands (weather, cryptocurrency, news, translation)
+#### 终端模拟器
+- 150+命令集合
+- 支持文件操作、系统监控、网络工具
+- API集成命令（天气、加密货币、新闻、翻译）
+- ANSI颜色支持和历史记录
 
-### Built-in Applications
+## 技术栈
 
-Development tools: Terminal, Code Editor, Code Runner, JSON Formatter, Regex Tester, JWT Decoder, Hash Generator, API Tester
-Productivity: File Manager, Text Editor, Notes, Calendar, Calculator, Date Calculator, Todo List, Pomodoro, Clipboard Manager
-Utilities: Weather, System Monitor, Password Manager, QR Generator, Unit Converter, Currency Converter, URL Tools, Base64 Tools
-Multimedia: Music Player, Video Player, Image Viewer, Paint
-Data: Cryptocurrency Tracker, News Reader, GitHub Explorer, Live Dashboard
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| React | 19.2 | UI框架 |
+| TypeScript | 6.0 | 类型安全 |
+| Zustand | 5.0 | 状态管理 |
+| Vite | 8.0 | 构建工具 |
+| Lucide React | - | 图标库 |
+| Marked | - | Markdown解析 |
+| Pyodide | 0.26 | Python运行时 |
 
-### Real-time API Integration
+## 快速开始
 
-- Weather forecasts from Open-Meteo
-- Cryptocurrency prices from CoinGecko
-- Exchange rates from open.er-api.com
-- Hacker News stories
-- GitHub repository information
-- Multi-language translation via MyMemory
-- ISS tracking from wheretheiss.at
+### 在线使用
+访问在线演示页面即可直接使用，无需任何安装。
 
-Getting Started
----------------
-
-### Quick Start
-
-Visit the [live demo](https://saya-ch.github.io/WebLinuxOS/) to start using WebLinuxOS immediately.
-
-### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| Ctrl + K | Global search |
-| Ctrl + T | Open terminal |
-| Ctrl + E | Open file manager |
-| Ctrl + B | Open browser |
-| Ctrl + Q | Close window |
-| Ctrl + M | Minimize window |
-| Alt + Tab | Cycle windows |
-| Ctrl + Alt + 1-9 | Switch workspace |
-| F11 | Fullscreen |
-
-### Local Development
-
+### 本地开发
 ```bash
+# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
+
+# 安装依赖
 npm install
+
+# 启动开发服务器
 npm run dev
-```
 
-Open http://localhost:5173/WebLinuxOS/ in your browser.
-
-### Build for Production
-
-```bash
+# 构建生产版本
 npm run build
+
+# 预览生产构建
 npm run preview
 ```
 
-Terminal Commands
------------------
-
-Here are some of the available terminal commands:
-
+### 部署到GitHub Pages
 ```bash
-# System
-whoami          # Display current user
-hostname        # Display system hostname
-uname -a        # Display system details
-date            # Display current date and time
-uptime          # Display system uptime
-top             # Display process list
-clear           # Clear terminal screen
-
-# File Operations
-ls              # List directory contents
-cd <path>       # Change directory
-pwd             # Print working directory
-cat <file>      # Display file contents
-touch <file>    # Create empty file
-mkdir <dir>     # Create directory
-rm <path>       # Remove file or directory
-cp <src> <dest> # Copy files
-mv <src> <dest> # Move files
-
-# Network & APIs
-weather [city]          # Get real-time weather
-crypto                  # Cryptocurrency prices
-news                    # Top technology stories
-translate <lang> <text> # Translate text
-github <repo>           # GitHub repository info
-ipinfo                  # IP information
-
-# Development Tools
-json                    # JSON formatter
-base64                  # Base64 encode/decode
-hash                    # Generate SHA hashes
-uuid                    # Generate UUIDs
-regex                   # Test regular expressions
-jwt                     # JWT decoder
-calc <expression>       # Calculator
-
-# Help
-help                    # View complete command list
-man <command>           # Command manual
+# 构建并部署
+npm run deploy
 ```
 
-Tech Stack
-----------
+## 键盘快捷键
 
-- React 19 - UI framework
-- TypeScript - Type safety
-- Vite 8 - Build tool
-- Zustand 5 - State management
-- Lucide React - Icons
-- Marked - Markdown parsing
-- Pyodide - Python runtime (optional)
+| 快捷键 | 功能 |
+|--------|------|
+| Ctrl+Shift+L | 打开启动器 |
+| Ctrl+K | 全局搜索 |
+| Ctrl+P | 命令面板 |
+| Alt+Tab | 切换窗口 |
+| Ctrl+Q | 关闭窗口 |
+| Ctrl+M | 最小化窗口 |
+| Ctrl+T | 打开终端 |
+| Ctrl+E | 打开文件管理器 |
+| Ctrl+1-9 | 快速启动应用 |
+| Ctrl+Alt+1-9 | 切换虚拟桌面 |
+| F11 | 全屏模式 |
 
-Project Structure
------------------
+## 终端命令示例
+
+```bash
+# 系统命令
+whoami              # 显示当前用户
+hostname            # 显示主机名
+uname -a            # 显示系统信息
+date                # 显示日期时间
+uptime              # 显示运行时间
+
+# 文件操作
+ls                  # 列出文件
+cd <path>           # 切换目录
+pwd                 # 显示当前路径
+cat <file>          # 查看文件内容
+mkdir <dir>         # 创建目录
+rm <path>           # 删除文件/目录
+
+# API命令
+weather [city]      # 天气查询
+crypto              # 加密货币价格
+news                # 科技新闻
+translate <text>    # 文本翻译
+github <repo>       # GitHub仓库信息
+
+# 开发工具
+json                # JSON格式化
+base64              # Base64编解码
+hash                # 哈希生成
+uuid                # UUID生成
+calc <expr>         # 计算器
+
+# 帮助
+help                # 查看所有命令
+man <command>       # 命令手册
+```
+
+## 项目结构
 
 ```
 web-linux/
 ├── src/
-│   ├── apps/              # Application components
-│   │   ├── terminal/      # Terminal command system
-│   │   └── ...            # Individual app components
+│   ├── apps/              # 240+应用组件
+│   │   ├── terminal/      # 终端命令系统
+│   │   ├── OnlineProgrammingLab.tsx  # 在线编程实验室
+│   │   ├── FileManager.tsx           # 文件管理器
+│   │   └── ...             # 其他应用
 │   ├── components/
-│   │   ├── desktop/       # Core desktop components
+│   │   ├── desktop/       # 桌面核心组件
+│   │   │   ├── Desktop.tsx
 │   │   │   ├── Window.tsx
 │   │   │   ├── WindowManager.tsx
-│   │   │   ├── Desktop.tsx
 │   │   │   ├── Taskbar.tsx
 │   │   │   └── StartMenu.tsx
 │   │   └── ...
-│   ├── store.tsx          # Zustand global state
-│   ├── apps.tsx           # Application registry
-│   ├── App.tsx            # Application entry
-│   └── utils/
-│       └── apiCache.ts    # API caching utilities
-├── public/                # Static assets
-├── index.html
-├── vite.config.ts
-└── package.json
+│   ├── store/             # Zustand状态管理
+│   ├── utils/             # 工具函数
+│   ├── styles/            # 样式文件
+│   ├── App.tsx            # 应用入口
+│   ├── apps.tsx           # 应用注册表
+│   └── store.tsx          # 全局状态
+├── public/                # 静态资源
+├── screenshots/           # 截图
+└── vite.config.ts         # Vite配置
 ```
 
-Design Principles
------------------
+## API集成
 
-1. Performance First: Component lazy loading, code splitting, and efficient rendering
-2. Data Privacy: Most tools operate locally with zero network requests
-3. Persistence: User data persists across sessions via localStorage
-4. Extensible: Easy to add new applications and terminal commands
-5. Themeable: CSS variable-driven theming for dark/light modes
-6. Accessibility: Keyboard navigation and screen reader support
+WebLinuxOS集成了多个公共API：
 
-Browser Support
----------------
+| API | 用途 |
+|-----|------|
+| Open-Meteo | 天气数据 |
+| CoinGecko | 加密货币价格 |
+| GitHub API | 仓库信息 |
+| Hacker News | 科技新闻 |
+| Wikipedia | 知识库查询 |
+| ipapi.co | IP地址信息 |
+| MyMemory | 翻译服务 |
 
-- Chrome 110+
-- Firefox 115+
-- Safari 16+
-- Edge 110+
+## 性能优化
 
-Contributing
-------------
+- **代码分割**: 每个应用独立打包，按需加载
+- **懒加载**: 使用React.lazy和Suspense延迟加载组件
+- **缓存策略**: API响应缓存，减少网络请求
+- **GPU加速**: 使用CSS transform优化动画性能
+- **虚拟滚动**: 大数据列表使用虚拟滚动
 
-Contributions are welcome. Follow these steps:
+## 浏览器支持
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes with descriptive messages
-4. Push to your fork: `git push origin feature/your-feature`
-5. Open a Pull Request
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
-Before submitting, run these checks:
+## 贡献指南
 
+我们欢迎所有形式的贡献！
+
+### 添加新应用
+1. 在 `src/apps/` 创建组件文件
+2. 在 `src/apps.tsx` 注册应用
+3. 在 `WindowManager.tsx` 添加懒加载映射
+4. 添加相应的图标和快捷键
+
+### 添加终端命令
+1. 在 `src/apps/terminal/` 选择合适的命令文件
+2. 使用 `registerCommand` 注册命令
+3. 在 `help` 命令中添加文档
+4. 测试各种输入情况
+
+### 开发流程
 ```bash
-npm run typecheck   # TypeScript type checking
-npm run lint        # ESLint checking
-npm run build       # Production build verification
+# 创建功能分支
+git checkout -b feature/your-feature
+
+# 安装依赖
+npm install
+
+# 开发模式
+npm run dev
+
+# 类型检查
+npm run typecheck
+
+# 代码检查
+npm run lint
+
+# 构建
+npm run build
 ```
 
-### Adding Applications
+## 更新日志
 
-1. Create your component in `src/apps/`
-2. Register it in `src/apps.tsx` with a unique ID
-3. Add lazy loading mapping in `src/components/desktop/WindowManager.tsx`
+### v35.0.0 (2026-07)
+- 新增在线编程实验室，支持9种编程语言
+- 改进README文档结构
+- 优化应用加载性能
+- 增强错误处理机制
 
-### Adding Terminal Commands
+### v34.0.0 (2026-07)
+- 增强系统监控功能
+- 改进终端ANSI颜色支持
+- 优化窗口动画效果
+- 新增日期计算器
 
-1. Create or modify command files in `src/apps/terminal/`
-2. Register using the `registerCommand` function
-3. Import in `src/apps/terminal/index.ts`
+[查看完整更新日志](CHANGELOG.md)
 
-License
--------
+## 许可证
 
-This project is licensed under the MIT License.
+本项目采用MIT许可证开源。
 
-Acknowledgements
-----------------
+## 致谢
 
-Thanks to the following open source projects and services:
-
+感谢以下开源项目和服务的支持：
 - React, TypeScript, Vite, Zustand
-- Lucide Icons, Marked
-- Open-Meteo, CoinGecko, Hacker News API, GitHub API
-- wheretheiss.at, open.er-api.com, MyMemory
+- Lucide Icons
+- Open-Meteo, CoinGecko, GitHub API等公共服务
 
-Changelog
----------
+---
 
-### v34.0.0
-
-- Enhanced System Monitor with real-time browser performance API integration
-- Added toggle between real and simulated data modes
-- Improved chart visualization with SVG-based graphs and gradient fills
-- Enhanced hover effects and animations throughout the UI
-- Code quality improvements with useMemo and useCallback optimizations
-- Fixed potential memory leaks with proper cleanup in useEffect hooks
-- Updated README with improved structure and documentation
-- Enhanced terminal with better ANSI color support
-- Improved window management with smoother animations
-- Added Date Calculator application
-
-### v33.1.0
-
-- Enhanced terminal API commands: Added news, currency, crypto, translate, timezone, ipinfo, qr, password, uuid, timestamp commands
-- News API integration with multiple categories
-- Currency exchange API with real-time rates
-- Cryptocurrency tracking from CoinGecko
-- Multi-language translation via MyMemory API
-- Timezone lookup with WorldTimeAPI
-- IP information from ipapi.co
-- QR code generation via qrserver.com
-- Password and UUID generation utilities
-- Timestamp converter
-
-### v32.1.0
-
-- Enhanced Web Browser with page zoom and favicon display
-- Fixed icon import issues with unified management
-- Optimized file system utilities with improved caching
-- Improved terminal command system
-- Enhanced system monitoring interface
-- Code quality improvements with TypeScript fixes
-
-### v31.0.0
-
-- Added intelligent developer workbench
-- Code template library with search and filtering
-- API Mock service with visual simulator
-- Knowledge graph with connection visualization
-- Intelligent code analysis with quality metrics
-- Cyberpunk tech-style UI design
-- Responsive layout optimization
+**版本**: 35.0.0 | **最后更新**: 2026年7月 | **维护者**: Saya Ch

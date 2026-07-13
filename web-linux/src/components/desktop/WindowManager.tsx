@@ -314,6 +314,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevForge: () => import('../../apps/DevForge'),
   // === v30.0 新增实时协作文档编辑器 ===
   RealtimeDocumentEditor: () => import('../../apps/RealtimeDocumentEditor'),
+  // === v35.0 核心创新：在线编程实验室 ===
+  OnlineProgrammingLab: () => import('../../apps/OnlineProgrammingLab'),
   // === v32.0 新增创新应用 ===
   SystemDiagnosticsPro: () => import('../../apps/SystemDiagnosticsPro'),
   AIWorkflowAssistant: () => import('../../apps/AIWorkflowAssistant'),

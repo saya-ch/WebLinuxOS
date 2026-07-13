@@ -29,6 +29,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 新增在线编程实验室（v35.0核心创新）
+  { id: 'online-programming-lab', name: '在线编程实验室', icon: <Code2Icon />, component: 'OnlineProgrammingLab', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // 新增智能代码助手（v28.0创新功能）
   { id: 'intelligent-code-assistant', name: '智能代码助手', icon: <SparklesIcon />, component: 'IntelligentCodeAssistant', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // 新增增强应用（v16.0迭代）
