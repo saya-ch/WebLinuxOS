@@ -1,435 +1,782 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 
-registerCommand('clear', {
-  handler: (): CommandResult => {
-    return { output: '' }
-  },
-  description: '清屏',
-  usage: 'clear',
-  examples: ['clear']
-})
-
-registerCommand('echo', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const output = args.join(' ')
-    return { output }
-  },
-  description: '显示文本',
-  usage: 'echo <文本>',
-  examples: ['echo Hello World', 'echo $PATH']
-})
-
-registerCommand('date', {
-  handler: (): CommandResult => {
-    const now = new Date()
-    return { output: now.toLocaleString('zh-CN') }
-  },
-  description: '显示当前日期和时间',
-  usage: 'date',
-  examples: ['date']
-})
-
-registerCommand('whoami', {
-  handler: (context: CommandContext): CommandResult => {
-    return { output: context.username }
-  },
-  description: '显示当前用户',
-  usage: 'whoami',
-  examples: ['whoami']
-})
-
-registerCommand('hostname', {
-  handler: (context: CommandContext): CommandResult => {
-    return { output: context.hostname }
-  },
-  description: '显示主机名',
-  usage: 'hostname',
-  examples: ['hostname']
-})
-
-registerCommand('uname', {
+registerCommand('calc', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
     
-    if (args.includes('-a')) {
-      return { output: `Linux ${context.hostname} 6.15.0-web #1 SMP PREEMPT_DYNAMIC WebLinuxOS x86_64 GNU/Linux` }
+    if (args.length === 0) {
+      return {
+        output: [
+          '🧮 计算器',
+          '═'.repeat(40),
+          '',
+          '用法: calc <表达式>',
+          '',
+          '支持的运算符: +, -, *, /, %, ^ (幂), sqrt, sin, cos, tan',
+          '',
+          '示例:',
+          '  calc 1 + 2 * 3',
+          '  calc sqrt(16)',
+          '  calc sin(90)',
+          '  calc 2^10',
+          '  calc pi * 5^2',
+          '',
+        ].join('\n')
+      }
     }
     
-    if (args.includes('-s')) {
-      return { output: 'Linux' }
-    }
+    const expr = args.join(' ')
+      .replace(/\^/g, '**')
+      .replace(/sqrt/g, 'Math.sqrt')
+      .replace(/sin/g, 'Math.sin')
+      .replace(/cos/g, 'Math.cos')
+      .replace(/tan/g, 'Math.tan')
+      .replace(/pi/g, 'Math.PI')
+      .replace(/e/g, 'Math.E')
     
-    if (args.includes('-r')) {
-      return { output: '6.15.0-web' }
+    try {
+      const result = Function(`'use strict'; return ${expr}`)()
+      
+      if (typeof result === 'number' && isFinite(result)) {
+        return {
+          output: [
+            '🧮 计算结果',
+            '═'.repeat(40),
+            '',
+            `  表达式: ${expr}`,
+            '',
+            `  结果: ${result}`,
+            '',
+          ].join('\n')
+        }
+      }
+      return { output: `计算错误: 结果无效` }
+    } catch {
+      return { output: `计算错误: 无效的表达式 "${expr}"` }
     }
-    
-    if (args.includes('-v')) {
-      return { output: '#1 SMP PREEMPT_DYNAMIC WebLinuxOS' }
-    }
-    
-    if (args.includes('-m')) {
-      return { output: 'x86_64' }
-    }
-    
-    if (args.includes('-p')) {
-      return { output: 'unknown' }
-    }
-    
-    if (args.includes('-i')) {
-      return { output: 'unknown' }
-    }
-    
-    if (args.includes('-o')) {
-      return { output: 'GNU/Linux' }
-    }
-    
-    return { output: 'Linux' }
   },
-  description: '显示系统信息',
-  usage: 'uname [-a] [-s] [-r] [-v] [-m] [-p] [-i] [-o]',
-  examples: ['uname', 'uname -a']
+  description: '数学计算器',
+  usage: 'calc <表达式>',
+  examples: ['calc 1+2*3', 'calc sqrt(16)', 'calc sin(90)', 'calc 2^10']
 })
 
-registerCommand('uptime', {
-  handler: (): CommandResult => {
-    const now = new Date()
-    const uptime = '2 hours'
+registerCommand('converter', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🔄 单位转换器',
+          '═'.repeat(40),
+          '',
+          '用法: converter <值> <单位> <目标单位>',
+          '',
+          '支持的类别:',
+          '',
+          '  长度: m, km, cm, mm, inch, foot, yard, mile',
+          '  重量: kg, g, mg, lb, oz',
+          '  温度: c, f, k',
+          '  面积: m2, km2, cm2, acre, hectare',
+          '  体积: l, ml, m3, gal, qt, pt',
+          '',
+          '示例:',
+          '  converter 100 km mile',
+          '  converter 25 c f',
+          '  converter 1000 g lb',
+          '  converter 50 mile km',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const value = parseFloat(args[0])
+    const fromUnit = args[1].toLowerCase()
+    const toUnit = args[2].toLowerCase()
+    
+    if (isNaN(value)) {
+      return { output: '错误: 请输入有效的数字' }
+    }
+    
+    const lengthFactors: Record<string, number> = {
+      m: 1, km: 1000, cm: 0.01, mm: 0.001,
+      inch: 0.0254, foot: 0.3048, yard: 0.9144, mile: 1609.34
+    }
+    
+    const weightFactors: Record<string, number> = {
+      kg: 1, g: 0.001, mg: 0.000001, lb: 0.453592, oz: 0.0283495
+    }
+    
+    const areaFactors: Record<string, number> = {
+      m2: 1, km2: 1000000, cm2: 0.0001, acre: 4046.86, hectare: 10000
+    }
+    
+    const volumeFactors: Record<string, number> = {
+      l: 1, ml: 0.001, m3: 1000, gal: 3.78541, qt: 0.946353, pt: 0.473176
+    }
+    
+    let result: number | null = null
+    
+    if (lengthFactors[fromUnit] && lengthFactors[toUnit]) {
+      result = value * lengthFactors[fromUnit] / lengthFactors[toUnit]
+    } else if (weightFactors[fromUnit] && weightFactors[toUnit]) {
+      result = value * weightFactors[fromUnit] / weightFactors[toUnit]
+    } else if (areaFactors[fromUnit] && areaFactors[toUnit]) {
+      result = value * areaFactors[fromUnit] / areaFactors[toUnit]
+    } else if (volumeFactors[fromUnit] && volumeFactors[toUnit]) {
+      result = value * volumeFactors[fromUnit] / volumeFactors[toUnit]
+    } else if (['c', 'f', 'k'].includes(fromUnit) && ['c', 'f', 'k'].includes(toUnit)) {
+      let celsius = value
+      if (fromUnit === 'f') celsius = (value - 32) * 5 / 9
+      if (fromUnit === 'k') celsius = value - 273.15
+      
+      if (toUnit === 'c') result = celsius
+      if (toUnit === 'f') result = celsius * 9 / 5 + 32
+      if (toUnit === 'k') result = celsius + 273.15
+    }
+    
+    if (result !== null) {
+      return {
+        output: [
+          '🔄 转换结果',
+          '═'.repeat(40),
+          '',
+          `  ${value} ${fromUnit} = ${result.toFixed(4)} ${toUnit}`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `不支持的单位转换: ${fromUnit} -> ${toUnit}` }
+  },
+  description: '单位转换器',
+  usage: 'converter <值> <单位> <目标单位>',
+  examples: ['converter 100 km mile', 'converter 25 c f', 'converter 1000 g lb']
+})
+
+registerCommand('timer', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '⏱️ 计时器',
+          '═'.repeat(40),
+          '',
+          '用法: timer <秒数>',
+          '',
+          '示例:',
+          '  timer 60',
+          '  timer 120',
+          '  timer 300',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    const seconds = parseInt(args[0])
+    
+    if (isNaN(seconds) || seconds <= 0) {
+      return { output: '错误: 请输入有效的正数秒数' }
+    }
     
     return {
-      output: `${now.toLocaleTimeString('zh-CN')} up ${uptime},  1 user,  load average: 0.00, 0.01, 0.05`
+      output: [
+        '⏱️ 计时器已启动',
+        '═'.repeat(40),
+        '',
+        `  倒计时: ${seconds} 秒`,
+        '',
+        `  预计完成: ${new Date(Date.now() + seconds * 1000).toLocaleTimeString('zh-CN')}`,
+        '',
+        '提示: 计时器在后台运行，完成时会发出提示音',
+        '',
+      ].join('\n')
     }
   },
-  description: '显示系统运行时间',
-  usage: 'uptime',
-  examples: ['uptime']
+  description: '启动倒计时器',
+  usage: 'timer <秒数>',
+  examples: ['timer 60', 'timer 120']
 })
 
-registerCommand('free', {
+registerCommand('stopwatch', {
+  handler: (): CommandResult => {
+    return {
+      output: [
+        '⏲️ 秒表',
+        '═'.repeat(40),
+        '',
+        '秒表已启动！',
+        '',
+        '按任意键停止计时...',
+        '',
+      ].join('\n')
+    }
+  },
+  description: '启动秒表',
+  usage: 'stopwatch',
+  examples: ['stopwatch']
+})
+
+registerCommand('reminder', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    const showHuman = args.includes('-h')
     
-    const formatSize = (bytes: number): string => {
-      if (!showHuman) return bytes.toString()
-      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}Mi`
-      if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)}Ki`
-      return bytes.toString()
+    if (args.length < 2) {
+      return {
+        output: [
+          '📅 提醒器',
+          '═'.repeat(40),
+          '',
+          '用法: reminder <分钟> <消息>',
+          '',
+          '示例:',
+          '  reminder 5 休息一下',
+          '  reminder 30 会议开始',
+          '',
+        ].join('\n')
+      }
     }
     
-    const total = 4 * 1024 * 1024
-    const used = Math.floor(total * 0.3)
-    const free = total - used
-    const cached = Math.floor(total * 0.15)
-    const available = free + cached
+    const minutes = parseInt(args[0])
+    const message = args.slice(1).join(' ')
+    
+    if (isNaN(minutes) || minutes <= 0) {
+      return { output: '错误: 请输入有效的正数分钟数' }
+    }
     
     return {
-      output: `              total        used        free      shared  buff/cache   available
-Mem:       ${formatSize(total)}   ${formatSize(used)}   ${formatSize(free)}           0   ${formatSize(cached)}   ${formatSize(available)}
-Swap:             0           0           0`
+      output: [
+        '📅 提醒已设置',
+        '═'.repeat(40),
+        '',
+        `  时间: ${minutes} 分钟后`,
+        `  消息: ${message}`,
+        '',
+        `  预计时间: ${new Date(Date.now() + minutes * 60 * 1000).toLocaleTimeString('zh-CN')}`,
+        '',
+      ].join('\n')
     }
   },
-  description: '显示内存使用情况',
-  usage: 'free [-h]',
-  examples: ['free', 'free -h']
+  description: '设置提醒',
+  usage: 'reminder <分钟> <消息>',
+  examples: ['reminder 5 休息一下', 'reminder 30 会议开始']
 })
 
-registerCommand('df', {
+registerCommand('pomo', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    const showHuman = args.includes('-h')
     
-    const formatSize = (bytes: number): string => {
-      if (!showHuman) return bytes.toString()
-      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`
-      if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)}K`
-      return bytes.toString()
+    const mode = args[0]?.toLowerCase()
+    
+    if (!mode || mode === 'start') {
+      return {
+        output: [
+          '🍅 番茄工作法',
+          '═'.repeat(40),
+          '',
+          '番茄钟已启动！',
+          '',
+          '  专注时间: 25 分钟',
+          '  休息时间: 5 分钟',
+          '',
+          '当前状态: 专注中...',
+          '',
+          '用法:',
+          '  pomo start    - 开始番茄钟',
+          '  pomo pause    - 暂停',
+          '  pomo stop     - 停止',
+          '  pomo status   - 查看状态',
+          '',
+        ].join('\n')
+      }
     }
     
-    const output = [
-      `Filesystem     ${showHuman ? 'Size' : '1K-blocks'}  Used ${showHuman ? 'Avail' : 'Available'} Use% Mounted on`,
-      `rootfs         ${formatSize(100 * 1024 * 1024)} ${formatSize(25 * 1024 * 1024)} ${formatSize(75 * 1024 * 1024)}  25% /`,
-      `tmpfs          ${formatSize(50 * 1024 * 1024)} ${formatSize(10 * 1024 * 1024)} ${formatSize(40 * 1024 * 1024)}  20% /tmp`,
-      `localstorage   ${formatSize(50 * 1024 * 1024)} ${formatSize(15 * 1024 * 1024)} ${formatSize(35 * 1024 * 1024)}  30% /home/user`,
-    ]
+    if (mode === 'pause') {
+      return {
+        output: [
+          '🍅 番茄工作法',
+          '═'.repeat(40),
+          '',
+          '番茄钟已暂停',
+          '',
+          '使用 pomo start 继续',
+          '',
+        ].join('\n')
+      }
+    }
     
-    return { output: output.join('\n') }
+    if (mode === 'stop') {
+      return {
+        output: [
+          '🍅 番茄工作法',
+          '═'.repeat(40),
+          '',
+          '番茄钟已停止',
+          '',
+          '今日完成: 0 个番茄',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (mode === 'status') {
+      return {
+        output: [
+          '🍅 番茄工作法状态',
+          '═'.repeat(40),
+          '',
+          '当前状态: 运行中',
+          '剩余时间: 24:32',
+          '今日完成: 3 个番茄',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `未知命令: ${mode}\n用法: pomo start|pause|stop|status` }
   },
-  description: '显示磁盘使用情况',
-  usage: 'df [-h]',
-  examples: ['df', 'df -h']
+  description: '番茄工作法计时器',
+  usage: 'pomo [start|pause|stop|status]',
+  examples: ['pomo', 'pomo start', 'pomo status']
 })
 
-registerCommand('ps', {
-  handler: (): CommandResult => {
-    const output = [
-      'PID TTY          TIME CMD',
-      '1 pts/0    00:00:01 init',
-      '2 pts/0    00:00:00 kthreadd',
-      '3 pts/0    00:00:00 kworker/0:0',
-      '4 pts/0    00:00:00 kworker/0:1',
-      '5 pts/0    00:00:02 bash',
-      '6 pts/0    00:00:00 ps',
-    ]
+registerCommand('todo', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
     
-    return { output: output.join('\n') }
+    const action = args[0]?.toLowerCase()
+    
+    if (!action || action === 'list') {
+      const todos = [
+        { id: 1, text: '完成项目报告', done: false },
+        { id: 2, text: '回复邮件', done: true },
+        { id: 3, text: '学习 TypeScript', done: false },
+        { id: 4, text: '准备会议演示', done: false },
+      ]
+      
+      const output: string[] = []
+      output.push('📝 待办事项')
+      output.push('═'.repeat(40))
+      output.push('')
+      
+      todos.forEach(todo => {
+        const status = todo.done ? '\x1b[32m✓\x1b[0m' : '\x1b[31m◯\x1b[0m'
+        output.push(`  ${status} ${todo.text}`)
+      })
+      
+      const completed = todos.filter(t => t.done).length
+      output.push('')
+      output.push(`  进度: ${completed}/${todos.length} 已完成`)
+      output.push('')
+      output.push('用法: todo add|done|remove|list')
+      output.push('')
+      
+      return { output: output.join('\n') }
+    }
+    
+    if (action === 'add') {
+      const text = args.slice(1).join(' ')
+      if (!text) return { output: '用法: todo add <事项>' }
+      
+      return {
+        output: [
+          '📝 待办事项',
+          '═'.repeat(40),
+          '',
+          `已添加: ${text}`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'done') {
+      const id = parseInt(args[1])
+      if (isNaN(id)) return { output: '用法: todo done <ID>' }
+      
+      return {
+        output: [
+          '📝 待办事项',
+          '═'.repeat(40),
+          '',
+          `已完成: #${id}`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'remove') {
+      const id = parseInt(args[1])
+      if (isNaN(id)) return { output: '用法: todo remove <ID>' }
+      
+      return {
+        output: [
+          '📝 待办事项',
+          '═'.repeat(40),
+          '',
+          `已删除: #${id}`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `未知命令: ${action}\n用法: todo add|done|remove|list` }
   },
-  description: '显示当前进程',
-  usage: 'ps',
-  examples: ['ps']
+  description: '待办事项管理',
+  usage: 'todo [add|done|remove|list]',
+  examples: ['todo', 'todo add 学习', 'todo done 1']
 })
 
-registerCommand('top', {
-  handler: (): CommandResult => {
-    const now = new Date()
+registerCommand('notes', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
     
-    const output = [
-      `top - ${now.toLocaleTimeString('zh-CN')} up 2 hours,  1 user,  load average: 0.00, 0.01, 0.05`,
-      '',
-      'Tasks:   5 total,   1 running,   4 sleeping,   0 stopped,   0 zombie',
-      '%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st',
-      'MiB Mem :   4096.0 total,   3000.0 free,   1096.0 used,      0.0 buff/cache',
-      'MiB Swap:      0.0 total,      0.0 free,      0.0 used.   3000.0 avail Mem',
-      '',
-      'PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND',
-      '   1 root      20   0    4.0g    1.1g    0.0 S   0.0   0.0   0:01.23 init',
-      '   2 root      20   0    0.0m    0.0m    0.0 S   0.0   0.0   0:00.00 kthreadd',
-      '   3 root      20   0    0.0m    0.0m    0.0 S   0.0   0.0   0:00.00 kworker/0:0',
-      '   4 root      20   0    0.0m    0.0m    0.0 S   0.0   0.0   0:00.00 kworker/0:1',
-      '   5 user      20   0    1.0g  256.0m    0.0 S   0.0   6.2   0:02.34 bash',
-    ]
+    const action = args[0]?.toLowerCase()
     
-    return { output: output.join('\n') }
+    if (!action || action === 'list') {
+      const notes = [
+        { id: 1, title: '会议笔记', date: '2024-01-15' },
+        { id: 2, title: '项目计划', date: '2024-01-14' },
+        { id: 3, title: '代码思路', date: '2024-01-13' },
+      ]
+      
+      const output: string[] = []
+      output.push('📒 笔记列表')
+      output.push('═'.repeat(40))
+      output.push('')
+      
+      notes.forEach(note => {
+        output.push(`  ${note.id}. ${note.title.padEnd(20)} ${note.date}`)
+      })
+      
+      output.push('')
+      output.push('用法: notes view|create|edit|delete')
+      output.push('')
+      
+      return { output: output.join('\n') }
+    }
+    
+    if (action === 'create') {
+      const title = args.slice(1).join(' ')
+      if (!title) return { output: '用法: notes create <标题>' }
+      
+      return {
+        output: [
+          '📒 笔记',
+          '═'.repeat(40),
+          '',
+          `已创建笔记: ${title}`,
+          '',
+          '使用 notes edit <ID> 编辑内容',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'view') {
+      const id = parseInt(args[1])
+      if (isNaN(id)) return { output: '用法: notes view <ID>' }
+      
+      return {
+        output: [
+          '📒 笔记内容',
+          '═'.repeat(40),
+          '',
+          '# 会议笔记',
+          '',
+          '## 讨论内容',
+          '',
+          '- 项目进度更新',
+          '- 下一阶段计划',
+          '- 待解决问题',
+          '',
+          '---',
+          '创建于: 2024-01-15',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `未知命令: ${action}\n用法: notes view|create|edit|delete` }
   },
-  description: '显示系统进程和资源使用',
-  usage: 'top',
-  examples: ['top']
+  description: '笔记管理',
+  usage: 'notes [view|create|edit|delete]',
+  examples: ['notes', 'notes create 新笔记', 'notes view 1']
+})
+
+registerCommand('clipboard', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    const action = args[0]?.toLowerCase()
+    
+    if (!action || action === 'show') {
+      return {
+        output: [
+          '📋 剪贴板',
+          '═'.repeat(40),
+          '',
+          '剪贴板历史:',
+          '',
+          '  1. Hello World',
+          '  2. https://github.com',
+          '  3. const x = 10;',
+          '',
+          '用法:',
+          '  clipboard show    - 显示历史',
+          '  clipboard copy    - 复制到剪贴板',
+          '  clipboard clear   - 清空剪贴板',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'copy') {
+      const text = args.slice(1).join(' ')
+      if (!text) return { output: '用法: clipboard copy <文本>' }
+      
+      return {
+        output: [
+          '📋 剪贴板',
+          '═'.repeat(40),
+          '',
+          `已复制: "${text}"`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'clear') {
+      return {
+        output: [
+          '📋 剪贴板',
+          '═'.repeat(40),
+          '',
+          '剪贴板已清空',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `未知命令: ${action}\n用法: clipboard show|copy|clear` }
+  },
+  description: '剪贴板管理',
+  usage: 'clipboard [show|copy|clear]',
+  examples: ['clipboard', 'clipboard copy hello', 'clipboard clear']
 })
 
 registerCommand('history', {
-  handler: (): CommandResult => {
-    const history = [
-      '  1  ls',
-      '  2  cd /home/user',
-      '  3  cat README.md',
-      '  4  weather Beijing',
-      '  5  crypto',
-      '  6  help',
-      '  7  history',
-    ]
-    
-    return { output: history.join('\n') }
-  },
-  description: '显示命令历史',
-  usage: 'history',
-  examples: ['history']
-})
-
-registerCommand('cal', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    const now = new Date()
-    const year = args.length > 1 ? parseInt(args[1]) || now.getFullYear() : now.getFullYear()
-    const month = args.length > 0 ? parseInt(args[0]) || now.getMonth() + 1 : now.getMonth() + 1
     
-    const firstDay = new Date(year, month - 1, 1).getDay()
-    const daysInMonth = new Date(year, month, 0).getDate()
+    const action = args[0]?.toLowerCase()
     
-    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-    const output = [`${year}年${month}月`]
-    output.push(weekDays.join('  '))
+    if (!action || action === 'show') {
+      const history = [
+        'ls -la',
+        'cd /home/user',
+        'weather Beijing',
+        'crypto',
+        'news',
+      ]
+      
+      const output: string[] = []
+      output.push('📜 命令历史')
+      output.push('═'.repeat(40))
+      output.push('')
+      
+      history.forEach((cmd, i) => {
+        output.push(`  ${(i + 1).toString().padStart(3)}. ${cmd}`)
+      })
+      
+      output.push('')
+      output.push('用法: history show|clear')
+      output.push('提示: 使用 ↑ ↓ 键浏览历史')
+      output.push('')
+      
+      return { output: output.join('\n') }
+    }
     
-    let line = '   '.repeat(firstDay)
-    
-    for (let i = 1; i <= daysInMonth; i++) {
-      line += `${i.toString().padStart(2, ' ')} `
-      if ((i + firstDay) % 7 === 0) {
-        output.push(line.trim())
-        line = ''
+    if (action === 'clear') {
+      return {
+        output: [
+          '📜 命令历史',
+          '═'.repeat(40),
+          '',
+          '历史记录已清空',
+          '',
+        ].join('\n')
       }
     }
     
-    if (line) {
-      output.push(line.trim())
+    return { output: `未知命令: ${action}\n用法: history show|clear` }
+  },
+  description: '命令历史管理',
+  usage: 'history [show|clear]',
+  examples: ['history', 'history clear']
+})
+
+registerCommand('theme', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, theme } = context
+    
+    const action = args[0]?.toLowerCase()
+    
+    if (!action || action === 'status') {
+      return {
+        output: [
+          '🎨 主题设置',
+          '═'.repeat(40),
+          '',
+          `当前主题: ${theme === 'dark' ? '\x1b[32m深色\x1b[0m' : '\x1b[33m浅色\x1b[0m'}`,
+          '',
+          '可用主题:',
+          '  dark   - 深色模式',
+          '  light  - 浅色模式',
+          '',
+          '用法: theme dark|light',
+          '',
+        ].join('\n')
+      }
     }
+    
+    if (action === 'dark' || action === 'light') {
+      return {
+        output: [
+          '🎨 主题设置',
+          '═'.repeat(40),
+          '',
+          `主题已切换为: ${action === 'dark' ? '\x1b[32m深色\x1b[0m' : '\x1b[33m浅色\x1b[0m'}`,
+          '',
+          '需要重启应用才能生效',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `未知主题: ${action}\n可用: dark, light` }
+  },
+  description: '切换主题',
+  usage: 'theme [dark|light]',
+  examples: ['theme', 'theme dark', 'theme light']
+})
+
+registerCommand('config', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    const action = args[0]?.toLowerCase()
+    
+    if (!action || action === 'show') {
+      const config = {
+        theme: 'dark',
+        fontSize: '14px',
+        fontFamily: 'Monaco, Consolas',
+        autoSave: 'on',
+        language: 'zh-CN',
+      }
+      
+      const output: string[] = []
+      output.push('⚙️ 配置设置')
+      output.push('═'.repeat(40))
+      output.push('')
+      
+      Object.entries(config).forEach(([key, value]) => {
+        output.push(`  ${key.padEnd(15)}: ${value}`)
+      })
+      
+      output.push('')
+      output.push('用法: config get|set|reset')
+      output.push('')
+      
+      return { output: output.join('\n') }
+    }
+    
+    if (action === 'get') {
+      const key = args[1]
+      if (!key) return { output: '用法: config get <键>' }
+      
+      return {
+        output: [
+          '⚙️ 配置设置',
+          '═'.repeat(40),
+          '',
+          `${key}: dark`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'set') {
+      const key = args[1]
+      const value = args.slice(2).join(' ')
+      if (!key || !value) return { output: '用法: config set <键> <值>' }
+      
+      return {
+        output: [
+          '⚙️ 配置设置',
+          '═'.repeat(40),
+          '',
+          `已设置 ${key} = ${value}`,
+          '',
+        ].join('\n')
+      }
+    }
+    
+    if (action === 'reset') {
+      return {
+        output: [
+          '⚙️ 配置设置',
+          '═'.repeat(40),
+          '',
+          '配置已重置为默认值',
+          '',
+        ].join('\n')
+      }
+    }
+    
+    return { output: `未知命令: ${action}\n用法: config get|set|reset` }
+  },
+  description: '配置管理',
+  usage: 'config [get|set|reset]',
+  examples: ['config', 'config set theme dark', 'config reset']
+})
+
+registerCommand('help-util', {
+  handler: (): CommandResult => {
+    const commands = [
+      { name: 'calc', desc: '数学计算器', usage: 'calc <表达式>' },
+      { name: 'converter', desc: '单位转换器', usage: 'converter <值> <单位> <目标>' },
+      { name: 'timer', desc: '倒计时器', usage: 'timer <秒数>' },
+      { name: 'stopwatch', desc: '秒表', usage: 'stopwatch' },
+      { name: 'reminder', desc: '提醒器', usage: 'reminder <分钟> <消息>' },
+      { name: 'pomo', desc: '番茄工作法', usage: 'pomo [start|pause|stop]' },
+      { name: 'todo', desc: '待办事项', usage: 'todo [add|done|remove|list]' },
+      { name: 'notes', desc: '笔记管理', usage: 'notes [view|create|edit]' },
+      { name: 'clipboard', desc: '剪贴板管理', usage: 'clipboard [show|copy|clear]' },
+      { name: 'history', desc: '命令历史', usage: 'history [show|clear]' },
+      { name: 'theme', desc: '切换主题', usage: 'theme [dark|light]' },
+      { name: 'config', desc: '配置管理', usage: 'config [get|set|reset]' },
+    ]
+    
+    const output: string[] = []
+    output.push('🛠️ 工具命令列表')
+    output.push('═'.repeat(70))
+    output.push('')
+    
+    commands.forEach(cmd => {
+      output.push(`  ${cmd.name.padEnd(15)} ${cmd.desc.padEnd(18)} ${cmd.usage}`)
+    })
+    
+    output.push('')
+    output.push('使用 help 查看所有命令')
+    output.push('')
     
     return { output: output.join('\n') }
   },
-  description: '显示日历',
-  usage: 'cal [月份] [年份]',
-  examples: ['cal', 'cal 12 2024']
-})
-
-registerCommand('bc', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const expression = args.join(' ')
-    
-    if (!expression) {
-      return { output: 'bc: 缺少表达式\n用法: bc <表达式>' }
-    }
-    
-    // 安全验证：仅允许数字、运算符、括号、小数点和数学函数
-    const sanitized = expression.replace(/\s/g, '')
-    if (!/^[\d+\-*/%.()eE,]+$/.test(sanitized)) {
-      return { output: 'bc: 表达式包含不支持的字符' }
-    }
-    
-    try {
-      // 使用 Function 构造器替代直接 eval（间接调用，作用域更安全）
-      const result = Function(`"use strict"; return (${sanitized})`)()
-      if (typeof result !== 'number' || !isFinite(result)) {
-        return { output: 'bc: 计算结果无效' }
-      }
-      return { output: result.toString() }
-    } catch {
-      return { output: 'bc: 表达式错误' }
-    }
-  },
-  description: '计算器',
-  usage: 'bc <表达式>',
-  examples: ['bc 1+2', 'bc "10*(5+3)"']
-})
-
-registerCommand('grep', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args, cwd } = context
-    
-    if (args.length < 2) {
-      return { output: 'grep: 缺少模式或文件\n用法: grep <模式> <文件>' }
-    }
-    
-    const pattern = args[0]
-    const filePath = args[1]
-    const resolved = filePath.startsWith('/') ? filePath : `${cwd}/${filePath}`
-    
-    return { output: `grep: 正在搜索 '${pattern}' in '${resolved}'` }
-  },
-  description: '在文件中搜索模式',
-  usage: 'grep <模式> <文件>',
-  examples: ['grep "hello" file.txt']
-})
-
-registerCommand('sed', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length < 2) {
-      return { output: 'sed: 缺少表达式或文件\n用法: sed <表达式> <文件>' }
-    }
-    
-    return { output: `sed: 应用表达式 '${args[0]}' 到文件 '${args[1]}'` }
-  },
-  description: '流编辑器',
-  usage: 'sed <表达式> <文件>',
-  examples: ['sed "s/old/new/g" file.txt']
-})
-
-registerCommand('awk', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length < 2) {
-      return { output: 'awk: 缺少脚本或文件\n用法: awk <脚本> <文件>' }
-    }
-    
-    return { output: `awk: 执行脚本 '${args[0]}' 到文件 '${args[1]}'` }
-  },
-  description: '模式扫描和处理语言',
-  usage: 'awk <脚本> <文件>',
-  examples: ['awk "{print $1}" file.txt']
-})
-
-registerCommand('sort', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: 'sort: 缺少文件\n用法: sort <文件>' }
-    }
-    
-    return { output: `sort: 排序文件 '${args[0]}'` }
-  },
-  description: '排序文件内容',
-  usage: 'sort <文件>',
-  examples: ['sort file.txt']
-})
-
-registerCommand('uniq', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: 'uniq: 缺少文件\n用法: uniq <文件>' }
-    }
-    
-    return { output: `uniq: 去除重复行 '${args[0]}'` }
-  },
-  description: '去除重复行',
-  usage: 'uniq <文件>',
-  examples: ['uniq file.txt']
-})
-
-registerCommand('wc', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: 'wc: 缺少文件\n用法: wc <文件>' }
-    }
-    
-    const showLines = args.includes('-l')
-    const showWords = args.includes('-w')
-    const showChars = args.includes('-c')
-    
-    if (!showLines && !showWords && !showChars) {
-      return { output: '  10   100  1000 file.txt' }
-    }
-    
-    let output = ''
-    if (showLines) output += '  10 '
-    if (showWords) output += ' 100 '
-    if (showChars) output += '1000 '
-    output += args[args.length - 1]
-    
-    return { output: output.trim() }
-  },
-  description: '统计行数、单词数、字符数',
-  usage: 'wc [-l] [-w] [-c] <文件>',
-  examples: ['wc file.txt', 'wc -l file.txt']
-})
-
-registerCommand('head', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: 'head: 缺少文件\n用法: head <文件>' }
-    }
-    
-    const lines = args.includes('-n') ? parseInt(args[args.indexOf('-n') + 1]) || 10 : 10
-    
-    return { output: `head: 显示文件 '${args[args.length - 1]}' 的前 ${lines} 行` }
-  },
-  description: '显示文件开头',
-  usage: 'head [-n <行数>] <文件>',
-  examples: ['head file.txt', 'head -n 5 file.txt']
-})
-
-registerCommand('tail', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: 'tail: 缺少文件\n用法: tail <文件>' }
-    }
-    
-    const lines = args.includes('-n') ? parseInt(args[args.indexOf('-n') + 1]) || 10 : 10
-    
-    return { output: `tail: 显示文件 '${args[args.length - 1]}' 的后 ${lines} 行` }
-  },
-  description: '显示文件结尾',
-  usage: 'tail [-n <行数>] <文件>',
-  examples: ['tail file.txt', 'tail -n 5 file.txt']
+  description: '显示工具命令列表',
+  usage: 'help-util',
+  examples: ['help-util']
 })

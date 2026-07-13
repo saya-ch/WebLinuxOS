@@ -195,6 +195,23 @@ hash                   # hash generator
 help                   # full command list
 ```
 
+### Creative Commands
+
+In addition to practical utilities, WebLinuxOS includes a suite of creative commands that turn the terminal into a productivity and creativity tool:
+
+```bash
+brainstorm "AI应用"     # 头脑风暴生成创意
+story "科幻"            # 生成创意故事
+poem "代码"             # 生成诗歌
+quote-gen life          # 名言警句 (programming/life/creativity)
+joke-gen               # 编程笑话生成器
+idea "AI"              # 创新项目创意生成
+password-check "pwd"   # 密码强度检测
+wordle apple           # Wordle猜词游戏
+hangman a              # 猜单词游戏
+help-creative          # 查看创意命令列表
+```
+
 ## Project Structure
 
 ```

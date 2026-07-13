@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
       minify: isProduction ? 'terser' : false,
       cssMinify: isProduction,
       target: 'es2022',
-      chunkSizeWarningLimit: 2000,
+      chunkSizeWarningLimit: 3000,
       reportCompressedSize: false,
       modulePreload: {
         polyfill: false,
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
       },
       rollupOptions: {
         output: {
-          manualChunks: (id) => {
+          manualChunks(id: string) {
             if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
               return 'vendor-react'
             }
@@ -71,14 +71,11 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/monaco-editor')) {
               return 'vendor-monaco'
             }
-            if (id.includes('node_modules/codemirror')) {
+            if (id.includes('node_modules/codemirror') || id.includes('node_modules/@codemirror')) {
               return 'vendor-codemirror'
             }
             if (id.includes('node_modules/prismjs')) {
               return 'vendor-prism'
-            }
-            if (id.includes('node_modules/@codemirror')) {
-              return 'vendor-codemirror'
             }
             if (id.includes('node_modules/chart.js')) {
               return 'vendor-chart'
@@ -92,26 +89,6 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/uuid')) {
               return 'vendor-uuid'
             }
-            if (id.includes('src/apps/')) {
-              const match = id.match(/src\/apps\/([A-Za-z][A-Za-z0-9_-]*)\.tsx/)
-              if (match) return `app-${match[1]}`
-            }
-            if (id.includes('src/apps/terminal/')) {
-              return 'app-terminal'
-            }
-            if (id.includes('src/components/')) {
-              const match = id.match(/src\/components\/([A-Za-z][A-Za-z0-9_-]*)\//)
-              if (match) return `component-${match[1]}`
-            }
-            if (id.includes('src/store/')) {
-              return 'core-store'
-            }
-            if (id.includes('src/types/')) {
-              return 'core-types'
-            }
-            if (id.includes('src/utils/')) {
-              return 'core-utils'
-            }
             return undefined
           },
           entryFileNames: 'assets/[name]-[hash].js',
@@ -121,12 +98,18 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      include: ['react', 'react-dom', 'zustand', 'lucide-react'],
+      include: ['react', 'react-dom', 'zustand', 'lucide-react', 'marked'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
+      esbuildOptions: {
+        target: 'es2022',
+      },
     },
     resolve: {
       conditions: ['es2022'],
+      alias: {
+        '@': resolve(__dirname, 'src'),
+      },
     },
     server: {
       port: 5173,
@@ -141,6 +124,9 @@ export default defineConfig(({ mode }) => {
         'Cross-Origin-Embedder-Policy': 'require-corp',
         'Cross-Origin-Opener-Policy': 'same-origin',
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
       },
     },
     preview: {
