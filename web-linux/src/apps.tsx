@@ -53,8 +53,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'api-explorer-pro', name: 'API Explorer Pro', icon: <ApiLabIcon />, component: 'APIExplorerPro', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // 新增在线资源聚合器（v32.0创新功能）
   { id: 'online-resource-hub', name: '在线资源聚合器', icon: <BrowserIcon />, component: 'OnlineResourceHub', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
-  // 新增实时数据中心（v33.0创新功能 - 集成真实公开API）
-  { id: 'live-data-hub', name: '实时数据中心', icon: <ActivityIcon />, component: 'LiveDataHub', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
