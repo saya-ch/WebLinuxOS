@@ -74,6 +74,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CodePlayground: () => import('../../apps/CodePlayground'),
   CodeSandbox: () => import('../../apps/CodeSandbox'),
   CodeStudio: () => import('../../apps/CodeStudio'),
+  WebIDEPro: () => import('../../apps/WebIDEPro'),
   CodeFormatter: () => import('../../apps/CodeFormatter'),
   CodeDiffViewer: () => import('../../apps/CodeDiffViewer'),
   CodeDiffViewerEnhanced: () => import('../../apps/CodeDiffViewerEnhanced'),

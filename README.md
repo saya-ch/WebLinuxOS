@@ -25,6 +25,18 @@ Most web "OS" demos are toy interfaces with one or two hardcoded windows. WebLin
 
 This release adds three new flagship applications that move WebLinuxOS beyond a simulation and into the territory of an actually useful tool.
 
+### WebIDE Pro
+
+A comprehensive online programming environment that runs entirely in the browser. Supports 8 programming languages including JavaScript, TypeScript, Python (via Pyodide), HTML, CSS, SQL, Markdown, and JSON. Features real-time code execution, file management, AI-assisted coding suggestions, and HTML preview.
+
+Features:
+- 8 programming languages with syntax templates
+- Real-time code execution with performance metrics
+- Multi-file project management
+- AI programming assistant integration
+- HTML/CSS live preview
+- Code download and export
+
 ### AI Workbench
 
 A prompt-engineering workbench designed for working with large language models. Built-in templates for code review, technical design documents, blog posts, localization, meeting minutes, data analysis, bug diagnosis, and product ideation. Includes a prompt-quality scorer, automatic enhancement of underspecified prompts, multi-tab workspace, full history with star/favorite, and local persistence.
