@@ -275,7 +275,7 @@ registerCommand('top', {
       '  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND',
       ...processes.slice(0, 10).map(p => `${p.pid.toString().padStart(6)} ${p.user.padEnd(8)}  20   0 ${(p.mem * 100).toFixed(0).padStart(8)} ${(p.mem * 50).toFixed(0).padStart(8)} ${(p.mem * 30).toFixed(0).padStart(8)} S  ${p.cpu.toString().padStart(5)} ${p.mem.toString().padStart(5)} ${p.time.padEnd(10)} ${p.cmd}`),
       '',
-      `提示: 输入 'q' 退出，'h' 查看帮助`,
+      `提示: 使用 'kill <PID>' 关闭进程，'q' 退出，'h' 查看帮助`,
     ]
     
     return { output: output.join('\n') }
@@ -283,6 +283,77 @@ registerCommand('top', {
   description: '显示系统进程和资源使用情况',
   usage: 'top',
   examples: ['top']
+})
+
+registerCommand('kill', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'kill: 缺少进程ID\n用法: kill [-9] <PID>' }
+    }
+    
+    const force = args.includes('-9') || args.includes('-KILL')
+    const pidArg = args.find(arg => !arg.startsWith('-'))
+    
+    if (!pidArg) {
+      return { output: 'kill: 缺少进程ID\n用法: kill [-9] <PID>' }
+    }
+    
+    const pid = parseInt(pidArg)
+    
+    if (isNaN(pid)) {
+      return { output: `kill: ${pidArg}: 参数必须是数字` }
+    }
+    
+    const windows = useStore.getState().windows
+    const closeWindow = useStore.getState().closeWindow
+    
+    const systemPids = [1, 2, 3, 997, 998, 999]
+    if (systemPids.includes(pid)) {
+      return { output: `kill: 无法终止系统进程 ${pid}` }
+    }
+    
+    const windowIndex = pid - 100
+    if (windowIndex >= 0 && windowIndex < windows.length) {
+      const window = windows[windowIndex]
+      closeWindow(window.id)
+      const signal = force ? 'KILL' : 'TERM'
+      return { output: `已发送 ${signal} 信号到进程 ${pid} (${window.appId})` }
+    }
+    
+    return { output: `kill: ${pid}: 没有那个进程` }
+  },
+  description: '终止进程',
+  usage: 'kill [-9] <PID>',
+  examples: ['kill 100', 'kill -9 101']
+})
+
+registerCommand('killall', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'killall: 缺少进程名称\n用法: killall <进程名>' }
+    }
+    
+    const processName = args[0]
+    const windows = useStore.getState().windows
+    const closeWindow = useStore.getState().closeWindow
+    
+    const matchingWindows = windows.filter(win => win.appId.toLowerCase() === processName.toLowerCase())
+    
+    if (matchingWindows.length === 0) {
+      return { output: `killall: ${processName}: 没有找到匹配的进程` }
+    }
+    
+    matchingWindows.forEach(win => closeWindow(win.id))
+    
+    return { output: `已终止 ${matchingWindows.length} 个名为 '${processName}' 的进程` }
+  },
+  description: '按名称终止进程',
+  usage: 'killall <进程名>',
+  examples: ['killall terminal', 'killall browser']
 })
 
 registerCommand('credits', {

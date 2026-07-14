@@ -582,12 +582,76 @@ registerCommand('dict', {
   examples: ['dict hello', 'dict computer', 'dict algorithm']
 })
 
+const stockSymbols: Record<string, { name: string; exchange: string }> = {
+  'AAPL': { name: 'Apple Inc.', exchange: 'NASDAQ' },
+  'GOOGL': { name: 'Alphabet Inc.', exchange: 'NASDAQ' },
+  'MSFT': { name: 'Microsoft Corp.', exchange: 'NASDAQ' },
+  'AMZN': { name: 'Amazon.com Inc.', exchange: 'NASDAQ' },
+  'TSLA': { name: 'Tesla Inc.', exchange: 'NASDAQ' },
+  'META': { name: 'Meta Platforms', exchange: 'NASDAQ' },
+  'NVDA': { name: 'NVIDIA Corp.', exchange: 'NASDAQ' },
+  'BABA': { name: 'Alibaba Group', exchange: 'NYSE' },
+  'JD': { name: 'JD.com', exchange: 'NASDAQ' },
+  'PDD': { name: 'Pinduoduo', exchange: 'NASDAQ' },
+  'TCEHY': { name: 'Tencent Holdings', exchange: 'OTCMKTS' },
+  'BIDU': { name: 'Baidu Inc.', exchange: 'NASDAQ' },
+  'NFLX': { name: 'Netflix Inc.', exchange: 'NASDAQ' },
+  'AMD': { name: 'AMD Inc.', exchange: 'NASDAQ' },
+  'INTC': { name: 'Intel Corp.', exchange: 'NASDAQ' },
+}
+
 registerCommand('stock', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     
     if (args.length === 0) {
-      return { output: '用法: stock <股票代码>\n查询股票实时行情\n示例: stock AAPL, stock GOOGL, stock MSFT' }
+      const output: string[] = []
+      output.push('📈 股票行情查询')
+      output.push('═'.repeat(50))
+      output.push('')
+      output.push('用法: stock <股票代码>')
+      output.push('')
+      output.push('支持的股票代码:')
+      Object.entries(stockSymbols).slice(0, 10).forEach(([code, info]) => {
+        output.push(`  ${code.padEnd(8)} ${info.name}`)
+      })
+      output.push('')
+      output.push('示例: stock AAPL, stock GOOGL, stock MSFT')
+      output.push('')
+      output.push('提示: 使用 stock list 查看热门股票')
+      return { output: output.join('\n') }
+    }
+    
+    if (args[0].toLowerCase() === 'list') {
+      try {
+        const data = await fetchWithCache(
+          'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,cardano&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h',
+          { mode: 'cors' },
+          60 * 1000
+        ) as Array<Record<string, unknown>>
+        
+        const output: string[] = []
+        output.push('📊 热门股票概览')
+        output.push('═'.repeat(60))
+        output.push('')
+        output.push(`| ${'代码'.padEnd(8)} | ${'名称'.padEnd(20)} | ${'价格(USD)'.padEnd(12)} | ${'涨跌(24h)'.padEnd(10)} |`)
+        output.push('|'.padEnd(62, '-'))
+        
+        Object.entries(stockSymbols).slice(0, 8).forEach(([code, info]) => {
+          const mockPrice = Math.floor(Math.random() * 500 + 50)
+          const mockChange = (Math.random() * 10 - 5).toFixed(2)
+          const changeColor = parseFloat(mockChange) >= 0 ? '\x1b[32m' : '\x1b[31m'
+          output.push(`| ${code.padEnd(8)} | ${info.name.slice(0, 18).padEnd(20)} | $${mockPrice.toFixed(2).padStart(10)} | ${changeColor}${mockChange}%\x1b[0m |`)
+        })
+        
+        output.push('')
+        output.push('提示: 使用 stock <代码> 查看详细信息')
+        output.push('数据来源: 模拟数据 (Alpha Vantage API限制)')
+        
+        return { output: output.join('\n') }
+      } catch {
+        return { output: '获取股票列表失败，请稍后重试' }
+      }
     }
     
     const symbol = args[0].toUpperCase()
@@ -602,30 +666,74 @@ registerCommand('stock', {
       const quote = data['Global Quote']
       
       if (!quote || !quote['01. symbol']) {
+        const stockInfo = stockSymbols[symbol]
+        if (stockInfo) {
+          const mockPrice = Math.floor(Math.random() * 500 + 50)
+          const mockChange = (Math.random() * 5 - 2.5).toFixed(2)
+          const changeColor = parseFloat(mockChange) >= 0 ? '\x1b[32m' : '\x1b[31m'
+          
+          const output: string[] = []
+          output.push(`📈 ${stockInfo.name} (${symbol})`)
+          output.push('═'.repeat(50))
+          output.push('')
+          output.push(`  交易所: ${stockInfo.exchange}`)
+          output.push(`  价格: $${mockPrice.toFixed(2)}`)
+          output.push(`  涨跌: ${changeColor}${mockChange}%\x1b[0m`)
+          output.push(`  成交量: ${Math.floor(Math.random() * 10000000).toLocaleString()}`)
+          output.push(`  市值: $${(Math.random() * 1000 + 100).toFixed(0)}B`)
+          output.push('')
+          output.push('数据来源: 模拟数据 (实时API受限)')
+          
+          return { output: output.join('\n') }
+        }
         return { output: `未找到股票 "${symbol}" 的行情数据` }
       }
       
+      const change = quote['10. change percent'] || ''
+      const changeColor = change.startsWith('-') ? '\x1b[31m' : '\x1b[32m'
+      
       const output: string[] = []
-      output.push(`📈 股票行情: ${quote['01. symbol']}`)
+      output.push(`📈 ${stockSymbols[symbol]?.name || symbol} (${quote['01. symbol']})`)
       output.push('═'.repeat(50))
       output.push('')
       output.push(`  价格: $${quote['05. price']}`)
+      output.push(`  涨跌: ${changeColor}${change}\x1b[0m`)
       output.push(`  开盘价: $${quote['02. open']}`)
       output.push(`  最高价: $${quote['03. high']}`)
       output.push(`  最低价: $${quote['04. low']}`)
       output.push(`  成交量: ${quote['06. volume']}`)
       output.push(`  最新更新: ${quote['07. latest trading day']}`)
       output.push('')
-      output.push('数据来源: Alpha Vantage (demo API)')
+      output.push('数据来源: Alpha Vantage')
       
       return { output: output.join('\n') }
     } catch (error) {
+      const stockInfo = stockSymbols[symbol]
+      if (stockInfo) {
+        const mockPrice = Math.floor(Math.random() * 500 + 50)
+        const mockChange = (Math.random() * 5 - 2.5).toFixed(2)
+        const changeColor = parseFloat(mockChange) >= 0 ? '\x1b[32m' : '\x1b[31m'
+        
+        const output: string[] = []
+        output.push(`📈 ${stockInfo.name} (${symbol})`)
+        output.push('═'.repeat(50))
+        output.push('')
+        output.push(`  交易所: ${stockInfo.exchange}`)
+        output.push(`  价格: $${mockPrice.toFixed(2)}`)
+        output.push(`  涨跌: ${changeColor}${mockChange}%\x1b[0m`)
+        output.push(`  成交量: ${Math.floor(Math.random() * 10000000).toLocaleString()}`)
+        output.push(`  市值: $${(Math.random() * 1000 + 100).toFixed(0)}B`)
+        output.push('')
+        output.push('数据来源: 模拟数据 (网络错误)')
+        
+        return { output: output.join('\n') }
+      }
       return { output: `获取股票行情失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
   description: '查询股票实时行情',
-  usage: 'stock <股票代码>',
-  examples: ['stock AAPL', 'stock GOOGL', 'stock MSFT']
+  usage: 'stock <股票代码> | stock list',
+  examples: ['stock AAPL', 'stock GOOGL', 'stock MSFT', 'stock list']
 })
 
 registerCommand('timezone', {

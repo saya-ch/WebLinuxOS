@@ -1,6 +1,23 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 
+async function measureLatency(url: string): Promise<number> {
+  const start = performance.now()
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    
+    await fetch(url, {
+      signal: controller.signal,
+      method: 'HEAD',
+      mode: 'no-cors',
+    })
+    clearTimeout(timeoutId)
+  } catch {
+  }
+  return Math.round(performance.now() - start)
+}
+
 registerCommand('ping', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
@@ -13,28 +30,66 @@ registerCommand('ping', {
     const count = args.includes('-c') ? parseInt(args[args.indexOf('-c') + 1]) || 4 : 4
     
     const results: string[] = []
+    const times: number[] = []
+    
+    let resolvedIp = '127.0.0.1'
+    try {
+      const url = target.startsWith('http') ? target : `https://${target}`
+      const testUrl = url.replace(/^https?:\/\//, '')
+      
+      const dnsData = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(testUrl)}&type=A`, { mode: 'cors' })
+      if (dnsData.ok) {
+        const json = await dnsData.json()
+        if (json.Answer && json.Answer[0] && json.Answer[0].data) {
+          resolvedIp = json.Answer[0].data
+        }
+      }
+    } catch {
+      resolvedIp = `192.168.1.${Math.floor(Math.random() * 254 + 1)}`
+    }
+    
+    results.push(`PING ${target} (${resolvedIp}): 56 data bytes`)
     
     for (let i = 0; i < count; i++) {
-      const time = Math.floor(Math.random() * 50 + 10)
+      let time: number
+      try {
+        const url = target.startsWith('http') ? target : `https://${target}`
+        time = await measureLatency(url)
+      } catch {
+        time = Math.floor(Math.random() * 100 + 50)
+      }
+      
+      times.push(time)
       const ttl = Math.floor(Math.random() * 64 + 64)
-      results.push(`PING ${target} (192.168.1.${Math.floor(Math.random() * 254 + 1)}): 56 data bytes`)
-      results.push(`64 bytes from ${target}: icmp_seq=${i + 1} ttl=${ttl} time=${time} ms`)
+      
+      if (time < 3000) {
+        results.push(`64 bytes from ${target}: icmp_seq=${i + 1} ttl=${ttl} time=${time} ms`)
+      } else {
+        results.push(`Request timeout for icmp_seq ${i + 1}`)
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 200))
     }
     
-    const avgTime = Math.floor(results.reduce((sum, line) => {
-      const match = line.match(/time=(\d+) ms/)
-      return sum + (match ? parseInt(match[1]) : 0)
-    }, 0) / count)
+    const validTimes = times.filter(t => t < 3000)
+    const received = validTimes.length
+    const avgTime = validTimes.length > 0 
+      ? Math.round(validTimes.reduce((sum, t) => sum + t, 0) / validTimes.length)
+      : 0
     
     results.push('')
     results.push(`--- ${target} ping statistics ---`)
-    results.push(`${count} packets transmitted, ${count} packets received, 0.0% packet loss`)
-    results.push(`round-trip min/avg/max = ${Math.floor(avgTime * 0.8)}/${avgTime}/${Math.floor(avgTime * 1.2)} ms`)
+    results.push(`${count} packets transmitted, ${received} packets received, ${Math.round((1 - received / count) * 100)}% packet loss`)
+    
+    if (validTimes.length > 0) {
+      const minTime = Math.min(...validTimes)
+      const maxTime = Math.max(...validTimes)
+      results.push(`round-trip min/avg/max = ${minTime}/${avgTime}/${maxTime} ms`)
+    }
     
     return { output: results.join('\n') }
   },
-  description: '发送ICMP请求测试网络连通性',
+  description: '测试网络连通性和延迟',
   usage: 'ping [-c <次数>] <主机名或IP>',
   examples: ['ping localhost', 'ping -c 4 google.com']
 })
@@ -130,34 +185,66 @@ registerCommand('dig', {
     }
     
     const domain = args[0]
+    const type = args[1]?.toUpperCase() || 'A'
     
-    const output = [
-      `; <<>> DiG 9.18.12 <<>> ${domain}`,
-      `;; global options: +cmd`,
-      `;; Got answer:`,
-      `;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 12345`,
-      `;; flags: qr rd ra; QUERY: 1, ANSWER: 4, AUTHORITY: 0, ADDITIONAL: 1`,
-      '',
-      `;; OPT PSEUDOSECTION:`,
-      `; EDNS: version: 0, flags:; udp: 512`,
-      `;; QUESTION SECTION:`,
-      `;${domain}.                    IN      A`,
-      '',
-      `;; ANSWER SECTION:`,
-      `${domain}.             300     IN      A       192.168.1.100`,
-      `${domain}.             300     IN      A       192.168.1.101`,
-      '',
-      `;; Query time: 12 msec`,
-      `;; SERVER: 8.8.8.8#53(8.8.8.8)`,
-      `;; WHEN: ${new Date().toLocaleString('zh-CN')}`,
-      `;; MSG SIZE  rcvd: 123`,
-    ]
-    
-    return { output: output.join('\n') }
+    try {
+      const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`, { mode: 'cors' })
+      const data = await response.json()
+      
+      const output: string[] = []
+      output.push(`; <<>> DiG 9.18.12 <<>> ${domain} ${type}`)
+      output.push(`;; global options: +cmd`)
+      output.push(`;; Got answer:`)
+      output.push(`;; ->>HEADER<<- opcode: QUERY, status: ${data.Status === 0 ? 'NOERROR' : 'ERROR'}, id: ${Math.floor(Math.random() * 65535)}`)
+      output.push(`;; flags: qr rd ra; QUERY: 1, ANSWER: ${data.Answer?.length || 0}, AUTHORITY: 0, ADDITIONAL: 1`)
+      output.push('')
+      output.push(`;; OPT PSEUDOSECTION:`)
+      output.push(`; EDNS: version: 0, flags:; udp: 512`)
+      output.push(`;; QUESTION SECTION:`)
+      output.push(`;${domain}.                    IN      ${type}`)
+      output.push('')
+      
+      if (data.Answer && data.Answer.length > 0) {
+        output.push(`;; ANSWER SECTION:`)
+        const typeMap: Record<number, string> = { 1: 'A', 28: 'AAAA', 5: 'CNAME', 15: 'MX', 16: 'TXT', 2: 'NS' }
+        
+        data.Answer.forEach((record: { name: string; type: number; TTL: number; data: string }) => {
+          const recType = typeMap[record.type] || `TYPE${record.type}`
+          output.push(`${record.name.padEnd(20)} ${record.TTL.toString().padStart(8)} IN      ${recType.padEnd(6)} ${record.data}`)
+        })
+      } else {
+        output.push(';; ANSWER SECTION:')
+        output.push('(空)')
+      }
+      
+      output.push('')
+      output.push(`;; Query time: ${Math.floor(Math.random() * 50 + 5)} msec`)
+      output.push(`;; SERVER: 8.8.8.8#53(8.8.8.8)`)
+      output.push(`;; WHEN: ${new Date().toLocaleString('zh-CN')}`)
+      output.push(`;; MSG SIZE  rcvd: ${Math.floor(Math.random() * 100 + 50)}`)
+      
+      return { output: output.join('\n') }
+    } catch {
+      const fallbackOutput = [
+        `; <<>> DiG 9.18.12 <<>> ${domain} ${type}`,
+        `;; global options: +cmd`,
+        `;; Got answer:`,
+        `;; ->>HEADER<<- opcode: QUERY, status: SERVFAIL, id: 12345`,
+        '',
+        `;; QUESTION SECTION:`,
+        `;${domain}.                    IN      ${type}`,
+        '',
+        `;; Query time: 12 msec`,
+        `;; SERVER: 8.8.8.8#53(8.8.8.8)`,
+        `;; WHEN: ${new Date().toLocaleString('zh-CN')}`,
+        `;; MSG SIZE  rcvd: 123`,
+      ]
+      return { output: fallbackOutput.join('\n') }
+    }
   },
   description: 'DNS查询工具',
-  usage: 'dig <域名>',
-  examples: ['dig example.com', 'dig google.com']
+  usage: 'dig <域名> [类型]',
+  examples: ['dig example.com', 'dig google.com AAAA', 'dig github.com MX']
 })
 
 registerCommand('hostnamectl', {
@@ -184,7 +271,7 @@ registerCommand('hostnamectl', {
 })
 
 registerCommand('nslookup', {
-  handler: (context: CommandContext): CommandResult => {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     
     if (args.length === 0) {
@@ -193,20 +280,44 @@ registerCommand('nslookup', {
     
     const domain = args[0]
     
-    const output = [
-      `Server:         8.8.8.8`,
-      `Address:        8.8.8.8#53`,
-      '',
-      `Non-authoritative answer:`,
-      `Name:   ${domain}`,
-      `Address: 192.168.1.100`,
-      `Name:   ${domain}`,
-      `Address: 192.168.1.101`,
-    ]
-    
-    return { output: output.join('\n') }
+    try {
+      const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`, { mode: 'cors' })
+      const data = await response.json()
+      
+      const output: string[] = []
+      output.push(`Server:         8.8.8.8`)
+      output.push(`Address:        8.8.8.8#53`)
+      output.push('')
+      
+      if (data.Answer && data.Answer.length > 0) {
+        output.push(`Non-authoritative answer:`)
+        output.push(`Name:   ${domain}`)
+        
+        const addresses = data.Answer.filter((r: { type: number }) => r.type === 1)
+        addresses.forEach((addr: { data: string }) => {
+          output.push(`Address: ${addr.data}`)
+        })
+        
+        const cnames = data.Answer.filter((r: { type: number }) => r.type === 5)
+        cnames.forEach((cname: { data: string }) => {
+          output.push(`Name:   ${cname.data}`)
+        })
+      } else {
+        output.push(`*** Can't find ${domain}: No answer`)
+      }
+      
+      return { output: output.join('\n') }
+    } catch {
+      const output = [
+        `Server:         8.8.8.8`,
+        `Address:        8.8.8.8#53`,
+        '',
+        `*** Can't find ${domain}: Server failed`,
+      ]
+      return { output: output.join('\n') }
+    }
   },
   description: 'DNS域名解析查询',
   usage: 'nslookup <域名>',
-  examples: ['nslookup example.com']
+  examples: ['nslookup example.com', 'nslookup github.com']
 })
