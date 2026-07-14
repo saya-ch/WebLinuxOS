@@ -353,6 +353,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIWorkbench: () => import('../../apps/AIWorkbench'),
   KnowledgeVine: () => import('../../apps/KnowledgeVine'),
   CodeForge: () => import('../../apps/CodeForge'),
+  // === 实用API集成应用 ===
+  WeatherApp: () => import('../../apps/WeatherApp'),
+  GitHubTrendingApp: () => import('../../apps/GitHubTrendingApp'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

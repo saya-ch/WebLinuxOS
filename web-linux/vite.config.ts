@@ -5,7 +5,7 @@ import { resolve } from 'path'
 
 export default defineConfig(({ mode }) => {
   const outDir = process.env.OUTPUT_DIR || '../dist'
-  const basePath = process.env.VITE_BASE_PATH || '/WebLinuxOS/'
+  const basePath = '/WebLinuxOS/'
 
   const targetPublicDir = resolve(__dirname, outDir)
 

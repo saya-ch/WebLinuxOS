@@ -30,6 +30,16 @@ This release focuses on core system enhancements and real-world utility:
 - **Performance Optimizations**: Improved lazy loading, memory management, and caching strategies
 - **Better Developer Tools**: Enhanced terminal commands and debugging capabilities
 
+This release also adds two new integrated API applications:
+
+### WeatherApp
+
+A comprehensive weather application that integrates with OpenWeatherMap API to provide real-time weather data for any city worldwide. Features current temperature, feels-like temperature, humidity, wind speed, cloud coverage, sunrise/sunset times, and coordinates display.
+
+### GitHubTrendingApp
+
+Discover the most popular open-source projects on GitHub with language filtering and time period selection (daily, weekly, monthly). View repository details including stars, forks, programming language, and trending metrics.
+
 For v36.0 features, see [Previous Releases](#previous-releases).
 
 ### Previous Releases (v36.0)
