@@ -21,9 +21,20 @@ Most web "OS" demos are toy interfaces with one or two hardcoded windows. WebLin
 - **A real coding lab** that executes JavaScript, TypeScript, Python (via Pyodide), HTML, CSS, Markdown, SQL, JSON and Bash in the browser.
 - **Three new productivity-grade apps** shipping in this release — see below.
 
-## What's New in v36.0
+## What's New in v37.0
 
-This release adds three new flagship applications that move WebLinuxOS beyond a simulation and into the territory of an actually useful tool.
+This release focuses on core system enhancements and real-world utility:
+
+- **Real File System Access**: Integration with File System Access API for true local file operations
+- **Enhanced AI Assistant**: Local AI provider for code analysis, generation, and explanation without external dependencies
+- **Performance Optimizations**: Improved lazy loading, memory management, and caching strategies
+- **Better Developer Tools**: Enhanced terminal commands and debugging capabilities
+
+For v36.0 features, see [Previous Releases](#previous-releases).
+
+### Previous Releases (v36.0)
+
+This release added three new flagship applications that move WebLinuxOS beyond a simulation and into the territory of an actually useful tool.
 
 ### WebIDE Pro
 
