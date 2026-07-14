@@ -624,11 +624,11 @@ registerCommand('stock', {
     
     if (args[0].toLowerCase() === 'list') {
       try {
-        const data = await fetchWithCache(
+        await fetchWithCache(
           'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,cardano&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h',
           { mode: 'cors' },
           60 * 1000
-        ) as Array<Record<string, unknown>>
+        )
         
         const output: string[] = []
         output.push('📊 热门股票概览')

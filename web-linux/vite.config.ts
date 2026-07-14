@@ -101,9 +101,6 @@ export default defineConfig(({ mode }) => {
       include: ['react', 'react-dom', 'zustand', 'lucide-react', 'marked'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
-      esbuildOptions: {
-        target: 'es2022',
-      },
     },
     resolve: {
       conditions: ['es2022'],
