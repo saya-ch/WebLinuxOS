@@ -20,6 +20,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   Terminal: () => import('../../apps/Terminal'),
   FileManager: () => import('../../apps/FileManager'),
   Calculator: () => import('../../apps/Calculator'),
+  QuantumCalculator: () => import('../../apps/QuantumCalculator'),
   SystemSettings: () => import('../../apps/SystemSettings'),
   Notepad: () => import('../../apps/Notepad'),
   Calendar: () => import('../../apps/Calendar'),

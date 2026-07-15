@@ -10,6 +10,7 @@ import GlobalSearch from './apps/GlobalSearch'
 import CommandPalette from './components/CommandPalette'
 import ShortcutPanel from './components/ShortcutPanel'
 import './styles/cyberpunk-theme.css'
+import './styles/quantum-theme.css'
 
 interface ShortcutConfig {
   mod?: boolean

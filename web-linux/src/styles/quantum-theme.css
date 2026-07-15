@@ -1,0 +1,735 @@
+/* ============================================================
+   WebLinuxOS - Quantum Interface Theme
+   量子界面主题：融合量子物理概念与未来主义设计
+   独特的视觉语言，超越传统操作系统界面
+   ============================================================ */
+
+/* ---------- 独特的量子主题字体 ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800;900&family=Michroma&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* 量子色系 - 独特的科学美学配色 */
+  --quantum-blue: #0066ff;
+  --quantum-cyan: #00d4ff;
+  --quantum-magenta: #ff0066;
+  --quantum-violet: #7c3aed;
+  --quantum-emerald: #10b981;
+  --quantum-amber: #f59e0b;
+  --quantum-rose: #f43f5e;
+  
+  /* 量子态颜色 - 表示叠加态 */
+  --superposition-a: rgba(0, 102, 255, 0.6);
+  --superposition-b: rgba(255, 0, 102, 0.6);
+  --entangled-color: linear-gradient(135deg, var(--quantum-blue), var(--quantum-magenta));
+  
+  /* 深空背景 */
+  --space-dark: #000814;
+  --space-medium: #001d3d;
+  --space-light: #003566;
+  
+  /* 量子玻璃效果 */
+  --quantum-glass: rgba(0, 29, 61, 0.75);
+  --quantum-glass-intense: rgba(0, 8, 20, 0.92);
+  --quantum-border: rgba(0, 212, 255, 0.35);
+  
+  /* 光晕效果 */
+  --glow-blue: 0 0 20px rgba(0, 102, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3);
+  --glow-magenta: 0 0 20px rgba(255, 0, 102, 0.5), 0 0 40px rgba(255, 0, 102, 0.3);
+  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(0, 212, 255, 0.3);
+  
+  /* 动画参数 */
+  --quantum-pulse-duration: 4s;
+  --wave-function-duration: 6s;
+}
+
+/* ---------- 全局量子字体应用 ---------- */
+.quantum-theme-root {
+  font-family: 'Rajdhani', 'Chakra Petch', sans-serif;
+  color: #ffffff;
+}
+
+/* 窗口标题使用 Michroma 字体 - 未来主义风格 */
+.quantum-window-title {
+  font-family: 'Michroma', 'Orbitron', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* 数据展示使用 Exo 2 - 科学计算风格 */
+.quantum-data-display {
+  font-family: 'Exo 2', monospace;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 量子叠加态边框 ---------- */
+.quantum-superposition-border {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(var(--space-dark), var(--space-dark)) padding-box,
+              var(--entangled-color) border-box;
+  animation: superpositionShift 8s ease-in-out infinite;
+}
+
+@keyframes superpositionShift {
+  0%, 100% {
+    background: linear-gradient(var(--space-dark), var(--space-dark)) padding-box,
+                linear-gradient(135deg, var(--quantum-blue) 0%, var(--quantum-magenta) 100%) border-box;
+  }
+  50% {
+    background: linear-gradient(var(--space-dark), var(--space-dark)) padding-box,
+                linear-gradient(135deg, var(--quantum-magenta) 0%, var(--quantum-cyan) 100%) border-box;
+  }
+}
+
+/* ---------- 量子纠缠连接线 ---------- */
+.quantum-entanglement-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--quantum-blue) 20%, 
+    var(--quantum-magenta) 80%, 
+    transparent 100%
+  );
+  animation: entanglementPulse 3s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes entanglementPulse {
+  0%, 100% { 
+    opacity: 0.4; 
+    transform: scaleX(0.95);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleX(1.05);
+  }
+}
+
+/* ---------- 量子态按钮 ---------- */
+.quantum-button {
+  position: relative;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(0, 29, 61, 0.8), rgba(0, 53, 102, 0.8));
+  border: 1px solid var(--quantum-border);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(0, 212, 255, 0.3) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  &:hover {
+    border-color: var(--quantum-cyan);
+    box-shadow: var(--glow-cyan);
+    transform: translateY(-2px);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+  }
+}
+
+/* ---------- 量子数据卡片 ---------- */
+.quantum-data-card {
+  position: relative;
+  background: var(--quantum-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--quantum-border);
+  border-radius: 12px;
+  padding: 20px;
+  overflow: hidden;
+  
+  /* 波函数背景效果 */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 30% 20%, rgba(0, 102, 255, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(255, 0, 102, 0.1) 0%, transparent 50%);
+    animation: waveFunctionCollapse var(--wave-function-duration) ease-in-out infinite;
+    z-index: 0;
+  }
+  
+  .card-header {
+    font-family: 'Michroma', sans-serif;
+    font-size: 14px;
+    color: var(--quantum-cyan);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .card-value {
+    font-family: 'Exo 2', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    position: relative;
+    z-index: 1;
+    
+    &.positive {
+      color: var(--quantum-emerald);
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+    
+    &.negative {
+      color: var(--quantum-rose);
+      text-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+    }
+  }
+  
+  .card-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@keyframes waveFunctionCollapse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    opacity: 0.6;
+    transform: scale(1.1) rotate(90deg);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.95) rotate(180deg);
+  }
+  75% {
+    opacity: 0.7;
+    transform: scale(1.05) rotate(270deg);
+  }
+}
+
+/* ---------- 量子粒子背景 ---------- */
+.quantum-particle-field {
+  position: fixed;
+  inset: 0;
+  z-index: -100;
+  overflow: hidden;
+  background: 
+    radial-gradient(ellipse at 20% 30%, rgba(0, 102, 255, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 70%, rgba(255, 0, 102, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 212, 255, 0.04) 0%, transparent 60%),
+    linear-gradient(180deg, var(--space-dark) 0%, var(--space-medium) 50%, var(--space-light) 100%);
+}
+
+.quantum-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--quantum-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--quantum-cyan), 0 0 20px var(--quantum-blue);
+  animation: quantumFloat 10s ease-in-out infinite;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 50%;
+    animation: orbitSpin 3s linear infinite;
+  }
+}
+
+@keyframes quantumFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(50px, -30px) scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(100px, 50px) scale(0.8);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(30px, 100px) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes orbitSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- 量子终端增强 ---------- */
+.quantum-terminal {
+  background: var(--quantum-glass-intense);
+  border: 2px solid var(--quantum-border);
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .terminal-header {
+    background: linear-gradient(90deg, var(--space-medium), var(--space-light));
+    border-bottom: 1px solid var(--quantum-border);
+    padding: 12px 16px;
+    font-family: 'Michroma', sans-serif;
+    font-size: 12px;
+    color: var(--quantum-cyan);
+    letter-spacing: 1px;
+  }
+  
+  .terminal-body {
+    background: 
+      linear-gradient(180deg, rgba(0, 212, 255, 0.02) 0%, transparent 100%),
+      var(--space-dark);
+    padding: 16px;
+    font-family: 'Exo 2', monospace;
+    font-size: 14px;
+    min-height: 300px;
+  }
+  
+  .terminal-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--quantum-border);
+    color: var(--quantum-cyan);
+    caret-color: var(--quantum-magenta);
+    font-family: 'Exo 2', monospace;
+    outline: none;
+    width: 100%;
+    padding: 8px 0;
+    
+    &::placeholder {
+      color: rgba(0, 212, 255, 0.4);
+    }
+    
+    &:focus {
+      border-bottom-color: var(--quantum-cyan);
+      box-shadow: 0 1px 0 0 var(--quantum-cyan);
+    }
+  }
+  
+  .cmd-output {
+    color: #ffffff;
+    margin: 8px 0;
+    padding: 4px 8px;
+    border-left: 2px solid var(--quantum-border);
+    animation: terminalFadeIn 0.3s ease-out;
+    
+    &.success {
+      color: var(--quantum-emerald);
+      border-left-color: var(--quantum-emerald);
+    }
+    
+    &.error {
+      color: var(--quantum-rose);
+      border-left-color: var(--quantum-rose);
+    }
+    
+    &.warning {
+      color: var(--quantum-amber);
+      border-left-color: var(--quantum-amber);
+    }
+  }
+}
+
+@keyframes terminalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- 量子任务栏 ---------- */
+.quantum-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(180deg, 
+    rgba(0, 29, 61, 0.95) 0%, 
+    rgba(0, 8, 20, 0.98) 100%
+  );
+  backdrop-filter: blur(30px) saturate(200%);
+  border-top: 1px solid var(--quantum-border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 10000;
+  
+  .taskbar-item {
+    position: relative;
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: var(--quantum-cyan);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(-50%);
+    }
+    
+    &:hover {
+      color: #ffffff;
+      background: rgba(0, 212, 255, 0.1);
+      
+      &::after {
+        width: 60%;
+      }
+    }
+    
+    &.active {
+      color: var(--quantum-cyan);
+      background: rgba(0, 212, 255, 0.15);
+      
+      &::after {
+        width: 80%;
+        background: var(--quantum-cyan);
+        box-shadow: 0 0 10px var(--quantum-cyan);
+      }
+    }
+  }
+}
+
+/* ---------- 量子窗口样式 ---------- */
+.quantum-window {
+  position: absolute;
+  background: var(--quantum-glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--quantum-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(0, 212, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  &.focused {
+    border-color: var(--quantum-cyan);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.7),
+      0 0 30px rgba(0, 212, 255, 0.3),
+      0 0 0 1px rgba(0, 212, 255, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  
+  .window-titlebar {
+    background: linear-gradient(90deg, 
+      rgba(0, 29, 61, 0.9) 0%, 
+      rgba(0, 53, 102, 0.8) 100%
+    );
+    border-bottom: 1px solid var(--quantum-border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    .window-title {
+      font-family: 'Michroma', sans-serif;
+      font-size: 14px;
+      color: var(--quantum-cyan);
+      letter-spacing: 1px;
+    }
+    
+    .window-buttons {
+      display: flex;
+      gap: 8px;
+      
+      button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        
+        &.close {
+          background: var(--quantum-rose);
+          
+          &:hover {
+            background: #ff3366;
+            box-shadow: 0 0 10px var(--quantum-rose);
+          }
+        }
+        
+        &.minimize {
+          background: var(--quantum-amber);
+          
+          &:hover {
+            background: #ffb033;
+            box-shadow: 0 0 10px var(--quantum-amber);
+          }
+        }
+        
+        &.maximize {
+          background: var(--quantum-emerald);
+          
+          &:hover {
+            background: #34d399;
+            box-shadow: 0 0 10px var(--quantum-emerald);
+          }
+        }
+      }
+    }
+  }
+  
+  .window-content {
+    padding: 16px;
+    background: var(--space-dark);
+    min-height: 200px;
+  }
+}
+
+/* ---------- 量子进度条 ---------- */
+.quantum-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, 
+      var(--quantum-blue) 0%, 
+      var(--quantum-cyan) 50%, 
+      var(--quantum-magenta) 100%
+    );
+    border-radius: 2px;
+    animation: progressPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes progressPulse {
+  0%, 100% {
+    opacity: 0.8;
+    box-shadow: 0 0 10px var(--quantum-cyan);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px var(--quantum-cyan), 0 0 30px var(--quantum-blue);
+  }
+}
+
+/* ---------- 量子搜索栏 ---------- */
+.quantum-search {
+  position: relative;
+  
+  .search-input {
+    width: 100%;
+    padding: 16px 20px 16px 50px;
+    background: var(--quantum-glass);
+    border: 2px solid var(--quantum-border);
+    border-radius: 12px;
+    color: #ffffff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    &:focus {
+      border-color: var(--quantum-cyan);
+      box-shadow: var(--glow-cyan);
+    }
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--quantum-cyan);
+    pointer-events: none;
+  }
+}
+
+/* ---------- 量子徽章 ---------- */
+.quantum-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(0, 212, 255, 0.15);
+  border: 1px solid var(--quantum-border);
+  border-radius: 20px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--quantum-cyan);
+  
+  &.success {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: var(--quantum-emerald);
+  }
+  
+  &.warning {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: var(--quantum-amber);
+  }
+  
+  &.error {
+    background: rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.35);
+    color: var(--quantum-rose);
+  }
+}
+
+/* ---------- 量子分隔线 ---------- */
+.quantum-divider {
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--quantum-border) 20%, 
+    var(--quantum-cyan) 50%, 
+    var(--quantum-border) 80%, 
+    transparent 100%
+  );
+  margin: 24px 0;
+  opacity: 0.5;
+}
+
+/* ---------- 量子代码块 ---------- */
+.quantum-code-block {
+  background: rgba(0, 8, 20, 0.95);
+  border: 1px solid var(--quantum-border);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'Exo 2', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #e0e0e0;
+  overflow-x: auto;
+  
+  .code-keyword {
+    color: var(--quantum-magenta);
+  }
+  
+  .code-string {
+    color: var(--quantum-emerald);
+  }
+  
+  .code-number {
+    color: var(--quantum-cyan);
+  }
+  
+  .code-comment {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+  }
+  
+  .code-function {
+    color: var(--quantum-amber);
+  }
+}
+
+/* ---------- 响应式量子主题 ---------- */
+@media (max-width: 768px) {
+  .quantum-taskbar {
+    height: 56px;
+    padding: 0 8px;
+    
+    .taskbar-item {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+  }
+  
+  .quantum-data-card {
+    padding: 16px;
+    
+    .card-value {
+      font-size: 24px;
+    }
+  }
+}
+
+/* ---------- 亮色主题适配 ---------- */
+.light .quantum-glass {
+  background: rgba(240, 248, 255, 0.85);
+}
+
+.light .quantum-window {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 102, 255, 0.2);
+}
+
+.light .quantum-data-card {
+  background: rgba(255, 255, 255, 0.9);
+  
+  .card-header {
+    color: var(--quantum-blue);
+  }
+}
+
+/* ---------- 无障碍优化 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .quantum-button,
+  .quantum-data-card,
+  .quantum-window {
+    border-width: 2px;
+  }
+  
+  .quantum-taskbar .taskbar-item::after {
+    height: 3px;
+  }
+}

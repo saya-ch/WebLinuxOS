@@ -29,6 +29,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 量子计算器（v37.0创新功能）
+  { id: 'quantum-calculator', name: '量子计算器', icon: <CalculatorIcon />, component: 'QuantumCalculator', category: 'utilities', defaultWidth: 400, defaultHeight: 600, minWidth: 350, minHeight: 500, resizable: true, multiple: false },
   // 欢迎中心（v37.0新增）
   { id: 'welcome-hub', name: '欢迎中心', icon: <SparklesIcon />, component: 'WelcomeHub', category: 'system', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // 新增WebIDE Pro在线编程环境（v36.0核心创新）
