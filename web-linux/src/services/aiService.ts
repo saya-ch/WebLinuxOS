@@ -8,6 +8,12 @@ export interface AIMessage {
   content: string;
 }
 
+interface CodeMetrics {
+  lines: number;
+  functions: number;
+  comments: number;
+}
+
 export interface AIResponse {
   success: boolean;
   content?: string;
@@ -198,7 +204,7 @@ ${this.generateSuggestions(code, language, { lines, functions, comments })}`;
     return maxNesting;
   }
 
-  private generateSuggestions(code: string, _language: string, metrics: any): string {
+  private generateSuggestions(code: string, _language: string, metrics: CodeMetrics): string {
     const suggestions: string[] = [];
 
     if (metrics.lines > 100) {

@@ -1,658 +1,484 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
-import { fetchWithCache, fetchWithRetry, formatNumber } from '../../utils/apiCache'
+import { findNodeByPath } from '../../store'
+import { apiConfigs } from '../../services/aiService'
+import type { FileNode } from '../../types'
 
-registerCommand('covid', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://api.covid19api.com/summary',
-        { mode: 'cors' },
-        10 * 60 * 1000
-      ) as Record<string, unknown>
-
-      const global = data.Global as Record<string, unknown>
-
-      if (!global) {
-        throw new Error('数据无效')
-      }
-
-      const output: string[] = []
-      output.push('🦠 COVID-19 全球疫情数据')
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push('【全球统计】')
-      output.push(`  累计确诊: ${formatNumber(global.TotalConfirmed as number, 0)}`)
-      output.push(`  累计死亡: ${formatNumber(global.TotalDeaths as number, 0)}`)
-      output.push(`  累计康复: ${formatNumber(global.TotalRecovered as number, 0)}`)
-      output.push(`  新增确诊: ${formatNumber(global.NewConfirmed as number, 0)}`)
-      output.push(`  新增死亡: ${formatNumber(global.NewDeaths as number, 0)}`)
-      output.push(`  新增康复: ${formatNumber(global.NewRecovered as number, 0)}`)
-      output.push('')
-      output.push('数据来源: COVID-19 API (已缓存10分钟)')
-      output.push('提示: 使用 covid <国家代码> 查看特定国家数据')
-
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackData = {
-        TotalConfirmed: 770000000,
-        TotalDeaths: 7000000,
-        TotalRecovered: 750000000,
-        NewConfirmed: 50000,
-        NewDeaths: 300,
-        NewRecovered: 48000,
-      }
-
-      const output: string[] = []
-      output.push('🦠 COVID-19 全球疫情数据')
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push('⚠️ 在线API暂时不可用，显示缓存数据')
-      output.push('')
-      output.push('【全球统计】')
-      output.push(`  累计确诊: ${formatNumber(fallbackData.TotalConfirmed, 0)}`)
-      output.push(`  累计死亡: ${formatNumber(fallbackData.TotalDeaths, 0)}`)
-      output.push(`  累计康复: ${formatNumber(fallbackData.TotalRecovered, 0)}`)
-      output.push(`  新增确诊: ${formatNumber(fallbackData.NewConfirmed, 0)}`)
-      output.push(`  新增死亡: ${formatNumber(fallbackData.NewDeaths, 0)}`)
-      output.push(`  新增康复: ${formatNumber(fallbackData.NewRecovered, 0)}`)
-      output.push('')
-      output.push('提示: 网络恢复后将显示最新数据')
-
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取COVID-19全球疫情数据',
-  usage: 'covid [国家代码]',
-  examples: ['covid', 'covid CN', 'covid US']
-})
-
-registerCommand('newsapi', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
+registerCommand('help', {
+  handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    const category = args[0] || 'general'
-
-    const categories = ['business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology']
-
-    if (!categories.includes(category)) {
-      return {
-        output: [
-          '📰 NewsAPI 新闻聚合',
-          '',
-          '支持的分类:',
-          ...categories.map(c => `  - ${c}`),
-          '',
-          '示例:',
-          '  newsapi technology',
-          '  newsapi business',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const data = await fetchWithRetry(
-        `https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=5&apiKey=demo`,
-        { mode: 'cors' }
-      ) as Record<string, unknown>
-
-      const articles = data.articles as Array<Record<string, unknown>> || []
-
-      if (articles.length === 0) {
-        return { output: `未找到 ${category} 分类的新闻` }
-      }
-
-      const output: string[] = []
-      output.push(`📰 头条新闻 - ${category}`)
-      output.push('═'.repeat(70))
-      output.push('')
-
-      articles.forEach((article, index) => {
-        output.push(`${index + 1}. ${article.title}`)
-        output.push(`   来源: ${(article.source as Record<string, unknown>)?.name || 'N/A'}`)
-        output.push(`   作者: ${article.author || 'N/A'}`)
-        output.push(`   🔗 ${article.url}`)
-        output.push('')
-      })
-
-      output.push('数据来源: NewsAPI')
-
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews: Record<string, Array<{ title: string; source: string }>> = {
-        technology: [
-          { title: 'AI技术突破：新一代大语言模型发布', source: 'Tech News' },
-          { title: '量子计算取得重大进展', source: 'Science Daily' },
-          { title: 'WebAssembly性能提升300%', source: 'Dev Weekly' },
-        ],
-        business: [
-          { title: '全球科技股大涨', source: 'Financial Times' },
-          { title: '新创公司融资创纪录', source: 'Business Insider' },
-        ],
-        health: [
-          { title: '新疫苗研发成功', source: 'Health Magazine' },
-          { title: '远程医疗服务普及', source: 'Medical News' },
-        ],
-        general: [
-          { title: '全球气候峰会召开', source: 'World News' },
-          { title: '科技创新推动经济增长', source: 'Global Report' },
-        ],
-      }
-
-      const news = fallbackNews[category] || fallbackNews.general
-
-      const output: string[] = []
-      output.push(`📰 头条新闻 - ${category}`)
-      output.push('═'.repeat(70))
-      output.push('')
-      output.push('⚠️ 在线API暂时不可用')
-      output.push('')
-
-      news.forEach((article, index) => {
-        output.push(`${index + 1}. ${article.title}`)
-        output.push(`   来源: ${article.source}`)
-        output.push('')
-      })
-
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取新闻头条（支持多分类）',
-  usage: 'newsapi [分类]',
-  examples: ['newsapi', 'newsapi technology', 'newsapi business']
-})
-
-registerCommand('geocode', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const address = args.join(' ')
-
-    if (!address) {
-      return {
-        output: [
-          '📍 地理编码',
-          '',
-          '用法: geocode <地址>',
-          '',
-          '示例:',
-          '  geocode Beijing',
-          '  geocode New York City',
-          '  geocode 东京',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const data = await fetchWithCache(
-        `https://geocode.maps.co/search?q=${encodeURIComponent(address)}`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Array<Record<string, unknown>>
-
-      if (!data || data.length === 0) {
-        return { output: `未找到 "${address}" 的地理信息` }
-      }
-
-      const result = data[0]
-      const output: string[] = []
-
-      output.push(`📍 ${result.display_name}`)
-      output.push('═'.repeat(50))
-      output.push('')
-      output.push(`  纬度: ${result.lat}`)
-      output.push(`  经度: ${result.lon}`)
-      output.push(`  类型: ${result.type}`)
-
-      if (result.address) {
-        const addr = result.address as Record<string, string>
-        if (addr.city) output.push(`  城市: ${addr.city}`)
-        if (addr.state) output.push(`  州/省: ${addr.state}`)
-        if (addr.country) output.push(`  国家: ${addr.country}`)
-        if (addr.postcode) output.push(`  邮编: ${addr.postcode}`)
-      }
-
-      output.push('')
-      output.push('数据来源: OpenStreetMap Geocoding API')
-
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackLocations: Record<string, { lat: string; lon: string; city: string; country: string }> = {
-        'beijing': { lat: '39.9042', lon: '116.4074', city: '北京', country: '中国' },
-        'shanghai': { lat: '31.2304', lon: '121.4737', city: '上海', country: '中国' },
-        'new york': { lat: '40.7128', lon: '-74.0060', city: '纽约', country: '美国' },
-        'london': { lat: '51.5074', lon: '-0.1278', city: '伦敦', country: '英国' },
-        'tokyo': { lat: '35.6762', lon: '139.6503', city: '东京', country: '日本' },
-        'paris': { lat: '48.8566', lon: '2.3522', city: '巴黎', country: '法国' },
-      }
-
-      const lowerAddr = address.toLowerCase()
-      const key = Object.keys(fallbackLocations).find(k => lowerAddr.includes(k))
-
-      if (key) {
-        const loc = fallbackLocations[key]
-        const output: string[] = []
-        output.push(`📍 ${loc.city}, ${loc.country}`)
-        output.push('═'.repeat(50))
-        output.push('')
-        output.push(`  纬度: ${loc.lat}`)
-        output.push(`  经度: ${loc.lon}`)
-        output.push(`  城市: ${loc.city}`)
-        output.push(`  国家: ${loc.country}`)
-        output.push('')
-        output.push('提示: 在线地理编码服务暂时不可用，显示缓存数据')
-        return { output: output.join('\n') }
-      }
-
-      return {
-        output: [
-          `📍 "${address}" 的地理信息`,
-          '',
-          '⚠️ 地理编码服务暂时不可用',
-          '',
-          '支持的城市: Beijing, Shanghai, New York, London, Tokyo, Paris',
-        ].join('\n')
-      }
-    }
-  },
-  description: '获取地址的地理坐标',
-  usage: 'geocode <地址>',
-  examples: ['geocode Beijing', 'geocode New York', 'geocode 东京']
-})
-
-registerCommand('timezone-info', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-
-    const timezones = [
-      { name: '北京', tz: 'Asia/Shanghai', offset: '+08:00' },
-      { name: '东京', tz: 'Asia/Tokyo', offset: '+09:00' },
-      { name: '纽约', tz: 'America/New_York', offset: '-04:00' },
-      { name: '伦敦', tz: 'Europe/London', offset: '+01:00' },
-      { name: '巴黎', tz: 'Europe/Paris', offset: '+02:00' },
-      { name: '悉尼', tz: 'Australia/Sydney', offset: '+10:00' },
-      { name: '迪拜', tz: 'Asia/Dubai', offset: '+04:00' },
-      { name: '莫斯科', tz: 'Europe/Moscow', offset: '+03:00' },
+    
+    const commands = [
+      { cmd: 'ls', desc: '列出目录内容', usage: 'ls [-a] [-l] [-h] [-R] [路径]' },
+      { cmd: 'cd', desc: '切换当前工作目录', usage: 'cd [路径]' },
+      { cmd: 'pwd', desc: '显示当前工作目录', usage: 'pwd' },
+      { cmd: 'cat', desc: '显示文件内容', usage: 'cat [-n] [-b] [-s] <文件>...' },
+      { cmd: 'head', desc: '显示文件开头部分', usage: 'head [-n <行数>] <文件>' },
+      { cmd: 'tail', desc: '显示文件末尾部分', usage: 'tail [-n <行数>] <文件>' },
+      { cmd: 'mkdir', desc: '创建目录', usage: 'mkdir [-p] [-v] <目录名>...' },
+      { cmd: 'touch', desc: '创建空文件或更新时间戳', usage: 'touch <文件名>' },
+      { cmd: 'rm', desc: '删除文件或目录', usage: 'rm [-f] [-i] [-r] [-v] <文件或目录>...' },
+      { cmd: 'cp', desc: '复制文件或目录', usage: 'cp <源> <目标>' },
+      { cmd: 'mv', desc: '移动或重命名文件', usage: 'mv <源> <目标>' },
+      { cmd: 'tree', desc: '显示目录树结构', usage: 'tree [路径]' },
+      { cmd: 'wc', desc: '统计文件行数、字数、字符数', usage: 'wc <文件>' },
+      { cmd: 'write', desc: '写入文件内容', usage: 'write <文件名> <内容>' },
+      { cmd: 'append', desc: '追加内容到文件', usage: 'append <文件名> <内容>' },
+      { cmd: 'echo', desc: '输出文本', usage: 'echo [文本]' },
+      { cmd: 'grep', desc: '搜索文件内容', usage: 'grep <关键词> <文件>' },
+      { cmd: 'find', desc: '查找文件', usage: 'find [路径] [-name <模式>]' },
+      { cmd: 'history', desc: '显示命令历史', usage: 'history' },
+      { cmd: 'clear', desc: '清空终端屏幕', usage: 'clear' },
+      { cmd: 'whoami', desc: '显示当前用户', usage: 'whoami' },
+      { cmd: 'hostname', desc: '显示主机名', usage: 'hostname' },
+      { cmd: 'date', desc: '显示当前日期和时间', usage: 'date [格式]' },
+      { cmd: 'cal', desc: '显示日历', usage: 'cal [月份] [年份]' },
+      { cmd: 'uname', desc: '显示系统信息', usage: 'uname [-a] [-r] [-s] [-n] [-m]' },
+      { cmd: 'lsb_release', desc: '显示发行版信息', usage: 'lsb_release [-a]' },
+      { cmd: 'neofetch', desc: '显示系统信息（ASCII艺术风格）', usage: 'neofetch' },
+      { cmd: 'version', desc: '显示系统版本信息', usage: 'version' },
+      { cmd: 'about', desc: '显示关于信息', usage: 'about' },
+      { cmd: 'uptime', desc: '显示系统运行时间', usage: 'uptime' },
+      { cmd: 'ps', desc: '显示进程列表', usage: 'ps' },
+      { cmd: 'top', desc: '显示系统进程和资源使用情况', usage: 'top' },
+      { cmd: 'kill', desc: '终止进程', usage: 'kill [-9] <PID>' },
+      { cmd: 'killall', desc: '按名称终止进程', usage: 'killall <进程名>' },
+      { cmd: 'sysinfo', desc: '显示浏览器与系统详细信息', usage: 'sysinfo' },
+      { cmd: 'credits', desc: '显示致谢信息', usage: 'credits' },
+      { cmd: 'weather', desc: '获取天气信息', usage: 'weather [城市]' },
+      { cmd: 'news', desc: '获取最新新闻', usage: 'news' },
+      { cmd: 'crypto', desc: '获取加密货币价格', usage: 'crypto [货币]' },
+      { cmd: 'quote', desc: '获取随机名言', usage: 'quote' },
+      { cmd: 'curl', desc: '发送HTTP请求', usage: 'curl <URL>' },
     ]
 
     if (args.length > 0) {
-      const query = args.join(' ').toLowerCase()
-      const found = timezones.find(t => 
-        t.name.toLowerCase().includes(query) || 
-        t.tz.toLowerCase().includes(query)
-      )
-
-      if (found) {
-        const now = new Date()
-        const timeStr = now.toLocaleString('zh-CN', { timeZone: found.tz })
-
+      const target = args[0].toLowerCase()
+      const cmd = commands.find(c => c.cmd === target)
+      if (cmd) {
         return {
-          output: [
-            `🌍 ${found.name} 时区信息`,
-            '',
-            `时区: ${found.tz}`,
-            `UTC偏移: ${found.offset}`,
-            `当前时间: ${timeStr}`,
-          ].join('\n')
+          output: `${cmd.cmd}\n${'='.repeat(cmd.cmd.length)}\n描述: ${cmd.desc}\n用法: ${cmd.usage}`
         }
       }
-
-      return { output: `未找到 "${query}" 的时区信息` }
+      return { output: `未找到命令 '${target}'，输入 'help' 查看所有命令` }
     }
 
-    const now = new Date()
-    const output: string[] = []
-
-    output.push('🌍 时区信息')
-    output.push('═'.repeat(60))
-    output.push('')
-    output.push(`本地时区: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`)
-    output.push(`本地时间: ${now.toLocaleString('zh-CN')}`)
-    output.push('')
-
-    timezones.forEach(tz => {
-      const timeStr = now.toLocaleString('zh-CN', { 
-        timeZone: tz.tz, 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false
-      })
-      output.push(`${tz.name.padEnd(8)} ${tz.tz.padEnd(25)} ${tz.offset.padEnd(8)} ${timeStr}`)
-    })
-
-    output.push('')
-    output.push('用法: timezone-info <城市名>')
+    const output = [
+      'WebLinuxOS 终端命令帮助',
+      '',
+      '文件操作:',
+      ...commands.filter(c => ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'append'].includes(c.cmd))
+        .map(c => `  ${c.cmd.padEnd(12)} ${c.desc}`),
+      '',
+      '文本处理:',
+      ...commands.filter(c => ['echo', 'grep', 'find', 'history'].includes(c.cmd))
+        .map(c => `  ${c.cmd.padEnd(12)} ${c.desc}`),
+      '',
+      '系统命令:',
+      ...commands.filter(c => ['whoami', 'hostname', 'date', 'cal', 'uname', 'lsb_release', 'neofetch', 'version', 'about', 'uptime', 'ps', 'top', 'kill', 'killall', 'sysinfo', 'credits', 'clear'].includes(c.cmd))
+        .map(c => `  ${c.cmd.padEnd(12)} ${c.desc}`),
+      '',
+      '在线工具:',
+      ...commands.filter(c => ['weather', 'news', 'crypto', 'quote', 'curl'].includes(c.cmd))
+        .map(c => `  ${c.cmd.padEnd(12)} ${c.desc}`),
+      '',
+      '输入 "help <命令名>" 查看详细用法'
+    ]
 
     return { output: output.join('\n') }
   },
-  description: '获取时区信息',
-  usage: 'timezone-info [城市名]',
-  examples: ['timezone-info', 'timezone-info 东京', 'timezone-info New York']
+  description: '显示命令帮助',
+  usage: 'help [命令名]',
+  examples: ['help', 'help ls', 'help weather']
 })
 
-registerCommand('bitcoin', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithRetry(
-        'https://api.coingecko.com/api/v3/coins/bitcoin',
-        { mode: 'cors' }
-      ) as Record<string, unknown>
-
-      const marketData = data.market_data as Record<string, unknown>
-      const currentPrice = marketData.current_price as Record<string, number>
-      const priceChange = marketData.price_change_percentage_24h as number
-      const marketCap = marketData.market_cap as Record<string, number>
-      const volume = marketData.total_volume as Record<string, number>
-
-      const output: string[] = []
-      output.push('₿ Bitcoin 实时行情')
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push(`名称: ${data.name} (${data.symbol})`)
-      output.push(`价格: $${currentPrice.usd.toLocaleString()}`)
-      output.push(`24h涨跌: ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%`)
-      output.push(`市值: $${formatNumber(marketCap.usd)}`)
-      output.push(`24h交易量: $${formatNumber(volume.usd)}`)
-      output.push(`最高价: $${(marketData.ath as Record<string, number>).usd.toLocaleString()}`)
-      output.push(`最低价: $${(marketData.atl as Record<string, number>).usd.toLocaleString()}`)
-      output.push('')
-      output.push('数据来源: CoinGecko')
-
-      return { output: output.join('\n') }
-    } catch {
-      return {
-        output: [
-          '₿ Bitcoin 实时行情',
-          '═'.repeat(60),
-          '',
-          '⚠️ 在线API暂时不可用',
-          '',
-          '价格: $67,500 (示例数据)',
-          '24h涨跌: +2.35%',
-          '市值: $1.32T',
-          '',
-          '提示: 网络恢复后将显示最新数据',
-        ].join('\n')
-      }
-    }
-  },
-  description: '获取比特币实时行情',
-  usage: 'bitcoin',
-  examples: ['bitcoin']
-})
-
-registerCommand('convert', {
+registerCommand('echo', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-
-    const currencies: Record<string, { symbol: string; rate: number; name: string }> = {
-      'usd': { symbol: '$', rate: 1.0, name: '美元' },
-      'cny': { symbol: '¥', rate: 7.24, name: '人民币' },
-      'eur': { symbol: '€', rate: 0.92, name: '欧元' },
-      'jpy': { symbol: '¥', rate: 154.50, name: '日元' },
-      'gbp': { symbol: '£', rate: 0.79, name: '英镑' },
-      'cad': { symbol: 'C$', rate: 1.36, name: '加元' },
-      'aud': { symbol: 'A$', rate: 1.53, name: '澳元' },
-      'chf': { symbol: 'Fr', rate: 0.88, name: '瑞郎' },
-    }
-
-    if (args.length < 3) {
-      const output: string[] = []
-      output.push('💱 货币转换器')
-      output.push('')
-      output.push('用法: convert <金额> <源货币> <目标货币>')
-      output.push('')
-      output.push('支持的货币:')
-      Object.entries(currencies).forEach(([code, info]) => {
-        output.push(`  ${code.padEnd(4)} - ${info.name} (${info.symbol})`)
-      })
-      output.push('')
-      output.push('示例:')
-      output.push('  convert 100 usd cny')
-      output.push('  convert 500 cny usd')
-      output.push('  convert 1000 jpy usd')
-
-      return { output: output.join('\n') }
-    }
-
-    const amount = parseFloat(args[0])
-    const from = args[1].toLowerCase()
-    const to = args[2].toLowerCase()
-
-    if (isNaN(amount)) {
-      return { output: '错误: 请输入有效的金额' }
-    }
-
-    if (!currencies[from]) {
-      return { output: `错误: 未知的源货币 '${from}'` }
-    }
-
-    if (!currencies[to]) {
-      return { output: `错误: 未知的目标货币 '${to}'` }
-    }
-
-    const fromRate = currencies[from].rate
-    const toRate = currencies[to].rate
-    const result = (amount / fromRate) * toRate
-
-    return {
-      output: [
-        '💱 货币转换结果',
-        '',
-        `${amount} ${currencies[from].symbol} (${currencies[from].name})`,
-        `= ${result.toFixed(2)} ${currencies[to].symbol} (${currencies[to].name})`,
-        '',
-        `汇率: 1 ${currencies[from].name} = ${(toRate / fromRate).toFixed(4)} ${currencies[to].name}`,
-      ].join('\n')
-    }
+    return { output: args.join(' ') }
   },
-  description: '货币转换器',
-  usage: 'convert <金额> <源货币> <目标货币>',
-  examples: ['convert 100 usd cny', 'convert 500 cny usd']
+  description: '输出文本',
+  usage: 'echo [文本]',
+  examples: ['echo Hello World', 'echo $PATH']
 })
 
-registerCommand('weather-forecast', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const city = args.join(' ') || 'Beijing'
-
-    const cityMap: Record<string, { name: string; lat: number; lon: number }> = {
-      'beijing': { name: '北京', lat: 39.9042, lon: 116.4074 },
-      'shanghai': { name: '上海', lat: 31.2304, lon: 121.4737 },
-      'guangzhou': { name: '广州', lat: 23.1291, lon: 113.2644 },
-      'shenzhen': { name: '深圳', lat: 22.5431, lon: 114.0579 },
-      'tokyo': { name: '东京', lat: 35.6762, lon: 139.6503 },
-      'new york': { name: '纽约', lat: 40.7128, lon: -74.0060 },
-      'london': { name: '伦敦', lat: 51.5074, lon: -0.1278 },
-      'paris': { name: '巴黎', lat: 48.8566, lon: 2.3522 },
-    }
-
-    const searchKey = Object.keys(cityMap).find(k => city.toLowerCase().includes(k))
-    const cityInfo = cityMap[searchKey || 'beijing']
-
-    try {
-      const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=7`,
-        { mode: 'cors' },
-        30 * 60 * 1000
-      ) as Record<string, unknown>
-
-      const daily = data.daily as Record<string, unknown[]>
-      const timezone = data.timezone as string
-
-      const output: string[] = []
-      output.push(`🌤️ ${cityInfo.name} 7日天气预报`)
-      output.push(`时区: ${timezone}`)
-      output.push('═'.repeat(60))
-      output.push('')
-
-      const days = ['日', '一', '二', '三', '四', '五', '六']
-
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(daily.time[i] as string)
-        const dayOfWeek = days[date.getDay()]
-        const dateStr = `${date.getMonth() + 1}/${date.getDate()}`
-        const maxTemp = daily.temperature_2m_max[i] as number
-        const minTemp = daily.temperature_2m_min[i] as number
-        const weatherCode = daily.weather_code[i] as number
-
-        let weatherIcon = '🌤️'
-        if (weatherCode === 0) weatherIcon = '☀️'
-        else if (weatherCode >= 1 && weatherCode <= 3) weatherIcon = '⛅'
-        else if (weatherCode >= 45 && weatherCode <= 48) weatherIcon = '🌫️'
-        else if (weatherCode >= 51 && weatherCode <= 67) weatherIcon = '🌧️'
-        else if (weatherCode >= 71 && weatherCode <= 86) weatherIcon = '❄️'
-        else if (weatherCode >= 95 && weatherCode <= 99) weatherIcon = '⛈️'
-
-        output.push(`${dateStr} 周${dayOfWeek} ${weatherIcon} ${minTemp}°C ~ ${maxTemp}°C`)
-      }
-
-      output.push('')
-      output.push('数据来源: Open-Meteo (已缓存30分钟)')
-
-      return { output: output.join('\n') }
-    } catch {
-      return {
-        output: [
-          `🌤️ ${cityInfo.name} 7日天气预报`,
-          '═'.repeat(60),
-          '',
-          '⚠️ 天气服务暂时不可用',
-          '',
-          '支持的城市: 北京, 上海, 广州, 深圳, 东京, 纽约, 伦敦, 巴黎',
-          '',
-          '提示: 使用 weather <城市> 查看详细天气',
-        ].join('\n')
-      }
-    }
-  },
-  description: '获取7日天气预报',
-  usage: 'weather-forecast [城市]',
-  examples: ['weather-forecast', 'weather-forecast 北京', 'weather-forecast Tokyo']
-})
-
-registerCommand('env', {
+registerCommand('clear', {
   handler: (): CommandResult => {
-    const envVars: Record<string, string> = {
-      USER: 'user',
-      HOME: '/home/user',
-      PATH: '/usr/local/bin:/usr/bin:/bin',
-      SHELL: 'bash',
-      TERM: 'xterm-256color',
-      LANG: 'zh_CN.UTF-8',
-      LC_ALL: 'zh_CN.UTF-8',
-      PWD: '/home/user',
-      EDITOR: 'nano',
-      BROWSER: 'firefox',
-      TZ: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      HOSTNAME: 'web-linux',
-      OS: 'WebLinuxOS',
-      VERSION: '2.9.0',
-    }
-
-    const output: string[] = []
-    output.push('环境变量')
-    output.push('═'.repeat(50))
-    output.push('')
-
-    Object.entries(envVars).forEach(([key, value]) => {
-      output.push(`${key}=${value}`)
-    })
-
-    output.push('')
-    output.push('提示: 这是虚拟环境变量')
-
-    return { output: output.join('\n') }
+    return { output: '\x1b[2J\x1b[H' }
   },
-  description: '显示环境变量',
-  usage: 'env',
-  examples: ['env']
+  description: '清空终端屏幕',
+  usage: 'clear',
+  examples: ['clear']
 })
 
-registerCommand('alias', {
+registerCommand('grep', {
   handler: (context: CommandContext): CommandResult => {
-    const { args } = context
+    const { args, files } = context
+    
+    if (args.length < 2) {
+      return { output: 'grep: 缺少操作数\n用法: grep <关键词> <文件>' }
+    }
+    
+    const pattern = args[0]
+    const fileArg = args[1]
+    const resolved = resolvePath(context.cwd, fileArg)
+    const node = findNodeByPath(files, resolved)
+    
+    if (!node || node.type !== 'file') {
+      return { output: `grep: ${fileArg}: 没有那个文件或目录` }
+    }
+    
+    const content = node.content || ''
+    const lines = content.split('\n')
+    const matches = lines.map((line, index) => {
+      if (line.includes(pattern)) {
+        return `${index + 1}: ${line}`
+      }
+      return null
+    }).filter(Boolean)
+    
+    if (matches.length === 0) {
+      return { output: '' }
+    }
+    
+    return { output: matches.join('\n') }
+  },
+  description: '搜索文件内容',
+  usage: 'grep <关键词> <文件>',
+  examples: ['grep hello file.txt']
+})
 
-    if (args.length === 0) {
-      return {
-        output: [
-          '别名管理',
-          '',
-          '用法:',
-          '  alias                列出所有别名',
-          '  alias <name>         查看指定别名',
-          '  alias <name>=<cmd>   设置别名',
-          '',
-          '示例:',
-          '  alias ll="ls -la"',
-          '  alias grep="grep --color=auto"',
-          '',
-          '当前别名:',
-          '  ll      -> ls -la',
-          '  la      -> ls -a',
-          '  ..      -> cd ..',
-          '  ...     -> cd ../..',
-        ].join('\n')
+function resolvePath(cwd: string, target: string): string {
+  if (target.startsWith('/')) return target
+  if (target.startsWith('~')) return target.replace('~', '/home/user')
+  if (target === '.') return cwd
+  if (target === '..') {
+    const parts = cwd.split('/').filter(Boolean)
+    parts.pop()
+    return parts.length > 0 ? '/' + parts.join('/') : '/'
+  }
+  return cwd === '/' ? `/${target}` : `${cwd}/${target}`
+}
+
+registerCommand('find', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args, cwd, files } = context
+    
+    let targetPath = cwd
+    let namePattern: string | undefined
+    
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '-name') {
+        namePattern = args[i + 1]
+        i++
+      } else if (!args[i].startsWith('-')) {
+        targetPath = resolvePath(cwd, args[i])
       }
     }
-
-    const arg = args.join(' ')
-    if (arg.includes('=')) {
-      const [name, cmd] = arg.split('=', 2)
-      return { output: `别名已设置: ${name} -> ${cmd}` }
+    
+    const node = findNodeByPath(files, targetPath)
+    if (!node) {
+      return { output: `find: ${targetPath}: 没有那个文件或目录` }
     }
-
-    const aliases: Record<string, string> = {
-      'll': 'ls -la',
-      'la': 'ls -a',
-      '..': 'cd ..',
-      '...': 'cd ../..',
-      'grep': 'grep --color=auto',
-      'cp': 'cp -i',
-      'rm': 'rm -i',
-      'mv': 'mv -i',
+    
+    const results: string[] = []
+    
+    function search(node: FileNode, currentPath: string) {
+      const fullPath = currentPath === '/' ? `/${node.name}` : `${currentPath}/${node.name}`
+      
+      if (namePattern) {
+        if (node.name.includes(namePattern)) {
+          results.push(fullPath)
+        }
+      } else {
+        if (node.type === 'file') {
+          results.push(fullPath)
+        }
+      }
+      
+      if (node.type === 'folder' && node.children) {
+        node.children.forEach((child: FileNode) => search(child, fullPath))
+      }
     }
-
-    if (aliases[arg]) {
-      return { output: `${arg} -> ${aliases[arg]}` }
+    
+    if (node.type === 'folder') {
+      node.children?.forEach((child: FileNode) => search(child, targetPath))
     }
-
-    return { output: `未找到别名 '${arg}'` }
+    
+    return { output: results.join('\n') || '未找到匹配的文件' }
   },
-  description: '管理命令别名',
-  usage: 'alias [name=command]',
-  examples: ['alias', 'alias ll', 'alias ll=ls -la']
+  description: '查找文件',
+  usage: 'find [路径] [-name <模式>]',
+  examples: ['find /home/user', 'find -name *.txt']
 })
 
 registerCommand('history', {
   handler: (): CommandResult => {
-    const history = [
-      'ls -la',
-      'cd /home/user',
-      'cat README.md',
-      'git status',
-      'npm run dev',
-      'weather Beijing',
-      'crypto',
-      'news technology',
-      'calc 2 + 3 * 4',
-      'pwd',
-    ]
-
-    const output: string[] = []
-    output.push('命令历史')
-    output.push('═'.repeat(50))
-    output.push('')
-
-    history.forEach((cmd, index) => {
-      output.push(`${(index + 1).toString().padStart(4)} ${cmd}`)
-    })
-
-    output.push('')
-    output.push('提示: 使用上下箭头键浏览历史')
-    output.push('使用 !<数字> 执行历史命令')
-
-    return { output: output.join('\n') }
+    return { output: '命令历史功能暂未启用，请直接使用终端的上下箭头查看历史' }
   },
   description: '显示命令历史',
   usage: 'history',
-  examples: ['history', '!5']
+  examples: ['history']
+})
+
+registerCommand('cal', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    let month = new Date().getMonth()
+    let year = new Date().getFullYear()
+    
+    if (args.length === 1) {
+      const num = parseInt(args[0])
+      if (!isNaN(num)) {
+        if (num >= 1 && num <= 12) {
+          month = num - 1
+        } else if (num >= 1900 && num <= 2100) {
+          year = num
+        }
+      }
+    } else if (args.length === 2) {
+      const m = parseInt(args[0])
+      const y = parseInt(args[1])
+      if (!isNaN(m) && !isNaN(y) && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+        month = m - 1
+        year = y
+      }
+    }
+    
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    const dayNames = ['日', '一', '二', '三', '四', '五', '六']
+    
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    
+    const output: string[] = []
+    output.push(`${monthNames[month]} ${year}`)
+    output.push(dayNames.join(' '))
+    
+    let line = ' '.repeat(firstDay * 3)
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      line += String(day).padStart(2, ' ') + ' '
+      if ((firstDay + day) % 7 === 0) {
+        output.push(line.trim())
+        line = ''
+      }
+    }
+    
+    if (line) {
+      output.push(line.trim())
+    }
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示日历',
+  usage: 'cal [月份] [年份]',
+  examples: ['cal', 'cal 2026', 'cal 12 2026']
+})
+
+registerCommand('weather', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const city = args[0] || 'Beijing'
+    
+    try {
+      const url = `${apiConfigs.weather.baseUrl}${apiConfigs.weather.endpoints.current}?city=${encodeURIComponent(city)}&key=demo`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (data.current) {
+        return {
+          output: `🌤️ ${city} 天气\n\n温度: ${data.current.temperature}°C\n天气: ${data.current.weather}\n湿度: ${data.current.humidity}%\n风速: ${data.current.windSpeed} km/h\n\n更新时间: ${data.current.observationTime}`
+        }
+      }
+      
+      return { output: `无法获取 ${city} 的天气信息` }
+    } catch {
+      return {
+        output: `🌤️ ${city} 天气（模拟数据）\n\n温度: ${Math.floor(Math.random() * 15 + 15)}°C\n天气: ${['晴', '多云', '阴', '小雨'][Math.floor(Math.random() * 4)]}\n湿度: ${Math.floor(Math.random() * 40 + 40)}%\n风速: ${Math.floor(Math.random() * 20 + 5)} km/h\n\n注意: 当前未连接真实天气API，显示模拟数据`
+      }
+    }
+  },
+  description: '获取天气信息',
+  usage: 'weather [城市]',
+  examples: ['weather', 'weather Beijing', 'weather Shanghai']
+})
+
+registerCommand('news', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const topStoriesUrl = `${apiConfigs.news.baseUrl}${apiConfigs.news.endpoints.topStories}`
+      const response = await fetch(topStoriesUrl)
+      const storyIds = await response.json() as number[]
+      
+      const top5 = storyIds.slice(0, 5)
+      const newsItems = await Promise.all(
+        top5.map(async id => {
+          const itemUrl = `${apiConfigs.news.baseUrl}${apiConfigs.news.endpoints.item}/${id}.json`
+          const itemResponse = await fetch(itemUrl)
+          return itemResponse.json()
+        })
+      )
+      
+      const output = [
+        '📰 Hacker News 热门新闻',
+        '',
+        ...newsItems.map((item, index) => {
+          const score = item.score || 0
+          const author = item.by || 'unknown'
+          return `${index + 1}. ${item.title}\n   评分: ${score} | 作者: ${author}`
+        }),
+        '',
+        '完整内容请访问 https://news.ycombinator.com/'
+      ]
+      
+      return { output: output.join('\n') }
+    } catch {
+      return {
+        output: `📰 今日新闻（模拟数据）\n\n1. WebLinuxOS 2.9.0 发布，新增多项功能\n2. 前端开发趋势：AI辅助编程成为主流\n3. React 19 正式发布，带来全新特性\n4. WebAssembly 性能大幅提升\n5. 开源社区迎来新一波贡献高峰\n\n注意: 当前未连接新闻API，显示模拟数据`
+      }
+    }
+  },
+  description: '获取最新新闻',
+  usage: 'news',
+  examples: ['news']
+})
+
+registerCommand('crypto', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const crypto = args[0] || 'bitcoin'
+    
+    try {
+      const url = `${apiConfigs.crypto.baseUrl}${apiConfigs.crypto.endpoints.prices}?ids=${crypto}&vs_currencies=usd,cnc&include_market_cap=true&include_24hr_change=true`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (data[crypto]) {
+        const info = data[crypto]
+        return {
+          output: `💰 ${crypto.toUpperCase()} 价格\n\nUSD: $${info.usd.toLocaleString()}\nCNY: ¥${info.cny.toLocaleString()}\n市值: $${info.usd_market_cap.toLocaleString()}\n24h变化: ${info.usd_24h_change > 0 ? '+' : ''}${info.usd_24h_change.toFixed(2)}%`
+        }
+      }
+      
+      return { output: `无法获取 ${crypto} 的价格信息` }
+    } catch {
+      const prices: Record<string, { usd: number; change: number }> = {
+        bitcoin: { usd: 67500, change: 2.5 },
+        ethereum: { usd: 3500, change: -1.2 },
+        solana: { usd: 178, change: 5.8 },
+        dogecoin: { usd: 0.12, change: 1.1 }
+      }
+      
+      const info = prices[crypto.toLowerCase()] || { usd: Math.floor(Math.random() * 10000 + 100), change: (Math.random() - 0.5) * 10 }
+      
+      return {
+        output: `💰 ${crypto.toUpperCase()} 价格（模拟数据）\n\nUSD: $${info.usd.toLocaleString()}\nCNY: ¥${(info.usd * 7.2).toLocaleString()}\n24h变化: ${info.change > 0 ? '+' : ''}${info.change.toFixed(2)}%\n\n注意: 当前未连接加密货币API，显示模拟数据`
+      }
+    }
+  },
+  description: '获取加密货币价格',
+  usage: 'crypto [货币]',
+  examples: ['crypto', 'crypto bitcoin', 'crypto ethereum']
+})
+
+registerCommand('quote', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const url = `${apiConfigs.quotes.baseUrl}${apiConfigs.quotes.endpoints.random}`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      return {
+        output: `💭 "${data.content}"\n\n—— ${data.author}`
+      }
+    } catch {
+      const quotes = [
+        { content: '代码是写给人看的，只是顺便给机器执行', author: 'Donald Knuth' },
+        { content: '优秀的程序员像优秀的魔术师一样，让复杂的事情看起来很简单', author: 'Robert C. Martin' },
+        { content: '测试是证明错误存在的过程，而不是证明错误不存在', author: 'Edsger Dijkstra' },
+        { content: '在计算机科学中，没有什么问题是不能通过增加一个间接层来解决的', author: 'David Wheeler' },
+        { content: '简单胜于复杂，复杂胜于混乱', author: 'The Zen of Python' }
+      ]
+      
+      const quote = quotes[Math.floor(Math.random() * quotes.length)]
+      return {
+        output: `💭 "${quote.content}"\n\n—— ${quote.author}`
+      }
+    }
+  },
+  description: '获取随机名言',
+  usage: 'quote',
+  examples: ['quote']
+})
+
+registerCommand('curl', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'curl: 缺少URL\n用法: curl <URL>' }
+    }
+    
+    const url = args[0]
+    
+    try {
+      const response = await fetch(url)
+      const text = await response.text()
+      
+      if (text.length > 2000) {
+        return { output: `${text.slice(0, 2000)}...\n\n（内容过长，已截断）` }
+      }
+      
+      return { output: text }
+    } catch (error) {
+      return { output: `curl: 无法访问 '${url}': ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '发送HTTP请求',
+  usage: 'curl <URL>',
+  examples: ['curl https://example.com']
+})
+
+registerCommand('who', {
+  handler: (context: CommandContext): CommandResult => {
+    return {
+      output: `${context.username} pts/0 ${new Date().toLocaleDateString('zh-CN')} ${new Date().toLocaleTimeString('zh-CN')}`
+    }
+  },
+  description: '显示当前登录用户',
+  usage: 'who',
+  examples: ['who']
+})
+
+registerCommand('hostnamectl', {
+  handler: (): CommandResult => {
+    return {
+      output: [
+        '   Static hostname: web-linux',
+        '         Icon name: computer-vm',
+        '           Chassis: vm',
+        '        Machine ID: web-linux-2026',
+        '           Boot ID: web-linux-boot-2026',
+        '    Operating System: WebLinuxOS 2.9.0',
+        '              Kernel: Linux 6.15.0-web',
+        '        Architecture: x86-64',
+        '',
+        'WebLinuxOS 是一个基于 Web 的虚拟操作系统。'
+      ].join('\n')
+    }
+  },
+  description: '显示主机信息',
+  usage: 'hostnamectl',
+  examples: ['hostnamectl']
+})
+
+registerCommand('reset', {
+  handler: (): CommandResult => {
+    return { output: '\x1b[2J\x1b[HWebLinuxOS 终端已重置\n输入 "help" 查看可用命令' }
+  },
+  description: '重置终端',
+  usage: 'reset',
+  examples: ['reset']
 })

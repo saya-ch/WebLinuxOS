@@ -10,38 +10,96 @@ A fully functional Linux desktop environment running entirely in the browser —
 
 ![WebLinuxOS Desktop](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png)
 
+## Table of Contents
+
+- [Features](#features)
+- [Live Demo](#live-demo)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Applications](#applications)
+- [Terminal Commands](#terminal-commands)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [API Integrations](#api-integrations)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Features
 
-- **Desktop Environment** — Multi-workspace virtual desktops, draggable/resizable windows, taskbar, system tray, start menu with fuzzy search, context menus, and global search
-- **Terminal Emulator** — 150+ commands across filesystem, system monitoring, networking, and live public APIs (weather, crypto, news, exchange rates, IP geolocation, Wikipedia, translation)
-- **Virtual Filesystem** — Persisted to `localStorage` with full CRUD, multi-format preview, and integration across all applications
-- **WebIDE Pro** — In-browser code execution for JavaScript, TypeScript, Python (via Pyodide), HTML, CSS, Markdown, SQL, JSON, and Bash
-- **AI Workbench** — Prompt-engineering workbench with 8 specialized tools, quality scoring, auto-enhancement, and 100% local data storage
-- **Knowledge Vine** — Zettelkasten-style knowledge base with bidirectional `[[links]]`, tags, and force-directed graph visualization
-- **CodeForge** — Developer toolbox with JSON formatter, Base64/URL encoder, regex tester, JWT decoder, hash calculator, and cron parser
-- **Live Data Hub** — Real-time dashboard pulling data from Open-Meteo, CoinGecko, Hacker News, Frankfurter, and more
-- **Theme System** — Dark and light themes with CSS custom properties, window animations, and glass effects
-- **Desktop Widgets** — Clock, system monitor, weather, focus timer, and sticky notes — draggable and persistent
+### Desktop Environment
+
+- Multi-workspace virtual desktops with drag-and-drop window management
+- Resizable, minimizable, and maximizable windows with smooth animations
+- Taskbar with window switching, system tray, and notification center
+- Start menu with fuzzy search and categorized application listings
+- Global search across applications, files, and commands
+- Context menus for desktop and file operations
+- Dark and light themes with glass-morphism effects
+
+### Terminal Emulator
+
+- 150+ commands covering filesystem operations, system monitoring, and networking
+- Real-time API queries: weather, cryptocurrency prices, news, translation, and more
+- Command history with up/down arrow navigation
+- Tab completion for commands and file paths
+- Syntax highlighting and color output support
+- Built-in help system with detailed command documentation
+
+### Virtual Filesystem
+
+- Persisted to `localStorage` with automatic debounced saves
+- Full CRUD operations: create, read, update, delete, copy, move, rename
+- Multi-format file preview and editing
+- File search across the entire filesystem
+- Undo/redo support for file operations
+- Directory tree visualization
+
+### Development Tools
+
+- **WebIDE Pro**: In-browser code execution for JavaScript, TypeScript, Python (via Pyodide), HTML, CSS, Markdown, SQL, JSON, and Bash
+- **CodeForge**: Developer toolbox with JSON formatter, Base64/URL encoder, regex tester, JWT decoder, hash calculator, and cron parser
+- **API Tester**: REST API client with configurable HTTP methods and headers
+- **Code Diff Viewer**: Side-by-side diff comparison with syntax highlighting
+
+### AI & Knowledge
+
+- **AI Workbench**: Prompt-engineering workbench with 8 specialized tools, quality scoring, and auto-enhancement
+- **Knowledge Vine**: Zettelkasten-style knowledge base with bidirectional `[[links]]`, tags, and force-directed graph visualization
+- **AI Assistant**: Local AI provider for code analysis, generation, and explanation without external API calls
+
+### Live Data Hub
+
+- Real-time dashboard pulling data from multiple public APIs
+- Weather forecasts from Open-Meteo
+- Cryptocurrency prices from CoinGecko
+- News from Hacker News
+- Exchange rates from Frankfurter
+- IP geolocation and Wikipedia summaries
 
 ## Live Demo
 
-Open [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/) in any modern browser. No install, no account, no telemetry.
+Open [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/) in any modern browser. No installation, no account registration, no telemetry.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| UI Framework | React 19.2 with concurrent rendering |
-| Language | TypeScript 6 (strict mode) |
-| State Management | Zustand 5 with debounced persistence |
-| Build Tool | Vite 8 (Rolldown-powered) |
-| Iconography | Lucide React |
-| Python Runtime | Pyodide 0.26 (in-browser) |
-| Markdown | Marked |
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| UI Framework | React | 19.2 |
+| Language | TypeScript | 6.0 |
+| State Management | Zustand | 5.0 |
+| Build Tool | Vite | 8.0 |
+| Iconography | Lucide React | Latest |
+| Python Runtime | Pyodide | 0.26 |
+| Markdown | Marked | Latest |
 
 ## Getting Started
 
-### Run locally
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Run Locally
 
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
@@ -50,13 +108,13 @@ npm install
 npm run dev
 ```
 
-The dev server starts at `http://localhost:5173`.
+The development server starts at `http://localhost:5173`.
 
-### Build for production
+### Build for Production
 
 ```bash
-npm run build        # outputs to dist/
-npm run preview      # serve the production build locally
+npm run build        # Outputs to dist/
+npm run preview      # Serve the production build locally
 ```
 
 ### Deploy to GitHub Pages
@@ -81,77 +139,148 @@ WebLinuxOS/
 │   │   │   ├── KnowledgeVine.tsx     # Zettelkasten + knowledge graph
 │   │   │   ├── CodeForge.tsx         # Developer toolbox
 │   │   │   ├── LiveDataHub.tsx       # Real-time API dashboard
-│   │   │   ├── OnlineProgrammingLab.tsx
-│   │   │   ├── FileManager.tsx
-│   │   │   ├── terminal/             # 150+ terminal commands
+│   │   │   ├── FileManager.tsx       # Virtual filesystem browser
+│   │   │   ├── Terminal.tsx          # Terminal emulator
+│   │   │   ├── terminal/             # Terminal command implementations
+│   │   │   │   ├── commands.ts       # Command registry and types
+│   │   │   │   ├── fileCommands.ts   # File system commands
+│   │   │   │   ├── systemCommands.ts # System commands
+│   │   │   │   └── extendedCommands.ts # Extended commands
 │   │   │   └── ...
 │   │   ├── components/
-│   │   │   └── desktop/              # WindowManager, Taskbar, Desktop
-│   │   ├── store/                    # Zustand stores + file utils
-│   │   ├── styles/                   # Theme CSS files
-│   │   ├── apps.tsx                  # App registry
-│   │   ├── store.tsx                 # Global state
-│   │   ├── types.ts                  # TypeScript types
-│   │   └── App.tsx / main.tsx
-│   ├── public/
-│   ├── screenshots/
-│   ├── vite.config.ts
-│   └── package.json
+│   │   │   └── desktop/              # Desktop components
+│   │   │       ├── WindowManager.tsx # Window rendering and management
+│   │   │       ├── Window.tsx        # Individual window component
+│   │   │       ├── Taskbar.tsx       # Taskbar and system tray
+│   │   │       └── Desktop.tsx       # Desktop background and icons
+│   │   ├── store/                    # Zustand stores and utilities
+│   │   │   ├── store.tsx             # Global state management
+│   │   │   ├── fileUtils.ts          # File system utilities
+│   │   │   ├── storageUtils.ts       # Local storage utilities
+│   │   │   └── defaults.tsx          # Default data and configurations
+│   │   ├── services/                 # API and utility services
+│   │   │   ├── apiService.ts         # Real-time API integrations
+│   │   │   └── aiService.ts          # AI service abstraction
+│   │   ├── utils/                    # Shared utilities
+│   │   │   └── logger.ts             # Unified logging system
+│   │   ├── styles/                   # Theme and global styles
+│   │   ├── apps.tsx                  # Application registry
+│   │   ├── types.ts                  # TypeScript type definitions
+│   │   ├── App.tsx                   # Root application component
+│   │   └── main.tsx                  # Application entry point
+│   ├── public/                       # Static assets
+│   ├── screenshots/                  # Project screenshots
+│   ├── vite.config.ts                # Vite configuration
+│   └── package.json                  # Dependencies and scripts
 ├── .github/
-│   └── workflows/deploy.yml
+│   └── workflows/deploy.yml          # GitHub Actions deployment
 └── README.md
 ```
 
 ## Applications
 
-### Development
+### Development Tools
 
-| App | Description |
-|-----|-------------|
-| WebIDE Pro | Multi-language code execution (JS, TS, Python, HTML, CSS, SQL, Markdown, JSON, Bash) |
-| Terminal | 150+ commands — filesystem, system monitoring, network tools, live API queries |
-| CodeForge | 11 developer tools — JSON formatter, regex tester, JWT decoder, hash calculator, cron parser |
-| API Tester | REST API client with configurable HTTP methods and headers |
-| Code Diff Viewer | Side-by-side diff comparison with syntax highlighting |
+| Application | Description |
+|-------------|-------------|
+| WebIDE Pro | Multi-language code execution with Python support via Pyodide |
+| Terminal | 150+ commands with live API integrations |
+| CodeForge | JSON formatter, regex tester, JWT decoder, hash calculator, cron parser |
+| API Tester | REST API client with full HTTP method support |
+| Code Diff Viewer | Side-by-side diff comparison |
 
 ### Productivity
 
-| App | Description |
-|-----|-------------|
-| FileManager | Full virtual filesystem with CRUD, navigation, and multi-format preview |
-| Markdown Editor | Live-preview Markdown editing with export |
+| Application | Description |
+|-------------|-------------|
+| FileManager | Full virtual filesystem with multi-format preview |
+| Markdown Editor | Live-preview Markdown editing |
 | Spreadsheet | Basic spreadsheet with formula support |
 | Kanban Board | Drag-and-drop task organization |
 | Todo List | Task management with completion tracking |
-| Calendar | Date and event management with calendar view |
+| Calendar | Date and event management |
 
 ### AI & Knowledge
 
-| App | Description |
-|-----|-------------|
-| AI Workbench | Prompt engineering with 8 tools, quality scoring, and local-only storage |
-| Knowledge Vine | Zettelkasten with bidirectional links, tags, and force-directed graph |
-| AI Assistant | Local AI provider for code analysis, generation, and explanation |
+| Application | Description |
+|-------------|-------------|
+| AI Workbench | Prompt engineering with 8 tools and quality scoring |
+| Knowledge Vine | Zettelkasten with bidirectional links and graph visualization |
+| AI Assistant | Local AI code analysis and generation |
 
 ### Internet & Data
 
-| App | Description |
-|-----|-------------|
-| Live Data Hub | Real-time dashboard — weather, crypto, news, exchange rates, IP geolocation |
-| Weather App | OpenWeatherMap integration with current conditions and forecasts |
-| GitHub Trending | Discover popular repositories with language and time-period filters |
-| Wikipedia Reader | Article search and summaries via Wikipedia API |
-| Real-time Translator | Translation across 50+ languages |
+| Application | Description |
+|-------------|-------------|
+| Live Data Hub | Real-time dashboard for weather, crypto, news, and exchange rates |
+| Weather App | Current conditions and forecasts |
+| GitHub Trending | Popular repositories with filters |
+| Wikipedia Reader | Article search and summaries |
+| Translator | Translation across 50+ languages |
 
 ### Multimedia & Utilities
 
-| App | Description |
-|-----|-------------|
+| Application | Description |
+|-------------|-------------|
 | Music Player | Audio playback with playlist support |
 | Paint | Drawing application with brush tools |
 | Calculator | Scientific calculator with history |
 | Password Manager | Encrypted password storage |
-| QR Generator | QR code creation for text, URLs, and contacts |
+| QR Generator | QR code creation |
+
+## Terminal Commands
+
+### File System
+
+```
+ls      - List directory contents
+cd      - Change working directory
+pwd     - Print working directory
+cat     - Display file contents
+head    - Display first lines of a file
+tail    - Display last lines of a file
+mkdir   - Create directory
+touch   - Create empty file or update timestamp
+rm      - Remove file or directory
+cp      - Copy file or directory
+mv      - Move or rename file
+tree    - Display directory tree
+grep    - Search file contents
+find    - Find files by name
+```
+
+### System Commands
+
+```
+whoami          - Display current user
+hostname        - Display hostname
+date            - Display date and time
+cal             - Display calendar
+uname           - Display system information
+uptime          - Display system uptime
+ps              - Display process list
+top             - Display system monitor
+kill            - Terminate process
+sysinfo         - Display detailed system information
+neofetch        - Display system information in ASCII art
+```
+
+### Online Tools
+
+```
+weather         - Get weather information
+news            - Get latest news from Hacker News
+crypto          - Get cryptocurrency prices
+quote           - Get random quote
+curl            - Send HTTP request
+```
+
+### Help
+
+```
+help            - Display command help
+help <command>  - Display detailed help for a specific command
+```
 
 ## Keyboard Shortcuts
 
@@ -169,29 +298,54 @@ WebLinuxOS/
 | `Ctrl+Alt+1-9` | Switch virtual desktop |
 | `F11` | Fullscreen |
 
+## API Integrations
+
+WebLinuxOS integrates with the following public APIs:
+
+| API | Service | Usage |
+|-----|---------|-------|
+| Open-Meteo | Weather data | Current conditions and forecasts |
+| CoinGecko | Cryptocurrency | Real-time prices and market data |
+| Hacker News | News | Top stories and discussions |
+| LibreTranslate | Translation | Multi-language translation |
+| Quotable | Quotes | Random quotes |
+| Wikipedia | Encyclopedia | Article summaries |
+| IPAPI | Geolocation | IP address information |
+
+All APIs are free, open, and do not require authentication keys.
+
 ## Contributing
 
 Contributions are welcome — bug reports, new applications, terminal commands, translations, or documentation improvements.
 
+### How to Contribute
+
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-app`)
-3. Commit your changes (`git commit -m 'Add my app'`)
-4. Push to the branch (`git push origin feature/my-app`)
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes with a clear message
+4. Push to the branch (`git push origin feature/my-feature`)
 5. Open a Pull Request
 
-### Adding a new application
+### Adding a New Application
 
-1. Create `src/apps/MyApp.tsx` exporting a memoized component
-2. Create `src/apps/MyApp.css` with scoped styles using CSS variables
-3. Add a registry entry to `src/apps.tsx`
-4. Add the lazy import to `src/components/desktop/WindowManager.tsx`
+1. Create `src/apps/MyApp.tsx` with a memoized component
+2. Add a registry entry to `src/apps.tsx`
+3. Add the lazy import to `src/components/desktop/WindowManager.tsx`
 
-### Adding a terminal command
+### Adding a Terminal Command
 
-1. Choose the appropriate file in `src/apps/terminal/`
-2. Register the command with `registerCommand`
-3. Add documentation to the `help` command
+1. Add to the appropriate command file in `src/apps/terminal/`
+2. Register with `registerCommand(name, definition)`
+3. Include description, usage, and examples
 
 ## License
 
 [MIT](LICENSE)
+
+## Acknowledgements
+
+- React team for the UI framework
+- Vite team for the build tool
+- Pyodide team for in-browser Python support
+- Lucide team for the icon library
+- All API providers for free access to their services
