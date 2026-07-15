@@ -75,7 +75,21 @@ export class ApiService {
     translate: 'https://libretranslate.de',
     quotes: 'https://api.quotable.io',
     wikipedia: 'https://en.wikipedia.org/api/rest_v1',
-    ipapi: 'https://ipapi.co/json'
+    ipapi: 'https://ipapi.co/json',
+    github: 'https://api.github.com',
+    exchange: 'https://api.exchangerate-api.com/v4/latest',
+    jokeapi: 'https://v2.jokeapi.dev/joke',
+    randomuser: 'https://randomuser.me/api',
+    advice: 'https://api.adviceslip.com/advice',
+    boredapi: 'https://www.boredapi.com/api/activity',
+    chucknorris: 'https://api.chucknorris.io/jokes/random',
+    nationalize: 'https://api.nationalize.io',
+    agify: 'https://api.agify.io',
+    genderize: 'https://api.genderize.io',
+    catfact: 'https://catfact.ninja/fact',
+    dogceo: 'https://dog.ceo/api/breeds/image/random',
+    unsplash: 'https://api.unsplash.com/photos/random',
+    spaceflight: 'https://api.spaceflightnewsapi.net/v3/articles'
   }
 
   private constructor() {}
@@ -281,6 +295,182 @@ export class ApiService {
     if (code >= 71 && code <= 77) return '❄️'
     if (code >= 80 && code <= 99) return '⛈️'
     return '🌤️'
+  }
+
+  // 新增：GitHub API
+  async fetchGitHubUser(username: string): Promise<Record<string, unknown> | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.github}/users/${username}`)
+      if (!response.ok) return null
+      return response.json()
+    } catch {
+      return null
+    }
+  }
+
+  async fetchGitHubRepos(username: string): Promise<Record<string, unknown>[] | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.github}/users/${username}/repos?sort=updated&per_page=10`)
+      if (!response.ok) return null
+      return response.json()
+    } catch {
+      return null
+    }
+  }
+
+  async searchGitHubRepos(query: string): Promise<Record<string, unknown>[] | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.github}/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=20`)
+      const data = await response.json()
+      return data.items || []
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：汇率API
+  async fetchExchangeRates(base: string = 'USD'): Promise<Record<string, number> | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.exchange}/${base}`)
+      const data = await response.json()
+      return data.rates || null
+    } catch {
+      return null
+    }
+  }
+
+  convertCurrency(amount: number, fromRate: number, toRate: number): number {
+    return (amount / fromRate) * toRate
+  }
+
+  // 新增：笑话API
+  async fetchRandomJoke(category: string = 'Programming'): Promise<{type: string; joke?: string; setup?: string; delivery?: string} | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.jokeapi}/${category}?safe-mode&type=twopart,single`)
+      const data = await response.json()
+      
+      if (data.type === 'single') {
+        return { type: 'single', joke: data.joke }
+      } else {
+        return { type: 'twopart', setup: data.setup, delivery: data.delivery }
+      }
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：随机用户生成
+  async fetchRandomUser(): Promise<Record<string, unknown> | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.randomuser}?inc=name,email,location,picture`)
+      const data = await response.json()
+      return data.results?.[0] || null
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：生活建议API
+  async fetchAdvice(): Promise<string | null> {
+    try {
+      const response = await fetch(this.baseUrls.advice)
+      const data = await response.json()
+      return data.slip?.advice || null
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：无聊活动建议
+  async fetchRandomActivity(): Promise<Record<string, unknown> | null> {
+    try {
+      const response = await fetch(this.baseUrls.boredapi)
+      return response.json()
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：Chuck Norris笑话
+  async fetchChuckNorrisJoke(): Promise<string | null> {
+    try {
+      const response = await fetch(this.baseUrls.chucknorris)
+      const data = await response.json()
+      return data.value || null
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：姓名分析API
+  async analyzeName(name: string): Promise<{nationality: Record<string, number>; age: number; gender: string} | null> {
+    try {
+      const [nationalizeData, agifyData, genderizeData] = await Promise.all([
+        fetch(`${this.baseUrls.nationalize}/?name=${name}`).then(r => r.json()),
+        fetch(`${this.baseUrls.agify}/?name=${name}`).then(r => r.json()),
+        fetch(`${this.baseUrls.genderize}/?name=${name}`).then(r => r.json())
+      ])
+
+      return {
+        nationality: nationalizeData.country?.reduce((acc: Record<string, number>, c: {country_id: string; probability: number}) => {
+          acc[c.country_id] = Math.round(c.probability * 100)
+          return acc
+        }, {}) || {},
+        age: agifyData.age || 0,
+        gender: genderizeData.gender || 'unknown'
+      }
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：猫咪知识
+  async fetchCatFact(): Promise<string | null> {
+    try {
+      const response = await fetch(this.baseUrls.catfact)
+      const data = await response.json()
+      return data.fact || null
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：随机狗狗图片
+  async fetchRandomDogImage(): Promise<string | null> {
+    try {
+      const response = await fetch(this.baseUrls.dogceo)
+      const data = await response.json()
+      return data.message || null
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：太空新闻
+  async fetchSpaceNews(limit: number = 10): Promise<Record<string, unknown>[] | null> {
+    try {
+      const response = await fetch(`${this.baseUrls.spaceflight}?_limit=${limit}`)
+      return response.json()
+    } catch {
+      return null
+    }
+  }
+
+  // 新增：聚合查询
+  async fetchDailySummary(): Promise<{
+    weather: WeatherData | null;
+    quote: QuoteData | null;
+    advice: string | null;
+    activity: Record<string, unknown> | null;
+  }> {
+    const [weather, quote, advice, activity] = await Promise.all([
+      this.fetchWeather(39.9, 116.4), // 北京坐标
+      this.fetchRandomQuote(),
+      this.fetchAdvice(),
+      this.fetchRandomActivity()
+    ])
+
+    return { weather, quote, advice, activity }
   }
 }
 

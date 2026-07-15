@@ -176,6 +176,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   Flashcards: () => import('../../apps/Flashcards'),
   KnowledgeCards: () => import('../../apps/KnowledgeCards'),
   KnowledgeExplorer: () => import('../../apps/KnowledgeExplorer'),
+  WelcomeHub: () => import('../../apps/WelcomeHub'),
   LearningPlatform: () => import('../../apps/LearningPlatform'),
   RecipeBook: () => import('../../apps/RecipeBook'),
   ChinesePoetry: () => import('../../apps/ChinesePoetry'),

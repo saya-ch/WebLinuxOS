@@ -1,6 +1,6 @@
 # WebLinuxOS
 
-A fully functional Linux desktop environment running entirely in the browser — 240+ applications, virtual filesystem, terminal with 150+ commands, and real-time API integrations, all without installation.
+A fully functional Linux desktop environment running entirely in the browser — 240+ applications, virtual filesystem, terminal with 160+ commands, and real-time API integrations, all without installation.
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-4ade80?style=for-the-badge&logo=githubpages&logoColor=white)](https://saya-ch.github.io/WebLinuxOS/)
 [![MIT License](https://img.shields.io/badge/License-MIT-22d3ee?style=for-the-badge)](LICENSE)
@@ -9,6 +9,53 @@ A fully functional Linux desktop environment running entirely in the browser —
 [![Vite](https://img.shields.io/badge/Vite-8.0-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
 ![WebLinuxOS Desktop](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png)
+
+## Overview
+
+WebLinuxOS is not just a simulation — it's a fully functional web-based operating system that provides real productivity tools and development utilities. Unlike traditional desktop OS simulations, WebLinuxOS integrates with 20+ public APIs and includes practical tools for developers, students, and professionals.
+
+## Key Features
+
+### Real-World Functionality
+
+- **Code Execution**: Run JavaScript, TypeScript, and Python (via Pyodide) directly in the browser
+- **API Integration**: Access real-time data from weather, cryptocurrency, news, and GitHub APIs
+- **File Management**: Full virtual filesystem with CRUD operations and multi-format preview
+- **Development Tools**: Code formatters, JSON validators, API testers, and snippet generators
+
+### Terminal Commands (160+)
+
+Beyond standard Linux commands, WebLinuxOS includes practical utilities:
+
+```
+# Development Tools
+snippet react MyComponent    # Generate React component
+json format '{"data":123}'   # Format JSON
+encode base64 "Hello World"  # Encode/decode utilities
+
+# Productivity
+password 16 5                 # Generate strong passwords
+color #3498db                # Color conversion tool
+timestamp 1609459200000      # Timestamp conversion
+
+# Real-time Data
+weather beijing              # Weather information
+news                        # Latest Hacker News
+crypto bitcoin ethereum      # Cryptocurrency prices
+```
+
+### API Integrations (20+)
+
+| Category | APIs | Use Case |
+|----------|------|----------|
+| Weather | Open-Meteo | Current conditions and forecasts |
+| Finance | CoinGecko, ExchangeRate-API | Crypto prices and currency conversion |
+| News | Hacker News, Spaceflight News API | Tech and space news |
+| Developer | GitHub API | User profiles, repo search |
+| Fun | JokeAPI, Cat Fact, Dog CEO | Random content |
+| Analysis | Nationalize, Agify, Genderize | Name analysis |
+
+### Desktop Environment
 
 ## Table of Contents
 
