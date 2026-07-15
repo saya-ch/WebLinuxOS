@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { Calculator, Delete, Percent, Divide, X, Minus, Plus, Equal, History, Pi, Square, SquareRoot, Power } from 'lucide-react'
+import { Calculator, History } from 'lucide-react'
 
 interface CalculationHistory {
   expression: string

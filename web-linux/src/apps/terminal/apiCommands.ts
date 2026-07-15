@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { API_CONFIG, fetchWithTimeout, handleApiError } from '../../config/apiConfig'
 
 registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
@@ -7,7 +8,9 @@ registerCommand('weather', {
     const city = args.join(' ') || 'Beijing'
     
     try {
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=7453d2a40a48c6b51a06392940dd7386&units=metric&lang=zh_cn`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.openWeatherMap.baseUrl}/weather?q=${encodeURIComponent(city)}&appid=${API_CONFIG.openWeatherMap.key}&units=metric&lang=zh_cn`
+      )
       
       if (!response.ok) {
         return { output: `天气查询失败: ${response.status} ${response.statusText}` }
@@ -29,7 +32,7 @@ registerCommand('weather', {
       
       return { output }
     } catch (error) {
-      return { output: `天气查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '天气查询') }
     }
   },
   description: '查询天气',
@@ -43,7 +46,9 @@ registerCommand('crypto', {
     const symbol = args[0] ? args[0].toUpperCase() : 'BTC'
     
     try {
-      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${symbol.toLowerCase()}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.coinGecko.baseUrl}/coins/markets?vs_currency=usd&ids=${symbol.toLowerCase()}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`
+      )
       
       if (!response.ok) {
         return { output: `加密货币查询失败: ${response.status} ${response.statusText}` }
@@ -70,7 +75,7 @@ registerCommand('crypto', {
       
       return { output }
     } catch (error) {
-      return { output: `加密货币查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '加密货币查询') }
     }
   },
   description: '查询加密货币价格',
@@ -81,7 +86,9 @@ registerCommand('crypto', {
 registerCommand('news', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://newsapi.org/v2/top-headlines?country=cn&apiKey=45470c1193a34d3daa26d653457e6060&pageSize=5')
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.newsApi.baseUrl}/top-headlines?country=cn&apiKey=${API_CONFIG.newsApi.key}&pageSize=5`
+      )
       
       if (!response.ok) {
         return { output: `新闻获取失败: ${response.status} ${response.statusText}` }
@@ -102,7 +109,7 @@ registerCommand('news', {
       
       return { output }
     } catch (error) {
-      return { output: `新闻获取失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '新闻获取') }
     }
   },
   description: '获取最新新闻',
@@ -130,7 +137,9 @@ registerCommand('translate', {
     }
     
     try {
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.myMemory.baseUrl}/get?q=${encodeURIComponent(text)}&langpair=en|zh`
+      )
       
       if (!response.ok) {
         return { output: `翻译失败: ${response.status} ${response.statusText}` }
@@ -145,7 +154,7 @@ registerCommand('translate', {
         ].join('\n')
       }
     } catch (error) {
-      return { output: `翻译失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '翻译') }
     }
   },
   description: '英文翻译中文',
@@ -209,7 +218,9 @@ registerCommand('currency', {
     }
     
     try {
-      const response = await fetch(`https://v6.exchangerate-api.com/v6/86068a5c8465929628e66543/latest/${from}`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.exchangeRate.baseUrl}/${API_CONFIG.exchangeRate.key}/latest/${from}`
+      )
       
       if (!response.ok) {
         return { output: `汇率查询失败: ${response.status} ${response.statusText}` }
@@ -231,7 +242,7 @@ registerCommand('currency', {
         ].join('\n')
       }
     } catch (error) {
-      return { output: `汇率查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '汇率查询') }
     }
   },
   description: '汇率查询',
@@ -242,7 +253,7 @@ registerCommand('currency', {
 registerCommand('ip', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://api.ipify.org?format=json')
+      const response = await fetchWithTimeout(`${API_CONFIG.ipify.baseUrl}?format=json`)
       
       if (!response.ok) {
         return { output: `IP查询失败: ${response.status} ${response.statusText}` }
@@ -258,7 +269,7 @@ registerCommand('ip', {
         ].join('\n')
       }
     } catch (error) {
-      return { output: `IP查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, 'IP查询') }
     }
   },
   description: '查询公网IP',
@@ -272,7 +283,9 @@ registerCommand('stock', {
     const symbol = args[0] ? args[0].toUpperCase() : 'AAPL'
     
     try {
-      const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.yahooFinance.baseUrl}/finance/quote?symbols=${symbol}`
+      )
       
       if (!response.ok) {
         return { output: `股票查询失败: ${response.status} ${response.statusText}` }
@@ -301,7 +314,7 @@ registerCommand('stock', {
       
       return { output }
     } catch (error) {
-      return { output: `股票查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '股票查询') }
     }
   },
   description: '查询股票信息',
@@ -312,7 +325,7 @@ registerCommand('stock', {
 registerCommand('joke', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single&lang=zh')
+      const response = await fetchWithTimeout(`${API_CONFIG.jokeApi.baseUrl}/joke/Any?type=single&lang=zh`)
       
       if (!response.ok) {
         return { output: `获取笑话失败: ${response.status} ${response.statusText}` }
@@ -328,7 +341,7 @@ registerCommand('joke', {
         ].join('\n')
       }
     } catch (error) {
-      return { output: `获取笑话失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '笑话获取') }
     }
   },
   description: '获取一个笑话',
@@ -339,7 +352,7 @@ registerCommand('joke', {
 registerCommand('quote', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://api.quotable.io/random')
+      const response = await fetchWithTimeout(`${API_CONFIG.quotable.baseUrl}/random`)
       
       if (!response.ok) {
         return { output: `获取名言失败: ${response.status} ${response.statusText}` }
@@ -356,7 +369,7 @@ registerCommand('quote', {
         ].join('\n')
       }
     } catch (error) {
-      return { output: `获取名言失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '名言获取') }
     }
   },
   description: '获取一句名言',
@@ -384,7 +397,9 @@ registerCommand('define', {
     }
     
     try {
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.dictionaryApi.baseUrl}/entries/en/${word}`
+      )
       
       if (!response.ok) {
         return { output: `词典查询失败: ${response.status} ${response.statusText}` }
@@ -413,7 +428,7 @@ registerCommand('define', {
       
       return { output }
     } catch (error) {
-      return { output: `词典查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: handleApiError(error, '词典查询') }
     }
   },
   description: '查询英文单词定义',
