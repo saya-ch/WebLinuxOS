@@ -25,6 +25,8 @@ export const cityMap: Record<string, CityInfo> = {
   '武汉': { lat: 30.5928, lon: 114.3055, name: '武汉' },
   'xian': { lat: 34.3416, lon: 108.9398, name: '西安' },
   '西安': { lat: 34.3416, lon: 108.9398, name: '西安' },
+  'chongqing': { lat: 29.5630, lon: 106.5516, name: '重庆' },
+  '重庆': { lat: 29.5630, lon: 106.5516, name: '重庆' },
   'nanjing': { lat: 32.0603, lon: 118.7969, name: '南京' },
   '南京': { lat: 32.0603, lon: 118.7969, name: '南京' },
   'sydney': { lat: -33.8688, lon: 151.2093, name: '悉尼' },

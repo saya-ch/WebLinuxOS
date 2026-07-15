@@ -1,6 +1,7 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { useStore } from '../../store'
+import type { FileNode } from '../../types'
 
 registerCommand('whoami', {
   handler: (context: CommandContext): CommandResult => {
@@ -390,10 +391,154 @@ registerCommand('credits', {
       '📝 许可证: MIT',
       '🌐 网址: https://github.com/saya-ch/WebLinuxOS',
     ].join('\n')
-    
+
     return { output }
   },
   description: '显示致谢信息',
   usage: 'credits',
   examples: ['credits']
+})
+
+function parseBrowser(ua: string): { name: string; version: string } {
+  if (/Edg\/([\d.]+)/.test(ua)) {
+    return { name: 'Microsoft Edge', version: RegExp.$1 }
+  }
+  if (/OPR\/([\d.]+)/.test(ua) || /Opera\/([\d.]+)/.test(ua)) {
+    return { name: 'Opera', version: RegExp.$1 }
+  }
+  if (/Firefox\/([\d.]+)/.test(ua)) {
+    return { name: 'Mozilla Firefox', version: RegExp.$1 }
+  }
+  if (/Chrome\/([\d.]+)/.test(ua)) {
+    return { name: 'Google Chrome', version: RegExp.$1 }
+  }
+  if (/Version\/([\d.]+).*Safari/.test(ua)) {
+    return { name: 'Safari', version: RegExp.$1 }
+  }
+  return { name: '未知浏览器', version: '未知' }
+}
+
+function parseOS(ua: string): string {
+  if (/Windows NT ([\d.]+)/.test(ua)) {
+    const ver = RegExp.$1
+    const winMap: Record<string, string> = {
+      '10.0': 'Windows 10/11',
+      '6.3': 'Windows 8.1',
+      '6.2': 'Windows 8',
+      '6.1': 'Windows 7',
+    }
+    return winMap[ver] || `Windows NT ${ver}`
+  }
+  if (/iPhone OS ([\d_]+)/.test(ua) || /CPU OS ([\d_]+)/.test(ua)) {
+    return `iOS ${RegExp.$1.replace(/_/g, '.')}`
+  }
+  if (/Android ([\d.]+)/.test(ua)) {
+    return `Android ${RegExp.$1}`
+  }
+  if (/Mac OS X ([\d_]+)/.test(ua)) {
+    return `macOS ${RegExp.$1.replace(/_/g, '.')}`
+  }
+  if (/Linux/.test(ua)) {
+    return 'Linux'
+  }
+  return '未知系统'
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+function countFileSystem(nodes: FileNode[]): { files: number; folders: number; size: number } {
+  let files = 0
+  let folders = 0
+  let size = 0
+  for (const node of nodes) {
+    if (node.type === 'folder') {
+      folders++
+      if (node.children) {
+        const child = countFileSystem(node.children)
+        files += child.files
+        folders += child.folders
+        size += child.size
+      }
+    } else {
+      files++
+      size += (node.content?.length || 0) * 2
+    }
+  }
+  return { files, folders, size }
+}
+
+registerCommand('sysinfo', {
+  handler: (context: CommandContext): CommandResult => {
+    const cyan = '\x1b[36m'
+    const green = '\x1b[32m'
+    const yellow = '\x1b[33m'
+    const magenta = '\x1b[35m'
+    const bold = '\x1b[1m'
+    const reset = '\x1b[0m'
+
+    const ua = navigator.userAgent
+    const browser = parseBrowser(ua)
+    const os = parseOS(ua)
+    const nav = navigator as Navigator & { deviceMemory?: number }
+    const deviceMemory = nav.deviceMemory ? `${nav.deviceMemory} GB` : '不可用'
+    const cpuCores = navigator.hardwareConcurrency || '不可用'
+    const languages = navigator.languages?.join(', ') || navigator.language
+    const screenRes = `${screen.width} × ${screen.height}`
+    const colorDepth = `${screen.colorDepth} 位`
+    const online = navigator.onLine ? `${green}在线${reset}` : `${yellow}离线${reset}`
+    const cookieEnabled = navigator.cookieEnabled ? '是' : '否'
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+    const { windows, currentDesktop, totalDesktops } = useStore.getState()
+
+    const fsStats = countFileSystem(context.files)
+
+    const output: string[] = []
+    output.push(`${bold}${cyan}╔══════════════════════════════════════════╗${reset}`)
+    output.push(`${bold}${cyan}║       WebLinuxOS 系统信息 (sysinfo)       ║${reset}`)
+    output.push(`${bold}${cyan}╚══════════════════════════════════════════╝${reset}`)
+    output.push('')
+
+    output.push(`${bold}${magenta}【浏览器信息】${reset}`)
+    output.push(`  浏览器:     ${green}${browser.name}${reset} ${browser.version}`)
+    output.push(`  操作系统:   ${os}`)
+    output.push(`  屏幕分辨率: ${screenRes} (${colorDepth}色彩)`)
+    output.push(`  设备内存:   ${deviceMemory}`)
+    output.push(`  CPU核心数:  ${cpuCores}`)
+    output.push(`  语言偏好:   ${languages}`)
+    output.push(`  在线状态:   ${online}`)
+    output.push(`  Cookie:     ${cookieEnabled}`)
+    output.push(`  时区:       ${timezone}`)
+    output.push('')
+
+    output.push(`${bold}${magenta}【虚拟文件系统】${reset}`)
+    output.push(`  文件数:     ${green}${fsStats.files}${reset}`)
+    output.push(`  文件夹数:   ${green}${fsStats.folders}${reset}`)
+    output.push(`  总大小:     ${yellow}${formatBytes(fsStats.size)}${reset} (估算)`)
+    output.push('')
+
+    output.push(`${bold}${magenta}【窗口管理】${reset}`)
+    output.push(`  打开窗口数: ${green}${windows.length}${reset}`)
+    output.push(`  当前桌面:   ${currentDesktop} / ${totalDesktops}`)
+    output.push('')
+
+    output.push(`${bold}${magenta}【系统信息】${reset}`)
+    output.push(`  用户:       ${context.username}@${context.hostname}`)
+    output.push(`  主题:       ${context.theme}`)
+    output.push(`  工作目录:   ${context.cwd}`)
+    output.push('')
+
+    output.push(`${'─'.repeat(44)}`)
+    output.push(`数据采集时间: ${new Date().toLocaleString('zh-CN')}`)
+
+    return { output: output.join('\n') }
+  },
+  description: '显示浏览器与系统详细信息',
+  usage: 'sysinfo',
+  examples: ['sysinfo']
 })

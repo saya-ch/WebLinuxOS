@@ -102,6 +102,9 @@ export default defineConfig(({ mode }) => {
       exclude: ['pyodide'],
       prebuildNotifications: false,
     },
+    define: {
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString().replace('T', ' ').split('.')[0]),
+    },
     resolve: {
       conditions: ['es2022'],
       alias: {

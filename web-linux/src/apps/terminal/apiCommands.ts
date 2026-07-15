@@ -7,90 +7,63 @@ registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     const city = args.join(' ') || 'Beijing'
-    
+
     const cityInfo = getCityInfo(city)
-    
+
     try {
       const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=auto&forecast_days=3`,
+        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current_weather=true&timezone=auto`,
         { mode: 'cors' },
         10 * 60 * 1000
       ) as Record<string, unknown>
-      
-      const current = data.current as Record<string, unknown>
-      const daily = data.daily as Record<string, unknown[]>
-      
-      if (!current || !daily) {
+
+      const current = data.current_weather as Record<string, unknown>
+
+      if (!current) {
         return { output: `⚠️ 无法获取 ${cityInfo.name} 的天气数据` }
       }
-      
-      const desc = weatherDescriptions[current.weather_code as number] || '❓ 未知'
-      
+
+      const temp = current.temperature as number
+      const windSpeed = current.windspeed as number
+      const windDirection = current.winddirection as number
+      const weatherCode = current.weathercode as number
+
+      const desc = weatherDescriptions[weatherCode] || `天气代码 ${weatherCode}`
+
       const windDirs = ['北', '东北', '东', '东南', '南', '西南', '西', '西北']
-      const windDirIdx = Math.round(((current.wind_direction_10m as number) || 0) / 45) % 8
+      const windDirIdx = Math.round((windDirection || 0) / 45) % 8
       const windDir = windDirs[windDirIdx]
-      
-      const temp = current.temperature_2m as number
-      const feelsLike = current.apparent_temperature as number
-      const humidity = current.relative_humidity_2m as number
-      const windSpeed = current.wind_speed_10m as number
-      const pressure = current.pressure_msl as number
-      
+
       let tempColor = '\x1b[32m'
       if (temp > 30) tempColor = '\x1b[31m'
       else if (temp > 25) tempColor = '\x1b[33m'
       else if (temp < 10) tempColor = '\x1b[36m'
-      
+
+      let windColor = '\x1b[32m'
+      if (windSpeed > 40) windColor = '\x1b[31m'
+      else if (windSpeed > 20) windColor = '\x1b[33m'
+
       const output: string[] = []
-      output.push(`📍 ${cityInfo.name} 天气预报`)
-      output.push('═'.repeat(50))
-      output.push('')
-      output.push('【当前天气】')
-      output.push(`  ${desc}`)
-      output.push(`  🌡️ 温度: ${tempColor}${temp}°C\x1b[0m (体感 ${feelsLike}°C)`)
-      output.push(`  💧 湿度: ${humidity}%`)
-      output.push(`  💨 风速: ${windSpeed} km/h (${windDir}风)`)
-      output.push(`  🌡️ 气压: ${pressure} hPa`)
-      
-      if (humidity > 80) output.push('  💡 提示: 湿度较高，注意防潮')
-      if (windSpeed > 20) output.push('  💡 提示: 风力较大，注意防风')
-      if (temp > 35) output.push('  💡 提示: 高温预警，注意防暑')
-      if (temp < 5) output.push('  💡 提示: 天气寒冷，注意保暖')
-      
-      output.push('')
-      output.push('【未来三天预报】')
-      
-      const times = daily.time as string[]
-      const maxTemps = daily.temperature_2m_max as number[]
-      const minTemps = daily.temperature_2m_min as number[]
-      const weatherCodes = daily.weather_code as number[]
-      const sunrises = daily.sunrise as string[]
-      const sunsets = daily.sunset as string[]
-      
-      for (let i = 0; i < Math.min(3, times.length); i++) {
-        const date = times[i]?.split('-').slice(1).join('-') || ''
-        const maxTemp = maxTemps[i]
-        const minTemp = minTemps[i]
-        const dayDesc = weatherDescriptions[weatherCodes[i]] || '❓'
-        output.push(`  ${date}: ${dayDesc} ${minTemp}°C ~ ${maxTemp}°C`)
-      }
-      
-      output.push('')
-      output.push(`  🌅 日出: ${sunrises[0]?.split('T')[1]?.slice(0, 5) || '--:--'}`)
-      output.push(`  🌇 日落: ${sunsets[0]?.split('T')[1]?.slice(0, 5) || '--:--'}`)
-      output.push('')
+      output.push(`\x1b[1;36m📍 ${cityInfo.name} 实时天气\x1b[0m`)
+      output.push('═'.repeat(40))
+      output.push(`  天气: ${desc}`)
+      output.push(`  🌡️ 温度: ${tempColor}${temp}°C\x1b[0m`)
+      output.push(`  💨 风速: ${windColor}${windSpeed} km/h\x1b[0m (${windDir}风)`)
+      output.push(`  🧭 风向: ${windDirection}° (${windDir})`)
+      output.push('═'.repeat(40))
       output.push('数据来源: Open-Meteo (已缓存10分钟)')
-      
+
       return { output: output.join('\n') }
     } catch {
       const fallbackOutput = [
-        `📍 ${cityInfo.name} 天气预报`,
-        '═'.repeat(50),
+        `📍 ${cityInfo.name} 实时天气`,
+        '═'.repeat(40),
         '',
         '⚠️ 天气服务暂时不可用',
         '',
         '请检查网络连接或稍后重试',
-        '支持的城市: 北京, 上海, 广州, 深圳, 东京, 纽约, 伦敦, 巴黎等',
+        '支持的城市: 北京, 上海, 广州, 深圳, 成都, 杭州,',
+        '武汉, 南京, 西安, 重庆, 纽约, 伦敦, 东京, 巴黎, 悉尼等',
         '',
       ].join('\n')
       return { output: fallbackOutput }
