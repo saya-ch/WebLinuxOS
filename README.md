@@ -315,10 +315,16 @@ neofetch        - Display system information in ASCII art
 ### Online Tools
 
 ```
-weather         - Get weather information
+weather         - Get weather information for any city
 news            - Get latest news from Hacker News
 crypto          - Get cryptocurrency prices
-quote           - Get random quote
+stock           - Get stock prices from Yahoo Finance
+quote           - Get random inspirational quote
+joke            - Get a random joke
+define          - Look up word definitions
+translate       - Translate text between languages
+currency        - Convert currency using real exchange rates
+ip              - Get public IP address
 curl            - Send HTTP request
 ```
 
@@ -351,13 +357,16 @@ WebLinuxOS integrates with the following public APIs:
 
 | API | Service | Usage |
 |-----|---------|-------|
-| Open-Meteo | Weather data | Current conditions and forecasts |
+| OpenWeatherMap | Weather data | Current conditions worldwide |
 | CoinGecko | Cryptocurrency | Real-time prices and market data |
-| Hacker News | News | Top stories and discussions |
+| Yahoo Finance | Stock prices | Real-time stock quotes |
+| NewsAPI | News | Latest headlines |
 | LibreTranslate | Translation | Multi-language translation |
-| Quotable | Quotes | Random quotes |
-| Wikipedia | Encyclopedia | Article summaries |
-| IPAPI | Geolocation | IP address information |
+| Quotable | Quotes | Random inspirational quotes |
+| JokeAPI | Humor | Random jokes in multiple languages |
+| Free Dictionary | Dictionary | Word definitions and examples |
+| ExchangeRate-API | Currency | Real-time exchange rates |
+| IPify | Geolocation | Public IP address |
 
 All APIs are free, open, and do not require authentication keys.
 

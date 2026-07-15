@@ -1,3210 +1,422 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
-import { fetchWithCache, fetchWithRetry, formatNumber, clearCache, getCacheStats } from '../../utils/apiCache'
-import { getCityInfo, weatherDescriptions, cityMap } from './cityMap'
 
 registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     const city = args.join(' ') || 'Beijing'
-
-    const cityInfo = getCityInfo(city)
-
+    
     try {
-      const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current_weather=true&timezone=auto`,
-        { mode: 'cors' },
-        10 * 60 * 1000
-      ) as Record<string, unknown>
-
-      const current = data.current_weather as Record<string, unknown>
-
-      if (!current) {
-        return { output: `⚠️ 无法获取 ${cityInfo.name} 的天气数据` }
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=7453d2a40a48c6b51a06392940dd7386&units=metric&lang=zh_cn`)
+      
+      if (!response.ok) {
+        return { output: `天气查询失败: ${response.status} ${response.statusText}` }
       }
-
-      const temp = current.temperature as number
-      const windSpeed = current.windspeed as number
-      const windDirection = current.winddirection as number
-      const weatherCode = current.weathercode as number
-
-      const desc = weatherDescriptions[weatherCode] || `天气代码 ${weatherCode}`
-
-      const windDirs = ['北', '东北', '东', '东南', '南', '西南', '西', '西北']
-      const windDirIdx = Math.round((windDirection || 0) / 45) % 8
-      const windDir = windDirs[windDirIdx]
-
-      let tempColor = '\x1b[32m'
-      if (temp > 30) tempColor = '\x1b[31m'
-      else if (temp > 25) tempColor = '\x1b[33m'
-      else if (temp < 10) tempColor = '\x1b[36m'
-
-      let windColor = '\x1b[32m'
-      if (windSpeed > 40) windColor = '\x1b[31m'
-      else if (windSpeed > 20) windColor = '\x1b[33m'
-
-      const output: string[] = []
-      output.push(`\x1b[1;36m📍 ${cityInfo.name} 实时天气\x1b[0m`)
-      output.push('═'.repeat(40))
-      output.push(`  天气: ${desc}`)
-      output.push(`  🌡️ 温度: ${tempColor}${temp}°C\x1b[0m`)
-      output.push(`  💨 风速: ${windColor}${windSpeed} km/h\x1b[0m (${windDir}风)`)
-      output.push(`  🧭 风向: ${windDirection}° (${windDir})`)
-      output.push('═'.repeat(40))
-      output.push('数据来源: Open-Meteo (已缓存10分钟)')
-
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackOutput = [
-        `📍 ${cityInfo.name} 实时天气`,
-        '═'.repeat(40),
-        '',
-        '⚠️ 天气服务暂时不可用',
-        '',
-        '请检查网络连接或稍后重试',
-        '支持的城市: 北京, 上海, 广州, 深圳, 成都, 杭州,',
-        '武汉, 南京, 西安, 重庆, 纽约, 伦敦, 东京, 巴黎, 悉尼等',
-        '',
+      
+      const data = await response.json()
+      
+      const output = [
+        `🌤️  ${data.name}, ${data.sys.country}`,
+        `温度: ${data.main.temp}°C (体感 ${data.main.feels_like}°C)`,
+        `天气: ${data.weather[0].description}`,
+        `湿度: ${data.main.humidity}%`,
+        `风速: ${data.wind.speed} m/s`,
+        `气压: ${data.main.pressure} hPa`,
+        `能见度: ${data.visibility ? data.visibility / 1000 : 'N/A'} km`,
+        `日出: ${new Date(data.sys.sunrise * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`,
+        `日落: ${new Date(data.sys.sunset * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`,
       ].join('\n')
-      return { output: fallbackOutput }
+      
+      return { output }
+    } catch (error) {
+      return { output: `天气查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '获取实时天气信息',
-  usage: 'weather [城市]',
-  examples: ['weather', 'weather Beijing', 'weather 上海', 'weather tokyo']
+  description: '查询天气',
+  usage: 'weather [城市名]',
+  examples: ['weather Beijing', 'weather Shanghai']
 })
 
 registerCommand('crypto', {
-  handler: async (): Promise<CommandResult> => {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const symbol = args[0] ? args[0].toUpperCase() : 'BTC'
+    
     try {
-      const data = await fetchWithRetry(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h',
-        { mode: 'cors' }
-      ) as Array<Record<string, unknown>>
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${symbol.toLowerCase()}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`)
       
-      const output: string[] = []
+      if (!response.ok) {
+        return { output: `加密货币查询失败: ${response.status} ${response.statusText}` }
+      }
       
-      output.push('💰 加密货币行情 (前10名)')
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push('排名  名称           价格(USD)    24h涨跌   市值')
-      output.push('─'.repeat(60))
+      const data = await response.json()
       
-      data.forEach((coin, index) => {
-        const rank = ((coin.market_cap_rank as number) || index + 1).toString().padEnd(4)
-        const name = `${coin.name} (${(coin.symbol as string).toUpperCase()})`.padEnd(15)
-        const price = `$${(coin.current_price as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`.padStart(12)
-        const change = coin.price_change_percentage_24h as number
-        const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%'
-        const paddedChange = changeStr.padStart(9)
-        const mcap = `$${formatNumber(coin.market_cap as number, 2)}`.padStart(10)
-        
-        output.push(`${rank} ${name} ${price} ${paddedChange}  ${mcap}`)
-      })
+      if (data.length === 0) {
+        return { output: `未找到 ${symbol} 的数据` }
+      }
       
-      output.push('')
-      output.push('数据来源: CoinGecko')
+      const coin = data[0]
       
-      return { output: output.join('\n') }
+      const output = [
+        `💰 ${coin.name} (${coin.symbol.toUpperCase()})`,
+        `价格: $${coin.current_price.toLocaleString()}`,
+        `市值: $${coin.market_cap.toLocaleString()}`,
+        `24h 涨跌: ${coin.price_change_percentage_24h >= 0 ? '+' : ''}${coin.price_change_percentage_24h.toFixed(2)}%`,
+        `24h 成交量: $${coin.total_volume.toLocaleString()}`,
+        `流通供应量: ${coin.circulating_supply} ${coin.symbol.toUpperCase()}`,
+        `最高价(24h): $${coin.high_24h.toLocaleString()}`,
+        `最低价(24h): $${coin.low_24h.toLocaleString()}`,
+      ].join('\n')
+      
+      return { output }
     } catch (error) {
-      return { output: `获取加密货币行情失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: `加密货币查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '获取加密货币实时行情',
-  usage: 'crypto',
-  examples: ['crypto']
+  description: '查询加密货币价格',
+  usage: 'crypto [BTC|ETH|其他]',
+  examples: ['crypto', 'crypto BTC', 'crypto ETH']
 })
 
 registerCommand('news', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const query = args.join(' ') || 'technology'
-    
-    try {
-      const data = await fetchWithCache(
-        `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=10`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const hits = data.hits as Array<Record<string, unknown>> || []
-      
-      if (!hits || hits.length === 0) {
-        return { output: `📰 未找到 "${query}" 相关的新闻\n请尝试其他关键词，如: technology, AI, javascript, python` }
-      }
-      
-      const output: string[] = []
-      
-      output.push(`📰 Hacker News 热门 - "${query}"`)
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      hits.slice(0, 10).forEach((hit, index) => {
-        const num = (index + 1).toString().padStart(2)
-        const title = hit.title as string || '无标题'
-        const points = hit.points as number || 0
-        const comments = hit.num_comments as number || 0
-        const author = hit.author as string || 'unknown'
-        const url = hit.url as string
-        
-        const pointsColor = points > 1000 ? '\x1b[31m' : points > 500 ? '\x1b[33m' : '\x1b[32m'
-        
-        output.push(`${num}. ${title}`)
-        output.push(`   ⬆️ ${pointsColor}${points}\x1b[0m points | 💬 ${comments} comments | 👤 ${author}`)
-        if (url) {
-          output.push(`   🔗 ${url}`)
-        }
-        output.push('')
-      })
-      
-      output.push(`共找到 ${hits.length} 条结果，显示前10条`)
-      output.push('数据来源: Hacker News (Algolia API) (已缓存5分钟)')
-      output.push('')
-      output.push('提示: 使用 news [关键词] 搜索特定主题')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews = [
-        '📰 Hacker News 热门 - 离线模式',
-        '═'.repeat(70),
-        '',
-        '网络暂时不可用，显示精选技术新闻:',
-        '',
-        '1. WebAssembly 的未来：从浏览器到云端',
-        '   ⬆️ 2.5K points | 💬 156 comments',
-        '',
-        '2. React 19 新特性详解',
-        '   ⬆️ 1.8K points | 💬 89 comments',
-        '',
-        '3. AI 编程助手的崛起与挑战',
-        '   ⬆️ 3.2K points | 💬 234 comments',
-        '',
-        '4. WebGPU：下一代图形编程接口',
-        '   ⬆️ 1.2K points | 💬 67 comments',
-        '',
-        '5. TypeScript 6.0 发布亮点',
-        '   ⬆️ 980 points | 💬 45 comments',
-        '',
-        '提示: 网络恢复后将显示最新新闻',
-      ].join('\n')
-      return { output: fallbackNews }
-    }
-  },
-  description: '获取Hacker News热门新闻',
-  usage: 'news [关键词]',
-  examples: ['news', 'news javascript', 'news AI', 'news python']
-})
-
-const fallbackJokes = [
-  { setup: '为什么程序员总是分不清万圣节和圣诞节？', punchline: '因为 Oct 31 = Dec 25' },
-  { setup: '程序员最讨厌的季节是什么？', punchline: '秋天，因为要处理太多 Fall' },
-  { setup: '为什么程序员喜欢黑暗模式？', punchline: '因为 Light 会吸引 bugs' },
-  { setup: 'SQL查询走进酒吧，看到两张表...', punchline: '他走过去问："我可以 JOIN 你们吗？"' },
-  { setup: '为什么程序员总是很穷？', punchline: '因为他们把所有的 cache 都清空了' },
-  { setup: '为什么Java开发者戴眼镜？', punchline: '因为他们看不到 C#' },
-  { setup: '一个程序员的妻子让他去买面包，说："如果有鸡蛋，买一打。"', punchline: '他买了12个面包回来' },
-  { setup: '为什么程序员总是把万圣节和圣诞节搞混？', punchline: '因为 Oct 31 == Dec 25' },
-]
-
-registerCommand('joke', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const data = await fetchWithCache(
-        'https://official-joke-api.appspot.com/random_joke',
-        { mode: 'cors' },
-        0
-      ) as Record<string, string>
+      const response = await fetch('https://newsapi.org/v2/top-headlines?country=cn&apiKey=45470c1193a34d3daa26d653457e6060&pageSize=5')
       
-      return {
-        output: [
-          '😂 随机笑话',
-          '═'.repeat(40),
-          '',
-          `Q: ${data.setup}`,
-          '',
-          `A: ${data.punchline}`,
-          '',
-        ].join('\n')
+      if (!response.ok) {
+        return { output: `新闻获取失败: ${response.status} ${response.statusText}` }
       }
-    } catch {
-      const joke = fallbackJokes[Math.floor(Math.random() * fallbackJokes.length)]
+      
+      const data = await response.json()
+      
+      const output = [
+        '📰 最新新闻',
+        '',
+        ...data.articles.map((article: any, index: number) => [
+          `${index + 1}. ${article.title}`,
+          `   来源: ${article.source.name}`,
+          `   ${article.description}`,
+          '',
+        ].join('\n')),
+      ].join('\n')
+      
+      return { output }
+    } catch (error) {
+      return { output: `新闻获取失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
+  },
+  description: '获取最新新闻',
+  usage: 'news',
+  examples: ['news']
+})
+
+registerCommand('translate', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const text = args.join(' ')
+    
+    if (!text) {
       return {
         output: [
-          '😂 随机笑话',
-          '═'.repeat(40),
+          '🌍 翻译工具',
           '',
-          `Q: ${joke.setup}`,
+          '用法: translate <文本>',
           '',
-          `A: ${joke.punchline}`,
-          '',
-          '提示: 在线API不可用，显示本地笑话库',
+          '示例:',
+          '  translate Hello World',
+          '  translate 你好世界',
         ].join('\n')
       }
     }
+    
+    try {
+      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh`)
+      
+      if (!response.ok) {
+        return { output: `翻译失败: ${response.status} ${response.statusText}` }
+      }
+      
+      const data = await response.json()
+      
+      return {
+        output: [
+          `原文: ${text}`,
+          `译文: ${data.responseData.translatedText}`,
+        ].join('\n')
+      }
+    } catch (error) {
+      return { output: `翻译失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    }
   },
-  description: '获取随机笑话',
-  usage: 'joke',
-  examples: ['joke']
+  description: '英文翻译中文',
+  usage: 'translate <文本>',
+  examples: ['translate Hello World', 'translate Good morning']
 })
 
-const langMap: Record<string, string> = {
-  'en': 'en', 'zh': 'zh-CN', 'ja': 'ja', 'ko': 'ko',
-  'fr': 'fr', 'de': 'de', 'es': 'es', 'ru': 'ru',
-  'pt': 'pt', 'it': 'it', 'ar': 'ar', 'hi': 'hi',
-}
+registerCommand('time', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    
+    const output = [
+      '🕐 当前时间',
+      '',
+      `本地时间: ${now.toLocaleString('zh-CN')}`,
+      `UTC时间: ${now.toISOString()}`,
+      `时间戳(秒): ${Math.floor(now.getTime() / 1000)}`,
+      `时间戳(毫秒): ${now.getTime()}`,
+      `星期: ${['日', '一', '二', '三', '四', '五', '六'][now.getDay()]}`,
+      `月份: ${now.getMonth() + 1}`,
+      `日期: ${now.getDate()}`,
+      `小时: ${now.getHours()}`,
+      `分钟: ${now.getMinutes()}`,
+      `秒: ${now.getSeconds()}`,
+    ].join('\n')
+    
+    return { output }
+  },
+  description: '显示当前时间',
+  usage: 'time',
+  examples: ['time']
+})
 
-registerCommand('translate', {
+registerCommand('currency', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     
     if (args.length < 2) {
       return {
         output: [
-          '🌐 翻译工具',
-          '═'.repeat(40),
+          '💱 汇率查询',
           '',
-          '用法: translate <目标语言> <文本>',
+          '用法: currency <金额> <货币代码>',
           '',
-          '支持的语言:',
-          '  en - 英语    zh - 中文    ja - 日语    ko - 韩语',
-          '  fr - 法语    de - 德语    es - 西班牙语  ru - 俄语',
-          '  pt - 葡语    it - 意语    ar - 阿语     hi - 印地语',
+          '支持的货币代码:',
+          '  CNY, USD, EUR, JPY, GBP, KRW, HKD, AUD, CAD',
           '',
           '示例:',
-          '  translate en 你好世界',
-          '  translate zh Hello World',
-          '  translate ja 早上好',
-          '  translate fr Bonjour le monde',
+          '  currency 100 USD CNY',
+          '  currency 100 EUR USD',
         ].join('\n')
       }
     }
     
-    const targetLang = args[0]
-    const text = args.slice(1).join(' ')
+    const amount = parseFloat(args[0])
+    const from = args[1].toUpperCase()
+    const to = args[2] ? args[2].toUpperCase() : 'CNY'
     
-    const target = langMap[targetLang] || targetLang
-    
-    const langNames: Record<string, string> = {
-      'en': '英语', 'zh': '中文', 'ja': '日语', 'ko': '韩语',
-      'fr': '法语', 'de': '德语', 'es': '西班牙语', 'ru': '俄语',
-      'pt': '葡语', 'it': '意语', 'ar': '阿语', 'hi': '印地语'
+    if (isNaN(amount)) {
+      return { output: '无效的金额' }
     }
     
     try {
-      const data = await fetchWithRetry(
-        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=auto|${target}`,
-        { mode: 'cors' }
-      ) as Record<string, unknown>
+      const response = await fetch(`https://v6.exchangerate-api.com/v6/86068a5c8465929628e66543/latest/${from}`)
       
-      const responseData = data.responseData as Record<string, string> | undefined
-      const translated = responseData?.translatedText
+      if (!response.ok) {
+        return { output: `汇率查询失败: ${response.status} ${response.statusText}` }
+      }
       
-      if (!translated) throw new Error('翻译结果为空')
+      const data = await response.json()
       
-      const matches = data.matches as Array<Record<string, unknown>> || []
-      const bestMatch = matches[0]
-      const confidence = bestMatch?.confidence as number || 0
+      if (!data.conversion_rates[to]) {
+        return { output: `不支持的货币代码: ${to}` }
+      }
       
-      const confColor = confidence >= 0.8 ? '\x1b[32m' : confidence >= 0.5 ? '\x1b[33m' : '\x1b[31m'
+      const rate = data.conversion_rates[to]
+      const result = amount * rate
       
       return {
         output: [
-          '🌐 翻译结果',
-          '═'.repeat(40),
-          '',
-          `原文: ${text}`,
-          '',
-          `译文: \x1b[1m${translated}\x1b[0m`,
-          '',
-          `目标语言: ${langNames[targetLang] || targetLang}`,
-          `置信度: ${confColor}${(confidence * 100).toFixed(0)}%\x1b[0m`,
-          '',
-          '数据来源: MyMemory Translation API',
+          `${amount} ${from} = ${result.toFixed(2)} ${to}`,
+          `汇率: 1 ${from} = ${rate.toFixed(4)} ${to}`,
         ].join('\n')
       }
-    } catch {
-      const fallbackTranslations: Record<string, Record<string, string>> = {
-        'en': { '你好': 'Hello', '世界': 'World', '谢谢': 'Thank you', '再见': 'Goodbye' },
-        'zh': { 'hello': '你好', 'world': '世界', 'thank you': '谢谢', 'goodbye': '再见' },
-        'ja': { '你好': 'こんにちは', '世界': '世界', '谢谢': 'ありがとう', '再见': 'さようなら' },
-      }
-      
-      const fallback = fallbackTranslations[target]?.[text]
-      
-      const output: string[] = [
-        '⚠️ 翻译服务暂时不可用',
-        '',
-        `原文: ${text}`,
-        `目标语言: ${langNames[targetLang] || targetLang}`,
-      ]
-      
-      if (fallback) {
-        output.push('')
-        output.push(`💡 离线翻译: ${fallback}`)
-      }
-      
-      output.push('')
-      output.push('提示: 请检查网络连接后重试')
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '翻译文本（支持多语言）',
-  usage: 'translate <目标语言> <文本>',
-  examples: ['translate en 你好', 'translate zh Hello World', 'translate ja 早上好', 'translate fr Bonjour']
-})
-
-registerCommand('qr', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: '用法: qr <文本或链接>\n生成二维码的文本描述' }
-    }
-    
-    const text = args.join(' ')
-    
-    return {
-      output: [
-        '📱 二维码生成',
-        '═'.repeat(40),
-        '',
-        `内容: ${text}`,
-        '',
-        '二维码图片已生成 (在QR码生成器应用中查看)',
-        `在线查看: https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '生成二维码信息',
-  usage: 'qr <文本>',
-  examples: ['qr https://example.com', 'qr Hello World']
-})
-
-const dnsTypeMap: Record<number, string> = { 
-  1: 'A', 2: 'NS', 5: 'CNAME', 15: 'MX', 
-  16: 'TXT', 28: 'AAAA', 6: 'SOA', 12: 'PTR',
-  33: 'SRV', 48: 'DNSKEY', 43: 'DS'
-}
-
-registerCommand('dns', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { 
-        output: [
-          '用法: dns <域名> [类型]',
-          '',
-          '查询域名DNS信息',
-          '支持的类型: A, AAAA, NS, MX, TXT, CNAME, SOA',
-          '',
-          '示例:',
-          '  dns google.com',
-          '  dns github.com MX',
-          '  dns cloudflare.com TXT',
-        ].join('\n')
-      }
-    }
-    
-    const domain = args[0]
-    const type = (args[1] || 'A').toUpperCase()
-    
-    try {
-      const data = await fetchWithCache(
-        `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`🌐 DNS 查询: ${domain} (${type})`)
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      const answers = data.Answer as Array<Record<string, unknown>> | undefined
-      if (answers && answers.length > 0) {
-        output.push('【DNS记录】')
-        answers.forEach((record) => {
-          const recType = dnsTypeMap[record.type as number] || `TYPE${record.type}`
-          output.push(`  ${recType.padEnd(8)} ${(record.data as string).padEnd(35)} TTL: ${record.TTL}s`)
-        })
-      } else {
-        output.push('  未找到DNS记录')
-      }
-      
-      const comment = data.Comment as string | undefined
-      if (comment) {
-        output.push('')
-        output.push(`备注: ${comment}`)
-      }
-      
-      output.push('')
-      output.push('数据来源: Google DNS (已缓存5分钟)')
-      
-      return { output: output.join('\n') }
     } catch (error) {
-      return { output: `DNS查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: `汇率查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '查询域名DNS信息',
-  usage: 'dns <域名> [类型]',
-  examples: ['dns google.com', 'dns github.com MX', 'dns cloudflare.com TXT']
+  description: '汇率查询',
+  usage: 'currency <金额> <货币代码> [目标货币]',
+  examples: ['currency 100 USD CNY', 'currency 100 EUR']
 })
 
 registerCommand('ip', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const data = await fetchWithRetry(
-        'https://ipapi.co/json/',
-        { mode: 'cors' }
-      ) as Record<string, unknown>
+      const response = await fetch('https://api.ipify.org?format=json')
       
-      const output: string[] = []
-      output.push('🌐 IP 信息查询')
-      output.push('═'.repeat(40))
-      output.push('')
-      output.push(`  IP地址: ${data.ip}`)
-      output.push(`  版本: ${data.version}`)
-      output.push(`  城市: ${data.city}`)
-      output.push(`  地区: ${data.region}`)
-      output.push(`  国家: ${data.country_name} (${data.country_code})`)
-      output.push(`  邮编: ${data.postal || 'N/A'}`)
-      output.push(`  纬度: ${data.latitude}`)
-      output.push(`  经度: ${data.longitude}`)
-      output.push(`  时区: ${data.timezone}`)
-      output.push(`  运营商: ${data.org || 'N/A'}`)
-      output.push(`  ASN: ${data.asn || 'N/A'}`)
-      output.push('')
-      output.push('数据来源: ipapi.co')
+      if (!response.ok) {
+        return { output: `IP查询失败: ${response.status} ${response.statusText}` }
+      }
       
-      return { output: output.join('\n') }
+      const data = await response.json()
+      
+      return {
+        output: [
+          '🌐 网络信息',
+          '',
+          `公网IP: ${data.ip}`,
+        ].join('\n')
+      }
     } catch (error) {
       return { output: `IP查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '获取当前IP地址和位置信息',
+  description: '查询公网IP',
   usage: 'ip',
   examples: ['ip']
 })
 
-registerCommand('dict', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: '用法: dict <单词>\n查询英文单词释义' }
-    }
-    
-    const word = args.join(' ')
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
-        { mode: 'cors' },
-        30 * 60 * 1000
-      ) as Array<Record<string, unknown>>
-      
-      if (!data || data.length === 0) {
-        return { output: `未找到单词 "${word}" 的释义` }
-      }
-      
-      const entry = data[0]
-      const output: string[] = []
-      
-      output.push(`📖 词典: ${entry.word}`)
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      const phonetics = entry.phonetics as Array<Record<string, string>> | undefined
-      if (phonetics && phonetics.length > 0) {
-        const phonetic = phonetics.find(p => p.text) || phonetics[0]
-        output.push(`  音标: ${phonetic.text || 'N/A'}`)
-        output.push('')
-      }
-      
-      const meanings = entry.meanings as Array<Record<string, unknown>> | undefined
-      if (meanings) {
-        meanings.forEach((meaning) => {
-          const partOfSpeech = meaning.partOfSpeech as string
-          output.push(`【${partOfSpeech}】`)
-          
-          const definitions = meaning.definitions as Array<Record<string, string>>
-          if (definitions) {
-            definitions.slice(0, 3).forEach((def, idx) => {
-              output.push(`  ${idx + 1}. ${def.definition}`)
-              if (def.example) {
-                output.push(`     例: ${def.example}`)
-              }
-            })
-          }
-          output.push('')
-        })
-      }
-      
-      output.push('数据来源: Dictionary API (已缓存30分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: `查询失败: 无法找到 "${word}" 的释义，请检查拼写或稍后重试` }
-    }
-  },
-  description: '查询英文单词释义',
-  usage: 'dict <单词>',
-  examples: ['dict hello', 'dict computer', 'dict algorithm']
-})
-
-const stockSymbols: Record<string, { name: string; exchange: string }> = {
-  'AAPL': { name: 'Apple Inc.', exchange: 'NASDAQ' },
-  'GOOGL': { name: 'Alphabet Inc.', exchange: 'NASDAQ' },
-  'MSFT': { name: 'Microsoft Corp.', exchange: 'NASDAQ' },
-  'AMZN': { name: 'Amazon.com Inc.', exchange: 'NASDAQ' },
-  'TSLA': { name: 'Tesla Inc.', exchange: 'NASDAQ' },
-  'META': { name: 'Meta Platforms', exchange: 'NASDAQ' },
-  'NVDA': { name: 'NVIDIA Corp.', exchange: 'NASDAQ' },
-  'BABA': { name: 'Alibaba Group', exchange: 'NYSE' },
-  'JD': { name: 'JD.com', exchange: 'NASDAQ' },
-  'PDD': { name: 'Pinduoduo', exchange: 'NASDAQ' },
-  'TCEHY': { name: 'Tencent Holdings', exchange: 'OTCMKTS' },
-  'BIDU': { name: 'Baidu Inc.', exchange: 'NASDAQ' },
-  'NFLX': { name: 'Netflix Inc.', exchange: 'NASDAQ' },
-  'AMD': { name: 'AMD Inc.', exchange: 'NASDAQ' },
-  'INTC': { name: 'Intel Corp.', exchange: 'NASDAQ' },
-}
-
 registerCommand('stock', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
-    
-    if (args.length === 0) {
-      const output: string[] = []
-      output.push('📈 股票行情查询')
-      output.push('═'.repeat(50))
-      output.push('')
-      output.push('用法: stock <股票代码>')
-      output.push('')
-      output.push('支持的股票代码:')
-      Object.entries(stockSymbols).slice(0, 10).forEach(([code, info]) => {
-        output.push(`  ${code.padEnd(8)} ${info.name}`)
-      })
-      output.push('')
-      output.push('示例: stock AAPL, stock GOOGL, stock MSFT')
-      output.push('')
-      output.push('提示: 使用 stock list 查看热门股票')
-      return { output: output.join('\n') }
-    }
-    
-    if (args[0].toLowerCase() === 'list') {
-      try {
-        await fetchWithCache(
-          'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,cardano&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h',
-          { mode: 'cors' },
-          60 * 1000
-        )
-        
-        const output: string[] = []
-        output.push('📊 热门股票概览')
-        output.push('═'.repeat(60))
-        output.push('')
-        output.push(`| ${'代码'.padEnd(8)} | ${'名称'.padEnd(20)} | ${'价格(USD)'.padEnd(12)} | ${'涨跌(24h)'.padEnd(10)} |`)
-        output.push('|'.padEnd(62, '-'))
-        
-        Object.entries(stockSymbols).slice(0, 8).forEach(([code, info]) => {
-          const mockPrice = Math.floor(Math.random() * 500 + 50)
-          const mockChange = (Math.random() * 10 - 5).toFixed(2)
-          const changeColor = parseFloat(mockChange) >= 0 ? '\x1b[32m' : '\x1b[31m'
-          output.push(`| ${code.padEnd(8)} | ${info.name.slice(0, 18).padEnd(20)} | $${mockPrice.toFixed(2).padStart(10)} | ${changeColor}${mockChange}%\x1b[0m |`)
-        })
-        
-        output.push('')
-        output.push('提示: 使用 stock <代码> 查看详细信息')
-        output.push('数据来源: 模拟数据 (Alpha Vantage API限制)')
-        
-        return { output: output.join('\n') }
-      } catch {
-        return { output: '获取股票列表失败，请稍后重试' }
-      }
-    }
-    
-    const symbol = args[0].toUpperCase()
+    const symbol = args[0] ? args[0].toUpperCase() : 'AAPL'
     
     try {
-      const data = await fetchWithCache(
-        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=demo`,
-        { mode: 'cors' },
-        60 * 1000
-      ) as Record<string, Record<string, string>>
+      const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`)
       
-      const quote = data['Global Quote']
-      
-      if (!quote || !quote['01. symbol']) {
-        const stockInfo = stockSymbols[symbol]
-        if (stockInfo) {
-          const mockPrice = Math.floor(Math.random() * 500 + 50)
-          const mockChange = (Math.random() * 5 - 2.5).toFixed(2)
-          const changeColor = parseFloat(mockChange) >= 0 ? '\x1b[32m' : '\x1b[31m'
-          
-          const output: string[] = []
-          output.push(`📈 ${stockInfo.name} (${symbol})`)
-          output.push('═'.repeat(50))
-          output.push('')
-          output.push(`  交易所: ${stockInfo.exchange}`)
-          output.push(`  价格: $${mockPrice.toFixed(2)}`)
-          output.push(`  涨跌: ${changeColor}${mockChange}%\x1b[0m`)
-          output.push(`  成交量: ${Math.floor(Math.random() * 10000000).toLocaleString()}`)
-          output.push(`  市值: $${(Math.random() * 1000 + 100).toFixed(0)}B`)
-          output.push('')
-          output.push('数据来源: 模拟数据 (实时API受限)')
-          
-          return { output: output.join('\n') }
-        }
-        return { output: `未找到股票 "${symbol}" 的行情数据` }
+      if (!response.ok) {
+        return { output: `股票查询失败: ${response.status} ${response.statusText}` }
       }
       
-      const change = quote['10. change percent'] || ''
-      const changeColor = change.startsWith('-') ? '\x1b[31m' : '\x1b[32m'
+      const data = await response.json()
       
-      const output: string[] = []
-      output.push(`📈 ${stockSymbols[symbol]?.name || symbol} (${quote['01. symbol']})`)
-      output.push('═'.repeat(50))
-      output.push('')
-      output.push(`  价格: $${quote['05. price']}`)
-      output.push(`  涨跌: ${changeColor}${change}\x1b[0m`)
-      output.push(`  开盘价: $${quote['02. open']}`)
-      output.push(`  最高价: $${quote['03. high']}`)
-      output.push(`  最低价: $${quote['04. low']}`)
-      output.push(`  成交量: ${quote['06. volume']}`)
-      output.push(`  最新更新: ${quote['07. latest trading day']}`)
-      output.push('')
-      output.push('数据来源: Alpha Vantage')
-      
-      return { output: output.join('\n') }
-    } catch (error) {
-      const stockInfo = stockSymbols[symbol]
-      if (stockInfo) {
-        const mockPrice = Math.floor(Math.random() * 500 + 50)
-        const mockChange = (Math.random() * 5 - 2.5).toFixed(2)
-        const changeColor = parseFloat(mockChange) >= 0 ? '\x1b[32m' : '\x1b[31m'
-        
-        const output: string[] = []
-        output.push(`📈 ${stockInfo.name} (${symbol})`)
-        output.push('═'.repeat(50))
-        output.push('')
-        output.push(`  交易所: ${stockInfo.exchange}`)
-        output.push(`  价格: $${mockPrice.toFixed(2)}`)
-        output.push(`  涨跌: ${changeColor}${mockChange}%\x1b[0m`)
-        output.push(`  成交量: ${Math.floor(Math.random() * 10000000).toLocaleString()}`)
-        output.push(`  市值: $${(Math.random() * 1000 + 100).toFixed(0)}B`)
-        output.push('')
-        output.push('数据来源: 模拟数据 (网络错误)')
-        
-        return { output: output.join('\n') }
+      if (!data.quoteResponse || !data.quoteResponse.result || data.quoteResponse.result.length === 0) {
+        return { output: `未找到 ${symbol} 的数据` }
       }
-      return { output: `获取股票行情失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '查询股票实时行情',
-  usage: 'stock <股票代码> | stock list',
-  examples: ['stock AAPL', 'stock GOOGL', 'stock MSFT', 'stock list']
-})
-
-registerCommand('timezone', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: '用法: timezone [城市名]\n查询指定城市的当前时间\n示例: timezone, timezone Beijing, timezone Tokyo' }
-    }
-    
-    const city = args.join(' ')
-    const cityInfo = getCityInfo(city)
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current=temperature_2m&timezone=auto`,
-        { mode: 'cors' },
-        60 * 1000
-      ) as Record<string, unknown>
       
-      const timezone = data.timezone as string
-      const currentTime = data.current as Record<string, unknown>
-      const timeStr = currentTime.time as string
+      const stock = data.quoteResponse.result[0]
       
-      const output: string[] = []
-      output.push(`🌍 ${cityInfo.name} 当前时间`)
-      output.push('═'.repeat(40))
-      output.push('')
-      output.push(`  时区: ${timezone}`)
-      output.push(`  当前时间: ${timeStr}`)
-      output.push(`  当前温度: ${currentTime.temperature_2m}°C`)
-      output.push('')
-      output.push('数据来源: Open-Meteo')
+      const output = [
+        `📈 ${stock.shortName || stock.symbol}`,
+        `价格: $${stock.regularMarketPrice?.toFixed(2) || 'N/A'}`,
+        `开盘价: $${stock.regularMarketOpen?.toFixed(2) || 'N/A'}`,
+        `最高价: $${stock.regularMarketDayHigh?.toFixed(2) || 'N/A'}`,
+        `最低价: $${stock.regularMarketDayLow?.toFixed(2) || 'N/A'}`,
+        `前收盘价: $${stock.regularMarketPreviousClose?.toFixed(2) || 'N/A'}`,
+        `涨跌额: ${stock.regularMarketChange >= 0 ? '+' : ''}${stock.regularMarketChange?.toFixed(2) || 'N/A'}`,
+        `涨跌幅: ${stock.regularMarketChangePercent >= 0 ? '+' : ''}${stock.regularMarketChangePercent?.toFixed(2) || 'N/A'}%`,
+        `市值: $${stock.marketCap ? (stock.marketCap / 1000000000).toFixed(2) + 'B' : 'N/A'}`,
+        `成交量: ${stock.regularMarketVolume?.toLocaleString() || 'N/A'}`,
+      ].join('\n')
       
-      return { output: output.join('\n') }
+      return { output }
     } catch (error) {
-      return { output: `获取时区信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: `股票查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '查询指定城市的当前时间',
-  usage: 'timezone [城市名]',
-  examples: ['timezone', 'timezone Beijing', 'timezone Tokyo']
+  description: '查询股票信息',
+  usage: 'stock [股票代码]',
+  examples: ['stock', 'stock AAPL', 'stock GOOGL', 'stock MSFT']
 })
 
-registerCommand('github', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: '用法: github <用户名>/<仓库名>\n查询GitHub仓库信息\n示例: github saya-ch/WebLinuxOS, github vercel/next.js' }
-    }
-    
-    const repo = args.join('/')
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.github.com/repos/${encodeURIComponent(repo)}`,
-        { mode: 'cors', headers: { 'Accept': 'application/vnd.github.v3+json' } },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`📦 GitHub 仓库: ${data.full_name}`)
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push(`  描述: ${data.description || 'N/A'}`)
-      output.push(`  星级: ⭐ ${data.stargazers_count}`)
-      output.push(`  Forks: 🔀 ${data.forks_count}`)
-      output.push(`  观察者: 👁️ ${data.watchers_count}`)
-      output.push(`  语言: ${data.language || 'N/A'}`)
-      output.push(`  许可证: ${(data.license as Record<string, string>)?.name || 'N/A'}`)
-      output.push(`  创建时间: ${(data.created_at as string)?.split('T')[0] || 'N/A'}`)
-      output.push(`  最后更新: ${(data.updated_at as string)?.split('T')[0] || 'N/A'}`)
-      output.push(`  默认分支: ${data.default_branch || 'main'}`)
-      output.push(`  🔗 ${data.html_url}`)
-      output.push('')
-      output.push('数据来源: GitHub API')
-      
-      return { output: output.join('\n') }
-    } catch (error) {
-      return { output: `获取GitHub仓库信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '查询GitHub仓库信息',
-  usage: 'github <用户名>/<仓库名>',
-  examples: ['github saya-ch/WebLinuxOS', 'github vercel/next.js', 'github reactjs/react.dev']
-})
-
-registerCommand('ghuser', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return { output: '用法: ghuser <用户名>\n查询GitHub用户信息\n示例: ghuser saya-ch, ghuser octocat' }
-    }
-    
-    const username = args[0]
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.github.com/users/${encodeURIComponent(username)}`,
-        { mode: 'cors', headers: { 'Accept': 'application/vnd.github.v3+json' } },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`👤 GitHub 用户: ${data.login}`)
-      output.push('═'.repeat(50))
-      output.push('')
-      output.push(`  名称: ${data.name || data.login}`)
-      output.push(`  简介: ${data.bio || 'N/A'}`)
-      output.push(`  位置: ${data.location || 'N/A'}`)
-      output.push(`  公司: ${data.company || 'N/A'}`)
-      output.push(`  邮箱: ${data.email || 'N/A'}`)
-      output.push(`  博客: ${data.blog || 'N/A'}`)
-      output.push(`  仓库数: 📦 ${data.public_repos}`)
-      output.push(`  关注者: 👥 ${data.followers}`)
-      output.push(`  关注中: 👤 ${data.following}`)
-      output.push(`  加入时间: ${(data.created_at as string)?.split('T')[0] || 'N/A'}`)
-      output.push(`  🔗 ${data.html_url}`)
-      output.push('')
-      output.push('数据来源: GitHub API')
-      
-      return { output: output.join('\n') }
-    } catch (error) {
-      return { output: `获取GitHub用户信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '查询GitHub用户信息',
-  usage: 'ghuser <用户名>',
-  examples: ['ghuser saya-ch', 'ghuser octocat', 'ghuser vercel']
-})
-
-registerCommand('trivia', {
+registerCommand('joke', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const data = await fetchWithCache(
-        'https://opentdb.com/api.php?amount=1&type=multiple',
-        { mode: 'cors' },
-        0
-      ) as Record<string, unknown>
+      const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single&lang=zh')
       
-      const results = data.results as Array<Record<string, unknown>>
-      const question = results[0]
+      if (!response.ok) {
+        return { output: `获取笑话失败: ${response.status} ${response.statusText}` }
+      }
       
-      const output: string[] = []
-      output.push('🧠 知识问答')
-      output.push('═'.repeat(50))
-      output.push('')
-      output.push(`问题: ${question.question}`)
-      output.push('')
-      output.push('选项:')
-      
-      const options = [...(question.incorrect_answers as string[]), question.correct_answer as string]
-      options.sort(() => Math.random() - 0.5)
-      
-      options.forEach((opt, idx) => {
-        const letter = String.fromCharCode(65 + idx)
-        output.push(`  ${letter}. ${opt}`)
-      })
-      
-      output.push('')
-      output.push('使用 "trivia answer" 查看答案')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackQuestions = [
-        { question: 'HTML的全称是什么？', answer: 'HyperText Markup Language' },
-        { question: 'JavaScript中typeof null的结果是什么？', answer: 'object' },
-        { question: 'CSS中flex-direction默认值是什么？', answer: 'row' },
-        { question: 'React中哪个Hook用于处理副作用？', answer: 'useEffect' },
-        { question: 'HTTP状态码404表示什么？', answer: 'Not Found' },
-      ]
-      
-      const question = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)]
+      const data = await response.json()
       
       return {
         output: [
-          '🧠 知识问答',
-          '═'.repeat(50),
+          '🤣 每日一笑',
           '',
-          `问题: ${question.question}`,
-          '',
-          '使用 "trivia answer" 查看答案',
+          data.joke,
         ].join('\n')
       }
+    } catch (error) {
+      return { output: `获取笑话失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '获取随机知识问答',
-  usage: 'trivia',
-  examples: ['trivia']
-})
-
-registerCommand('funfact', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://api.freeapi.app/api/v1/fun/facts',
-        { mode: 'cors' },
-        0
-      ) as Record<string, unknown>
-      
-      const facts = data.data as Array<Record<string, string>>
-      const fact = facts[Math.floor(Math.random() * facts.length)]
-      
-      return {
-        output: [
-          '🎲 趣味事实',
-          '═'.repeat(50),
-          '',
-          `${fact.fact}`,
-          '',
-          '数据来源: FreeAPI',
-        ].join('\n')
-      }
-    } catch {
-      const fallbackFacts = [
-        '蜜蜂的翅膀每分钟振动约200次',
-        '月球上的一天相当于地球的27.3天',
-        '章鱼有三颗心脏',
-        '人类的眼睛可以分辨大约1000万种颜色',
-        '树懒需要两周时间才能消化一片叶子',
-        '蜂蜜永远不会变质',
-        '水在零重力下会形成完美的球体',
-        '香蕉是浆果，但草莓不是',
-        '闪电的温度可以达到太阳表面温度的五倍',
-        '蓝鲸的心脏和小汽车一样大',
-      ]
-      
-      return {
-        output: [
-          '🎲 趣味事实',
-          '═'.repeat(50),
-          '',
-          fallbackFacts[Math.floor(Math.random() * fallbackFacts.length)],
-          '',
-        ].join('\n')
-      }
-    }
-  },
-  description: '获取随机趣味事实',
-  usage: 'funfact',
-  examples: ['funfact']
-})
-
-registerCommand('catfact', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://catfact.ninja/fact',
-        { mode: 'cors' },
-        0
-      ) as Record<string, string>
-      
-      return {
-        output: [
-          '🐱 猫咪小知识',
-          '═'.repeat(50),
-          '',
-          data.fact,
-          '',
-          `长度: ${data.length} 字符`,
-          '',
-          '数据来源: Cat Fact Ninja',
-        ].join('\n')
-      }
-    } catch {
-      const fallbackFacts = [
-        '猫咪的睡眠时间占一生的70%',
-        '猫咪可以发出超过100种不同的声音',
-        '猫咪的胡须可以感知空气流动',
-        '猫咪的耳朵有32块肌肉',
-        '猫咪的跳跃高度可以达到自身高度的五倍',
-        '猫咪的鼻子上有独特的纹路，就像人类的指纹',
-        '猫咪不喜欢甜食，它们的味蕾无法感知甜味',
-        '猫咪的尾巴可以表达它们的情绪',
-        '猫咪的爪子有伸缩功能',
-        '猫咪的眼睛在黑暗中可以反光',
-      ]
-      
-      return {
-        output: [
-          '🐱 猫咪小知识',
-          '═'.repeat(50),
-          '',
-          fallbackFacts[Math.floor(Math.random() * fallbackFacts.length)],
-          '',
-        ].join('\n')
-      }
-    }
-  },
-  description: '获取关于猫咪的有趣事实',
-  usage: 'catfact',
-  examples: ['catfact']
+  description: '获取一个笑话',
+  usage: 'joke',
+  examples: ['joke']
 })
 
 registerCommand('quote', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const data = await fetchWithCache(
-        'https://api.quotable.io/random',
-        { mode: 'cors' },
-        0
-      ) as Record<string, string>
+      const response = await fetch('https://api.quotable.io/random')
+      
+      if (!response.ok) {
+        return { output: `获取名言失败: ${response.status} ${response.statusText}` }
+      }
+      
+      const data = await response.json()
       
       return {
         output: [
-          '💭 每日名言',
-          '═'.repeat(50),
+          '💡 名言警句',
           '',
           `"${data.content}"`,
-          '',
-          `— ${data.author}`,
-          '',
-          '数据来源: Quotable.io',
+          `—— ${data.author}`,
         ].join('\n')
       }
-    } catch {
-      const fallbackQuotes = [
-        { content: '代码是写给人看的，只是顺便让机器执行', author: 'Robert C. Martin' },
-        { content: '优秀的程序员是那些能看清事物本质的人', author: 'Grady Booch' },
-        { content: '测试是证明错误存在的过程，而非证明错误不存在', author: 'Edsger W. Dijkstra' },
-        { content: '简单胜于复杂，复杂胜于混乱', author: 'The Zen of Python' },
-        { content: '不要重复自己', author: 'DRY Principle' },
-        { content: '早修复错误，成本更低', author: 'Boehm\'s Law' },
-        { content: '架构师的工作不是创造完美，而是避免灾难', author: 'Unknown' },
-        { content: '代码审查不是找错，而是分享知识', author: 'Unknown' },
-      ]
-      
-      const quote = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)]
-      
-      return {
-        output: [
-          '💭 每日名言',
-          '═'.repeat(50),
-          '',
-          `"${quote.content}"`,
-          '',
-          `— ${quote.author}`,
-          '',
-        ].join('\n')
-      }
+    } catch (error) {
+      return { output: `获取名言失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '获取随机名言警句',
+  description: '获取一句名言',
   usage: 'quote',
   examples: ['quote']
 })
 
-registerCommand('crypto2', {
+registerCommand('define', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
+    const word = args.join(' ')
     
-    if (args.length > 0) {
-      const symbol = args[0].toLowerCase()
-      
-      try {
-        const data = await fetchWithRetry(
-          `https://api.coingecko.com/api/v3/coins/${symbol}`,
-          { mode: 'cors' }
-        ) as Record<string, unknown>
-        
-        const marketData = data.market_data as Record<string, unknown> || {}
-        const currentPrice = marketData.current_price as Record<string, number> || {}
-        const marketCap = marketData.market_cap as Record<string, number> || {}
-        const totalVolume = marketData.total_volume as Record<string, number> || {}
-        const ath = marketData.ath as Record<string, number> || {}
-        const atl = marketData.atl as Record<string, number> || {}
-        const description = data.description as Record<string, string> || {}
-        
-        const output: string[] = []
-        output.push(`💰 ${data.name} (${(data.symbol as string).toUpperCase()})`)
-        output.push('═'.repeat(50))
-        output.push('')
-        output.push(`  价格: $${currentPrice.usd}`)
-        output.push(`  24h涨跌: ${(marketData.price_change_percentage_24h as number)?.toFixed(2)}%`)
-        output.push(`  市值: $${formatNumber(marketCap.usd as number)}`)
-        output.push(`  24h交易量: $${formatNumber(totalVolume.usd as number)}`)
-        output.push(`  流通供应量: ${marketData.circulating_supply}`)
-        output.push(`  最高价格: $${ath.usd}`)
-        output.push(`  最低价格: $${atl.usd}`)
-        output.push(`  描述: ${description.en?.slice(0, 100)}...`)
-        output.push('')
-        output.push('数据来源: CoinGecko')
-        
-        return { output: output.join('\n') }
-      } catch (error) {
-        return { output: `获取加密货币信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
+    if (!word) {
+      return {
+        output: [
+          '📖 词典查询',
+          '',
+          '用法: define <单词>',
+          '',
+          '示例:',
+          '  define hello',
+          '  define computer',
+        ].join('\n')
       }
     }
     
     try {
-      const data = await fetchWithRetry(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h',
-        { mode: 'cors' }
-      ) as Array<Record<string, unknown>>
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
       
-      const output: string[] = []
-      output.push('💰 热门加密货币 (前5名)')
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push('排名  名称           价格(USD)    24h涨跌   市值')
-      output.push('─'.repeat(60))
+      if (!response.ok) {
+        return { output: `词典查询失败: ${response.status} ${response.statusText}` }
+      }
       
-      data.forEach((coin, index) => {
-        const rank = ((coin.market_cap_rank as number) || index + 1).toString().padEnd(4)
-        const name = `${coin.name} (${(coin.symbol as string).toUpperCase()})`.padEnd(15)
-        const price = `$${(coin.current_price as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`.padStart(12)
-        const change = coin.price_change_percentage_24h as number
-        const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%'
-        const paddedChange = changeStr.padStart(9)
-        const mcap = `$${formatNumber(coin.market_cap as number, 2)}`.padStart(10)
-        
-        output.push(`${rank} ${name} ${price} ${paddedChange}  ${mcap}`)
-      })
+      const data = await response.json()
       
-      output.push('')
-      output.push('使用 "crypto2 <币种>" 查看详细信息 (如: crypto2 bitcoin)')
-      output.push('数据来源: CoinGecko')
+      if (data.length === 0) {
+        return { output: `未找到 "${word}" 的定义` }
+      }
       
-      return { output: output.join('\n') }
+      const entry = data[0]
+      const meanings = entry.meanings.slice(0, 3)
+      
+      const output = [
+        `📖 ${entry.word} ${entry.phonetic ? `[${entry.phonetic}]` : ''}`,
+        '',
+        ...meanings.map((meaning: any, index: number) => [
+          `${index + 1}. ${meaning.partOfSpeech}`,
+          ...meaning.definitions.slice(0, 2).map((def: any, defIndex: number) => [
+            `   ${defIndex + 1}. ${def.definition}`,
+            def.example ? `      示例: "${def.example}"` : '',
+          ].filter(Boolean).join('\n')),
+        ].join('\n')),
+      ].join('\n')
+      
+      return { output }
     } catch (error) {
-      return { output: `获取加密货币行情失败: ${error instanceof Error ? error.message : '未知错误'}` }
+      return { output: `词典查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
     }
   },
-  description: '获取加密货币详细信息',
-  usage: 'crypto2 [币种]',
-  examples: ['crypto2', 'crypto2 bitcoin', 'crypto2 ethereum']
-})
-
-registerCommand('shorten', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔗 URL 短链接生成器',
-          '═'.repeat(40),
-          '',
-          '用法: shorten <长URL>',
-          '',
-          '示例:',
-          '  shorten https://github.com/saya-ch/WebLinuxOS',
-          '  shorten https://example.com/very/long/path/to/page',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const url = args.join(' ')
-    
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return { output: '错误: URL必须以http://或https://开头' }
-    }
-    
-    try {
-      const data = await fetchWithRetry(
-        `https://api.shrtco.de/v2/shorten?url=${encodeURIComponent(url)}`,
-        { mode: 'cors' }
-      ) as Record<string, unknown>
-      
-      const result = data.result as Record<string, string>
-      
-      return {
-        output: [
-          '🔗 URL 短链接生成',
-          '═'.repeat(40),
-          '',
-          `原始URL: ${url}`,
-          '',
-          `短链接: ${result.full_short_link2 || result.full_short_link}`,
-          '',
-          `备用链接: ${result.full_short_link3 || 'N/A'}`,
-          '',
-          '已复制到剪贴板',
-          '',
-          '数据来源: shrtcode API',
-        ].join('\n')
-      }
-    } catch (error) {
-      return { output: `生成短链接失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '生成URL短链接',
-  usage: 'shorten <URL>',
-  examples: ['shorten https://github.com/saya-ch/WebLinuxOS']
-})
-
-registerCommand('whois', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔍 WHOIS 查询',
-          '═'.repeat(40),
-          '',
-          '用法: whois <域名>',
-          '',
-          '示例:',
-          '  whois github.com',
-          '  whois example.com',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const domain = args[0]
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.whoisjson.com/v1/whois?domain=${encodeURIComponent(domain)}&apiKey=demo`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`🔍 WHOIS: ${domain}`)
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      if (data.domainName) output.push(`  域名: ${data.domainName}`)
-      if (data.registrarName) output.push(`  注册商: ${data.registrarName}`)
-      if (data.creationDate) output.push(`  创建日期: ${data.creationDate}`)
-      if (data.updatedDate) output.push(`  更新日期: ${data.updatedDate}`)
-      if (data.expirationDate) output.push(`  过期日期: ${data.expirationDate}`)
-      if (data.nameServers) {
-        output.push('  域名服务器:')
-        const nameservers = data.nameServers as string[]
-        nameservers.forEach(ns => output.push(`    ${ns}`))
-      }
-      if (data.status) output.push(`  状态: ${data.status}`)
-      if (data.registrantOrganization) output.push(`  注册组织: ${data.registrantOrganization}`)
-      
-      output.push('')
-      output.push('数据来源: WhoisJSON (demo API)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return {
-        output: [
-          `🔍 WHOIS: ${domain}`,
-          '═'.repeat(50),
-          '',
-          '查询失败或WHOIS服务暂时不可用',
-          '',
-          '提示: 部分域名可能限制公开查询',
-          '',
-        ].join('\n')
-      }
-    }
-  },
-  description: '查询域名WHOIS信息',
-  usage: 'whois <域名>',
-  examples: ['whois github.com', 'whois example.com']
-})
-
-registerCommand('ipinfo', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🌐 IP 信息查询',
-          '═'.repeat(40),
-          '',
-          '用法: ipinfo [IP地址]',
-          '',
-          '示例:',
-          '  ipinfo',
-          '  ipinfo 8.8.8.8',
-          '  ipinfo 1.1.1.1',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const ip = args[0]
-    
-    try {
-      const data = await fetchWithRetry(
-        `https://ipapi.co/${ip}/json/`,
-        { mode: 'cors' }
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`🌐 IP 信息: ${data.ip}`)
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      if (data.version) output.push(`  版本: ${data.version}`)
-      if (data.city) output.push(`  城市: ${data.city}`)
-      if (data.region) output.push(`  地区: ${data.region}`)
-      if (data.country_name) output.push(`  国家: ${data.country_name} (${data.country_code})`)
-      if (data.postal) output.push(`  邮编: ${data.postal}`)
-      if (data.latitude && data.longitude) output.push(`  坐标: ${data.latitude}, ${data.longitude}`)
-      if (data.timezone) output.push(`  时区: ${data.timezone}`)
-      if (data.org) output.push(`  运营商: ${data.org}`)
-      if (data.asn) output.push(`  ASN: ${data.asn}`)
-      if (data.currency) output.push(`  货币: ${data.currency}`)
-      if (data.languages) output.push(`  语言: ${data.languages}`)
-      
-      output.push('')
-      output.push('数据来源: ipapi.co')
-      
-      return { output: output.join('\n') }
-    } catch (error) {
-      return { output: `查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '查询IP地址详细信息',
-  usage: 'ipinfo [IP地址]',
-  examples: ['ipinfo', 'ipinfo 8.8.8.8']
-})
-
-registerCommand('random', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🎲 随机数生成器',
-          '═'.repeat(40),
-          '',
-          '用法: random [最小值] [最大值]',
-          '',
-          '示例:',
-          '  random',
-          '  random 1 100',
-          '  random 0 1000',
-          '',
-          '提示: 默认范围为0-100',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const min = parseInt(args[0]) || 0
-    const max = parseInt(args[1]) || 100
-    
-    if (isNaN(min) || isNaN(max)) {
-      return { output: '错误: 请输入有效的数字' }
-    }
-    
-    if (min >= max) {
-      return { output: '错误: 最小值必须小于最大值' }
-    }
-    
-    const result = Math.floor(Math.random() * (max - min + 1)) + min
-    
-    return {
-      output: [
-        '🎲 随机数结果',
-        '═'.repeat(40),
-        '',
-        `范围: ${min} ~ ${max}`,
-        '',
-        `结果: ${result}`,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '生成指定范围内的随机数',
-  usage: 'random [最小值] [最大值]',
-  examples: ['random', 'random 1 100', 'random 0 1000']
-})
-
-registerCommand('flip', {
-  handler: (): CommandResult => {
-    const result = Math.random() > 0.5 ? '正面' : '反面'
-    const emoji = result === '正面' ? '✅' : '❌'
-    
-    return {
-      output: [
-        '🪙 抛硬币',
-        '═'.repeat(40),
-        '',
-        `结果: ${result} ${emoji}`,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '抛硬币',
-  usage: 'flip',
-  examples: ['flip']
-})
-
-registerCommand('rps', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const choices = ['石头', '剪刀', '布']
-    const userChoice = args[0]
-    
-    if (!userChoice || !choices.includes(userChoice)) {
-      return {
-        output: [
-          '✊ 石头剪刀布',
-          '═'.repeat(40),
-          '',
-          '用法: rps <石头|剪刀|布>',
-          '',
-          '示例:',
-          '  rps 石头',
-          '  rps 剪刀',
-          '  rps 布',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const computerChoice = choices[Math.floor(Math.random() * choices.length)]
-    
-    let result: string
-    if (userChoice === computerChoice) {
-      result = '平局！'
-    } else if (
-      (userChoice === '石头' && computerChoice === '剪刀') ||
-      (userChoice === '剪刀' && computerChoice === '布') ||
-      (userChoice === '布' && computerChoice === '石头')
-    ) {
-      result = '你赢了！🎉'
-    } else {
-      result = '电脑赢了！💻'
-    }
-    
-    return {
-      output: [
-        '✊ 石头剪刀布',
-        '═'.repeat(40),
-        '',
-        `你: ${userChoice}`,
-        `电脑: ${computerChoice}`,
-        '',
-        result,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '石头剪刀布游戏',
-  usage: 'rps <石头|剪刀|布>',
-  examples: ['rps 石头', 'rps 剪刀', 'rps 布']
-})
-
-registerCommand('datetime', {
-  handler: (): CommandResult => {
-    const now = new Date()
-    
-    const output: string[] = []
-    output.push('📅 日期时间')
-    output.push('═'.repeat(50))
-    output.push('')
-    output.push(`  当前时间: ${now.toLocaleString('zh-CN')}`)
-    output.push(`  UTC时间: ${now.toISOString()}`)
-    output.push(`  时间戳(秒): ${Math.floor(now.getTime() / 1000)}`)
-    output.push(`  时间戳(毫秒): ${now.getTime()}`)
-    output.push(`  Unix时间: ${Math.floor(now.getTime() / 1000)}`)
-    output.push(`  星期: ${['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][now.getDay()]}`)
-    output.push(`  月份: ${now.getMonth() + 1}月`)
-    output.push(`  日期: ${now.getDate()}日`)
-    output.push(`  小时: ${now.getHours()}时`)
-    output.push(`  分钟: ${now.getMinutes()}分`)
-    output.push(`  秒: ${now.getSeconds()}秒`)
-    output.push(`  毫秒: ${now.getMilliseconds()}毫秒`)
-    output.push(`  时区: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`)
-    output.push(`  本周第${now.getDay() === 0 ? 7 : now.getDay()}天`)
-    output.push(`  本月第${now.getDate()}天`)
-    output.push(`  本年第${Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))}天`)
-    output.push('')
-    
-    return { output: output.join('\n') }
-  },
-  description: '显示详细的日期时间信息',
-  usage: 'datetime',
-  examples: ['datetime']
-})
-
-registerCommand('weather-search', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔍 天气搜索',
-          '═'.repeat(40),
-          '',
-          '用法: weather-search <城市关键词>',
-          '',
-          '示例:',
-          '  weather-search 北京',
-          '  weather-search New York',
-          '  weather-search 东京',
-          '',
-          '提示: 支持中英文城市名',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const query = args.join(' ')
-    
-    const keys = Object.keys(cityMap)
-    const results = keys.filter(key => 
-      key.toLowerCase().includes(query.toLowerCase()) || 
-      cityMap[key].name.includes(query)
-    ).slice(0, 10)
-    
-    if (results.length === 0) {
-      return { output: `未找到匹配 "${query}" 的城市` }
-    }
-    
-    const output: string[] = []
-    output.push(`🔍 匹配的城市 (输入 "weather <城市名>" 查看天气)`)
-    output.push('═'.repeat(50))
-    output.push('')
-    
-    results.forEach((key, index) => {
-      const info = cityMap[key]
-      output.push(`${(index + 1).toString().padStart(2)}. ${info.name} (${key})`)
-      output.push(`    坐标: ${info.lat.toFixed(4)}, ${info.lon.toFixed(4)}`)
-    })
-    
-    output.push('')
-    output.push(`共找到 ${results.length} 个匹配城市`)
-    
-    return { output: output.join('\n') }
-  },
-  description: '搜索城市天气',
-  usage: 'weather-search <关键词>',
-  examples: ['weather-search 北京', 'weather-search New York']
-})
-
-registerCommand('crypto-news', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://api.coingecko.com/api/v3/news?category=general',
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Array<Record<string, unknown>>
-      
-      const output: string[] = []
-      output.push('💰 加密货币新闻')
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      data.slice(0, 5).forEach((news, index) => {
-        output.push(`${index + 1}. ${news.title}`)
-        if (news.excerpt) {
-          output.push(`   ${(news.excerpt as string).slice(0, 100)}...`)
-        }
-        if (news.url) {
-          output.push(`   🔗 ${news.url}`)
-        }
-        output.push('')
-      })
-      
-      output.push('数据来源: CoinGecko')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews = [
-        { title: '比特币突破新高度，市场情绪乐观', excerpt: '比特币价格持续上涨，投资者信心增强' },
-        { title: '以太坊升级完成，网络性能提升', excerpt: '最新的以太坊升级带来了显著的性能提升' },
-        { title: '机构投资者持续入场加密市场', excerpt: '越来越多的机构开始配置加密资产' },
-        { title: 'DeFi生态持续发展，新协议不断涌现', excerpt: '去中心化金融生态日益繁荣' },
-        { title: 'NFT市场回暖，数字艺术品受追捧', excerpt: '非同质化代币市场重新活跃' },
-      ]
-      
-      const output: string[] = []
-      output.push('💰 加密货币新闻')
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      fallbackNews.forEach((news, index) => {
-        output.push(`${index + 1}. ${news.title}`)
-        output.push(`   ${news.excerpt}`)
-        output.push('')
-      })
-      
-      output.push('数据来源: 本地新闻库')
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取加密货币最新新闻',
-  usage: 'crypto-news',
-  examples: ['crypto-news']
-})
-
-registerCommand('world-clock', {
-  handler: (): CommandResult => {
-    const cities = [
-      { name: '北京', offset: 8, emoji: '🇨🇳' },
-      { name: '东京', offset: 9, emoji: '🇯🇵' },
-      { name: '首尔', offset: 9, emoji: '🇰🇷' },
-      { name: '新加坡', offset: 8, emoji: '🇸🇬' },
-      { name: '迪拜', offset: 4, emoji: '🇦🇪' },
-      { name: '伦敦', offset: 0, emoji: '🇬🇧' },
-      { name: '巴黎', offset: 1, emoji: '🇫🇷' },
-      { name: '柏林', offset: 1, emoji: '🇩🇪' },
-      { name: '纽约', offset: -4, emoji: '🇺🇸' },
-      { name: '洛杉矶', offset: -7, emoji: '🇺🇸' },
-      { name: '芝加哥', offset: -5, emoji: '🇺🇸' },
-      { name: '悉尼', offset: 10, emoji: '🇦🇺' },
-      { name: '墨尔本', offset: 10, emoji: '🇦🇺' },
-      { name: '奥克兰', offset: 12, emoji: '🇳🇿' },
-    ]
-    
-    const now = new Date()
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000
-    
-    const output: string[] = []
-    output.push('🌍 世界时钟')
-    output.push('═'.repeat(50))
-    output.push('')
-    
-    cities.forEach((city) => {
-      const cityTime = new Date(utc + city.offset * 3600000)
-      const timeStr = cityTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      const dateStr = cityTime.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
-      output.push(`${city.emoji} ${city.name.padEnd(8)} ${timeStr} ${dateStr}`)
-    })
-    
-    output.push('')
-    output.push(`本地时间: ${now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`)
-    
-    return { output: output.join('\n') }
-  },
-  description: '显示世界主要城市实时时间',
-  usage: 'world-clock',
-  examples: ['world-clock']
-})
-
-registerCommand('quote-of-the-day', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://api.quotable.io/quotes/random?limit=3',
-        { mode: 'cors' },
-        30 * 60 * 1000
-      ) as Array<Record<string, string>>
-      
-      const output: string[] = []
-      output.push('🌟 今日名言')
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      data.forEach((quote, index) => {
-        output.push(`${index + 1}. "${quote.content}"`)
-        output.push(`   — ${quote.author}`)
-        output.push('')
-      })
-      
-      output.push('数据来源: Quotable.io')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const quotes = [
-        { content: '代码是写给人看的，只是顺便让机器执行', author: 'Robert C. Martin' },
-        { content: '优秀的程序员是那些能看清事物本质的人', author: 'Grady Booch' },
-        { content: '测试是证明错误存在的过程，而非证明错误不存在', author: 'Edsger W. Dijkstra' },
-      ]
-      
-      const output: string[] = []
-      output.push('🌟 今日名言')
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      quotes.forEach((quote, index) => {
-        output.push(`${index + 1}. "${quote.content}"`)
-        output.push(`   — ${quote.author}`)
-        output.push('')
-      })
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取今日名言',
-  usage: 'quote-of-the-day',
-  examples: ['quote-of-the-day']
-})
-
-registerCommand('uuid', {
-  handler: (): CommandResult => {
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0
-      const v = c == 'x' ? r : (r & 0x3 | 0x8)
-      return v.toString(16)
-    })
-    
-    return {
-      output: [
-        '🔑 UUID 生成器',
-        '═'.repeat(40),
-        '',
-        `  UUID: ${uuid}`,
-        '',
-        '已复制到剪贴板',
-        '',
-      ].join('\n')
-    }
-  },
-  description: '生成随机UUID',
-  usage: 'uuid',
-  examples: ['uuid']
-})
-
-registerCommand('hash', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔐 哈希计算器',
-          '═'.repeat(40),
-          '',
-          '用法: hash <算法> <文本>',
-          '',
-          '支持的算法: md5, sha1, sha256, sha512',
-          '',
-          '示例:',
-          '  hash md5 hello',
-          '  hash sha256 secret',
-          '  hash sha512 "long text"',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const algorithm = (args[0] || 'sha256').toLowerCase()
-    const text = args.slice(1).join(' ')
-    
-    const validAlgorithms = ['md5', 'sha1', 'sha256', 'sha512']
-    if (!validAlgorithms.includes(algorithm)) {
-      return { output: `不支持的算法: ${algorithm}\n支持的算法: ${validAlgorithms.join(', ')}` }
-    }
-    
-    try {
-      const encoder = new TextEncoder()
-      const data = encoder.encode(text)
-      const hashBuffer = await crypto.subtle.digest(algorithm.toUpperCase(), data)
-      const hashArray = Array.from(new Uint8Array(hashBuffer))
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-      
-      return {
-        output: [
-          '🔐 哈希计算结果',
-          '═'.repeat(40),
-          '',
-          `  算法: ${algorithm.toUpperCase()}`,
-          `  输入: ${text}`,
-          '',
-          `  结果: ${hashHex}`,
-          '',
-        ].join('\n')
-      }
-    } catch {
-      return { output: '哈希计算失败，请检查输入' }
-    }
-  },
-  description: '计算文本的哈希值',
-  usage: 'hash <算法> <文本>',
-  examples: ['hash md5 hello', 'hash sha256 secret']
-})
-
-registerCommand('base64', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔤 Base64 编解码器',
-          '═'.repeat(40),
-          '',
-          '用法:',
-          '  base64 encode <文本>   - 编码',
-          '  base64 decode <文本>   - 解码',
-          '',
-          '示例:',
-          '  base64 encode hello',
-          '  base64 decode aGVsbG8=',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const mode = args[0].toLowerCase()
-    const text = args.slice(1).join(' ')
-    
-    if (mode === 'encode') {
-      const encoded = btoa(text)
-      return {
-        output: [
-          '🔤 Base64 编码结果',
-          '═'.repeat(40),
-          '',
-          `  输入: ${text}`,
-          '',
-          `  结果: ${encoded}`,
-          '',
-        ].join('\n')
-      }
-    } else if (mode === 'decode') {
-      try {
-        const decoded = atob(text)
-        return {
-          output: [
-            '🔤 Base64 解码结果',
-            '═'.repeat(40),
-            '',
-            `  输入: ${text}`,
-            '',
-            `  结果: ${decoded}`,
-            '',
-          ].join('\n')
-        }
-      } catch {
-        return { output: '解码失败: 无效的Base64编码' }
-      }
-    }
-    
-    return { output: `未知模式: ${mode}\n用法: base64 encode|decode <文本>` }
-  },
-  description: 'Base64编码和解码',
-  usage: 'base64 encode|decode <文本>',
-  examples: ['base64 encode hello', 'base64 decode aGVsbG8=']
-})
-
-registerCommand('urlencode', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🔗 URL 编解码器',
-          '═'.repeat(40),
-          '',
-          '用法:',
-          '  urlencode encode <文本>   - 编码',
-          '  urlencode decode <文本>   - 解码',
-          '',
-          '示例:',
-          '  urlencode encode "hello world"',
-          '  urlencode decode "hello%20world"',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const mode = args[0].toLowerCase()
-    const text = args.slice(1).join(' ')
-    
-    if (mode === 'encode') {
-      const encoded = encodeURIComponent(text)
-      return {
-        output: [
-          '🔗 URL 编码结果',
-          '═'.repeat(40),
-          '',
-          `  输入: ${text}`,
-          '',
-          `  结果: ${encoded}`,
-          '',
-        ].join('\n')
-      }
-    } else if (mode === 'decode') {
-      try {
-        const decoded = decodeURIComponent(text)
-        return {
-          output: [
-            '🔗 URL 解码结果',
-            '═'.repeat(40),
-            '',
-            `  输入: ${text}`,
-            '',
-            `  结果: ${decoded}`,
-            '',
-          ].join('\n')
-        }
-      } catch {
-        return { output: '解码失败: 无效的URL编码' }
-      }
-    }
-    
-    return { output: `未知模式: ${mode}\n用法: urlencode encode|decode <文本>` }
-  },
-  description: 'URL编码和解码',
-  usage: 'urlencode encode|decode <文本>',
-  examples: ['urlencode encode "hello world"', 'urlencode decode "hello%20world"']
-})
-
-registerCommand('ping', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '📡 网络连通性测试',
-          '═'.repeat(40),
-          '',
-          '用法: ping <网址>',
-          '',
-          '示例:',
-          '  ping google.com',
-          '  ping github.com',
-          '  ping localhost',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const host = args[0]
-    
-    try {
-      const startTime = performance.now()
-      const response = await fetch(`https://api.ping.pe/${host}`, { mode: 'cors' })
-      const endTime = performance.now()
-      const latency = Math.round(endTime - startTime)
-      const data = await response.json() as Record<string, unknown>
-      
-      return {
-        output: [
-          '📡 网络连通性测试',
-          '═'.repeat(40),
-          '',
-          `  目标: ${host}`,
-          `  延迟: ${latency}ms`,
-          `  状态: ${(data.online as boolean) ? '✓ 连接成功' : '✗ 连接失败'}`,
-          `  IP地址: ${data.ip || 'N/A'}`,
-          '',
-          '数据来源: ping.pe API',
-          '',
-        ].join('\n')
-      }
-    } catch {
-      try {
-        const startTime = performance.now()
-        const controller = new AbortController()
-        setTimeout(() => controller.abort(), 5000)
-        await fetch(`https://${host}`, { method: 'HEAD', signal: controller.signal })
-        const endTime = performance.now()
-        const latency = Math.round(endTime - startTime)
-        
-        return {
-          output: [
-            '📡 网络连通性测试',
-            '═'.repeat(40),
-            '',
-            `  目标: ${host}`,
-            `  延迟: ${latency}ms`,
-            `  状态: ✓ 连接成功`,
-            '',
-          ].join('\n')
-        }
-      } catch {
-        return {
-          output: [
-            '📡 网络连通性测试',
-            '═'.repeat(40),
-            '',
-            `  目标: ${host}`,
-            `  状态: ✗ 连接失败`,
-            '',
-            '提示: 可能是跨域限制或网络问题',
-            '',
-          ].join('\n')
-        }
-      }
-    }
-  },
-  description: '测试网络连通性',
-  usage: 'ping <网址>',
-  examples: ['ping google.com', 'ping github.com']
-})
-
-registerCommand('weather-search', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🌤️ 天气搜索',
-          '═'.repeat(40),
-          '',
-          '用法: weather-search <城市名>',
-          '',
-          '搜索任意城市的天气信息',
-          '',
-          '示例:',
-          '  weather-search 北京',
-          '  weather-search Shanghai',
-          '  weather-search Tokyo',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const query = args.join(' ')
-    
-    try {
-      const geoData = await fetchWithCache(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=zh`,
-        { mode: 'cors' },
-        60 * 1000
-      ) as Record<string, unknown>
-      
-      const results = geoData.results as Array<Record<string, unknown>> || []
-      
-      if (results.length === 0) {
-        return { output: `未找到城市 "${query}"，请尝试其他名称` }
-      }
-      
-      const city = results[0]
-      const lat = city.latitude as number
-      const lon = city.longitude as number
-      const cityName = city.name as string
-      const country = city.country as string
-      
-      const weatherData = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=3`,
-        { mode: 'cors' },
-        10 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const current = weatherData.current as Record<string, unknown>
-      const daily = weatherData.daily as Record<string, unknown[]>
-      
-      const desc = weatherDescriptions[current.weather_code as number] || '❓ 未知'
-      
-      const output: string[] = []
-      output.push(`🌤️ ${cityName}, ${country} 天气预报`)
-      output.push('═'.repeat(40))
-      output.push('')
-      output.push('【当前天气】')
-      output.push(`  ${desc}`)
-      output.push(`  🌡️ 温度: ${current.temperature_2m}°C (体感 ${current.apparent_temperature}°C)`)
-      output.push(`  💧 湿度: ${current.relative_humidity_2m}%`)
-      output.push(`  💨 风速: ${current.wind_speed_10m} km/h`)
-      output.push('')
-      output.push('【未来三天预报】')
-      
-      const times = daily.time as string[]
-      const maxTemps = daily.temperature_2m_max as number[]
-      const minTemps = daily.temperature_2m_min as number[]
-      const weatherCodes = daily.weather_code as number[]
-      
-      for (let i = 0; i < Math.min(3, times.length); i++) {
-        const dayDesc = weatherDescriptions[weatherCodes[i]] || '❓'
-        output.push(`  ${times[i]}: ${dayDesc} ${minTemps[i]}°C ~ ${maxTemps[i]}°C`)
-      }
-      
-      output.push('')
-      output.push('数据来源: Open-Meteo')
-      
-      return { output: output.join('\n') }
-    } catch (error) {
-      return { output: `获取天气信息失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '搜索任意城市的天气信息',
-  usage: 'weather-search <城市名>',
-  examples: ['weather-search 北京', 'weather-search Shanghai', 'weather-search Tokyo']
-})
-
-registerCommand('whois', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🌐 WHOIS 查询',
-          '═'.repeat(40),
-          '',
-          '用法: whois <域名>',
-          '',
-          '查询域名的注册信息',
-          '',
-          '示例:',
-          '  whois github.com',
-          '  whois google.com',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const domain = args[0]
-    
-    try {
-      const data = await fetchWithCache(
-        `https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=at_nwU2J3V9P5b6B0c1Q0D3E5F2G7H1I8J9K7L6M4N2O8P5Q1R4S6T8U1V9W7X3Y6Z2&domainName=${encodeURIComponent(domain)}&outputFormat=JSON`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`🌐 WHOIS: ${domain}`)
-      output.push('═'.repeat(50))
-      output.push('')
-      
-      const whoisRecord = data.WhoisRecord as Record<string, unknown> || {}
-      
-      if (whoisRecord.domainName) {
-        output.push(`  域名: ${whoisRecord.domainName}`)
-      }
-      if (whoisRecord.registrarName) {
-        output.push(`  注册商: ${whoisRecord.registrarName}`)
-      }
-      if (whoisRecord.creationDate) {
-        output.push(`  创建日期: ${whoisRecord.creationDate}`)
-      }
-      if (whoisRecord.updatedDate) {
-        output.push(`  更新日期: ${whoisRecord.updatedDate}`)
-      }
-      if (whoisRecord.expiresDate) {
-        output.push(`  到期日期: ${whoisRecord.expiresDate}`)
-      }
-      if (whoisRecord.status) {
-        output.push(`  状态: ${whoisRecord.status}`)
-      }
-      if (whoisRecord.nameServers) {
-        const ns = whoisRecord.nameServers as Record<string, string[]> || {}
-        if (ns.hostNames) {
-          output.push(`  域名服务器: ${ns.hostNames.join(', ')}`)
-        }
-      }
-      
-      output.push('')
-      output.push('数据来源: WhoisXML API')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return {
-        output: [
-          '🌐 WHOIS: ' + domain,
-          '═'.repeat(50),
-          '',
-          '⚠️ WHOIS查询服务暂时不可用',
-          '',
-          '可手动访问: https://whois.icann.org/lookup?name=' + domain,
-          '',
-        ].join('\n')
-      }
-    }
-  },
-  description: '查询域名的注册信息',
-  usage: 'whois <域名>',
-  examples: ['whois github.com', 'whois google.com']
-})
-
-registerCommand('ipinfo', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🌍 IP信息查询',
-          '═'.repeat(40),
-          '',
-          '用法: ipinfo [IP地址]',
-          '',
-          '查询IP地址的详细信息',
-          '不指定IP时查询本机IP',
-          '',
-          '示例:',
-          '  ipinfo',
-          '  ipinfo 8.8.8.8',
-          '  ipinfo 1.1.1.1',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const ip = args[0]
-    
-    try {
-      const data = await fetchWithCache(
-        `https://ipapi.co/${ip}/json/`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const output: string[] = []
-      output.push(`🌍 IP信息: ${data.ip || ip}`)
-      output.push('═'.repeat(40))
-      output.push('')
-      output.push(`  IP地址: ${data.ip || 'N/A'}`)
-      output.push(`  版本: ${data.version || 'N/A'}`)
-      output.push(`  城市: ${data.city || 'N/A'}`)
-      output.push(`  地区: ${data.region || 'N/A'}`)
-      output.push(`  国家: ${data.country_name || 'N/A'} (${data.country_code || 'N/A'})`)
-      output.push(`  邮编: ${data.postal || 'N/A'}`)
-      output.push(`  纬度: ${data.latitude || 'N/A'}`)
-      output.push(`  经度: ${data.longitude || 'N/A'}`)
-      output.push(`  时区: ${data.timezone || 'N/A'}`)
-      output.push(`  运营商: ${data.org || 'N/A'}`)
-      output.push(`  ASN: ${data.asn || 'N/A'}`)
-      output.push('')
-      output.push('数据来源: ipapi.co')
-      
-      return { output: output.join('\n') }
-    } catch (error) {
-      return { output: `IP查询失败: ${error instanceof Error ? error.message : '未知错误'}` }
-    }
-  },
-  description: '查询IP地址的详细信息',
-  usage: 'ipinfo [IP地址]',
-  examples: ['ipinfo', 'ipinfo 8.8.8.8']
-})
-
-registerCommand('random', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '🎲 随机数生成器',
-          '═'.repeat(40),
-          '',
-          '用法:',
-          '  random                    - 生成0-100的随机整数',
-          '  random <最大值>           - 生成0到最大值的随机整数',
-          '  random <最小值> <最大值>  - 生成指定范围的随机整数',
-          '',
-          '示例:',
-          '  random',
-          '  random 1000',
-          '  random 1 10',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    let min = 0
-    let max = 100
-    
-    if (args.length === 1) {
-      max = parseInt(args[0]) || 100
-    } else if (args.length === 2) {
-      min = parseInt(args[0]) || 0
-      max = parseInt(args[1]) || 100
-    }
-    
-    if (min > max) {
-      [min, max] = [max, min]
-    }
-    
-    const result = Math.floor(Math.random() * (max - min + 1)) + min
-    
-    return {
-      output: [
-        '🎲 随机数生成结果',
-        '═'.repeat(40),
-        '',
-        `  范围: ${min} ~ ${max}`,
-        '',
-        `  结果: ${result}`,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '生成随机数',
-  usage: 'random [最小值] [最大值]',
-  examples: ['random', 'random 1000', 'random 1 10']
-})
-
-registerCommand('flip', {
-  handler: (): CommandResult => {
-    const result = Math.random() > 0.5 ? '正面' : '反面'
-    const emoji = result === '正面' ? '🪙' : '🔷'
-    
-    return {
-      output: [
-        '🪙 抛硬币',
-        '═'.repeat(40),
-        '',
-        `  ${emoji} 结果: ${result}`,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '抛硬币游戏',
-  usage: 'flip',
-  examples: ['flip']
-})
-
-registerCommand('rps', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    const choices = ['rock', 'paper', 'scissors']
-    const emojiMap: Record<string, string> = {
-      rock: '🪨',
-      paper: '📄',
-      scissors: '✂️'
-    }
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '✊ 石头剪刀布',
-          '═'.repeat(40),
-          '',
-          '用法: rps <rock|paper|scissors>',
-          '',
-          '示例:',
-          '  rps rock',
-          '  rps paper',
-          '  rps scissors',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const playerChoice = args[0].toLowerCase()
-    
-    if (!choices.includes(playerChoice)) {
-      return {
-        output: [
-          '✊ 石头剪刀布',
-          '═'.repeat(40),
-          '',
-          `  无效选择: ${playerChoice}`,
-          '',
-          '  可用选择: rock, paper, scissors',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const computerChoice = choices[Math.floor(Math.random() * choices.length)]
-    
-    let result = '平局'
-    if (
-      (playerChoice === 'rock' && computerChoice === 'scissors') ||
-      (playerChoice === 'paper' && computerChoice === 'rock') ||
-      (playerChoice === 'scissors' && computerChoice === 'paper')
-    ) {
-      result = '你赢了!'
-    } else if (playerChoice !== computerChoice) {
-      result = '你输了!'
-    }
-    
-    return {
-      output: [
-        '✊ 石头剪刀布',
-        '═'.repeat(40),
-        '',
-        `  你的选择: ${emojiMap[playerChoice]} ${playerChoice}`,
-        `  电脑选择: ${emojiMap[computerChoice]} ${computerChoice}`,
-        '',
-        `  ${result}`,
-        '',
-      ].join('\n')
-    }
-  },
-  description: '石头剪刀布游戏',
-  usage: 'rps <rock|paper|scissors>',
-  examples: ['rps rock', 'rps paper']
-})
-
-registerCommand('cache', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const action = args[0]?.toLowerCase()
-
-    if (!action || action === 'status') {
-      const stats = getCacheStats()
-      return {
-        output: [
-          '💾 缓存状态',
-          '═'.repeat(40),
-          '',
-          `  缓存条目数: ${stats.count}`,
-          `  内存大小: ${formatNumber(stats.size)} bytes`,
-          '',
-          '可用命令:',
-          '  cache clear     - 清空所有缓存',
-          '  cache status    - 显示缓存状态',
-          '',
-        ].join('\n')
-      }
-    }
-
-    if (action === 'clear') {
-      clearCache()
-      return {
-        output: [
-          '💾 缓存管理',
-          '═'.repeat(40),
-          '',
-          '  缓存已清空',
-          '',
-          '  下次请求将重新获取数据',
-          '',
-        ].join('\n')
-      }
-    }
-
-    return {
-      output: [
-        '💾 缓存管理',
-        '═'.repeat(40),
-        '',
-        '用法: cache <操作>',
-        '',
-        '可用操作:',
-        '  status  - 显示缓存状态',
-        '  clear   - 清空所有缓存',
-        '',
-        '示例:',
-        '  cache status',
-        '  cache clear',
-        '',
-      ].join('\n')
-    }
-  },
-  description: '管理API缓存',
-  usage: 'cache <status|clear>',
-  examples: ['cache status', 'cache clear']
-})
-
-registerCommand('env', {
-  handler: (): CommandResult => {
-    const output: string[] = []
-    output.push('🌐 环境信息')
-    output.push('═'.repeat(50))
-    output.push('')
-    output.push(`  用户代理: ${navigator.userAgent.slice(0, 80)}...`)
-    output.push(`  语言: ${navigator.language}`)
-    output.push(`  平台: ${navigator.platform}`)
-    output.push(`  在线状态: ${navigator.onLine ? '在线' : '离线'}`)
-    output.push(`  硬件并发: ${navigator.hardwareConcurrency} 核心`)
-    output.push(`  屏幕分辨率: ${screen.width} x ${screen.height}`)
-    output.push(`  可用屏幕: ${screen.availWidth} x ${screen.availHeight}`)
-    output.push(`  颜色深度: ${screen.colorDepth} 位`)
-    output.push(`  时区: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`)
-    output.push(`  WebLinuxOS 版本: v15.1.0`)
-    output.push('')
-
-    return { output: output.join('\n') }
-  },
-  description: '显示浏览器环境信息',
-  usage: 'env',
-  examples: ['env']
-})
-
-registerCommand('weather-forecast', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const city = args.join(' ') || 'Beijing'
-    const cityInfo = getCityInfo(city)
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=7`,
-        { mode: 'cors' },
-        15 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const daily = data.daily as Record<string, unknown[]>
-      
-      const output: string[] = []
-      output.push(`🌤️ ${cityInfo.name} 7天天气预报`)
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      const times = daily.time as string[]
-      const maxTemps = daily.temperature_2m_max as number[]
-      const minTemps = daily.temperature_2m_min as number[]
-      const precip = daily.precipitation_sum as number[]
-      const wind = daily.wind_speed_10m_max as number[]
-      
-      for (let i = 0; i < Math.min(7, times.length); i++) {
-        const date = times[i].split('-').slice(1).join('-')
-        const high = maxTemps[i]
-        const low = minTemps[i]
-        const rain = precip[i] || 0
-        const ws = wind[i] || 0
-        
-        const tempBar = (() => {
-          const min = Math.floor(Math.min(...minTemps)) - 5
-          const max = Math.ceil(Math.max(...maxTemps)) + 5
-          const range = max - min
-          const start = ((low - min) / range) * 40
-          const length = ((high - low) / range) * 40
-          return '[' + ' '.repeat(Math.round(start)) + '█'.repeat(Math.max(1, Math.round(length))) + ' '.repeat(40 - Math.round(start + length)) + ']'
-        })()
-        
-        output.push(`${date}: ${low}°C ~ ${high}°C ${tempBar}`)
-        if (rain > 0) output.push(`     💧 降水: ${rain}mm | 💨 风速: ${ws} km/h`)
-        output.push('')
-      }
-      
-      output.push('数据来源: Open-Meteo (已缓存15分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: `无法获取 ${cityInfo.name} 的天气预报，请检查网络连接` }
-    }
-  },
-  description: '获取7天天气预报',
-  usage: 'weather-forecast [城市]',
-  examples: ['weather-forecast', 'weather-forecast Beijing']
-})
-
-registerCommand('weather-alerts', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const city = args.join(' ') || 'Beijing'
-    const cityInfo = getCityInfo(city)
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,uv_index,cloud_cover&hourly=temperature_2m,apparent_temperature,precipitation_probability,uv_index&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const current = data.current as Record<string, unknown>
-      const temp = current.temperature_2m as number
-      const humidity = current.relative_humidity_2m as number
-      const wind = current.wind_speed_10m as number
-      const uv = current.uv_index as number
-      const clouds = current.cloud_cover as number
-      
-      const output: string[] = []
-      output.push(`⚠️ ${cityInfo.name} 天气预警`)
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      const alerts: string[] = []
-      
-      if (temp > 35) alerts.push(`🌡️ 高温预警: ${temp}°C，请避免长时间户外活动`)
-      if (temp < -10) alerts.push(`❄️ 低温预警: ${temp}°C，请注意保暖`)
-      if (humidity > 90) alerts.push(`💧 高湿度预警: ${humidity}%，可能有雾或降水`)
-      if (wind > 40) alerts.push(`💨 大风预警: ${wind} km/h，请注意防风`)
-      if (uv > 7) alerts.push(`☀️ 紫外线预警: 指数 ${uv}，请做好防晒`)
-      if (clouds > 90) alerts.push(`☁️ 阴天预警: 云量 ${clouds}%，可能有降水`)
-      
-      if (alerts.length === 0) {
-        output.push('✅ 当前无天气预警，天气状况良好')
-      } else {
-        alerts.forEach((alert, idx) => {
-          output.push(`${idx + 1}. ${alert}`)
-        })
-      }
-      
-      output.push('')
-      output.push('【当前天气摘要】')
-      output.push(`  温度: ${temp}°C | 湿度: ${humidity}% | 风速: ${wind} km/h`)
-      output.push(`  紫外线: ${uv} | 云量: ${clouds}%`)
-      output.push('')
-      output.push('数据来源: Open-Meteo (已缓存5分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: `无法获取 ${cityInfo.name} 的天气预警信息` }
-    }
-  },
-  description: '获取天气预警和健康建议',
-  usage: 'weather-alerts [城市]',
-  examples: ['weather-alerts', 'weather-alerts Shanghai']
-})
-
-registerCommand('weather-uv', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const city = args.join(' ') || 'Beijing'
-    const cityInfo = getCityInfo(city)
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.open-meteo.com/v1/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current=uv_index,uv_index_clear_sky&hourly=uv_index,uv_index_clear_sky&timezone=auto&forecast_days=1`,
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const current = data.current as Record<string, unknown>
-      const hourly = data.hourly as Record<string, unknown[]>
-      
-      const output: string[] = []
-      output.push(`☀️ ${cityInfo.name} 紫外线指数`)
-      output.push('═'.repeat(60))
-      output.push('')
-      
-      const uvLevels = [
-        { range: [0, 2], label: '低', advice: '无需特别防护', color: '\x1b[32m' },
-        { range: [3, 5], label: '中等', advice: '建议使用防晒霜', color: '\x1b[33m' },
-        { range: [6, 7], label: '高', advice: '外出穿长袖衣裤', color: '\x1b[33m' },
-        { range: [8, 10], label: '很高', advice: '尽量避免正午外出', color: '\x1b[31m' },
-        { range: [11, 15], label: '极高', advice: '避免户外活动', color: '\x1b[31m' },
-      ]
-      
-      const currentUV = current.uv_index as number
-      const currentUVClear = current.uv_index_clear_sky as number
-      const level = uvLevels.find(l => currentUV >= l.range[0] && currentUV <= l.range[1]) || uvLevels[0]
-      
-      output.push(`当前紫外线指数: ${level.color}${currentUV.toFixed(1)}\x1b[0m (${level.label})`)
-      output.push(`晴空紫外线指数: ${currentUVClear?.toFixed(1) || 'N/A'}`)
-      output.push('')
-      output.push(`防护建议: ${level.advice}`)
-      output.push('')
-      
-      output.push('【今日紫外线趋势】')
-      const times = hourly.time as string[]
-      const uvValues = hourly.uv_index as number[]
-      
-      for (let i = 6; i < 19; i += 2) {
-        const time = times[i]?.split('T')[1]?.slice(0, 5) || ''
-        const uv = uvValues[i] || 0
-        const bar = '█'.repeat(Math.min(Math.round(uv), 12)) + '░'.repeat(Math.max(0, 12 - Math.round(uv)))
-        output.push(`  ${time}: ${uv.toFixed(1)} ${bar}`)
-      }
-      
-      output.push('')
-      output.push('数据来源: Open-Meteo (已缓存5分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: `无法获取 ${cityInfo.name} 的紫外线指数` }
-    }
-  },
-  description: '获取紫外线指数和防护建议',
-  usage: 'weather-uv [城市]',
-  examples: ['weather-uv', 'weather-uv Tokyo']
-})
-
-registerCommand('news-top', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10',
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const hits = data.hits as Array<Record<string, unknown>> || []
-      
-      const output: string[] = []
-      output.push('📰 Hacker News 头条')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      hits.slice(0, 10).forEach((hit, index) => {
-        const title = hit.title as string || '无标题'
-        const points = hit.points as number || 0
-        const comments = hit.num_comments as number || 0
-        const author = hit.author as string || 'unknown'
-        const url = hit.url as string
-        
-        const pointColor = points > 500 ? '\x1b[31m' : points > 200 ? '\x1b[33m' : '\x1b[32m'
-        
-        output.push(`${(index + 1).toString().padStart(2)}. ${title}`)
-        output.push(`   ⬆️ ${pointColor}${points}\x1b[0m points | 💬 ${comments} comments | 👤 ${author}`)
-        if (url) output.push(`   🔗 ${url}`)
-        output.push('')
-      })
-      
-      output.push('数据来源: Hacker News (已缓存5分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews = [
-        { title: 'WebAssembly 在浏览器中的性能突破', points: 2847, comments: 189, author: 'tech_leader' },
-        { title: 'React 19 的 Concurrent Features 详解', points: 1543, comments: 98, author: 'react_dev' },
-        { title: 'AI 代码助手的最新进展与挑战', points: 1923, comments: 234, author: 'ai_researcher' },
-        { title: 'WebGPU 原生支持正式发布', points: 1234, comments: 76, author: 'gpu_enthusiast' },
-        { title: 'TypeScript 6.0 新特性解析', points: 987, comments: 56, author: 'ts_team' },
-      ]
-      
-      const output: string[] = []
-      output.push('📰 技术新闻头条 (离线模式)')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      fallbackNews.forEach((news, index) => {
-        output.push(`${(index + 1).toString().padStart(2)}. ${news.title}`)
-        output.push(`   ⬆️ ${news.points} points | 💬 ${news.comments} comments | 👤 ${news.author}`)
-        output.push('')
-      })
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取Hacker News头条新闻',
-  usage: 'news-top',
-  examples: ['news-top']
-})
-
-registerCommand('news-tech', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://hn.algolia.com/api/v1/search?query=technology&tags=story&hitsPerPage=10',
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const hits = data.hits as Array<Record<string, unknown>> || []
-      
-      const output: string[] = []
-      output.push('💻 技术新闻')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      hits.slice(0, 10).forEach((hit, index) => {
-        const title = hit.title as string || '无标题'
-        const points = hit.points as number || 0
-        const comments = hit.num_comments as number || 0
-        const author = hit.author as string || 'unknown'
-        const url = hit.url as string
-        
-        output.push(`${(index + 1).toString().padStart(2)}. ${title}`)
-        output.push(`   ⬆️ ${points} points | 💬 ${comments} comments | 👤 ${author}`)
-        if (url) output.push(`   🔗 ${url}`)
-        output.push('')
-      })
-      
-      output.push('数据来源: Hacker News (已缓存5分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews = [
-        { title: 'Node.js 22 发布，性能大幅提升', points: 1234, comments: 89, author: 'node_team' },
-        { title: 'Rust Web 框架 Axum 最新更新', points: 876, comments: 67, author: 'rust_dev' },
-        { title: 'Go 1.22 的新特性和改进', points: 1543, comments: 123, author: 'go_team' },
-        { title: 'Python 3.13 性能优化亮点', points: 987, comments: 78, author: 'python_dev' },
-      ]
-      
-      const output: string[] = []
-      output.push('💻 技术新闻 (离线模式)')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      fallbackNews.forEach((news, index) => {
-        output.push(`${(index + 1).toString().padStart(2)}. ${news.title}`)
-        output.push(`   ⬆️ ${news.points} points | 💬 ${news.comments} comments | 👤 ${news.author}`)
-        output.push('')
-      })
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取技术相关新闻',
-  usage: 'news-tech',
-  examples: ['news-tech']
-})
-
-registerCommand('news-ai', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://hn.algolia.com/api/v1/search?query=AI&tags=story&hitsPerPage=10',
-        { mode: 'cors' },
-        5 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const hits = data.hits as Array<Record<string, unknown>> || []
-      
-      const output: string[] = []
-      output.push('🤖 AI 新闻')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      hits.slice(0, 10).forEach((hit, index) => {
-        const title = hit.title as string || '无标题'
-        const points = hit.points as number || 0
-        const comments = hit.num_comments as number || 0
-        const author = hit.author as string || 'unknown'
-        const url = hit.url as string
-        
-        output.push(`${(index + 1).toString().padStart(2)}. ${title}`)
-        output.push(`   ⬆️ ${points} points | 💬 ${comments} comments | 👤 ${author}`)
-        if (url) output.push(`   🔗 ${url}`)
-        output.push('')
-      })
-      
-      output.push('数据来源: Hacker News (已缓存5分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews = [
-        { title: 'LLM 推理性能优化的最新方法', points: 2345, comments: 189, author: 'ai_engineer' },
-        { title: '开源 LLM 模型的发展现状', points: 1876, comments: 156, author: 'open_source_advocate' },
-        { title: 'AI 安全和对齐研究进展', points: 1543, comments: 123, author: 'ai_safety' },
-        { title: '多模态 AI 的最新突破', points: 1765, comments: 98, author: 'multimodal_expert' },
-      ]
-      
-      const output: string[] = []
-      output.push('🤖 AI 新闻 (离线模式)')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      fallbackNews.forEach((news, index) => {
-        output.push(`${(index + 1).toString().padStart(2)}. ${news.title}`)
-        output.push(`   ⬆️ ${news.points} points | 💬 ${news.comments} comments | 👤 ${news.author}`)
-        output.push('')
-      })
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取AI相关新闻',
-  usage: 'news-ai',
-  examples: ['news-ai']
-})
-
-registerCommand('crypto-alerts', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithRetry(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=1h,24h,7d',
-        { mode: 'cors' }
-      ) as Array<Record<string, unknown>>
-      
-      const output: string[] = []
-      output.push('📊 加密货币价格预警')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      data.forEach((coin) => {
-        const name = coin.name as string
-        const symbol = (coin.symbol as string).toUpperCase()
-        const price = coin.current_price as number
-        const change1h = coin.price_change_percentage_1h_in_currency as number
-        const change24h = coin.price_change_percentage_24h_in_currency as number
-        const change7d = coin.price_change_percentage_7d_in_currency as number
-        
-        const changeColor = change24h >= 0 ? '\x1b[32m' : '\x1b[31m'
-        
-        let alert = ''
-        if (Math.abs(change24h) > 10) {
-          alert = change24h > 0 ? ' 📈 大涨!' : ' 📉 大跌!'
-        }
-        
-        output.push(`${name} (${symbol})`)
-        output.push(`   价格: $${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)
-        output.push(`   1h: ${(change1h >= 0 ? '+' : '')}${change1h.toFixed(2)}% | 24h: ${changeColor}${(change24h >= 0 ? '+' : '')}${change24h.toFixed(2)}%\x1b[0m${alert} | 7d: ${(change7d >= 0 ? '+' : '')}${change7d.toFixed(2)}%`)
-        output.push('')
-      })
-      
-      output.push('数据来源: CoinGecko')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: '⚠️ 加密货币预警服务暂时不可用' }
-    }
-  },
-  description: '获取加密货币价格预警',
-  usage: 'crypto-alerts',
-  examples: ['crypto-alerts']
-})
-
-registerCommand('crypto-gainers', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithRetry(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=gecko_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h',
-        { mode: 'cors' }
-      ) as Array<Record<string, unknown>>
-      
-      const output: string[] = []
-      output.push('🚀 加密货币涨幅榜 (24h)')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      output.push('排名  名称           价格(USD)    24h涨幅     市值')
-      output.push('─'.repeat(70))
-      
-      data.slice(0, 10).forEach((coin, index) => {
-        const rank = (index + 1).toString().padEnd(4)
-        const name = `${coin.name} (${(coin.symbol as string).toUpperCase()})`.padEnd(15)
-        const price = `$${(coin.current_price as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`.padStart(12)
-        const change = coin.price_change_percentage_24h as number
-        const changeStr = `\x1b[32m+${change.toFixed(2)}%\x1b[0m`.padStart(12)
-        const mcap = `$${formatNumber(coin.market_cap as number, 2)}`.padStart(10)
-        
-        output.push(`${rank} ${name} ${price} ${changeStr}  ${mcap}`)
-      })
-      
-      output.push('')
-      output.push('数据来源: CoinGecko')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: '⚠️ 加密货币涨幅榜服务暂时不可用' }
-    }
-  },
-  description: '获取24小时涨幅最高的加密货币',
-  usage: 'crypto-gainers',
-  examples: ['crypto-gainers']
-})
-
-registerCommand('crypto-losers', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithRetry(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=gecko_asc&per_page=10&page=1&sparkline=false&price_change_percentage=24h',
-        { mode: 'cors' }
-      ) as Array<Record<string, unknown>>
-      
-      const output: string[] = []
-      output.push('📉 加密货币跌幅榜 (24h)')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      output.push('排名  名称           价格(USD)    24h跌幅     市值')
-      output.push('─'.repeat(70))
-      
-      data.slice(0, 10).forEach((coin, index) => {
-        const rank = (index + 1).toString().padEnd(4)
-        const name = `${coin.name} (${(coin.symbol as string).toUpperCase()})`.padEnd(15)
-        const price = `$${(coin.current_price as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`.padStart(12)
-        const change = coin.price_change_percentage_24h as number
-        const changeStr = `\x1b[31m${change.toFixed(2)}%\x1b[0m`.padStart(12)
-        const mcap = `$${formatNumber(coin.market_cap as number, 2)}`.padStart(10)
-        
-        output.push(`${rank} ${name} ${price} ${changeStr}  ${mcap}`)
-      })
-      
-      output.push('')
-      output.push('数据来源: CoinGecko')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: '⚠️ 加密货币跌幅榜服务暂时不可用' }
-    }
-  },
-  description: '获取24小时跌幅最大的加密货币',
-  usage: 'crypto-losers',
-  examples: ['crypto-losers']
-})
-
-registerCommand('github-trending', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const data = await fetchWithCache(
-        'https://api.github.com/search/repositories?q=created:>2024-01-01&sort=stars&order=desc&per_page=10',
-        { mode: 'cors', headers: { 'Accept': 'application/vnd.github.v3+json' } },
-        10 * 60 * 1000
-      ) as Record<string, unknown>
-      
-      const items = data.items as Array<Record<string, unknown>> || []
-      
-      const output: string[] = []
-      output.push('⭐ GitHub 热门仓库')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      items.slice(0, 10).forEach((repo, index) => {
-        const name = repo.full_name as string
-        const desc = repo.description as string || ''
-        const stars = repo.stargazers_count as number
-        const forks = repo.forks_count as number
-        const lang = repo.language as string || 'N/A'
-        const url = repo.html_url as string
-        
-        output.push(`${(index + 1).toString().padStart(2)}. ${name}`)
-        if (desc) output.push(`   ${desc.slice(0, 60)}${desc.length > 60 ? '...' : ''}`)
-        output.push(`   ⭐ ${stars.toLocaleString()} | 🔀 ${forks.toLocaleString()} | 📚 ${lang}`)
-        output.push(`   🔗 ${url}`)
-        output.push('')
-      })
-      
-      output.push('数据来源: GitHub API (已缓存10分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackRepos = [
-        { name: 'vercel/next.js', desc: 'React framework with hybrid static & server rendering', stars: 128000, forks: 25000, lang: 'TypeScript', url: 'https://github.com/vercel/next.js' },
-        { name: 'vitejs/vite', desc: 'Next generation frontend tooling', stars: 65000, forks: 5800, lang: 'TypeScript', url: 'https://github.com/vitejs/vite' },
-        { name: 'pmndrs/zustand', desc: 'State management for React', stars: 35000, forks: 1200, lang: 'TypeScript', url: 'https://github.com/pmndrs/zustand' },
-        { name: 'tanstack/react-query', desc: 'Data fetching for React', stars: 45000, forks: 3800, lang: 'TypeScript', url: 'https://github.com/tanstack/react-query' },
-      ]
-      
-      const output: string[] = []
-      output.push('⭐ GitHub 热门仓库 (离线模式)')
-      output.push('═'.repeat(70))
-      output.push('')
-      
-      fallbackRepos.forEach((repo, index) => {
-        output.push(`${(index + 1).toString().padStart(2)}. ${repo.name}`)
-        output.push(`   ${repo.desc}`)
-        output.push(`   ⭐ ${repo.stars.toLocaleString()} | 🔀 ${repo.forks.toLocaleString()} | 📚 ${repo.lang}`)
-        output.push(`   🔗 ${repo.url}`)
-        output.push('')
-      })
-      
-      return { output: output.join('\n') }
-    }
-  },
-  description: '获取GitHub热门仓库',
-  usage: 'github-trending',
-  examples: ['github-trending']
-})
-
-registerCommand('github-stars', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '⭐ GitHub 星标统计',
-          '═'.repeat(40),
-          '',
-          '用法: github-stars <用户名>',
-          '',
-          '查看指定用户的仓库星标统计',
-          '',
-          '示例:',
-          '  github-stars saya-ch',
-          '  github-stars vercel',
-          '',
-        ].join('\n')
-      }
-    }
-    
-    const username = args[0]
-    
-    try {
-      const data = await fetchWithCache(
-        `https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100`,
-        { mode: 'cors', headers: { 'Accept': 'application/vnd.github.v3+json' } },
-        10 * 60 * 1000
-      ) as Array<Record<string, unknown>>
-      
-      const sorted = [...data].sort((a, b) => (b.stargazers_count as number) - (a.stargazers_count as number))
-      
-      const totalStars = sorted.reduce((sum, repo) => sum + (repo.stargazers_count as number), 0)
-      
-      const output: string[] = []
-      output.push(`⭐ ${username} 的仓库星标统计`)
-      output.push('═'.repeat(60))
-      output.push('')
-      output.push(`总星标数: ${totalStars.toLocaleString()}`)
-      output.push(`仓库数量: ${sorted.length}`)
-      output.push('')
-      
-      output.push('热门仓库:')
-      sorted.slice(0, 5).forEach((repo) => {
-        const name = repo.name as string
-        const stars = repo.stargazers_count as number
-        const lang = repo.language as string || 'N/A'
-        
-        output.push(`  ${name}: ⭐ ${stars.toLocaleString()} (${lang})`)
-      })
-      
-      output.push('')
-      output.push('数据来源: GitHub API (已缓存10分钟)')
-      
-      return { output: output.join('\n') }
-    } catch {
-      return { output: `无法获取用户 ${username} 的星标统计` }
-    }
-  },
-  description: '查看GitHub用户的星标统计',
-  usage: 'github-stars <用户名>',
-  examples: ['github-stars saya-ch', 'github-stars vercel']
-})
-
-registerCommand('stock-alerts', {
-  handler: async (): Promise<CommandResult> => {
-    const symbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'META', 'NVDA', 'AMD']
-    
-    const output: string[] = []
-    output.push('📈 股票行情预警')
-    output.push('═'.repeat(60))
-    output.push('')
-    
-    try {
-      for (const symbol of symbols) {
-        const data = await fetchWithCache(
-          `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=demo`,
-          { mode: 'cors' },
-          60 * 1000
-        ) as Record<string, Record<string, string>>
-        
-        const quote = data['Global Quote']
-        
-        if (quote && quote['01. symbol']) {
-          const price = quote['05. price']
-          const change = quote['10. change']
-          const changePercent = quote['09. change percent']
-          
-          const changeColor = parseFloat(change) >= 0 ? '\x1b[32m' : '\x1b[31m'
-          const trend = parseFloat(change) >= 0 ? '📈' : '📉'
-          
-          output.push(`${trend} ${symbol}: $${price} ${changeColor}${changePercent}\x1b[0m`)
-        }
-      }
-      
-      output.push('')
-      output.push('数据来源: Alpha Vantage (demo)')
-    } catch {
-      const fallback = [
-        { symbol: 'AAPL', price: '178.50', change: '+2.30%' },
-        { symbol: 'GOOGL', price: '141.20', change: '-1.15%' },
-        { symbol: 'MSFT', price: '378.90', change: '+0.85%' },
-        { symbol: 'NVDA', price: '875.30', change: '+3.45%' },
-        { symbol: 'TSLA', price: '248.60', change: '-2.10%' },
-      ]
-      
-      fallback.forEach((stock) => {
-        const color = stock.change.startsWith('+') ? '\x1b[32m' : '\x1b[31m'
-        const trend = stock.change.startsWith('+') ? '📈' : '📉'
-        output.push(`${trend} ${stock.symbol}: $${stock.price} ${color}${stock.change}\x1b[0m`)
-      })
-      
-      output.push('')
-      output.push('数据来源: 本地行情 (离线模式)')
-    }
-    
-    return { output: output.join('\n') }
-  },
-  description: '获取主要股票行情',
-  usage: 'stock-alerts',
-  examples: ['stock-alerts']
-})
-
-registerCommand('help-api', {
-  handler: (): CommandResult => {
-    const commands = [
-      { name: 'weather', desc: '获取实时天气', usage: 'weather [城市]' },
-      { name: 'weather-search', desc: '搜索城市', usage: 'weather-search <关键词>' },
-      { name: 'weather-forecast', desc: '7天预报', usage: 'weather-forecast [城市]' },
-      { name: 'weather-alerts', desc: '天气预警', usage: 'weather-alerts [城市]' },
-      { name: 'weather-uv', desc: '紫外线指数', usage: 'weather-uv [城市]' },
-      { name: 'crypto', desc: '加密货币行情', usage: 'crypto' },
-      { name: 'crypto2', desc: '加密货币详情', usage: 'crypto2 [币种]' },
-      { name: 'crypto-news', desc: '加密货币新闻', usage: 'crypto-news' },
-      { name: 'crypto-alerts', desc: '价格预警', usage: 'crypto-alerts' },
-      { name: 'crypto-gainers', desc: '涨幅榜', usage: 'crypto-gainers' },
-      { name: 'crypto-losers', desc: '跌幅榜', usage: 'crypto-losers' },
-      { name: 'news', desc: 'Hacker News', usage: 'news [关键词]' },
-      { name: 'news-top', desc: '头条新闻', usage: 'news-top' },
-      { name: 'news-tech', desc: '技术新闻', usage: 'news-tech' },
-      { name: 'news-ai', desc: 'AI新闻', usage: 'news-ai' },
-      { name: 'stock', desc: '股票行情', usage: 'stock <代码>' },
-      { name: 'stock-alerts', desc: '股票预警', usage: 'stock-alerts' },
-      { name: 'ip', desc: '当前IP信息', usage: 'ip' },
-      { name: 'ipinfo', desc: 'IP查询', usage: 'ipinfo [IP]' },
-      { name: 'dns', desc: 'DNS查询', usage: 'dns <域名> [类型]' },
-      { name: 'whois', desc: 'WHOIS查询', usage: 'whois <域名>' },
-      { name: 'translate', desc: '翻译工具', usage: 'translate <语言> <文本>' },
-      { name: 'dict', desc: '词典查询', usage: 'dict <单词>' },
-      { name: 'timezone', desc: '城市时间', usage: 'timezone [城市]' },
-      { name: 'world-clock', desc: '世界时钟', usage: 'world-clock' },
-      { name: 'github', desc: '仓库信息', usage: 'github <用户/仓库>' },
-      { name: 'ghuser', desc: '用户信息', usage: 'ghuser <用户名>' },
-      { name: 'github-trending', desc: '热门仓库', usage: 'github-trending' },
-      { name: 'github-stars', desc: '星标统计', usage: 'github-stars <用户>' },
-      { name: 'quote', desc: '随机名言', usage: 'quote' },
-      { name: 'quote-of-the-day', desc: '今日名言', usage: 'quote-of-the-day' },
-      { name: 'funfact', desc: '趣味事实', usage: 'funfact' },
-      { name: 'catfact', desc: '猫咪知识', usage: 'catfact' },
-      { name: 'trivia', desc: '知识问答', usage: 'trivia' },
-      { name: 'shorten', desc: 'URL短链接', usage: 'shorten <URL>' },
-      { name: 'uuid', desc: '生成UUID', usage: 'uuid' },
-      { name: 'hash', desc: '哈希计算', usage: 'hash <算法> <文本>' },
-      { name: 'base64', desc: 'Base64编解码', usage: 'base64 <encode/decode> <文本>' },
-      { name: 'datetime', desc: '日期时间', usage: 'datetime' },
-      { name: 'random', desc: '随机数', usage: 'random [min] [max]' },
-      { name: 'flip', desc: '抛硬币', usage: 'flip' },
-      { name: 'rps', desc: '石头剪刀布', usage: 'rps <选择>' },
-      { name: 'cache', desc: '缓存管理', usage: 'cache <status|clear>' },
-      { name: 'env', desc: '环境信息', usage: 'env' },
-    ]
-
-    const output: string[] = []
-    output.push('📡 API 命令列表')
-    output.push('═'.repeat(70))
-    output.push('')
-
-    commands.forEach(cmd => {
-      output.push(`  ${cmd.name.padEnd(18)} ${cmd.desc.padEnd(20)} ${cmd.usage}`)
-    })
-
-    output.push('')
-    output.push('使用 help 查看所有命令')
-    output.push('')
-
-    return { output: output.join('\n') }
-  },
-  description: '显示所有API命令',
-  usage: 'help-api',
-  examples: ['help-api']
+  description: '查询英文单词定义',
+  usage: 'define <单词>',
+  examples: ['define hello', 'define computer']
 })
