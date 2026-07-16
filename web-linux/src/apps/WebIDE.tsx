@@ -80,9 +80,7 @@ const defaultJs = `function greet() {
   const randomMsg = messages[Math.floor(Math.random() * messages.length)];
   document.getElementById('output').innerHTML = 
     '<strong>' + randomMsg + '</strong>';
-}
-
-console.log('WebIDE 已加载完成！');`
+}`
 
 interface Snippet {
   id: string

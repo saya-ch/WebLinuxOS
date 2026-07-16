@@ -13,6 +13,7 @@ import {
   Grid,
   List
 } from 'lucide-react'
+import { useStore } from '../../store'
 
 /**
  * 桌面环境增强组件 v28.0
@@ -22,6 +23,7 @@ import {
 // 快速访问工具栏
 export function QuickAccessToolbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const openApp = useStore((state) => state.openApp)
   const quickApps = [
     { id: 'terminal', name: '终端', icon: Terminal },
     { id: 'intelligent-code-assistant', name: '智能代码助手', icon: Sparkles },
@@ -46,8 +48,7 @@ export function QuickAccessToolbar() {
         <button
           key={app.id}
           onClick={() => {
-            // 在实际应用中触发打开应用
-            console.log(`打开应用: ${app.id}`)
+            openApp(app.id)
           }}
           style={{
             width: '48px',
@@ -294,10 +295,13 @@ export function LayoutSelector({ onLayoutChange }: { onLayoutChange: (layout: st
 export function GlobalSearchBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const openApp = useStore((state) => state.openApp)
+  const apps = useStore((state) => state.apps)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
         setIsSearchOpen(true)
       }
       if (e.key === 'Escape') {
@@ -310,18 +314,21 @@ export function GlobalSearchBar() {
   }, [])
 
   const searchResults = searchQuery.trim()
-    ? [
-        '终端',
-        '智能代码助手',
-        '文件管理器',
-        '文本编辑器',
-        '系统设置',
-        '计算器',
-        '音乐播放器',
-      ].filter(item => item.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? apps
+        .filter(app => 
+          app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          app.id.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 8)
     : []
 
   if (!isSearchOpen) return null
+
+  const handleSelectApp = (appId: string) => {
+    openApp(appId)
+    setIsSearchOpen(false)
+    setSearchQuery('')
+  }
 
   return (
     <div className="global-search-overlay" style={{
@@ -388,14 +395,10 @@ export function GlobalSearchBar() {
             flexDirection: 'column',
             gap: '8px',
           }}>
-            {searchResults.map((result, index) => (
+            {searchResults.map((app) => (
               <button
-                key={index}
-                onClick={() => {
-                  console.log(`打开: ${result}`)
-                  setIsSearchOpen(false)
-                  setSearchQuery('')
-                }}
+                key={app.id}
+                onClick={() => handleSelectApp(app.id)}
                 style={{
                   padding: '12px',
                   borderRadius: '8px',
@@ -417,7 +420,7 @@ export function GlobalSearchBar() {
                 }}
               >
                 <Sparkles size={16} color="#e94560" />
-                {result}
+                {app.name}
               </button>
             ))}
           </div>

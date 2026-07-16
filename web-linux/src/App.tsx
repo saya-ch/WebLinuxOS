@@ -1,4 +1,4 @@
-import { useEffect, memo, useCallback, useState, useRef, useMemo } from 'react'
+import { useEffect, memo, useCallback, useState, useRef, useMemo, lazy, Suspense } from 'react'
 import { useStore } from './store'
 import { appRegistry } from './apps'
 import Desktop from './components/desktop/Desktop'
@@ -6,7 +6,7 @@ import WindowManager from './components/desktop/WindowManager'
 import Taskbar from './components/desktop/Taskbar'
 import StartMenu from './components/desktop/StartMenu'
 import ErrorBoundary from './components/ErrorBoundary'
-import GlobalSearch from './apps/GlobalSearch'
+const GlobalSearch = lazy(() => import('./apps/GlobalSearch'))
 import CommandPalette from './components/CommandPalette'
 import ShortcutPanel from './components/ShortcutPanel'
 import './styles/cyberpunk-theme.css'
@@ -356,7 +356,9 @@ const App = memo(function App() {
       <WindowManager />
       <StartMenu />
       <Taskbar />
-      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <Suspense fallback={null}>
+        <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      </Suspense>
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
       <ShortcutPanel isOpen={shortcutPanelOpen} onClose={() => setShortcutPanelOpen(false)} />
     </ErrorBoundary>
