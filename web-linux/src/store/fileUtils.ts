@@ -74,13 +74,14 @@ export function findParentNode(nodes: FileNode[], childId: string): FileNode | n
   const stack: StackItem[] = nodes.map(node => ({ node, parent: null }))
   
   while (stack.length > 0) {
-    const { node } = stack.pop()!
+    const { node, parent } = stack.pop()!
     if (!node) continue
     
+    if (node.id === childId) {
+      return parent
+    }
+    
     if (node.children && node.children.length > 0) {
-      if (node.children.some(c => c && c.id === childId)) {
-        return node
-      }
       stack.push(...node.children.map(child => ({ node: child!, parent: node })))
     }
   }
@@ -185,32 +186,27 @@ export function traverseTree(
 ): FileNode[] {
   if (!nodes) return []
   
-  const result: FileNode[] = []
-  const stack: { node: FileNode; parent: FileNode | undefined; index: number }[] = 
-    nodes.map((node, index) => ({ node, parent: undefined, index }))
-  
-  while (stack.length > 0) {
-    const { node, parent, index } = stack.pop()!
-    if (!node) continue
-    
-    const callbackResult = callback(node, parent)
-    const processedNode = callbackResult !== undefined ? callbackResult : node
-    
-    if (processedNode.children && processedNode.children.length > 0) {
-      const newChildren: FileNode[] = []
-      for (let i = processedNode.children.length - 1; i >= 0; i--) {
-        const child = processedNode.children[i]
-        if (child) {
-          stack.push({ node: child, parent: processedNode, index: i })
-        }
+  const processChildren = (children: FileNode[], parent: FileNode): FileNode[] => {
+    return children.map((child) => {
+      if (!child) return child
+      const callbackResult = callback(child, parent)
+      const processedNode = callbackResult !== undefined ? callbackResult : child
+      if (processedNode.children && processedNode.children.length > 0) {
+        return { ...processedNode, children: processChildren(processedNode.children, processedNode) }
       }
-      result[index] = { ...processedNode, children: newChildren }
-    } else {
-      result[index] = processedNode
-    }
+      return processedNode
+    }).filter((n): n is FileNode => n !== null && n !== undefined)
   }
   
-  return result.filter((n): n is FileNode => n !== null && n !== undefined)
+  return nodes.map((node) => {
+    if (!node) return node
+    const callbackResult = callback(node)
+    const processedNode = callbackResult !== undefined ? callbackResult : node
+    if (processedNode.children && processedNode.children.length > 0) {
+      return { ...processedNode, children: processChildren(processedNode.children, processedNode) }
+    }
+    return processedNode
+  }).filter((n): n is FileNode => n !== null && n !== undefined)
 }
 
 export function copyNodeWithNewParent(node: FileNode, newParentId: string, newId?: string): FileNode {

@@ -16,16 +16,19 @@
  */
 
 export const API_CONFIG = {
+  openMeteo: {
+    baseUrl: 'https://api.open-meteo.com/v1',
+  },
   openWeatherMap: {
-    key: import.meta.env.VITE_OPENWEATHERMAP_API_KEY || 'demo_key',
+    key: import.meta.env.VITE_OPENWEATHERMAP_API_KEY || '',
     baseUrl: 'https://api.openweathermap.org/data/2.5',
   },
   newsApi: {
-    key: import.meta.env.VITE_NEWSAPI_KEY || 'demo_key',
+    key: import.meta.env.VITE_NEWSAPI_KEY || '',
     baseUrl: 'https://newsapi.org/v2',
   },
   exchangeRate: {
-    key: import.meta.env.VITE_EXCHANGERATE_API_KEY || 'demo_key',
+    key: import.meta.env.VITE_EXCHANGERATE_API_KEY || '',
     baseUrl: 'https://v6.exchangerate-api.com/v6',
   },
   coinGecko: {
@@ -49,10 +52,73 @@ export const API_CONFIG = {
   dictionaryApi: {
     baseUrl: 'https://api.dictionaryapi.dev/api/v2',
   },
-  /** 公共 NASA APOD 服务，DEMO_KEY 自带较低速率，但一般用户使用足够 */
   nasa: {
     key: import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY',
     baseUrl: 'https://api.nasa.gov/planetary',
+  },
+  hackerNews: {
+    baseUrl: 'https://hacker-news.firebaseio.com/v0',
+  },
+  githubApi: {
+    baseUrl: 'https://api.github.com',
+  },
+  wikipedia: {
+    baseUrl: 'https://en.wikipedia.org/api/rest_v1',
+    zhBaseUrl: 'https://zh.wikipedia.org/api/rest_v1',
+  },
+  spaceflightNews: {
+    baseUrl: 'https://api.spaceflightnewsapi.net/v4',
+  },
+  adviceSlip: {
+    baseUrl: 'https://api.adviceslip.com',
+  },
+  catFact: {
+    baseUrl: 'https://catfact.ninja',
+  },
+  dogCeo: {
+    baseUrl: 'https://dog.ceo/api',
+  },
+  randomUser: {
+    baseUrl: 'https://randomuser.me/api',
+  },
+  genderize: {
+    baseUrl: 'https://api.genderize.io',
+  },
+  nationalize: {
+    baseUrl: 'https://api.nationalize.io',
+  },
+  agify: {
+    baseUrl: 'https://api.agify.io',
+  },
+  bingSearch: {
+    baseUrl: 'https://api.bing.microsoft.com/v7.0',
+  },
+  duckDuckGo: {
+    baseUrl: 'https://api.duckduckgo.com',
+  },
+  restCountries: {
+    baseUrl: 'https://restcountries.com/v3.1',
+  },
+  pokemon: {
+    baseUrl: 'https://pokeapi.co/api/v2',
+  },
+  starWars: {
+    baseUrl: 'https://swapi.dev/api',
+  },
+  chuckNorris: {
+    baseUrl: 'https://api.chucknorris.io/jokes',
+  },
+  dadJoke: {
+    baseUrl: 'https://icanhazdadjoke.com',
+  },
+  numbersApi: {
+    baseUrl: 'http://numbersapi.com',
+  },
+  jsonPlaceholder: {
+    baseUrl: 'https://jsonplaceholder.typicode.com',
+  },
+  httpBin: {
+    baseUrl: 'https://httpbin.org',
   },
 }
 

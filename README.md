@@ -105,13 +105,14 @@ WebLinuxOS/
 
 The terminal is a real shell interpreter (not a string matcher). It supports:
 
-- 160+ built-in commands (`ls`, `cd`, `cat`, `grep`, `awk`, `sed`, `curl`, `git`, `node`, `python`, `npm`, `docker`, …)
+- 180+ built-in commands (`ls`, `cd`, `cat`, `grep`, `awk`, `sed`, `curl`, `git`, `node`, `python`, `npm`, `docker`, …)
 - Pipes (`|`), redirects (`>`, `>>`, `<`), chaining (`;`, `&&`, `||`)
 - Background processes (`&`), `jobs`, `kill`
 - Tab completion, history (`↑`/`↓`), reverse search (`Ctrl+R`)
 - Variable expansion (`$HOME`, `$PATH`)
 - Aliases, `export`, `source`, function definitions
 - Sandboxed `node` / `python` runners using web workers (subset of stdlib)
+- Live API commands: `weather`, `crypto`, `news`, `stock`, `currency`, `translate`, `define`, `quote`, `nasa`, `advice`, `github-trending`, `country`, `catfact`, `number`, `ip`, `joke`
 
 ---
 
@@ -172,18 +173,19 @@ that require keys (OpenWeatherMap, NewsAPI, ExchangeRate) read from
 | [GitHub REST](https://docs.github.com/en/rest) | Trending repos | None |
 | [Wikipedia REST](https://en.wikipedia.org/api/rest_v1/) | Knowledge | None |
 | [NASA APOD](https://github.com/nasa/apod-api) | Astronomy | `DEMO_KEY` (free) |
-| [ExchangeRate-API](https://www.exchangerate-api.com) | Currency | Optional |
+| [Frankfurter](https://www.frankfurter.app) | Currency exchange | None |
 | [ipapi](https://ipapi.co) | IP geolocation | None |
-| [OpenWeatherMap](https://openweathermap.org/api) | Weather | Optional |
-| [NewsAPI](https://newsapi.org) | News | Optional |
 | [Advice Slip](https://api.adviceslip.com) | Daily advice | None |
 | [Quotable](https://github.com/lukePeavey/quotable) | Quotes | None |
-| [JokeAPI](https://v2.jokeapi.dev) | Jokes | None |
+| [I Can Haz Dad Joke](https://icanhazdadjoke.com) | Jokes | None |
 | [MyMemory](https://mymemory.translated.net) | Translation | None |
 | [Cat Facts](https://catfact.ninja) | Cat facts | None |
-| [Dog CEO](https://dog.ceo/dog-api) | Dog images | None |
+| [Numbers API](https://numbersapi.com) | Number trivia | None |
+| [REST Countries](https://restcountries.com) | Country information | None |
+| [Yahoo Finance](https://finance.yahoo.com) | Stock quotes | None |
+| [Free Dictionary](https://dictionaryapi.dev) | Word definitions | None |
 | [Random User](https://randomuser.me) | User data | None |
-| [Nationalize / Agify / Genderize](https://genderize.io) | Name analysis | None |
+| [Dog CEO](https://dog.ceo/dog-api) | Dog images | None |
 | [Spaceflight News](https://spaceflightnewsapi.net) | Space news | None |
 
 > No user data is sent to any of these services beyond the request required to
