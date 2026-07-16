@@ -369,6 +369,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ApiHealthMonitor: () => import('../../apps/APIHealthMonitor'),
   ActivityHeatmap: () => import('../../apps/ActivityHeatmap'),
   RegexVisualizer: () => import('../../apps/RegexVisualizer'),
+  // === v37.2 新增代码助手专业版 ===
+  CodeAssistantPro: () => import('../../apps/CodeAssistantPro'),
+  // === v37.2 新增系统监控仪表盘 ===
+  SystemMonitorDashboard: () => import('../../apps/SystemMonitorDashboard'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

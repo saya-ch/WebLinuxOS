@@ -119,13 +119,13 @@ The terminal is a real shell interpreter (not a string matcher). It supports:
 
 | Category | Examples |
 | --- | --- |
-| Development | Web IDE Pro (Monaco), CodePen Lite, Regex Visualizer, HTTP Status Explorer, Git Cheatsheet, CSS Gradient Studio, JSON Formatter, API Health Monitor |
+| Development | Web IDE Pro (Monaco), CodePen Lite, Code Assistant Pro, Regex Visualizer, HTTP Status Explorer, Git Cheatsheet, CSS Gradient Studio, JSON Formatter, API Health Monitor |
 | Productivity | Pomodoro Studio, Markdown Editor, Kanban Board, Habit Tracker, Reading List, Activity Heatmap |
 | Media | Music Studio (Web Audio), Video Player, Image Editor, Drawing Pad, 3D Viewer, Screen Recorder |
 | Knowledge | Wikipedia, Hacker News Reader, GitHub Trending, Astro Daily (NASA APOD), Dictionary, Translation |
 | Finance | Crypto Tracker, Stock Portfolio, Currency Converter, Loan Calculator |
 | Creative | Pixel Art, Music Synthesizer, Color Palette Generator, ASCII Art Studio |
-| System | File Manager, Terminal, Settings, Theme Editor, Process Manager, Network Monitor |
+| System | File Manager, Terminal, Settings, Theme Editor, Process Manager, Network Monitor, System Monitor Dashboard |
 | Games | 2048, Minesweeper, Snake, Sudoku, Chess, Solitaire, Tetris |
 
 …and many more. Browse the dock or `ls /apps` in the terminal to discover them all.

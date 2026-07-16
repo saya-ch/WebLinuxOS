@@ -62,6 +62,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'web-toolbox', name: '万能工具箱', icon: <WrenchIcon />, component: 'WebToolbox', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'live-weather', name: '实时天气', icon: <CloudRainIcon />, component: 'LiveWeather', category: 'internet', defaultWidth: 800, defaultHeight: 650, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'codepen-lite', name: '前端代码编辑器', icon: <Code2Icon />, component: 'CodePenLite', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // 代码助手专业版（v37.2新增）
+  { id: 'code-assistant-pro', name: '代码助手专业版', icon: <CodeIcon />, component: 'CodeAssistantPro', category: 'development', defaultWidth: 900, defaultHeight: 600, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // 系统监控仪表盘（v37.2新增）
+  { id: 'system-monitor-dashboard', name: '系统监控仪表盘', icon: <ActivityIcon />, component: 'SystemMonitorDashboard', category: 'utilities', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
