@@ -1,293 +1,222 @@
 # WebLinuxOS
 
-> **An open-source, browser-based desktop environment that runs in a single tab.**
-> 100% client-side. Zero installation. 200+ ready-to-use mini apps.
-
-[![Live Demo](https://img.shields.io/badge/Live-saya--ch.github.io-blueviolet)](https://saya-ch.github.io/WebLinuxOS/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-blueviolet)](https://saya-ch.github.io/WebLinuxOS/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-6-646cff)](https://vite.dev)
 
-WebLinuxOS is a fully interactive Linux-like desktop environment that lives entirely
-inside your browser. It ships with a window manager, a virtual filesystem, a real
-shell with 160+ commands, and 200+ application launchers covering developer tools,
-media, productivity, learning, and creative work.
+An open-source, browser-based Linux desktop environment that runs entirely in a single tab. 100% client-side, zero installation, 200+ ready-to-use applications.
 
-All state is persisted in `localStorage`. No backend. No tracking. No build step
-required to use it — just open the URL.
+## Key Features
 
----
+### Desktop Environment
+- Full window manager with drag, resize, minimize, maximize, and multi-monitor-style tiling
+- Virtual filesystem with localStorage persistence
+- Real terminal shell with 160+ commands, pipes, redirections, and scripting support
+- Multiple desktop workspaces (up to 9 virtual desktops)
+- Customizable wallpapers and themes (light/dark mode)
 
-## Highlights
+### Applications (200+)
 
-- **Real window manager** — drag, resize, minimize, maximize, multi-monitor-style tiling
-- **Real terminal** — pipe, redirect, scripting, history, autocomplete, color escape codes
-- **200+ applications** — file manager, code editor (Monaco), IDE, image viewer, video player, music studio, drawing app, 3D viewer
-- **Live public API integrations** — GitHub trending, Hacker News, Open-Meteo, CoinGecko, NASA APOD, Wikipedia, IP geolocation, and more
-- **Customizable desktop** — wallpapers, themes, grid layouts, app dock, lock screen
-- **Keyboard-first** — every action has a shortcut, terminal shortcuts follow `readline` conventions
-- **Internationalization ready** — UI strings are centralized for future i18n
+#### Development Tools
+- Web IDE Pro - Full-featured online programming environment
+- Code Editor with Monaco Editor integration
+- Intelligent Code Assistant - AI-powered coding helper
+- Code Playground, Sandbox, and Studio
+- Code Formatter, Diff Viewer, and Reviewer
+- Online Code Runner supporting multiple languages
 
----
+#### AI & Productivity
+- Ultimate AI Assistant - Multi-modal intelligent assistant with:
+  - General Q&A and daily assistance
+  - Code expert for programming questions
+  - Writing assistant for document creation
+  - Data analyst for analysis and visualization
+  - Translator for multi-language support
+- Online Collaborative Notebook - Block-based note-taking with:
+  - Text, headings, checklists, and code blocks
+  - Auto-save and version history
+  - Support for multiple programming languages
+- Pomodoro Studio and Time Management
+- Task Manager and Kanban Board
+- Calendar and World Clock
+- Password Manager and Generator
+
+#### System Utilities
+- File Manager with virtual filesystem
+- System Monitor Dashboard
+- Network Tools and Monitor
+- Process Manager
+- Disk Usage Analyzer
+- Settings and Theme Customizer
+
+#### Knowledge & Information
+- Wikipedia Reader
+- GitHub Trending Explorer
+- Hacker News Reader
+- Real-time Weather
+- Currency and Crypto Tracker
+- Dictionary and Translation
+
+#### Media & Creative
+- Music Player with Web Audio
+- Video Player
+- Image Viewer and Editor
+- Paint and Drawing App
+- Screen Recorder
+- Music Studio and Visualizer
+
+#### Games
+- 2048, Tetris, Snake, Memory
+- Minesweeper and more
+
+### Terminal Features
+- 180+ built-in commands
+- Pipes (`|`), redirects (`>`, `>>`, `<`), chaining (`;`, `&&`, `||`)
+- Background processes (`&`), `jobs`, `kill`
+- Tab completion, command history, reverse search
+- Live API commands: `weather`, `crypto`, `news`, `stock`, `translate`, and more
+
+### API Integrations
+The project integrates with 20+ public APIs:
+- Open-Meteo (Weather)
+- CoinGecko (Crypto prices)
+- GitHub REST API (Trending repos)
+- Wikipedia REST API
+- NASA APOD (Astronomy)
+- Frankfurter (Currency exchange)
+- IP Geolocation
+- And many more
+
+All integrations use key-less public endpoints where possible, running entirely on GitHub Pages without environment configuration.
 
 ## Live Demo
 
-- **Production:** https://saya-ch.github.io/WebLinuxOS/
-- **Local dev:** `cd web-linux && npm install && npm run dev`
+**Production:** https://saya-ch.github.io/WebLinuxOS/
 
----
-
-## Quick Start
-
-### Run locally
-
+**Local Development:**
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 npm install
-npm run dev          # opens http://localhost:5173
+npm run dev
 ```
-
-### Production build
-
-```bash
-npm run build        # outputs to ../dist (configured for GitHub Pages)
-npm run preview      # preview the production build
-```
-
-### Type check
-
-```bash
-npm run typecheck
-```
-
----
 
 ## Architecture
 
 ```
 WebLinuxOS/
-├── web-linux/                  # Main application package
+├── web-linux/                  # Main application
 │   ├── src/
-│   │   ├── App.tsx             # Top-level shell, lockscreen, boot sequence
-│   │   ├── apps.tsx            # Application registry (200+ entries)
-│   │   ├── icons.tsx           # SVG icon set
-│   │   ├── store.tsx           # State management (window, fs, user, theme)
-│   │   ├── components/         # Reusable UI primitives
-│   │   │   ├── desktop/        # Window, WindowManager, Taskbar, Dock
-│   │   │   ├── terminal/       # Terminal UI, command parser
+│   │   ├── App.tsx             # Root component, keyboard shortcuts
+│   │   ├── apps.tsx            # Application registry (200+ apps)
+│   │   ├── store.tsx           # Zustand state management
+│   │   ├── components/         # UI components
+│   │   │   ├── desktop/        # Window manager, Taskbar, Dock
 │   │   │   └── ...
-│   │   ├── apps/               # Application implementations (240+ files)
+│   │   ├── apps/               # Application implementations
 │   │   ├── services/           # External API clients
 │   │   ├── store/              # Virtual filesystem, persistence
-│   │   ├── config/             # API keys, feature flags
-│   │   ├── utils/              # Helpers (format, parse, etc.)
-│   │   └── styles/             # Global CSS
-│   ├── public/                 # Static assets, wallpapers, fonts
-│   ├── index.html
+│   │   └── utils/              # Helper functions
 │   └── vite.config.ts
-├── docs/                       # Additional documentation
 └── README.md
 ```
 
-### State Model
-
-- `store.tsx` is the single source of truth for window z-order, focus, geometry,
-  user theme, lock state, and app preferences.
-- The virtual filesystem (`store/fileUtils.ts`) is a hierarchical JSON tree
-  backed by `localStorage`, with a permission system that gates `sudo` and
-  ownership checks.
-- Each window is rendered lazily through `React.lazy` to keep the initial
-  bundle small — opening a heavy app (e.g. the IDE) does not block startup.
-
-### Terminal
-
-The terminal is a real shell interpreter (not a string matcher). It supports:
-
-- 180+ built-in commands (`ls`, `cd`, `cat`, `grep`, `awk`, `sed`, `curl`, `git`, `node`, `python`, `npm`, `docker`, …)
-- Pipes (`|`), redirects (`>`, `>>`, `<`), chaining (`;`, `&&`, `||`)
-- Background processes (`&`), `jobs`, `kill`
-- Tab completion, history (`↑`/`↓`), reverse search (`Ctrl+R`)
-- Variable expansion (`$HOME`, `$PATH`)
-- Aliases, `export`, `source`, function definitions
-- Sandboxed `node` / `python` runners using web workers (subset of stdlib)
-- Live API commands: `weather`, `crypto`, `news`, `stock`, `currency`, `translate`, `define`, `quote`, `nasa`, `advice`, `github-trending`, `country`, `catfact`, `number`, `ip`, `joke`
-
----
-
-## Featured Applications
-
-| Category | Examples |
-| --- | --- |
-| Development | Web IDE Pro (Monaco), CodePen Lite, Code Assistant Pro, Regex Visualizer, HTTP Status Explorer, Git Cheatsheet, CSS Gradient Studio, JSON Formatter, API Health Monitor |
-| Productivity | Pomodoro Studio, Markdown Editor, Kanban Board, Habit Tracker, Reading List, Activity Heatmap |
-| Media | Music Studio (Web Audio), Video Player, Image Editor, Drawing Pad, 3D Viewer, Screen Recorder |
-| Knowledge | Wikipedia, Hacker News Reader, GitHub Trending, Astro Daily (NASA APOD), Dictionary, Translation |
-| Finance | Crypto Tracker, Stock Portfolio, Currency Converter, Loan Calculator |
-| Creative | Pixel Art, Music Synthesizer, Color Palette Generator, ASCII Art Studio |
-| System | File Manager, Terminal, Settings, Theme Editor, Process Manager, Network Monitor, System Monitor Dashboard |
-| Games | 2048, Minesweeper, Snake, Sudoku, Chess, Solitaire, Tetris |
-
-…and many more. Browse the dock or `ls /apps` in the terminal to discover them all.
-
----
+### State Management
+- Zustand store manages window state, filesystem, theme, and app preferences
+- Virtual filesystem stored in localStorage with hierarchical JSON structure
+- Lazy loading for all application components to optimize bundle size
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
-| --- | --- |
-| `Ctrl/⌘ + Space` | Open application launcher |
-| `Alt + Tab` | Cycle focused window |
-| `Alt + F4` | Close focused window |
-| `Super + D` | Show desktop |
-| `Super + L` | Lock screen |
-| `Ctrl + Alt + T` | Open terminal |
+|----------|--------|
+| `Ctrl/⌘ + Shift + L` | Open application launcher |
+| `Ctrl + Shift + T` | Open terminal |
+| `Ctrl + E` | Open file manager |
+| `Ctrl + ,` | Open settings |
+| `Ctrl + K` | Open global search |
+| `Ctrl + Shift + C` | Open calculator |
+| `Ctrl + Q` | Close focused window |
+| `Ctrl + M` | Minimize focused window |
+| `Alt + Tab` | Cycle windows |
 | `F11` | Toggle fullscreen |
-| `Esc` | Exit fullscreen / cancel dialog |
 
-Inside the terminal:
-
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl + L` | Clear screen |
-| `Ctrl + C` | Cancel current process |
-| `Ctrl + R` | Reverse search history |
-| `Tab` | Autocomplete command / path |
-| `↑` / `↓` | Navigate history |
-
----
-
-## Public API Integrations
-
-All API integrations use key-less public endpoints wherever possible, so the
-project runs on GitHub Pages without any environment configuration. Services
-that require keys (OpenWeatherMap, NewsAPI, ExchangeRate) read from
-`VITE_*` environment variables and fall back to a `demo_key` placeholder.
-
-| Service | Used For | Auth |
-| --- | --- | --- |
-| [Open-Meteo](https://open-meteo.com) | Weather forecast | None |
-| [CoinGecko](https://coingecko.com) | Crypto prices | None |
-| [Hacker News](https://github.com/HackerNews/API) | News reader | None |
-| [GitHub REST](https://docs.github.com/en/rest) | Trending repos | None |
-| [Wikipedia REST](https://en.wikipedia.org/api/rest_v1/) | Knowledge | None |
-| [NASA APOD](https://github.com/nasa/apod-api) | Astronomy | `DEMO_KEY` (free) |
-| [Frankfurter](https://www.frankfurter.app) | Currency exchange | None |
-| [ipapi](https://ipapi.co) | IP geolocation | None |
-| [Advice Slip](https://api.adviceslip.com) | Daily advice | None |
-| [Quotable](https://github.com/lukePeavey/quotable) | Quotes | None |
-| [I Can Haz Dad Joke](https://icanhazdadjoke.com) | Jokes | None |
-| [MyMemory](https://mymemory.translated.net) | Translation | None |
-| [Cat Facts](https://catfact.ninja) | Cat facts | None |
-| [Numbers API](https://numbersapi.com) | Number trivia | None |
-| [REST Countries](https://restcountries.com) | Country information | None |
-| [Yahoo Finance](https://finance.yahoo.com) | Stock quotes | None |
-| [Free Dictionary](https://dictionaryapi.dev) | Word definitions | None |
-| [Random User](https://randomuser.me) | User data | None |
-| [Dog CEO](https://dog.ceo/dog-api) | Dog images | None |
-| [Spaceflight News](https://spaceflightnewsapi.net) | Space news | None |
-
-> No user data is sent to any of these services beyond the request required to
-> fetch the resource. There is no analytics, telemetry, or third-party tracking.
-
----
+Terminal shortcuts:
+- `Ctrl + L` - Clear screen
+- `Ctrl + C` - Cancel process
+- `Ctrl + R` - Reverse search history
+- `Tab` - Autocomplete
 
 ## Deployment
 
-WebLinuxOS is a pure SPA. The build outputs to `web-linux/dist/`.
+### GitHub Pages (Automated)
+1. Push to `main` branch
+2. GitHub Actions automatically builds and deploys
+3. Access at `https://<username>.github.io/WebLinuxOS/`
 
-### GitHub Pages (automated)
+### Static Hosting
+Upload contents of `web-linux/dist/` to any static host (Netlify, Vercel, Cloudflare Pages, S3, nginx).
 
-1. Ensure your default branch is `main` and GitHub Pages is configured to serve
-   from the `gh-pages` branch (or the `/` root of `main`).
-2. The project includes a workflow at `.github/workflows/deploy.yml` that
-   builds and deploys on every push to `main`.
-3. Visit `https://<username>.github.io/WebLinuxOS/`.
+## Version History
 
-### Static hosting
+### v37.3 (Latest)
+- Added Ultimate AI Assistant with multi-modal support
+- Added Online Collaborative Notebook with block-based editing
+- Enhanced system performance and stability
+- Improved UI/UX across all applications
 
-Upload the contents of `web-linux/dist/` to any static host (Netlify, Vercel,
-Cloudflare Pages, S3, nginx). No server-side configuration is required.
+### v37.0
+- Added Quantum Calculator
+- Added Welcome Hub
+- Enhanced desktop widgets
 
-### Environment Variables (optional)
+### v36.0
+- Web IDE Pro - Full-featured online programming environment
+- Enhanced code editor capabilities
 
-Create `web-linux/.env` to override API keys:
-
-```ini
-VITE_OPENWEATHERMAP_API_KEY=your_key
-VITE_NEWSAPI_KEY=your_key
-VITE_EXCHANGERATE_API_KEY=your_key
-VITE_NASA_API_KEY=your_key
-```
-
----
+[View full changelog](CHANGELOG.md)
 
 ## Contributing
 
-Contributions are welcome. Please open an issue first to discuss substantial
-changes — for typo fixes and small improvements, feel free to send a PR directly.
+Contributions welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
 3. Make your changes
-4. Run `npm run typecheck && npm run build` to verify
-5. Open a pull request
+4. Run `npm run typecheck && npm run build`
+5. Submit a pull request
 
-When adding a new app:
+When adding new apps:
+- Add component in `web-linux/src/apps/`
+- Register in `web-linux/src/apps.tsx`
+- Add lazy import in `web-linux/src/components/desktop/WindowManager.tsx`
 
-- Add a new file under `web-linux/src/apps/`
-- Register it in `web-linux/src/apps.tsx` with a stable `id`, an icon, a category
-  (`system`, `development`, `utilities`, `office`, `creative`, `media`, `fun`,
-  `knowledge`, `finance`, `security`)
-- Register the lazy import in `web-linux/src/components/desktop/WindowManager.tsx`
-- Keep the component self-contained; do not import global CSS variables from
-  outside the theme tokens
+## Technology Stack
 
-When adding a new terminal command:
-
-- Add the implementation under `web-linux/src/apps/terminal/`
-- Register the command in the command dispatcher
-- Update the help output in `commands/help.ts`
-
----
-
-## Roadmap
-
-- [ ] PWA manifest + offline support via service worker
-- [ ] Multi-language UI (i18n)
-- [ ] End-to-end test suite with Playwright
-- [ ] Plugin system: load third-party apps at runtime from a manifest URL
-- [ ] WebRTC peer-to-peer screen sharing
-- [ ] Real file I/O via the File System Access API (Chromium)
-
----
+- React 19 + TypeScript 5.7
+- Vite 6 for build tooling
+- Zustand for state management
+- Monaco Editor for code editing
+- Web Audio API for music
+- Canvas API for graphics
+- Multiple public APIs for data
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT License - see [LICENSE](LICENSE)
 
-You are free to use, modify, and redistribute, including for commercial
-purposes, as long as you preserve the copyright notice.
-
----
+Free to use, modify, and distribute, including for commercial purposes.
 
 ## Acknowledgments
 
-- The window manager, terminal, and virtual filesystem are original work.
-- The project draws inspiration from [linux.js](https://github.com/hrtowii/linux.js),
-  [WebSH](https://github.com/nicedoc/web-sh), and the broader community of
-  browser-based desktop experiments.
-- Wallpapers included in `public/wallpapers/` are royalty-free CC0 from Unsplash
-  and Pexels, unless otherwise noted.
-- All trademarks and registered trademarks remain the property of their
-  respective owners.
-
-## Star History
-
-If WebLinuxOS is useful to you, consider giving it a star — it helps the
-project reach more people.
+- Window manager, terminal, and virtual filesystem are original work
+- Inspired by [linux.js](https://github.com/hrtowii/linux.js), [WebSH](https://github.com/nicedoc/web-sh)
+- Wallpapers from Unsplash and Pexels (CC0)
 
 ---
 
 Made with care by [saya-ch](https://github.com/saya-ch) and contributors.
+
+If you find WebLinuxOS useful, consider giving it a star!

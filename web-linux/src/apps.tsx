@@ -29,6 +29,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 终极AI助手（v37.3创新功能）
+  { id: 'ai-ultimate-assistant', name: '终极AI助手', icon: <SparklesIcon />, component: 'AIUltimateAssistant', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // 在线协作笔记本（v37.3创新功能）
+  { id: 'online-collab-notebook', name: '在线协作笔记本', icon: <NoteIcon />, component: 'OnlineCollabNotebook', category: 'office', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   // 量子计算器（v37.0创新功能）
   { id: 'quantum-calculator', name: '量子计算器', icon: <CalculatorIcon />, component: 'QuantumCalculator', category: 'utilities', defaultWidth: 400, defaultHeight: 600, minWidth: 350, minHeight: 500, resizable: true, multiple: false },
   // 欢迎中心（v37.0新增）
