@@ -361,6 +361,14 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WebToolbox: () => import('../../apps/WebToolbox'),
   LiveWeather: () => import('../../apps/LiveWeather'),
   CodePenLite: () => import('../../apps/CodePenLite'),
+  // === v37.1 新增实用开发工具 ===
+  HttpStatusExplorer: () => import('../../apps/HttpStatusExplorer'),
+  CssGradientStudio: () => import('../../apps/CssGradientStudio'),
+  GitCheatsheet: () => import('../../apps/GitCheatsheet'),
+  PomodoroStudio: () => import('../../apps/PomodoroStudio'),
+  ApiHealthMonitor: () => import('../../apps/APIHealthMonitor'),
+  ActivityHeatmap: () => import('../../apps/ActivityHeatmap'),
+  RegexVisualizer: () => import('../../apps/RegexVisualizer'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

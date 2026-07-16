@@ -1417,4 +1417,12 @@ export const appRegistry: AppDefinition[] = [
   { id: 'code-forge', name: 'CodeForge 开发者工具集', icon: <Code2Icon />, component: 'CodeForge', category: 'development', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'weather-app', name: '天气查询', icon: <CloudRainIcon />, component: 'WeatherApp', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'github-trending-app', name: 'GitHub 趋势', icon: <GitHubIcon />, component: 'GitHubTrendingApp', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // === v37.1 新增实用开发工具 ===
+  { id: 'http-status', name: 'HTTP 状态码', icon: <ApiLabIcon />, component: 'HttpStatusExplorer', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'css-gradient', name: 'CSS 渐变工作室', icon: <PaletteIcon />, component: 'CssGradientStudio', category: 'development', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
+  { id: 'git-cheatsheet', name: 'Git 命令速查', icon: <Code2Icon />, component: 'GitCheatsheet', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
+  { id: 'pomodoro-studio', name: 'Pomodoro Studio', icon: <PomodoroIcon />, component: 'PomodoroStudio', category: 'office', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
+  { id: 'api-health', name: 'API 健康监控', icon: <ActivityIcon />, component: 'ApiHealthMonitor', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'activity-heatmap', name: '活动热力图', icon: <ActivityIcon />, component: 'ActivityHeatmap', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
+  { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
 ]

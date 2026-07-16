@@ -1,407 +1,291 @@
 # WebLinuxOS
 
-A fully functional Linux desktop environment running entirely in the browser — 240+ applications, virtual filesystem, terminal with 160+ commands, and real-time API integrations, all without installation.
+> **An open-source, browser-based desktop environment that runs in a single tab.**
+> 100% client-side. Zero installation. 200+ ready-to-use mini apps.
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-4ade80?style=for-the-badge&logo=githubpages&logoColor=white)](https://saya-ch.github.io/WebLinuxOS/)
-[![MIT License](https://img.shields.io/badge/License-MIT-22d3ee?style=for-the-badge)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.2-61dafb?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-8.0-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Live Demo](https://img.shields.io/badge/Live-saya--ch.github.io-blueviolet)](https://saya-ch.github.io/WebLinuxOS/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-6-646cff)](https://vite.dev)
 
-![WebLinuxOS Desktop](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png)
+WebLinuxOS is a fully interactive Linux-like desktop environment that lives entirely
+inside your browser. It ships with a window manager, a virtual filesystem, a real
+shell with 160+ commands, and 200+ application launchers covering developer tools,
+media, productivity, learning, and creative work.
 
-## Overview
+All state is persisted in `localStorage`. No backend. No tracking. No build step
+required to use it — just open the URL.
 
-WebLinuxOS is not just a simulation — it's a fully functional web-based operating system that provides real productivity tools and development utilities. Unlike traditional desktop OS simulations, WebLinuxOS integrates with 20+ public APIs and includes practical tools for developers, students, and professionals.
+---
 
-## Key Features
+## Highlights
 
-### Real-World Functionality
+- **Real window manager** — drag, resize, minimize, maximize, multi-monitor-style tiling
+- **Real terminal** — pipe, redirect, scripting, history, autocomplete, color escape codes
+- **200+ applications** — file manager, code editor (Monaco), IDE, image viewer, video player, music studio, drawing app, 3D viewer
+- **Live public API integrations** — GitHub trending, Hacker News, Open-Meteo, CoinGecko, NASA APOD, Wikipedia, IP geolocation, and more
+- **Customizable desktop** — wallpapers, themes, grid layouts, app dock, lock screen
+- **Keyboard-first** — every action has a shortcut, terminal shortcuts follow `readline` conventions
+- **Internationalization ready** — UI strings are centralized for future i18n
 
-- **Code Execution**: Run JavaScript, TypeScript, and Python (via Pyodide) directly in the browser
-- **API Integration**: Access real-time data from weather, cryptocurrency, news, and GitHub APIs
-- **File Management**: Full virtual filesystem with CRUD operations and multi-format preview
-- **Development Tools**: Code formatters, JSON validators, API testers, and snippet generators
-
-### Terminal Commands (160+)
-
-Beyond standard Linux commands, WebLinuxOS includes practical utilities:
-
-```
-# Development Tools
-snippet react MyComponent    # Generate React component
-json format '{"data":123}'   # Format JSON
-encode base64 "Hello World"  # Encode/decode utilities
-
-# Productivity
-password 16 5                 # Generate strong passwords
-color #3498db                # Color conversion tool
-timestamp 1609459200000      # Timestamp conversion
-
-# Real-time Data
-weather beijing              # Weather information
-news                        # Latest Hacker News
-crypto bitcoin ethereum      # Cryptocurrency prices
-```
-
-### API Integrations (20+)
-
-| Category | APIs | Use Case |
-|----------|------|----------|
-| Weather | Open-Meteo | Current conditions and forecasts |
-| Finance | CoinGecko, ExchangeRate-API | Crypto prices and currency conversion |
-| News | Hacker News, Spaceflight News API | Tech and space news |
-| Developer | GitHub API | User profiles, repo search |
-| Fun | JokeAPI, Cat Fact, Dog CEO | Random content |
-| Analysis | Nationalize, Agify, Genderize | Name analysis |
-
-### Desktop Environment
-
-## Table of Contents
-
-- [Features](#features)
-- [Live Demo](#live-demo)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Applications](#applications)
-- [Terminal Commands](#terminal-commands)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
-- [API Integrations](#api-integrations)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Features
-
-### Desktop Environment
-
-- Multi-workspace virtual desktops with drag-and-drop window management
-- Resizable, minimizable, and maximizable windows with smooth animations
-- Taskbar with window switching, system tray, and notification center
-- Start menu with fuzzy search and categorized application listings
-- Global search across applications, files, and commands
-- Context menus for desktop and file operations
-- Dark and light themes with glass-morphism effects
-
-### Terminal Emulator
-
-- 150+ commands covering filesystem operations, system monitoring, and networking
-- Real-time API queries: weather, cryptocurrency prices, news, translation, and more
-- Command history with up/down arrow navigation
-- Tab completion for commands and file paths
-- Syntax highlighting and color output support
-- Built-in help system with detailed command documentation
-
-### Virtual Filesystem
-
-- Persisted to `localStorage` with automatic debounced saves
-- Full CRUD operations: create, read, update, delete, copy, move, rename
-- Multi-format file preview and editing
-- File search across the entire filesystem
-- Undo/redo support for file operations
-- Directory tree visualization
-
-### Development Tools
-
-- **WebIDE Pro**: In-browser code execution for JavaScript, TypeScript, Python (via Pyodide), HTML, CSS, Markdown, SQL, JSON, and Bash
-- **CodeForge**: Developer toolbox with JSON formatter, Base64/URL encoder, regex tester, JWT decoder, hash calculator, and cron parser
-- **API Tester**: REST API client with configurable HTTP methods and headers
-- **Code Diff Viewer**: Side-by-side diff comparison with syntax highlighting
-
-### AI & Knowledge
-
-- **AI Workbench**: Prompt-engineering workbench with 8 specialized tools, quality scoring, and auto-enhancement
-- **Knowledge Vine**: Zettelkasten-style knowledge base with bidirectional `[[links]]`, tags, and force-directed graph visualization
-- **AI Assistant**: Local AI provider for code analysis, generation, and explanation without external API calls
-
-### Live Data Hub
-
-- Real-time dashboard pulling data from multiple public APIs
-- Weather forecasts from Open-Meteo
-- Cryptocurrency prices from CoinGecko
-- News from Hacker News
-- Exchange rates from Frankfurter
-- IP geolocation and Wikipedia summaries
+---
 
 ## Live Demo
 
-Open [https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/) in any modern browser. No installation, no account registration, no telemetry.
+- **Production:** https://saya-ch.github.io/WebLinuxOS/
+- **Local dev:** `cd web-linux && npm install && npm run dev`
 
-## Tech Stack
+---
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| UI Framework | React | 19.2 |
-| Language | TypeScript | 6.0 |
-| State Management | Zustand | 5.0 |
-| Build Tool | Vite | 8.0 |
-| Iconography | Lucide React | Latest |
-| Python Runtime | Pyodide | 0.26 |
-| Markdown | Marked | Latest |
+## Quick Start
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Run Locally
+### Run locally
 
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 npm install
-npm run dev
+npm run dev          # opens http://localhost:5173
 ```
 
-The development server starts at `http://localhost:5173`.
-
-### Build for Production
+### Production build
 
 ```bash
-npm run build        # Outputs to dist/
-npm run preview      # Serve the production build locally
+npm run build        # outputs to ../dist (configured for GitHub Pages)
+npm run preview      # preview the production build
 ```
 
-### Deploy to GitHub Pages
-
-The repository includes a GitHub Actions workflow that auto-deploys on push to `main`. Enable it in **Settings > Pages > Source: GitHub Actions**.
-
-Manual deploy:
+### Type check
 
 ```bash
-npm run build
-npx gh-pages -d dist
+npm run typecheck
 ```
 
-## Project Structure
+---
+
+## Architecture
 
 ```
 WebLinuxOS/
-├── web-linux/
+├── web-linux/                  # Main application package
 │   ├── src/
-│   │   ├── apps/                     # 240+ application components
-│   │   │   ├── AIWorkbench.tsx       # Prompt engineering workbench
-│   │   │   ├── KnowledgeVine.tsx     # Zettelkasten + knowledge graph
-│   │   │   ├── CodeForge.tsx         # Developer toolbox
-│   │   │   ├── LiveDataHub.tsx       # Real-time API dashboard
-│   │   │   ├── FileManager.tsx       # Virtual filesystem browser
-│   │   │   ├── Terminal.tsx          # Terminal emulator
-│   │   │   ├── terminal/             # Terminal command implementations
-│   │   │   │   ├── commands.ts       # Command registry and types
-│   │   │   │   ├── fileCommands.ts   # File system commands
-│   │   │   │   ├── systemCommands.ts # System commands
-│   │   │   │   └── extendedCommands.ts # Extended commands
+│   │   ├── App.tsx             # Top-level shell, lockscreen, boot sequence
+│   │   ├── apps.tsx            # Application registry (200+ entries)
+│   │   ├── icons.tsx           # SVG icon set
+│   │   ├── store.tsx           # State management (window, fs, user, theme)
+│   │   ├── components/         # Reusable UI primitives
+│   │   │   ├── desktop/        # Window, WindowManager, Taskbar, Dock
+│   │   │   ├── terminal/       # Terminal UI, command parser
 │   │   │   └── ...
-│   │   ├── components/
-│   │   │   └── desktop/              # Desktop components
-│   │   │       ├── WindowManager.tsx # Window rendering and management
-│   │   │       ├── Window.tsx        # Individual window component
-│   │   │       ├── Taskbar.tsx       # Taskbar and system tray
-│   │   │       └── Desktop.tsx       # Desktop background and icons
-│   │   ├── store/                    # Zustand stores and utilities
-│   │   │   ├── store.tsx             # Global state management
-│   │   │   ├── fileUtils.ts          # File system utilities
-│   │   │   ├── storageUtils.ts       # Local storage utilities
-│   │   │   └── defaults.tsx          # Default data and configurations
-│   │   ├── services/                 # API and utility services
-│   │   │   ├── apiService.ts         # Real-time API integrations
-│   │   │   └── aiService.ts          # AI service abstraction
-│   │   ├── utils/                    # Shared utilities
-│   │   │   └── logger.ts             # Unified logging system
-│   │   ├── styles/                   # Theme and global styles
-│   │   ├── apps.tsx                  # Application registry
-│   │   ├── types.ts                  # TypeScript type definitions
-│   │   ├── App.tsx                   # Root application component
-│   │   └── main.tsx                  # Application entry point
-│   ├── public/                       # Static assets
-│   ├── screenshots/                  # Project screenshots
-│   ├── vite.config.ts                # Vite configuration
-│   └── package.json                  # Dependencies and scripts
-├── .github/
-│   └── workflows/deploy.yml          # GitHub Actions deployment
+│   │   ├── apps/               # Application implementations (240+ files)
+│   │   ├── services/           # External API clients
+│   │   ├── store/              # Virtual filesystem, persistence
+│   │   ├── config/             # API keys, feature flags
+│   │   ├── utils/              # Helpers (format, parse, etc.)
+│   │   └── styles/             # Global CSS
+│   ├── public/                 # Static assets, wallpapers, fonts
+│   ├── index.html
+│   └── vite.config.ts
+├── docs/                       # Additional documentation
 └── README.md
 ```
 
-## Applications
+### State Model
 
-### Development Tools
+- `store.tsx` is the single source of truth for window z-order, focus, geometry,
+  user theme, lock state, and app preferences.
+- The virtual filesystem (`store/fileUtils.ts`) is a hierarchical JSON tree
+  backed by `localStorage`, with a permission system that gates `sudo` and
+  ownership checks.
+- Each window is rendered lazily through `React.lazy` to keep the initial
+  bundle small — opening a heavy app (e.g. the IDE) does not block startup.
 
-| Application | Description |
-|-------------|-------------|
-| WebIDE Pro | Multi-language code execution with Python support via Pyodide |
-| Terminal | 150+ commands with live API integrations |
-| CodeForge | JSON formatter, regex tester, JWT decoder, hash calculator, cron parser |
-| API Tester | REST API client with full HTTP method support |
-| Code Diff Viewer | Side-by-side diff comparison |
+### Terminal
 
-### Productivity
+The terminal is a real shell interpreter (not a string matcher). It supports:
 
-| Application | Description |
-|-------------|-------------|
-| FileManager | Full virtual filesystem with multi-format preview |
-| Markdown Editor | Live-preview Markdown editing |
-| Spreadsheet | Basic spreadsheet with formula support |
-| Kanban Board | Drag-and-drop task organization |
-| Todo List | Task management with completion tracking |
-| Calendar | Date and event management |
+- 160+ built-in commands (`ls`, `cd`, `cat`, `grep`, `awk`, `sed`, `curl`, `git`, `node`, `python`, `npm`, `docker`, …)
+- Pipes (`|`), redirects (`>`, `>>`, `<`), chaining (`;`, `&&`, `||`)
+- Background processes (`&`), `jobs`, `kill`
+- Tab completion, history (`↑`/`↓`), reverse search (`Ctrl+R`)
+- Variable expansion (`$HOME`, `$PATH`)
+- Aliases, `export`, `source`, function definitions
+- Sandboxed `node` / `python` runners using web workers (subset of stdlib)
 
-### AI & Knowledge
+---
 
-| Application | Description |
-|-------------|-------------|
-| AI Workbench | Prompt engineering with 8 tools and quality scoring |
-| Knowledge Vine | Zettelkasten with bidirectional links and graph visualization |
-| AI Assistant | Local AI code analysis and generation |
+## Featured Applications
 
-### Internet & Data
+| Category | Examples |
+| --- | --- |
+| Development | Web IDE Pro (Monaco), CodePen Lite, Regex Visualizer, HTTP Status Explorer, Git Cheatsheet, CSS Gradient Studio, JSON Formatter, API Health Monitor |
+| Productivity | Pomodoro Studio, Markdown Editor, Kanban Board, Habit Tracker, Reading List, Activity Heatmap |
+| Media | Music Studio (Web Audio), Video Player, Image Editor, Drawing Pad, 3D Viewer, Screen Recorder |
+| Knowledge | Wikipedia, Hacker News Reader, GitHub Trending, Astro Daily (NASA APOD), Dictionary, Translation |
+| Finance | Crypto Tracker, Stock Portfolio, Currency Converter, Loan Calculator |
+| Creative | Pixel Art, Music Synthesizer, Color Palette Generator, ASCII Art Studio |
+| System | File Manager, Terminal, Settings, Theme Editor, Process Manager, Network Monitor |
+| Games | 2048, Minesweeper, Snake, Sudoku, Chess, Solitaire, Tetris |
 
-| Application | Description |
-|-------------|-------------|
-| Live Data Hub | Real-time dashboard for weather, crypto, news, and exchange rates |
-| Weather App | Current conditions and forecasts |
-| GitHub Trending | Popular repositories with filters |
-| Wikipedia Reader | Article search and summaries |
-| Translator | Translation across 50+ languages |
+…and many more. Browse the dock or `ls /apps` in the terminal to discover them all.
 
-### Multimedia & Utilities
-
-| Application | Description |
-|-------------|-------------|
-| Music Player | Audio playback with playlist support |
-| Paint | Drawing application with brush tools |
-| Calculator | Scientific calculator with history |
-| Password Manager | Encrypted password storage |
-| QR Generator | QR code creation |
-
-## Terminal Commands
-
-### File System
-
-```
-ls      - List directory contents
-cd      - Change working directory
-pwd     - Print working directory
-cat     - Display file contents
-head    - Display first lines of a file
-tail    - Display last lines of a file
-mkdir   - Create directory
-touch   - Create empty file or update timestamp
-rm      - Remove file or directory
-cp      - Copy file or directory
-mv      - Move or rename file
-tree    - Display directory tree
-grep    - Search file contents
-find    - Find files by name
-```
-
-### System Commands
-
-```
-whoami          - Display current user
-hostname        - Display hostname
-date            - Display date and time
-cal             - Display calendar
-uname           - Display system information
-uptime          - Display system uptime
-ps              - Display process list
-top             - Display system monitor
-kill            - Terminate process
-sysinfo         - Display detailed system information
-neofetch        - Display system information in ASCII art
-```
-
-### Online Tools
-
-```
-weather         - Get weather information for any city
-news            - Get latest news from Hacker News
-crypto          - Get cryptocurrency prices
-stock           - Get stock prices from Yahoo Finance
-quote           - Get random inspirational quote
-joke            - Get a random joke
-define          - Look up word definitions
-translate       - Translate text between languages
-currency        - Convert currency using real exchange rates
-ip              - Get public IP address
-curl            - Send HTTP request
-```
-
-### Help
-
-```
-help            - Display command help
-help <command>  - Display detailed help for a specific command
-```
+---
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
-|----------|--------|
-| `Ctrl+Shift+L` | Open launcher |
-| `Ctrl+K` | Global search |
-| `Ctrl+P` | Command palette |
-| `Alt+Tab` | Switch windows |
-| `Ctrl+Q` | Close window |
-| `Ctrl+M` | Minimize window |
-| `Ctrl+T` | Open terminal |
-| `Ctrl+E` | Open file manager |
-| `Ctrl+1-9` | Quick-launch app |
-| `Ctrl+Alt+1-9` | Switch virtual desktop |
-| `F11` | Fullscreen |
+| --- | --- |
+| `Ctrl/⌘ + Space` | Open application launcher |
+| `Alt + Tab` | Cycle focused window |
+| `Alt + F4` | Close focused window |
+| `Super + D` | Show desktop |
+| `Super + L` | Lock screen |
+| `Ctrl + Alt + T` | Open terminal |
+| `F11` | Toggle fullscreen |
+| `Esc` | Exit fullscreen / cancel dialog |
 
-## API Integrations
+Inside the terminal:
 
-WebLinuxOS integrates with the following public APIs:
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl + L` | Clear screen |
+| `Ctrl + C` | Cancel current process |
+| `Ctrl + R` | Reverse search history |
+| `Tab` | Autocomplete command / path |
+| `↑` / `↓` | Navigate history |
 
-| API | Service | Usage |
-|-----|---------|-------|
-| OpenWeatherMap | Weather data | Current conditions worldwide |
-| CoinGecko | Cryptocurrency | Real-time prices and market data |
-| Yahoo Finance | Stock prices | Real-time stock quotes |
-| NewsAPI | News | Latest headlines |
-| LibreTranslate | Translation | Multi-language translation |
-| Quotable | Quotes | Random inspirational quotes |
-| JokeAPI | Humor | Random jokes in multiple languages |
-| Free Dictionary | Dictionary | Word definitions and examples |
-| ExchangeRate-API | Currency | Real-time exchange rates |
-| IPify | Geolocation | Public IP address |
+---
 
-All APIs are free, open, and do not require authentication keys.
+## Public API Integrations
+
+All API integrations use key-less public endpoints wherever possible, so the
+project runs on GitHub Pages without any environment configuration. Services
+that require keys (OpenWeatherMap, NewsAPI, ExchangeRate) read from
+`VITE_*` environment variables and fall back to a `demo_key` placeholder.
+
+| Service | Used For | Auth |
+| --- | --- | --- |
+| [Open-Meteo](https://open-meteo.com) | Weather forecast | None |
+| [CoinGecko](https://coingecko.com) | Crypto prices | None |
+| [Hacker News](https://github.com/HackerNews/API) | News reader | None |
+| [GitHub REST](https://docs.github.com/en/rest) | Trending repos | None |
+| [Wikipedia REST](https://en.wikipedia.org/api/rest_v1/) | Knowledge | None |
+| [NASA APOD](https://github.com/nasa/apod-api) | Astronomy | `DEMO_KEY` (free) |
+| [ExchangeRate-API](https://www.exchangerate-api.com) | Currency | Optional |
+| [ipapi](https://ipapi.co) | IP geolocation | None |
+| [OpenWeatherMap](https://openweathermap.org/api) | Weather | Optional |
+| [NewsAPI](https://newsapi.org) | News | Optional |
+| [Advice Slip](https://api.adviceslip.com) | Daily advice | None |
+| [Quotable](https://github.com/lukePeavey/quotable) | Quotes | None |
+| [JokeAPI](https://v2.jokeapi.dev) | Jokes | None |
+| [MyMemory](https://mymemory.translated.net) | Translation | None |
+| [Cat Facts](https://catfact.ninja) | Cat facts | None |
+| [Dog CEO](https://dog.ceo/dog-api) | Dog images | None |
+| [Random User](https://randomuser.me) | User data | None |
+| [Nationalize / Agify / Genderize](https://genderize.io) | Name analysis | None |
+| [Spaceflight News](https://spaceflightnewsapi.net) | Space news | None |
+
+> No user data is sent to any of these services beyond the request required to
+> fetch the resource. There is no analytics, telemetry, or third-party tracking.
+
+---
+
+## Deployment
+
+WebLinuxOS is a pure SPA. The build outputs to `web-linux/dist/`.
+
+### GitHub Pages (automated)
+
+1. Ensure your default branch is `main` and GitHub Pages is configured to serve
+   from the `gh-pages` branch (or the `/` root of `main`).
+2. The project includes a workflow at `.github/workflows/deploy.yml` that
+   builds and deploys on every push to `main`.
+3. Visit `https://<username>.github.io/WebLinuxOS/`.
+
+### Static hosting
+
+Upload the contents of `web-linux/dist/` to any static host (Netlify, Vercel,
+Cloudflare Pages, S3, nginx). No server-side configuration is required.
+
+### Environment Variables (optional)
+
+Create `web-linux/.env` to override API keys:
+
+```ini
+VITE_OPENWEATHERMAP_API_KEY=your_key
+VITE_NEWSAPI_KEY=your_key
+VITE_EXCHANGERATE_API_KEY=your_key
+VITE_NASA_API_KEY=your_key
+```
+
+---
 
 ## Contributing
 
-Contributions are welcome — bug reports, new applications, terminal commands, translations, or documentation improvements.
-
-### How to Contribute
+Contributions are welcome. Please open an issue first to discuss substantial
+changes — for typo fixes and small improvements, feel free to send a PR directly.
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes with a clear message
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes
+4. Run `npm run typecheck && npm run build` to verify
+5. Open a pull request
 
-### Adding a New Application
+When adding a new app:
 
-1. Create `src/apps/MyApp.tsx` with a memoized component
-2. Add a registry entry to `src/apps.tsx`
-3. Add the lazy import to `src/components/desktop/WindowManager.tsx`
+- Add a new file under `web-linux/src/apps/`
+- Register it in `web-linux/src/apps.tsx` with a stable `id`, an icon, a category
+  (`system`, `development`, `utilities`, `office`, `creative`, `media`, `fun`,
+  `knowledge`, `finance`, `security`)
+- Register the lazy import in `web-linux/src/components/desktop/WindowManager.tsx`
+- Keep the component self-contained; do not import global CSS variables from
+  outside the theme tokens
 
-### Adding a Terminal Command
+When adding a new terminal command:
 
-1. Add to the appropriate command file in `src/apps/terminal/`
-2. Register with `registerCommand(name, definition)`
-3. Include description, usage, and examples
+- Add the implementation under `web-linux/src/apps/terminal/`
+- Register the command in the command dispatcher
+- Update the help output in `commands/help.ts`
+
+---
+
+## Roadmap
+
+- [ ] PWA manifest + offline support via service worker
+- [ ] Multi-language UI (i18n)
+- [ ] End-to-end test suite with Playwright
+- [ ] Plugin system: load third-party apps at runtime from a manifest URL
+- [ ] WebRTC peer-to-peer screen sharing
+- [ ] Real file I/O via the File System Access API (Chromium)
+
+---
 
 ## License
 
-[MIT](LICENSE)
+MIT — see [LICENSE](LICENSE).
 
-## Acknowledgements
+You are free to use, modify, and redistribute, including for commercial
+purposes, as long as you preserve the copyright notice.
 
-- React team for the UI framework
-- Vite team for the build tool
-- Pyodide team for in-browser Python support
-- Lucide team for the icon library
-- All API providers for free access to their services
+---
+
+## Acknowledgments
+
+- The window manager, terminal, and virtual filesystem are original work.
+- The project draws inspiration from [linux.js](https://github.com/hrtowii/linux.js),
+  [WebSH](https://github.com/nicedoc/web-sh), and the broader community of
+  browser-based desktop experiments.
+- Wallpapers included in `public/wallpapers/` are royalty-free CC0 from Unsplash
+  and Pexels, unless otherwise noted.
+- All trademarks and registered trademarks remain the property of their
+  respective owners.
+
+## Star History
+
+If WebLinuxOS is useful to you, consider giving it a star — it helps the
+project reach more people.
+
+---
+
+Made with care by [saya-ch](https://github.com/saya-ch) and contributors.
