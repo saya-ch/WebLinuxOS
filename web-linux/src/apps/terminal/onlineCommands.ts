@@ -1,162 +1,183 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { API_CONFIG, fetchWithTimeout, handleApiError } from '../../config/apiConfig'
+import { getCityInfo, weatherDescriptions } from './cityMap'
 
 registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     const city = args.join(' ') || 'Beijing'
+    const cityInfo = getCityInfo(city)
     
     try {
-      const { key, baseUrl } = API_CONFIG.openWeatherMap
-      if (!key) {
-        return {
-          output: [
-            '⚠️  错误: OpenWeatherMap API Key 未配置',
-            '',
-            '请在 .env 文件中配置:',
-            '  VITE_OPENWEATHERMAP_API_KEY=your_key',
-            '',
-            '或使用天气应用查看（基于 Open-Meteo，无需 key）',
-          ].join('\n')
-        }
-      }
-      const response = await fetchWithTimeout(`${baseUrl}/weather?q=${encodeURIComponent(city)}&appid=${key}&units=metric&lang=zh_cn`)
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.openMeteo.baseUrl}/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia/Shanghai&forecast_days=1`
+      )
       
       if (!response.ok) {
-        throw new Error('查询失败')
+        throw new Error(`HTTP ${response.status}`)
       }
       
       const data = await response.json()
       
+      const weatherCode = data.current?.weather_code || 0
+      const weatherDesc = weatherDescriptions[weatherCode] || '未知'
+      
       const output = [
         '🌤️  天气预报',
         '',
-        `城市: ${data.name}`,
-        `国家: ${data.sys?.country || '未知'}`,
+        `城市: ${cityInfo.name}`,
         '',
-        `天气: ${data.weather?.[0]?.description || '未知'}`,
-        `温度: ${data.main?.temp || 'N/A'}°C`,
-        `体感温度: ${data.main?.feels_like || 'N/A'}°C`,
-        `最高温度: ${data.main?.temp_max || 'N/A'}°C`,
-        `最低温度: ${data.main?.temp_min || 'N/A'}°C`,
+        `天气: ${weatherDesc}`,
+        `温度: ${data.current?.temperature_2m || 'N/A'}°C`,
+        `体感温度: ${data.current?.apparent_temperature || 'N/A'}°C`,
+        `最高温度: ${data.daily?.temperature_2m_max?.[0] || 'N/A'}°C`,
+        `最低温度: ${data.daily?.temperature_2m_min?.[0] || 'N/A'}°C`,
         '',
-        `湿度: ${data.main?.humidity || 'N/A'}%`,
-        `气压: ${data.main?.pressure || 'N/A'} hPa`,
-        `风速: ${data.wind?.speed || 'N/A'} m/s`,
-        `能见度: ${data.visibility ? (data.visibility / 1000).toFixed(1) + ' km' : '未知'}`,
+        `湿度: ${data.current?.relative_humidity_2m || 'N/A'}%`,
+        `风速: ${data.current?.wind_speed_10m || 'N/A'} km/h`,
         '',
-        `日出时间: ${data.sys?.sunrise ? new Date(data.sys.sunrise * 1000).toLocaleTimeString('zh-CN') : '未知'}`,
-        `日落时间: ${data.sys?.sunset ? new Date(data.sys.sunset * 1000).toLocaleTimeString('zh-CN') : '未知'}`,
+        `日出时间: ${data.daily?.sunrise?.[0] ? new Date(data.daily.sunrise[0]).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '未知'}`,
+        `日落时间: ${data.daily?.sunset?.[0] ? new Date(data.daily.sunset[0]).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '未知'}`,
         '',
-        '数据来源: OpenWeatherMap',
+        '数据来源: Open-Meteo (免费公开API)',
       ]
       
       return { output: output.join('\n') }
-    } catch {
-      const fallbackWeather: Record<string, { temp: number; desc: string; humidity: number }> = {
-        'beijing': { temp: 25, desc: '晴朗', humidity: 45 },
-        'shanghai': { temp: 28, desc: '多云', humidity: 65 },
-        'tokyo': { temp: 22, desc: '阴天', humidity: 70 },
-        'newyork': { temp: 20, desc: '晴朗', humidity: 50 },
-        'london': { temp: 15, desc: '小雨', humidity: 80 },
+    } catch (error) {
+      const fallbackWeather: Record<string, { temp: number; desc: string; humidity: number; wind: number }> = {
+        'beijing': { temp: 25, desc: '☀️ 晴朗', humidity: 45, wind: 12 },
+        'shanghai': { temp: 28, desc: '⛅ 多云', humidity: 65, wind: 15 },
+        'tokyo': { temp: 22, desc: '☁️ 阴天', humidity: 70, wind: 8 },
+        'newyork': { temp: 20, desc: '☀️ 晴朗', humidity: 50, wind: 10 },
+        'london': { temp: 15, desc: '🌧️ 小雨', humidity: 80, wind: 20 },
+        'shenzhen': { temp: 30, desc: '⛅ 晴间多云', humidity: 75, wind: 18 },
+        'hongkong': { temp: 29, desc: '🌦️ 阵雨', humidity: 82, wind: 25 },
+        'paris': { temp: 18, desc: '☁️ 阴天', humidity: 68, wind: 12 },
+        'sydney': { temp: 16, desc: '🌤️ 晴间多云', humidity: 55, wind: 15 },
+        'dubai': { temp: 35, desc: '☀️ 晴朗', humidity: 40, wind: 22 },
       }
       
-      const weather = fallbackWeather[city.toLowerCase()] || { temp: 20, desc: '未知', humidity: 50 }
+      const weather = fallbackWeather[city.toLowerCase()] || { temp: 20, desc: '未知', humidity: 50, wind: 10 }
       
       return {
         output: [
           '🌤️  天气预报',
           '',
-          `城市: ${city}`,
+          `城市: ${cityInfo.name}`,
           '',
           `天气: ${weather.desc}`,
           `温度: ${weather.temp}°C`,
-          `湿度: ${weather.humidity}%`,
+          `体感温度: ${weather.temp - 2}°C`,
+          `最高温度: ${weather.temp + 3}°C`,
+          `最低温度: ${weather.temp - 5}°C`,
           '',
-          '提示: 使用备用数据源，某些城市可能无法查询',
+          `湿度: ${weather.humidity}%`,
+          `风速: ${weather.wind} km/h`,
+          '',
+          handleApiError(error, '天气查询'),
+          '提示: 使用离线备用数据',
           '',
           '用法: weather <城市名>',
-          '示例: weather Beijing, weather Tokyo',
+          '示例: weather Beijing, weather Tokyo, weather 上海',
         ].join('\n')
       }
     }
   },
-  description: '查询天气',
+  description: '查询天气（基于 Open-Meteo 免费API）',
   usage: 'weather [城市]',
-  examples: ['weather', 'weather Beijing', 'weather Shanghai']
+  examples: ['weather', 'weather Beijing', 'weather Shanghai', 'weather Tokyo']
 })
 
 registerCommand('news', {
-  handler: async (): Promise<CommandResult> => {
-    try {
-      const { key, baseUrl } = API_CONFIG.newsApi
-      if (!key) {
-        return {
-          output: [
-            '⚠️  错误: NewsAPI Key 未配置',
-            '',
-            '请在 .env 文件中配置:',
-            '  VITE_NEWSAPI_KEY=your_key',
-            '',
-            '或使用新闻阅读器应用查看 Hacker News',
-          ].join('\n')
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const source = args[0]?.toLowerCase() || 'hackernews'
+    
+    if (source === 'hackernews' || source === 'hn') {
+      try {
+        const topStoriesResponse = await fetchWithTimeout(`${API_CONFIG.hackerNews.baseUrl}/topstories.json`)
+        if (!topStoriesResponse.ok) throw new Error('获取失败')
+        
+        const topStoryIds = await topStoriesResponse.json()
+        const top10Ids = topStoryIds.slice(0, 10)
+        
+        const stories: any[] = []
+        for (const id of top10Ids) {
+          const storyResponse = await fetchWithTimeout(`${API_CONFIG.hackerNews.baseUrl}/item/${id}.json`)
+          if (storyResponse.ok) {
+            const story = await storyResponse.json()
+            if (story && !story.deleted && !story.dead) {
+              stories.push(story)
+            }
+          }
         }
-      }
-      const response = await fetchWithTimeout(`${baseUrl}/top-headlines?country=cn&apiKey=${key}&pageSize=10`)
-      
-      if (!response.ok) {
-        throw new Error('查询失败')
-      }
-      
-      const data = await response.json()
-      
-      if (!data.articles || data.articles.length === 0) {
-        throw new Error('无新闻数据')
-      }
-      
-      const output = [
-        '📰 新闻头条',
-        '',
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        '',
-        ...data.articles.slice(0, 10).map((article: { title: string; source: { name: string }; url: string }, index: number) => 
-          `${(index + 1).toString().padStart(2)}. ${article.title}\n     来源: ${article.source.name}\n     链接: ${article.url}\n`
-        ),
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        '',
-        '数据来源: NewsAPI',
-      ]
-      
-      return { output: output.join('\n') }
-    } catch {
-      const fallbackNews = [
-        { title: 'WebLinuxOS 2.9.0 正式发布，新增多项实用功能', source: 'WebLinuxOS官方', url: 'https://github.com/saya-ch/WebLinuxOS' },
-        { title: 'AI技术持续发展，改变软件开发方式', source: '科技新闻', url: '#' },
-        { title: 'WebAssembly 性能大幅提升，Web应用迎来新机遇', source: '技术周刊', url: '#' },
-        { title: '开源社区活跃，贡献者数量创历史新高', source: '开源资讯', url: '#' },
-        { title: '云计算市场持续增长，边缘计算成为新热点', source: '行业报告', url: '#' },
-      ]
-      
-      return {
-        output: [
-          '📰 新闻头条',
+        
+        const output = [
+          '📰 Hacker News Top Stories',
           '',
           '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
           '',
-          ...fallbackNews.map((news, index) => 
-            `${(index + 1).toString().padStart(2)}. ${news.title}\n     来源: ${news.source}\n`
+          ...stories.map((story, index) => 
+            `${(index + 1).toString().padStart(2)}. ${story.title}\n     分数: ${story.score || 0} | 评论: ${story.descendants || 0}\n     来源: ${story.url ? new URL(story.url).hostname : 'Hacker News'}\n`
           ),
           '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
           '',
-          '提示: 使用备用数据源',
-        ].join('\n')
+          '数据来源: Hacker News API',
+          '',
+          '用法: news [hackernews|hn]',
+          '示例: news, news hn',
+        ]
+        
+        return { output: output.join('\n') }
+      } catch (error) {
+        const fallbackNews = [
+          { title: 'WebLinuxOS v38.0 正式发布，新增多项实用功能', score: 1234, comments: 256 },
+          { title: 'AI技术持续发展，改变软件开发方式', score: 892, comments: 189 },
+          { title: 'WebAssembly 性能大幅提升，Web应用迎来新机遇', score: 756, comments: 145 },
+          { title: '开源社区活跃，贡献者数量创历史新高', score: 643, comments: 123 },
+          { title: '云计算市场持续增长，边缘计算成为新热点', score: 589, comments: 98 },
+          { title: 'React 19 发布，带来全新的并发特性', score: 1567, comments: 312 },
+          { title: 'TypeScript 6.0 发布，性能大幅提升', score: 1123, comments: 234 },
+          { title: 'WebGPU 标准正式发布，开启图形计算新篇章', score: 987, comments: 178 },
+        ]
+        
+        return {
+          output: [
+            '📰 Hacker News Top Stories',
+            '',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            '',
+            ...fallbackNews.map((news, index) => 
+              `${(index + 1).toString().padStart(2)}. ${news.title}\n     分数: ${news.score} | 评论: ${news.comments}\n`
+            ),
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            '',
+            handleApiError(error, 'Hacker News'),
+            '提示: 使用离线备用数据',
+          ].join('\n')
+        }
       }
     }
+    
+    return {
+      output: [
+        '📰 新闻头条',
+        '',
+        '用法: news [来源]',
+        '',
+        '可用来源:',
+        '  hackernews / hn - Hacker News 热门新闻',
+        '',
+        '示例:',
+        '  news',
+        '  news hn',
+      ].join('\n')
+    }
   },
-  description: '显示新闻头条',
-  usage: 'news',
-  examples: ['news']
+  description: '显示新闻头条（基于 Hacker News 免费API）',
+  usage: 'news [hackernews|hn]',
+  examples: ['news', 'news hn']
 })
 
 registerCommand('crypto', {
@@ -673,4 +694,277 @@ registerCommand('advice', {
   description: '获取每日建议',
   usage: 'advice',
   examples: ['advice']
+})
+
+registerCommand('github', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const repo = args.join('/') || 'saya-ch/WebLinuxOS'
+    
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.githubApi.baseUrl}/repos/${encodeURIComponent(repo)}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      return {
+        output: [
+          `📦 GitHub 仓库: ${data.full_name}`,
+          '',
+          `描述: ${data.description || '暂无描述'}`,
+          `⭐ Stars: ${data.stargazers_count?.toLocaleString() || 0}`,
+          `🍴 Forks: ${data.forks_count?.toLocaleString() || 0}`,
+          `👀 关注: ${data.watchers_count?.toLocaleString() || 0}`,
+          `🔄 开源协议: ${data.license?.name || '未指定'}`,
+          `🐙 主分支: ${data.default_branch || 'main'}`,
+          `📝 语言: ${data.language || '未知'}`,
+          '',
+          `创建时间: ${data.created_at ? new Date(data.created_at).toLocaleDateString('zh-CN') : '未知'}`,
+          `更新时间: ${data.updated_at ? new Date(data.updated_at).toLocaleDateString('zh-CN') : '未知'}`,
+          '',
+          `主页: ${data.homepage || '暂无'}`,
+          `仓库地址: ${data.html_url}`,
+          '',
+          '数据来源: GitHub API',
+        ].join('\n')
+      }
+    } catch (error) {
+      const fallbackRepos: Record<string, { stars: number; forks: number; description: string; language: string }> = {
+        'saya-ch/weblinuxos': { stars: 1200, forks: 234, description: '基于Web的Linux桌面环境', language: 'TypeScript' },
+        'facebook/react': { stars: 220000, forks: 45000, description: '用于构建用户界面的JavaScript库', language: 'JavaScript' },
+        'vercel/next.js': { stars: 120000, forks: 25000, description: 'React框架', language: 'TypeScript' },
+        'vuejs/core': { stars: 200000, forks: 30000, description: 'Vue.js核心库', language: 'TypeScript' },
+      }
+      
+      const fallback = fallbackRepos[repo.toLowerCase()] || { stars: 0, forks: 0, description: '未知仓库', language: '未知' }
+      
+      return {
+        output: [
+          `📦 GitHub 仓库: ${repo}`,
+          '',
+          `描述: ${fallback.description}`,
+          `⭐ Stars: ${fallback.stars.toLocaleString()}`,
+          `🍴 Forks: ${fallback.forks.toLocaleString()}`,
+          `📝 语言: ${fallback.language}`,
+          '',
+          handleApiError(error, 'GitHub API'),
+          '提示: 使用离线备用数据',
+          '',
+          '用法: github <owner/repo>',
+          '示例: github saya-ch/WebLinuxOS, github facebook/react',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查看GitHub仓库信息',
+  usage: 'github [owner/repo]',
+  examples: ['github', 'github saya-ch/WebLinuxOS', 'github facebook/react']
+})
+
+registerCommand('calendar', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth()
+    const today = now.getDate()
+    
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    
+    let calendar = [
+      `📅 ${year}年 ${monthNames[month]}`,
+      '',
+      `${'日'.padEnd(4)}${'一'.padEnd(4)}${'二'.padEnd(4)}${'三'.padEnd(4)}${'四'.padEnd(4)}${'五'.padEnd(4)}${'六'}`,
+    ]
+    
+    let row = ''
+    for (let i = 0; i < firstDay; i++) {
+      row += '    '
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isToday = day === today
+      const dayStr = isToday ? `[${day.toString().padStart(2, ' ')}]` : day.toString().padStart(2, ' ')
+      row += dayStr.padEnd(4)
+      
+      if ((firstDay + day) % 7 === 0) {
+        calendar.push(row)
+        row = ''
+      }
+    }
+    
+    if (row) {
+      calendar.push(row)
+    }
+    
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+    
+    calendar.push('')
+    calendar.push(`今天: ${year}年${month + 1}月${today}日 ${weekdays[now.getDay()]}`)
+    calendar.push(`本周是一年中的第 ${Math.ceil(now.getTime() / (7 * 24 * 60 * 60 * 1000))} 周`)
+    
+    return { output: calendar.join('\n') }
+  },
+  description: '显示日历',
+  usage: 'calendar',
+  examples: ['calendar']
+})
+
+registerCommand('battery', {
+  handler: async (): Promise<CommandResult> => {
+    const batteryApi = (navigator as any).getBattery
+    if (!batteryApi) {
+      return {
+        output: [
+          '🔋 电池状态',
+          '',
+          '您的浏览器不支持电池 API',
+          '',
+          '支持的浏览器: Chrome, Firefox, Edge',
+        ].join('\n')
+      }
+    }
+    
+    try {
+      const battery = await batteryApi()
+      
+      const status = battery.charging ? '🔌 充电中' : '🔋 放电中'
+      const level = Math.round(battery.level * 100)
+      const icon = level > 80 ? '⚡' : level > 50 ? '🔋' : level > 20 ? '🪫' : '🔴'
+      
+      const chargingTime = battery.chargingTime !== Infinity ? `${battery.chargingTime.toFixed(0)} 分钟` : '计算中'
+      const dischargingTime = battery.dischargingTime !== Infinity ? `${(battery.dischargingTime / 60).toFixed(1)} 小时` : '计算中'
+      
+      return {
+        output: [
+          '🔋 电池状态',
+          '',
+          `${icon} 电量: ${level}%`,
+          `状态: ${status}`,
+          '',
+          `预计充满时间: ${chargingTime}`,
+          `预计剩余使用时间: ${dischargingTime}`,
+          '',
+          '数据来源: Battery API',
+        ].join('\n')
+      }
+    } catch (error) {
+      return {
+        output: [
+          '🔋 电池状态',
+          '',
+          handleApiError(error, '电池API'),
+          '',
+          '提示: 某些浏览器可能需要HTTPS或特定权限',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查看电池状态',
+  usage: 'battery',
+  examples: ['battery']
+})
+
+registerCommand('cpu', {
+  handler: (): CommandResult => {
+    const cores = navigator.hardwareConcurrency || 4
+    const userAgent = navigator.userAgent
+    
+    let platform = '未知平台'
+    if (userAgent.includes('Windows')) platform = 'Windows'
+    else if (userAgent.includes('Mac')) platform = 'macOS'
+    else if (userAgent.includes('Linux')) platform = 'Linux'
+    else if (userAgent.includes('Android')) platform = 'Android'
+    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) platform = 'iOS'
+    
+    const memory = (() => {
+      try {
+        const memoryInfo = (navigator as any).deviceMemory
+        return memoryInfo ? `${memoryInfo} GB` : '未知'
+      } catch {
+        return '未知'
+      }
+    })()
+    
+    const output = [
+      '💻 系统信息',
+      '',
+      `CPU 核心数: ${cores} 核`,
+      `内存: ${memory}`,
+      `平台: ${platform}`,
+      `浏览器: ${navigator.appName} ${navigator.appVersion}`,
+      `语言: ${navigator.language}`,
+      '',
+      '数据来源: Navigator API',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '查看系统硬件信息',
+  usage: 'cpu',
+  examples: ['cpu']
+})
+
+registerCommand('neofetch', {
+  handler: (): CommandResult => {
+    const distro = 'WebLinuxOS'
+    const kernel = 'Web Kernel v38.0'
+    const uptime = '刚刚启动'
+    const packages = '100+'
+    const shell = 'WebShell'
+    const resolution = `${window.screen.width}x${window.screen.height}`
+    const de = 'Web Desktop'
+    const wm = 'WebWindowManager'
+    const theme = 'Dark Mode'
+    const icons = 'Lucide React'
+    const terminal = 'WebTerminal'
+    const cpu = `${navigator.hardwareConcurrency || 4} cores`
+    
+    const asciiArt = [
+      '        _      __  __           _       ',
+      '       | |    |  \\/  |         | |      ',
+      '       | |    | \\  / | ___   __| | ___  ',
+      '   _   | |    | |\\/| |/ _ \\ / _` |/ _ \\ ',
+      '  | |__| |    | |  | | (_) | (_| |  __/ ',
+      '   \\____/     |_|  |_|\\___/ \\__,_|\\___| ',
+      '                                        ',
+    ]
+    
+    const output = [
+      ...asciiArt,
+      '',
+      `${distro} ${kernel}`,
+      '',
+      `-------------------`,
+      '',
+      `主机名: weblinuxos.local`,
+      `操作系统: ${distro}`,
+      `内核: ${kernel}`,
+      `运行时间: ${uptime}`,
+      `软件包: ${packages}`,
+      `Shell: ${shell}`,
+      `分辨率: ${resolution}`,
+      `桌面环境: ${de}`,
+      `窗口管理器: ${wm}`,
+      `主题: ${theme}`,
+      `图标: ${icons}`,
+      `终端: ${terminal}`,
+      `CPU: ${cpu}`,
+      '',
+      '-------------------',
+      '',
+      '欢迎使用 WebLinuxOS',
+      '一个基于Web的完整Linux桌面环境',
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示系统信息（仿 neofetch）',
+  usage: 'neofetch',
+  examples: ['neofetch']
 })

@@ -2,14 +2,15 @@
 
 # WebLinuxOS
 
-A complete Linux desktop environment that runs entirely in your browser.
+A complete Linux desktop environment that runs entirely in your browser. No installation. No backend. No configuration.
 
-[Live Demo](https://saya-ch.github.io/WebLinuxOS/) · [Report Bug](https://github.com/saya-ch/WebLinuxOS/issues) · [Request Feature](https://github.com/saya-ch/WebLinuxOS/issues)
+[**Live Demo**](https://saya-ch.github.io/WebLinuxOS/) · [Report Bug](https://github.com/saya-ch/WebLinuxOS/issues) · [Request Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6.svg)](https://www.typescriptlang.org)
 [![Vite 8](https://img.shields.io/badge/Vite-8-646cff.svg)](https://vite.dev)
+[![Zustand](https://img.shields.io/badge/Zustand-5-000000.svg)](https://zustand-demo.pmnd.rs)
 
 </div>
 
@@ -17,9 +18,23 @@ A complete Linux desktop environment that runs entirely in your browser.
   <img src="web-linux/screenshots/01-desktop.png" alt="WebLinuxOS Desktop" width="800" />
 </p>
 
+<p align="center">
+  <img src="web-linux/screenshots/04-terminal.png" alt="Terminal" width="395" />
+  <img src="web-linux/screenshots/03-file-manager.png" alt="File Manager" width="395" />
+</p>
+
 ## Why WebLinuxOS?
 
-No installation. No backend. No configuration. WebLinuxOS delivers a full-featured Linux desktop experience inside a single browser tab — 240+ built-in applications, a working terminal with 150+ commands, a virtual filesystem, and real-time API integrations, all running 100% client-side.
+WebLinuxOS delivers a full-featured Linux desktop experience inside a single browser tab. Everything runs 100% client-side:
+
+- **240+ built-in applications** — from productivity tools to creative suites
+- **150+ terminal commands** — file operations, networking, system monitoring, real-time APIs
+- **Virtual filesystem** — persistent storage with undo/redo support
+- **Real-time API integrations** — weather, news, cryptocurrency, GitHub, translation, and more
+- **Python runtime** — run Python 3 directly in the terminal via Pyodide
+- **No installation** — works instantly in any modern browser
+- **No backend** — zero server costs, fully self-contained
+- **No API keys required** — all core features work out-of-the-box
 
 ---
 
@@ -31,6 +46,8 @@ No installation. No backend. No configuration. WebLinuxOS delivers a full-featur
 - Multi-monitor-style tiling and window stacking
 - Up to 9 virtual desktops with keyboard shortcuts to switch
 - Taskbar, dock, and system tray with live indicators
+- Window grouping and keyboard navigation (`Alt+Tab`)
+- Custom window animations and smooth transitions
 
 ### Virtual Filesystem
 
@@ -38,31 +55,44 @@ No installation. No backend. No configuration. WebLinuxOS delivers a full-featur
 - Undo/redo support for all file operations
 - Persisted in localStorage with hierarchical JSON structure
 - Full path resolution, permissions, and directory navigation
+- File search and quick access to recent files
+- File type detection and icon association
 
 ### Terminal Emulator
 
-- 150+ built-in commands across file operations, networking, system monitoring, and utilities
-- Pipe (`|`), redirect (`>` `>>` `<`), and chain (`;` `&&` `||`) operators
-- Background processes (`&`), `jobs`, `kill`
-- Tab completion, command history, reverse search (`Ctrl+R`)
-- Python runtime via Pyodide — run Python 3 directly in the terminal
+- **150+ built-in commands** across file operations, networking, system monitoring, and utilities
+- **Pipe (`|`)**, redirect (`>` `>>` `<`), and chain (`;` `&&` `||`) operators
+- **Background processes** (`&`), `jobs`, `kill`
+- **Tab completion**, command history, reverse search (`Ctrl+R`)
+- **Python runtime** via Pyodide — run Python 3 directly in the terminal
+- **Real-time commands**: `weather`, `news`, `crypto`, `github`, `calendar`, `battery`, `cpu`, `neofetch`
+- **Network commands**: `ping`, `traceroute`, `dig`, `curl`, `wget`, `netstat`
+- **System commands**: `top`, `ps`, `df`, `free`, `uptime`, `whoami`, `date`
 
 ### Real-Time API Integrations
 
-| Service | API | Key Required |
-|---------|-----|:------------:|
-| Weather | Open-Meteo / OpenWeatherMap | No / Optional |
-| News | Hacker News / NewsAPI | No / Optional |
-| Cryptocurrency | CoinGecko | No |
-| GitHub | GitHub REST API | No |
-| Exchange Rates | Frankfurter | No |
-| Wikipedia | Wikipedia REST API | No |
-| Translation | LibreTranslate | No |
-| IP Geolocation | ipapi | No |
-| Astronomy | NASA APOD | Optional |
-| Countries | REST Countries | No |
+All integrations work out-of-the-box using free public endpoints. No API keys required.
 
-All integrations work out-of-the-box using free public endpoints. Optional API keys unlock enhanced rate limits and additional data.
+| Category | Services | API |
+|----------|----------|-----|
+| Weather | Global weather, forecasts | Open-Meteo |
+| News | Hacker News top stories | Hacker News API |
+| Finance | Cryptocurrency, exchange rates | CoinGecko, Frankfurter |
+| Development | GitHub repositories | GitHub REST API |
+| Geography | IP geolocation, country info | ipapi, REST Countries |
+| Translation | Multi-language translation | MyMemory |
+| Knowledge | Wikipedia articles | Wikipedia REST API |
+| Utilities | Random quotes, jokes, advice | Quotable, JokeAPI, Advice Slip |
+
+### Desktop Enhancements
+
+- **Dynamic wallpaper system** — particle, network, wave, nebula effects
+- **Desktop widgets** — clock, system pulse, weather, pomodoro, sticky notes
+- **Notification system** — with priority levels and dismissible alerts
+- **Command palette** — quick access to all applications and commands
+- **Global search** — search files, apps, and settings
+- **Light/dark theme** — with customizable accent colors
+- **Startup splash screen** — with loading animation
 
 ### Web Browser (Enhanced)
 
@@ -71,48 +101,60 @@ All integrations work out-of-the-box using free public endpoints. Optional API k
 - GitHub repository explorer
 - Smart URL routing (`wiki:`, `hn:`, `gh:` prefixes)
 - Tab system with bookmarks and history
+- Built-in search engine
 
 ### Development Tools
 
-- Web IDE Pro — full-featured online programming environment
-- Code Editor with syntax highlighting
-- Online Code Runner (multi-language via Pyodide)
-- Code Playground, Sandbox, and Studio
-- Code Formatter, Diff Viewer, and Reviewer
+- **Web IDE Pro** — full-featured online programming environment with code completion
+- **Code Editor** — syntax highlighting for 30+ languages
+- **Online Code Runner** — multi-language execution via Pyodide
+- **Code Playground**, **CodeSandbox**, and **CodeStudio**
+- **Code Formatter**, **Diff Viewer**, and **Code Reviewer**
 - **CodeShare** — code snippet sharing with syntax highlighting, diff viewer, template library, and Markdown export
-- API Tester and REST Client
-- Regex Builder and JSON Formatter
+- **API Tester** and **REST Client** — test and debug APIs
+- **Regex Builder**, **JSON Formatter**, and **JSON Schema Validator**
+- **JWT Decoder** — decode and inspect JWT tokens
+- **HTTP Status Explorer** — lookup HTTP status codes
 
-### Productivity
+### Productivity Suite
 
-- Markdown Editor with live preview and slides
-- Spreadsheet, Calendar, and World Clock
-- Task Manager, Kanban Board, and Project Planner
-- Pomodoro Timer and Habit Tracker
-- Smart Notes with tags, colors, and import/export
-- Mind Map and Presentation Creator
+- **Markdown Editor** — live preview, slides, and HTML export
+- **Spreadsheet** — formulas, charts, and data analysis
+- **Calendar** — event management with reminders
+- **World Clock** — multiple time zones
+- **Task Manager** — Kanban Board, Project Planner, Gantt Chart
+- **Pomodoro Timer** — focus sessions with statistics
+- **Habit Tracker** — track daily habits and streaks
+- **Smart Notes** — tags, colors, and import/export
+- **Mind Map** — visual brainstorming
+- **Presentation Creator** — slides with transitions
 
 ### Creative & Media
 
-- Paint and **DrawPad** — full drawing application with layers, shapes, text, export to PNG
-- Music Player, Music Studio, and Visualizer
-- Video Player and Image Viewer
-- Screen Recorder and Screenshot Tool
+- **Paint** — basic drawing tools
+- **DrawPad** — full drawing application with layers, shapes, text, export to PNG
+- **Music Player** — audio playback with equalizer
+- **Music Studio** — compose and edit music
+- **Music Visualizer** — real-time audio visualization
+- **Video Player** — HTML5 video playback
+- **Image Viewer** — support for multiple formats
+- **Screen Recorder** — record browser screen
+- **Screenshot Tool** — capture and annotate screenshots
 
 ### System & Utilities
 
-- File Manager, System Monitor, and Process Manager
-- Network Monitor, Speed Test, and DNS Lookup
-- Calculator, Password Manager, and QR Generator
-- Color Picker, Unit Converter, and Clipboard Manager
-
-### Desktop Enhancements
-
-- Dynamic wallpaper system (particle, network, wave, nebula effects)
-- Desktop widgets (clock, system pulse, weather, pomodoro, sticky notes)
-- Notification system with priority levels
-- Command palette and global search
-- Light/dark theme with customizable accent colors
+- **File Manager** — dual-pane navigation, search, and batch operations
+- **System Monitor** — CPU, memory, and network usage
+- **Process Manager** — view and manage running processes
+- **Network Monitor** — real-time bandwidth usage
+- **Speed Test** — measure internet speed
+- **DNS Lookup** — domain name resolution
+- **Calculator** — basic and scientific calculations
+- **Password Manager** — secure password storage
+- **QR Generator** — create QR codes for URLs and text
+- **Color Picker** — hex, RGB, HSL values
+- **Unit Converter** — currency, length, weight, temperature
+- **Clipboard Manager** — clipboard history
 
 ---
 
