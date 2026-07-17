@@ -2,9 +2,11 @@
 
 # WebLinuxOS
 
-A complete Linux desktop environment that runs entirely in your browser. No installation. No backend. No configuration.
+**浏览器中完整运行的Linux桌面环境**
 
-[**Live Demo**](https://saya-ch.github.io/WebLinuxOS/) · [Report Bug](https://github.com/saya-ch/WebLinuxOS/issues) · [Request Feature](https://github.com/saya-ch/WebLinuxOS/issues)
+无需安装 · 无需后端 · 即开即用 · 完全免费
+
+[在线体验](https://saya-ch.github.io/WebLinuxOS/) · [报告问题](https://github.com/saya-ch/WebLinuxOS/issues) · [功能建议](https://github.com/saya-ch/WebLinuxOS/issues)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
@@ -23,164 +25,174 @@ A complete Linux desktop environment that runs entirely in your browser. No inst
   <img src="web-linux/screenshots/03-file-manager.png" alt="File Manager" width="395" />
 </p>
 
-## Why WebLinuxOS?
+---
 
-WebLinuxOS delivers a full-featured Linux desktop experience inside a single browser tab. Everything runs 100% client-side:
+## 项目特色
 
-- **240+ built-in applications** — from productivity tools to creative suites
-- **150+ terminal commands** — file operations, networking, system monitoring, real-time APIs
-- **Virtual filesystem** — persistent storage with undo/redo support
-- **Real-time API integrations** — weather, news, cryptocurrency, GitHub, translation, and more
-- **Python runtime** — run Python 3 directly in the terminal via Pyodide
-- **No installation** — works instantly in any modern browser
-- **No backend** — zero server costs, fully self-contained
-- **No API keys required** — all core features work out-of-the-box
+WebLinuxOS 在浏览器中提供完整的 Linux 桌面体验，100% 客户端运行：
+
+### 核心能力
+
+- **240+ 内置应用** — 生产力、开发、媒体、系统管理全覆盖
+- **150+ 终端命令** — 文件操作、网络工具、系统监控、实时 API
+- **虚拟文件系统** — 持久化存储，支持撤销/重做
+- **实时 API 集成** — 天气、新闻、加密货币、GitHub、翻译等
+- **Python 运行时** — 通过 Pyodide 在浏览器中运行 Python 3
+- **零配置启动** — 现代浏览器打开即用，无需任何安装
+
+### 与众不同
+
+- **完全离线可用** — 核心功能无需网络连接
+- **零服务器成本** — 纯静态部署，无后端依赖
+- **零 API 密钥** — 所有核心功能开箱即用
+- **跨平台兼容** — Windows、macOS、Linux、移动端通用
+- **数据本地化** — 所有数据存储在浏览器本地，隐私安全
 
 ---
 
-## Features
+## 核心功能
 
-### Window Management
+### 窗口管理
 
-- Drag, resize, minimize, maximize, and snap windows with alignment guides
-- Multi-monitor-style tiling and window stacking
-- Up to 9 virtual desktops with keyboard shortcuts to switch
-- Taskbar, dock, and system tray with live indicators
-- Window grouping and keyboard navigation (`Alt+Tab`)
-- Custom window animations and smooth transitions
+- 拖拽、调整大小、最小化、最大化、窗口贴边
+- 多显示器风格的平铺和窗口堆叠
+- 最多 9 个虚拟桌面，支持键盘快捷键切换
+- 任务栏、Dock 和系统托盘，实时状态指示
+- 窗口分组和键盘导航 (`Alt+Tab`)
+- 流畅的窗口动画和过渡效果
 
-### Virtual Filesystem
+### 虚拟文件系统
 
-- Create, delete, rename, copy, and move files and folders
-- Undo/redo support for all file operations
-- Persisted in localStorage with hierarchical JSON structure
-- Full path resolution, permissions, and directory navigation
-- File search and quick access to recent files
-- File type detection and icon association
+- 创建、删除、重命名、复制、移动文件和文件夹
+- 所有文件操作支持撤销/重做
+- 基于 localStorage 的持久化存储
+- 完整的路径解析、权限和目录导航
+- 文件搜索和最近文件快速访问
+- 文件类型检测和图标关联
 
-### Terminal Emulator
+### 终端模拟器
 
-- **150+ built-in commands** across file operations, networking, system monitoring, and utilities
-- **Pipe (`|`)**, redirect (`>` `>>` `<`), and chain (`;` `&&` `||`) operators
-- **Background processes** (`&`), `jobs`, `kill`
-- **Tab completion**, command history, reverse search (`Ctrl+R`)
-- **Python runtime** via Pyodide — run Python 3 directly in the terminal
-- **Real-time commands**: `weather`, `news`, `crypto`, `github`, `calendar`, `battery`, `cpu`, `neofetch`
-- **Network commands**: `ping`, `traceroute`, `dig`, `curl`, `wget`, `netstat`
-- **System commands**: `top`, `ps`, `df`, `free`, `uptime`, `whoami`, `date`
+- **150+ 内置命令**，涵盖文件操作、网络工具、系统监控、实用工具
+- **管道 (`|`)**、重定向 (`>` `>>` `<`)、链式操作 (`;` `&&` `||`)
+- **后台进程** (`&`)、`jobs`、`kill` 管理
+- **Tab 补全**、命令历史、反向搜索 (`Ctrl+R`)
+- **Python 运行时** — 通过 Pyodide 直接运行 Python 3
+- **实时命令**: `weather`、`news`、`crypto`、`github`、`calendar`、`battery`、`cpu`、`neofetch`
+- **网络命令**: `ping`、`traceroute`、`dig`、`curl`、`wget`、`netstat`
+- **系统命令**: `top`、`ps`、`df`、`free`、`uptime`、`whoami`、`date`
 
-### Real-Time API Integrations
+### 实时 API 集成
 
-All integrations work out-of-the-box using free public endpoints. No API keys required.
+所有集成都使用免费公共端点，无需 API 密钥：
 
-| Category | Services | API |
-|----------|----------|-----|
-| Weather | Global weather, forecasts | Open-Meteo |
-| News | Hacker News top stories | Hacker News API |
-| Finance | Cryptocurrency, exchange rates | CoinGecko, Frankfurter |
-| Development | GitHub repositories | GitHub REST API |
-| Geography | IP geolocation, country info | ipapi, REST Countries |
-| Translation | Multi-language translation | MyMemory |
-| Knowledge | Wikipedia articles | Wikipedia REST API |
-| Utilities | Random quotes, jokes, advice | Quotable, JokeAPI, Advice Slip |
+| 类别 | 服务 | API |
+|------|------|-----|
+| 天气 | 全球天气、天气预报 | Open-Meteo |
+| 新闻 | Hacker News 热门文章 | Hacker News API |
+| 金融 | 加密货币、汇率 | CoinGecko、Frankfurter |
+| 开发 | GitHub 仓库 | GitHub REST API |
+| 地理 | IP 定位、国家信息 | ipapi、REST Countries |
+| 翻译 | 多语言翻译 | MyMemory |
+| 知识 | Wikipedia 文章 | Wikipedia REST API |
+| 实用 | 随机名言、笑话、建议 | Quotable、JokeAPI、Advice Slip |
 
-### Desktop Enhancements
+### 桌面增强
 
-- **Dynamic wallpaper system** — particle, network, wave, nebula effects
-- **Desktop widgets** — clock, system pulse, weather, pomodoro, sticky notes
-- **Notification system** — with priority levels and dismissible alerts
-- **Command palette** — quick access to all applications and commands
-- **Global search** — search files, apps, and settings
-- **Light/dark theme** — with customizable accent colors
-- **Startup splash screen** — with loading animation
+- **动态壁纸系统** — 粒子、网络、波浪、星云等效果
+- **桌面小部件** — 时钟、系统脉搏、天气、番茄钟、便利贴
+- **通知系统** — 支持优先级和可关闭提醒
+- **命令面板** — 快速访问所有应用和命令
+- **全局搜索** — 搜索文件、应用和设置
+- **明暗主题** — 支持自定义强调色
+- **启动画面** — 带加载动画的欢迎界面
 
-### Web Browser (Enhanced)
+### Web 浏览器（增强版）
 
-- Built-in Wikipedia search (Chinese + English)
-- Hacker News reader with 5 categories
-- GitHub repository explorer
-- Smart URL routing (`wiki:`, `hn:`, `gh:` prefixes)
-- Tab system with bookmarks and history
-- Built-in search engine
+- 内置 Wikipedia 搜索（中文 + 英文）
+- Hacker News 阅读器，5 个分类
+- GitHub 仓库浏览器
+- 智能 URL 路由（`wiki:`、`hn:`、`gh:` 前缀）
+- 标签系统，支持书签和历史记录
+- 内置搜索引擎
 
-### Development Tools
+### 开发工具
 
-- **Web IDE Pro** — full-featured online programming environment with code completion
-- **Code Editor** — syntax highlighting for 30+ languages
-- **Online Code Runner** — multi-language execution via Pyodide
-- **Code Playground**, **CodeSandbox**, and **CodeStudio**
-- **Code Formatter**, **Diff Viewer**, and **Code Reviewer**
-- **CodeShare** — code snippet sharing with syntax highlighting, diff viewer, template library, and Markdown export
-- **API Tester** and **REST Client** — test and debug APIs
-- **Regex Builder**, **JSON Formatter**, and **JSON Schema Validator**
-- **JWT Decoder** — decode and inspect JWT tokens
-- **HTTP Status Explorer** — lookup HTTP status codes
+- **WebIDE Pro** — 全功能在线编程环境，支持代码补全
+- **代码编辑器** — 支持 30+ 语言语法高亮
+- **在线代码运行器 Pro** — 多语言执行，支持 JavaScript/TypeScript 即时运行
+- **代码游乐场**、**CodeSandbox**、**CodeStudio**
+- **代码格式化**、**差异对比**、**代码审查**
+- **CodeShare** — 代码片段分享，语法高亮、差异对比、模板库、Markdown 导出
+- **API 测试器**、**REST 客户端** — 测试和调试 API
+- **正则构建器**、**JSON 格式化**、**JSON Schema 验证**
+- **JWT 解码器** — 解码和检查 JWT 令牌
+- **HTTP 状态码浏览器** — 查询 HTTP 状态码
 
-### Productivity Suite
+### 生产力套件
 
-- **Markdown Editor** — live preview, slides, and HTML export
-- **Spreadsheet** — formulas, charts, and data analysis
-- **Calendar** — event management with reminders
-- **World Clock** — multiple time zones
-- **Task Manager** — Kanban Board, Project Planner, Gantt Chart
-- **Pomodoro Timer** — focus sessions with statistics
-- **Habit Tracker** — track daily habits and streaks
-- **Smart Notes** — tags, colors, and import/export
-- **Mind Map** — visual brainstorming
-- **Presentation Creator** — slides with transitions
+- **Markdown 编辑器** — 实时预览、幻灯片、HTML 导出
+- **电子表格** — 公式、图表、数据分析
+- **日历** — 事件管理，支持提醒
+- **世界时钟** — 多时区显示
+- **任务管理** — 看板、项目规划、甘特图
+- **番茄钟** — 专注时段，统计分析
+- **习惯追踪器** — 追踪每日习惯和连续天数
+- **智能笔记** — 标签、颜色、导入/导出
+- **思维导图** — 可视化脑暴
+- **演示文稿** — 幻灯片过渡效果
 
-### Creative & Media
+### 创意和媒体
 
-- **Paint** — basic drawing tools
-- **DrawPad** — full drawing application with layers, shapes, text, export to PNG
-- **Music Player** — audio playback with equalizer
-- **Music Studio** — compose and edit music
-- **Music Visualizer** — real-time audio visualization
-- **Video Player** — HTML5 video playback
-- **Image Viewer** — support for multiple formats
-- **Screen Recorder** — record browser screen
-- **Screenshot Tool** — capture and annotate screenshots
+- **画图** — 基础绘图工具
+- **DrawPad** — 完整绘图应用，图层、形状、文本、PNG 导出
+- **音乐播放器** — 音频播放，均衡器
+- **音乐工作室** — 作曲和编辑
+- **音乐可视化** — 实时音频可视化
+- **视频播放器** — HTML5 视频播放
+- **图片查看器** — 支持多种格式
+- **屏幕录制** — 录制浏览器屏幕
+- **截图工具** — 截取和标注截图
 
-### System & Utilities
+### 系统和实用工具
 
-- **File Manager** — dual-pane navigation, search, and batch operations
-- **System Monitor** — CPU, memory, and network usage
-- **Process Manager** — view and manage running processes
-- **Network Monitor** — real-time bandwidth usage
-- **Speed Test** — measure internet speed
-- **DNS Lookup** — domain name resolution
-- **Calculator** — basic and scientific calculations
-- **Password Manager** — secure password storage
-- **QR Generator** — create QR codes for URLs and text
-- **Color Picker** — hex, RGB, HSL values
-- **Unit Converter** — currency, length, weight, temperature
-- **Clipboard Manager** — clipboard history
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| UI Framework | React 19 |
-| Language | TypeScript 6 |
-| Build Tool | Vite 8 |
-| State Management | Zustand 5 |
-| Python Runtime | Pyodide 0.26 |
-| Icons | Lucide React |
-| Code Editor | Monaco Editor (via Pyodide) |
-| Storage | localStorage |
+- **文件管理器** — 双面板导航、搜索、批量操作
+- **系统监控** — CPU、内存、网络使用率
+- **进程管理器** — 查看和管理运行进程
+- **网络监控** — 实时带宽使用率
+- **速度测试** — 测量网络速度
+- **DNS 查询** — 域名解析
+- **计算器** — 基础和科学计算
+- **密码管理器** — 安全密码存储
+- **二维码生成器** — 为 URL 和文本创建二维码
+- **颜色选择器** — HEX、RGB、HSL 值
+- **单位转换器** — 货币、长度、重量、温度
+- **剪贴板管理器** — 剪贴板历史
 
 ---
 
-## Getting Started
+## 技术栈
 
-### Prerequisites
+| 层级 | 技术 |
+|------|------|
+| UI 框架 | React 19 |
+| 语言 | TypeScript 6 |
+| 构建工具 | Vite 8 |
+| 状态管理 | Zustand 5 |
+| Python 运行时 | Pyodide 0.26 |
+| 图标 | Lucide React |
+| 代码编辑器 | Monaco Editor（通过 Pyodide） |
+| 存储 | localStorage |
+
+---
+
+## 快速开始
+
+### 系统要求
 
 - Node.js 18+
 - npm
 
-### Install & Run
+### 安装和运行
 
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
@@ -189,19 +201,19 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+打开浏览器访问 `http://localhost:5173`。
 
-### Build for Production
+### 生产构建
 
 ```bash
 npm run build
 ```
 
-Output is in `web-linux/dist/`, deployable to any static host.
+构建产物在 `web-linux/dist/`，可部署到任何静态主机。
 
-### Optional API Keys
+### 可选 API 密钥
 
-Create a `.env` file in `web-linux/` for enhanced features:
+在 `web-linux/` 目录创建 `.env` 文件以获得增强功能：
 
 ```env
 VITE_OPENWEATHERMAP_API_KEY=your_key
@@ -210,57 +222,57 @@ VITE_EXCHANGERATE_API_KEY=your_key
 VITE_NASA_API_KEY=your_key
 ```
 
-All core features work without API keys.
+所有核心功能无需 API 密钥即可正常使用。
 
 ---
 
-## Keyboard Shortcuts
+## 键盘快捷键
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/⌘ + Shift + L` | Open application launcher |
-| `Ctrl + Shift + T` | Open terminal |
-| `Ctrl + E` | Open file manager |
-| `Ctrl + ,` | Open settings |
-| `Ctrl + K` | Global search |
-| `Ctrl + Shift + C` | Open calculator |
-| `Ctrl + Q` | Close focused window |
-| `Ctrl + M` | Minimize focused window |
-| `Alt + Tab` | Cycle windows |
-| `Ctrl + 1-9` | Switch to desktop N |
-| `Ctrl + Shift + 1-9` | Move window to desktop N |
-| `F11` | Toggle fullscreen |
+| 快捷键 | 功能 |
+|--------|------|
+| `Ctrl/⌘ + Shift + L` | 打开应用启动器 |
+| `Ctrl + Shift + T` | 打开终端 |
+| `Ctrl + E` | 打开文件管理器 |
+| `Ctrl + ,` | 打开设置 |
+| `Ctrl + K` | 全局搜索 |
+| `Ctrl + Shift + C` | 打开计算器 |
+| `Ctrl + Q` | 关闭聚焦窗口 |
+| `Ctrl + M` | 最小化聚焦窗口 |
+| `Alt + Tab` | 切换窗口 |
+| `Ctrl + 1-9` | 切换到桌面 N |
+| `Ctrl + Shift + 1-9` | 移动窗口到桌面 N |
+| `F11` | 切换全屏 |
 
-**Terminal**: `Ctrl+L` clear · `Ctrl+C` interrupt · `Ctrl+R` reverse search · `Tab` autocomplete
+**终端快捷键**: `Ctrl+L` 清屏 · `Ctrl+C` 中断 · `Ctrl+R` 反向搜索 · `Tab` 自动补全
 
 ---
 
-## Project Structure
+## 项目结构
 
 ```
 WebLinuxOS/
 └── web-linux/
     ├── src/
-    │   ├── App.tsx                 # Root component, keyboard shortcuts
-    │   ├── apps.tsx                # Application registry (240+ apps)
-    │   ├── store.tsx               # Zustand global store
-    │   ├── types.ts                # TypeScript type definitions
-    │   ├── icons.tsx               # Icon components
+    │   ├── App.tsx                 # 根组件，键盘快捷键
+    │   ├── apps.tsx                # 应用注册表（240+ 应用）
+    │   ├── store.tsx               # Zustand 全局状态
+    │   ├── types.ts                # TypeScript 类型定义
+    │   ├── icons.tsx               # 图标组件
     │   ├── components/
-    │   │   ├── desktop/            # Window manager, Taskbar, Dock, Desktop
+    │   │   ├── desktop/            # 窗口管理器、任务栏、Dock、桌面
     │   │   ├── CommandPalette.tsx
     │   │   ├── NotificationSystem.tsx
     │   │   └── ...
-    │   ├── apps/                   # Application implementations
-    │   │   ├── terminal/           # Terminal emulator and commands
+    │   ├── apps/                   # 应用实现
+    │   │   ├── terminal/           # 终端模拟器和命令
     │   │   ├── CodeEditor.tsx
     │   │   ├── FileManager.tsx
     │   │   └── ...
-    │   ├── services/               # API clients (aiService, apiService)
-    │   ├── store/                  # Virtual filesystem, persistence utils
-    │   ├── utils/                  # Helper functions
-    │   └── styles/                 # Theme stylesheets
-    ├── screenshots/                # Project screenshots
+    │   ├── services/               # API 客户端（aiService、apiService）
+    │   ├── store/                  # 虚拟文件系统、持久化工具
+    │   ├── utils/                  # 辅助函数
+    │   └── styles/                 # 主题样式表
+    ├── screenshots/                # 项目截图
     ├── index.html
     ├── vite.config.ts
     └── package.json
@@ -268,40 +280,40 @@ WebLinuxOS/
 
 ---
 
-## Deployment
+## 部署
 
-### GitHub Pages (Automated)
+### GitHub Pages（自动）
 
-Push to `main` — GitHub Actions builds and deploys automatically.
+推送到 `main` 分支 — GitHub Actions 自动构建并部署。
 
-### Static Hosting
+### 静态托管
 
-Upload `web-linux/dist/` to any static host (Vercel, Netlify, Cloudflare Pages, S3, nginx).
-
----
-
-## Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes
-4. Verify: `npm run typecheck && npm run build`
-5. Submit a pull request
-
-**Adding a new application:**
-
-1. Create component in `web-linux/src/apps/`
-2. Register in `web-linux/src/apps.tsx`
-3. Add lazy import in `web-linux/src/components/desktop/WindowManager.tsx`
+上传 `web-linux/dist/` 到任何静态主机（Vercel、Netlify、Cloudflare Pages、S3、nginx）。
 
 ---
 
-## Browser Support
+## 贡献指南
 
-| Browser | Version |
-|---------|---------|
+欢迎贡献代码！
+
+1. Fork 本仓库
+2. 创建功能分支: `git checkout -b feature/my-feature`
+3. 进行更改
+4. 验证: `npm run typecheck && npm run build`
+5. 提交 Pull Request
+
+**添加新应用:**
+
+1. 在 `web-linux/src/apps/` 创建组件
+2. 在 `web-linux/src/apps.tsx` 注册
+3. 在 `web-linux/src/components/desktop/WindowManager.tsx` 添加懒加载导入
+
+---
+
+## 浏览器支持
+
+| 浏览器 | 版本 |
+|--------|------|
 | Chrome | 90+ |
 | Firefox | 88+ |
 | Safari | 14+ |
@@ -309,12 +321,38 @@ Contributions are welcome.
 
 ---
 
-## License
+## 开源协议
 
-[MIT](LICENSE) — Free to use, modify, and distribute, including for commercial purposes.
+[MIT](LICENSE) — 免费使用、修改和分发，包括商业用途。
 
-## Acknowledgments
+## 致谢
 
-- Window manager, terminal, and virtual filesystem are original work
-- Inspired by [linux.js](https://github.com/hrtowii/linux.js), [WebSH](https://github.com/nicedoc/web-sh)
-- Wallpapers from Unsplash and Pexels (CC0)
+- 窗口管理器、终端和虚拟文件系统为原创实现
+- 灵感来源: [linux.js](https://github.com/hrtowii/linux.js)、[WebSH](https://github.com/nicedoc/web-sh)
+- 壁纸来自 Unsplash 和 Pexels（CC0）
+
+---
+
+## 更新日志
+
+### v38.1.0 (2025-01-XX)
+
+**新增功能**
+
+- 在线代码运行器 Pro — 支持 JavaScript/TypeScript 即时运行，HTML 实时预览
+- 多文件管理，支持切换和编辑
+- 代码模板库，包含各语言示例代码
+
+**改进优化**
+
+- 优化应用启动性能
+- 改进内存使用效率
+- 增强错误处理和用户提示
+
+---
+
+<div align="center">
+
+**[在线体验](https://saya-ch.github.io/WebLinuxOS/)** · 由 React 19 + TypeScript 6 + Vite 8 强力驱动
+
+</div>

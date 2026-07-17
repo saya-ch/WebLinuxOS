@@ -74,6 +74,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   UuidTools: () => import('../../apps/UuidTools'),
   CodeRunner: () => import('../../apps/CodeRunner'),
   OnlineCodeRunner: () => import('../../apps/OnlineCodeRunner'),
+  OnlineCodeRunnerEnhanced: () => import('../../apps/OnlineCodeRunnerEnhanced'),
   CodePlayground: () => import('../../apps/CodePlayground'),
   CodeSandbox: () => import('../../apps/CodeSandbox'),
   CodeStudio: () => import('../../apps/CodeStudio'),
