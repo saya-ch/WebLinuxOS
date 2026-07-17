@@ -29,6 +29,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 工作区管理器（v38.2创新功能）
+  { id: 'workspace-manager', name: '工作区管理器', icon: <GridIcon />, component: 'WorkspaceManager', category: 'system', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // 终极AI助手（v37.3创新功能）
   { id: 'ai-ultimate-assistant', name: '终极AI助手', icon: <SparklesIcon />, component: 'AIUltimateAssistant', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // 在线协作笔记本（v37.3创新功能）

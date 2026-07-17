@@ -8,6 +8,7 @@ import DesktopWidgets, {
   WIDGET_TITLES,
   type WidgetId,
 } from './DesktopWidgets'
+import AuroraWallpaper from './AuroraWallpaper'
 import { loadFromStorage, debouncedSaveToStorage } from '../../store/storageUtils'
 
 interface Particle {
@@ -408,7 +409,7 @@ const Desktop = memo(function Desktop() {
   }, [wallpaper, setWallpaper])
 
   const cycleLiveWallpaper = useCallback(() => {
-    const types = ['particles', 'interactive', 'waves', 'nebula']
+    const types = ['particles', 'interactive', 'waves', 'nebula', 'aurora', 'aurora-storm']
     const idx = types.indexOf(liveWallpaper)
     const next = types[(idx + 1) % types.length]
     setLiveWallpaper(next)
@@ -527,6 +528,9 @@ const Desktop = memo(function Desktop() {
       aria-label="桌面环境"
       tabIndex={-1}
     >
+      {/* Aurora canvas wallpaper */}
+      <AuroraWallpaper />
+
       {/* Enhanced animated background layers */}
       <div className="desktop-background-layer" />
       

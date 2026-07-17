@@ -9,6 +9,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 const GlobalSearch = lazy(() => import('./apps/GlobalSearch'))
 import CommandPalette from './components/CommandPalette'
 import ShortcutPanel from './components/ShortcutPanel'
+import SmartCommandCenter from './components/SmartCommandCenter'
 import './styles/cyberpunk-theme.css'
 import './styles/quantum-theme.css'
 
@@ -80,14 +81,17 @@ const App = memo(function App() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [shortcutPanelOpen, setShortcutPanelOpen] = useState(false)
+  const [smartCommandOpen, setSmartCommandOpen] = useState(false)
   const registeredRef = useRef(false)
   const setSearchOpenRef = useRef(setSearchOpen)
   const setCommandPaletteOpenRef = useRef(setCommandPaletteOpen)
+  const setSmartCommandOpenRef = useRef(setSmartCommandOpen)
 
   useEffect(() => {
     setSearchOpenRef.current = setSearchOpen
     setCommandPaletteOpenRef.current = setCommandPaletteOpen
-  }, [setSearchOpen, setCommandPaletteOpen])
+    setSmartCommandOpenRef.current = setSmartCommandOpen
+  }, [setSearchOpen, setCommandPaletteOpen, setSmartCommandOpen])
 
   useEffect(() => {
     if (!registeredRef.current) {
@@ -207,6 +211,12 @@ const App = memo(function App() {
         if (e.key === 'Escape') {
           ;(activeElement as HTMLElement).blur()
         }
+        return
+      }
+
+      if (isMod && key === ' ') {
+        e.preventDefault()
+        setSmartCommandOpenRef.current(true)
         return
       }
 
@@ -361,6 +371,7 @@ const App = memo(function App() {
       </Suspense>
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
       <ShortcutPanel isOpen={shortcutPanelOpen} onClose={() => setShortcutPanelOpen(false)} />
+      <SmartCommandCenter isOpen={smartCommandOpen} onClose={() => setSmartCommandOpen(false)} />
     </ErrorBoundary>
   )
 })
