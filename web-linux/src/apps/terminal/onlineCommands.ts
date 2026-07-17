@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { API_CONFIG, fetchWithTimeout, handleApiError } from '../../config/apiConfig'
 
 registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
@@ -7,7 +8,20 @@ registerCommand('weather', {
     const city = args.join(' ') || 'Beijing'
     
     try {
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=7453d6a418e4bc4a2e90c7038c7b4894&units=metric&lang=zh_cn`)
+      const { key, baseUrl } = API_CONFIG.openWeatherMap
+      if (!key) {
+        return {
+          output: [
+            '⚠️  错误: OpenWeatherMap API Key 未配置',
+            '',
+            '请在 .env 文件中配置:',
+            '  VITE_OPENWEATHERMAP_API_KEY=your_key',
+            '',
+            '或使用天气应用查看（基于 Open-Meteo，无需 key）',
+          ].join('\n')
+        }
+      }
+      const response = await fetchWithTimeout(`${baseUrl}/weather?q=${encodeURIComponent(city)}&appid=${key}&units=metric&lang=zh_cn`)
       
       if (!response.ok) {
         throw new Error('查询失败')
@@ -76,7 +90,20 @@ registerCommand('weather', {
 registerCommand('news', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://newsapi.org/v2/top-headlines?country=cn&apiKey=1d4b72522d7d426f8c94f665d6d70066&pageSize=10')
+      const { key, baseUrl } = API_CONFIG.newsApi
+      if (!key) {
+        return {
+          output: [
+            '⚠️  错误: NewsAPI Key 未配置',
+            '',
+            '请在 .env 文件中配置:',
+            '  VITE_NEWSAPI_KEY=your_key',
+            '',
+            '或使用新闻阅读器应用查看 Hacker News',
+          ].join('\n')
+        }
+      }
+      const response = await fetchWithTimeout(`${baseUrl}/top-headlines?country=cn&apiKey=${key}&pageSize=10`)
       
       if (!response.ok) {
         throw new Error('查询失败')
@@ -137,7 +164,7 @@ registerCommand('crypto', {
     const { args } = context
     
     try {
-      const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin%2Cethereum%2Cbinancecoin%2Cripple%2Csolana%2Ccardano%2Cdogecoin%2Cusd-coin%2Cpolygon%2Cstaked-ether&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h')
+      const response = await fetchWithTimeout(`${API_CONFIG.coinGecko.baseUrl}/coins/markets?vs_currency=usd&ids=bitcoin%2Cethereum%2Cbinancecoin%2Cripple%2Csolana%2Ccardano%2Cdogecoin%2Cusd-coin%2Cpolygon%2Cstaked-ether&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h`)
       
       if (!response.ok) {
         throw new Error('查询失败')
@@ -245,7 +272,7 @@ registerCommand('translate', {
     const text = args.join(' ')
     
     try {
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=auto|zh-CN`)
+      const response = await fetchWithTimeout(`${API_CONFIG.myMemory.baseUrl}/get?q=${encodeURIComponent(text)}&langpair=auto|zh-CN`)
       
       if (!response.ok) {
         throw new Error('翻译失败')
@@ -318,7 +345,7 @@ registerCommand('translate', {
 registerCommand('quote', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://api.quotable.io/random')
+      const response = await fetchWithTimeout(`${API_CONFIG.quotable.baseUrl}/random`)
       
       if (!response.ok) {
         throw new Error('获取失败')
@@ -371,10 +398,10 @@ registerCommand('quote', {
 registerCommand('ipinfo', {
   handler: async (): Promise<CommandResult> => {
     try {
-      const response = await fetch('https://ipapi.co/json/')
+      const response = await fetchWithTimeout('https://ipapi.co/json/')
       
       if (!response.ok) {
-        throw new Error('查询失败')
+        throw new Error(`HTTP ${response.status}`)
       }
       
       const data = await response.json()
@@ -397,12 +424,12 @@ registerCommand('ipinfo', {
           '数据来源: ipapi.co',
         ].join('\n')
       }
-    } catch {
+    } catch (error) {
       return {
         output: [
           '🌐 本机IP信息',
           '',
-          '查询失败，无法获取IP信息',
+          handleApiError(error, 'IP查询'),
           '',
           '提示: 可能是网络问题或API限制',
         ].join('\n')
@@ -412,4 +439,238 @@ registerCommand('ipinfo', {
   description: 'IP地址信息',
   usage: 'ipinfo',
   examples: ['ipinfo']
+})
+
+registerCommand('time', {
+  handler: async (): Promise<CommandResult> => {
+    const now = new Date()
+    const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const dateStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+    const utcStr = now.toUTCString()
+    
+    return {
+      output: [
+        '⏰ 当前时间',
+        '',
+        `本地时间: ${timeStr}`,
+        `日期: ${dateStr}`,
+        `UTC时间: ${utcStr}`,
+        `时间戳: ${Math.floor(now.getTime() / 1000)}`,
+        `毫秒时间戳: ${now.getTime()}`,
+      ].join('\n')
+    }
+  },
+  description: '显示当前时间',
+  usage: 'time',
+  examples: ['time']
+})
+
+registerCommand('currency', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const target = args[0]?.toUpperCase() || 'CNY'
+    
+    try {
+      const response = await fetchWithTimeout(`https://api.frankfurter.app/latest?from=USD&to=${target}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.rates || !data.rates[target]) {
+        return { output: `currency: 未找到货币 '${target}'` }
+      }
+      
+      return {
+        output: [
+          '💱 汇率查询',
+          '',
+          `1 USD = ${data.rates[target]} ${target}`,
+          `1 ${target} = ${(1 / data.rates[target]).toFixed(6)} USD`,
+          '',
+          `基准日期: ${data.date}`,
+          '数据来源: Frankfurter API',
+          '',
+          '支持的货币代码: USD, EUR, GBP, JPY, CNY, AUD, CAD, CHF 等',
+        ].join('\n')
+      }
+    } catch (error) {
+      return {
+        output: [
+          '💱 汇率查询',
+          '',
+          handleApiError(error, '汇率查询'),
+          '',
+          '用法: currency <货币代码>',
+          '示例: currency CNY, currency EUR, currency JPY',
+        ].join('\n')
+      }
+    }
+  },
+  description: '汇率查询',
+  usage: 'currency [货币代码]',
+  examples: ['currency', 'currency CNY', 'currency EUR']
+})
+
+registerCommand('country', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const query = args.join(' ')
+    
+    if (!query) {
+      return {
+        output: [
+          '🌍 国家信息查询',
+          '',
+          '用法: country <国家名称或代码>',
+          '示例: country China, country US, country JP',
+        ].join('\n')
+      }
+    }
+    
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.restCountries.baseUrl}/name/${encodeURIComponent(query)}?fullText=true`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        return { output: `country: 未找到国家 '${query}'` }
+      }
+      
+      const country = data[0]
+      
+      return {
+        output: [
+          `🌍 ${country.name?.common || '未知'}`,
+          '',
+          `官方名称: ${country.name?.official || '未知'}`,
+          `代码: ${country.cca2} / ${country.cca3}`,
+          `首都: ${country.capital?.[0] || '未知'}`,
+          `人口: ${country.population?.toLocaleString() || '未知'}`,
+          `面积: ${country.area?.toLocaleString()} km²`,
+          `时区: ${country.timezones?.[0] || '未知'}`,
+          `语言: ${Object.values(country.languages || {}).join(', ') || '未知'}`,
+          `货币: ${Object.keys(country.currencies || {}).join(', ') || '未知'}`,
+          `所属大洲: ${country.continents?.join(', ') || '未知'}`,
+          '',
+          '数据来源: REST Countries API',
+        ].join('\n')
+      }
+    } catch (error) {
+      return {
+        output: [
+          '🌍 国家信息查询',
+          '',
+          handleApiError(error, '国家信息'),
+          '',
+          '用法: country <国家名称或代码>',
+          '示例: country China, country Japan',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询国家信息',
+  usage: 'country <国家名称>',
+  examples: ['country China', 'country Japan', 'country US']
+})
+
+registerCommand('joke', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.jokeApi.baseUrl}/joke/Any?lang=zh&type=single`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      return {
+        output: [
+          '😄 随机笑话',
+          '',
+          data.joke || data.setup + '\n' + data.delivery || '暂无笑话',
+          '',
+          `分类: ${data.category || '普通'}`,
+          '数据来源: JokeAPI',
+        ].join('\n')
+      }
+    } catch (error) {
+      const fallbackJokes = [
+        '为什么程序员不喜欢大自然？因为有太多的 bugs！',
+        '计算机为什么会感冒？因为它有太多的 windows！',
+        'JavaScript 程序员的口头禅：这在我的机器上是正常的！',
+        '为什么数组喜欢聚会？因为它们喜欢在一起！',
+        '为什么 CSS 总是那么冷静？因为它有很好的 padding！',
+      ]
+      
+      return {
+        output: [
+          '😄 随机笑话',
+          '',
+          fallbackJokes[Math.floor(Math.random() * fallbackJokes.length)],
+          '',
+          handleApiError(error, '笑话API'),
+        ].join('\n')
+      }
+    }
+  },
+  description: '获取随机笑话',
+  usage: 'joke',
+  examples: ['joke']
+})
+
+registerCommand('advice', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.adviceSlip.baseUrl}/advice`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      return {
+        output: [
+          '💡 每日建议',
+          '',
+          `"${data.slip?.advice || '暂无建议'}"`,
+          '',
+          `ID: #${data.slip?.id || 'unknown'}`,
+          '数据来源: Advice Slip',
+        ].join('\n')
+      }
+    } catch (error) {
+      const fallbackAdvice = [
+        '每天学习一点新知识，日积月累会有大收获。',
+        '保持好奇心，这是创新的源泉。',
+        '代码写得好不如代码读得好。',
+        '休息好才能工作好，不要过度劳累。',
+        '多与人交流，分享知识能让你学得更快。',
+        '保持简洁，简单的解决方案往往是最好的。',
+        '不要害怕犯错，每一次错误都是学习的机会。',
+        '定期回顾你的代码，总会发现可以改进的地方。',
+      ]
+      
+      return {
+        output: [
+          '💡 每日建议',
+          '',
+          `"${fallbackAdvice[Math.floor(Math.random() * fallbackAdvice.length)]}"`,
+          '',
+          handleApiError(error, '建议API'),
+        ].join('\n')
+      }
+    }
+  },
+  description: '获取每日建议',
+  usage: 'advice',
+  examples: ['advice']
 })

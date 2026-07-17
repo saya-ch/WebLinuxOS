@@ -1,18 +1,10 @@
 # WebLinuxOS
 
-An open-source, browser-based Linux desktop environment that runs entirely in a single tab. 100% client-side, zero installation, 200+ ready-to-use applications.
+WebLinuxOS is an open-source, browser-based Linux desktop environment that runs entirely in a single browser tab. It requires zero installation, works 100% client-side, and comes with 200+ ready-to-use applications.
 
-## Table of Contents
+## Live Demo
 
-- [Features](#features)
-- [Live Demo](#live-demo)
-- [Getting Started](#getting-started)
-- [Architecture](#architecture)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
-- [API Integrations](#api-integrations)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [License](#license)
+[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
 
 ## Features
 
@@ -77,7 +69,7 @@ An open-source, browser-based Linux desktop environment that runs entirely in a 
 - Pipes (`|`), redirects (`>`, `>>`, `<`), chaining (`;`, `&&`, `||`)
 - Background processes (`&`), `jobs`, `kill`
 - Tab completion, command history, reverse search
-- Live API commands: `weather`, `crypto`, `news`, `stock`, `translate`, `ipinfo`, `quote`, `time`
+- Live API commands: `weather`, `crypto`, `news`, `stock`, `translate`, `ipinfo`, `quote`, `time`, `currency`, `country`, `joke`, `advice`
 
 ### API Integrations
 
@@ -91,21 +83,33 @@ The project integrates with 20+ public APIs:
 - NASA APOD (Astronomy)
 - Frankfurter (Currency exchange)
 - IP Geolocation
+- REST Countries
+- JokeAPI
+- Advice Slip
 - And many more
 
 All integrations use key-less public endpoints where possible, running entirely on GitHub Pages without environment configuration.
 
-## Live Demo
+## Getting Started
 
-**Production:** https://saya-ch.github.io/WebLinuxOS/
+### Prerequisites
 
-**Local Development:**
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 npm install
 npm run dev
+```
+
+### Build for Production
+
+```bash
+npm run build
 ```
 
 ## Architecture
@@ -167,37 +171,19 @@ Terminal shortcuts:
 
 Upload contents of `web-linux/dist/` to any static host (Netlify, Vercel, Cloudflare Pages, S3, nginx).
 
-## Version History
+## Environment Variables
 
-### v37.4
-
-- Enhanced terminal with new online commands (weather, news, crypto, translate, ipinfo, quote, time)
-- Improved dynamic wallpaper performance with device-aware particle rendering
-- Fixed TypeScript build errors
-- Enhanced AI Ultimate Assistant with multi-modal support
-- Improved system performance and stability
-
-### v37.3
-
-- Added Ultimate AI Assistant with multi-modal support
-- Added Online Collaborative Notebook with block-based editing
-- Enhanced system performance and stability
-- Improved UI/UX across all applications
-
-### v37.0
-
-- Added Quantum Calculator
-- Added Welcome Hub
-- Enhanced desktop widgets
-
-### v36.0
-
-- Web IDE Pro - Full-featured online programming environment
-- Enhanced code editor capabilities
+```env
+# Optional API keys for enhanced features
+VITE_OPENWEATHERMAP_API_KEY=your_key
+VITE_NEWSAPI_KEY=your_key
+VITE_EXCHANGERATE_API_KEY=your_key
+VITE_NASA_API_KEY=your_key
+```
 
 ## Contributing
 
-Contributions welcome! Please:
+Contributions are welcome. Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
