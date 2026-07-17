@@ -1,25 +1,33 @@
 # WebLinuxOS
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-blueviolet)](https://saya-ch.github.io/WebLinuxOS/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6)](https://www.typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-6-646cff)](https://vite.dev)
-
 An open-source, browser-based Linux desktop environment that runs entirely in a single tab. 100% client-side, zero installation, 200+ ready-to-use applications.
 
-## Key Features
+## Table of Contents
+
+- [Features](#features)
+- [Live Demo](#live-demo)
+- [Getting Started](#getting-started)
+- [Architecture](#architecture)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [API Integrations](#api-integrations)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
 
 ### Desktop Environment
+
 - Full window manager with drag, resize, minimize, maximize, and multi-monitor-style tiling
 - Virtual filesystem with localStorage persistence
-- Real terminal shell with 160+ commands, pipes, redirections, and scripting support
+- Real terminal shell with 180+ commands, pipes, redirections, and scripting support
 - Multiple desktop workspaces (up to 9 virtual desktops)
 - Customizable wallpapers and themes (light/dark mode)
+- Dynamic particle effects and animated backgrounds
 
 ### Applications (200+)
 
-#### Development Tools
+**Development Tools**
 - Web IDE Pro - Full-featured online programming environment
 - Code Editor with Monaco Editor integration
 - Intelligent Code Assistant - AI-powered coding helper
@@ -27,23 +35,15 @@ An open-source, browser-based Linux desktop environment that runs entirely in a 
 - Code Formatter, Diff Viewer, and Reviewer
 - Online Code Runner supporting multiple languages
 
-#### AI & Productivity
-- Ultimate AI Assistant - Multi-modal intelligent assistant with:
-  - General Q&A and daily assistance
-  - Code expert for programming questions
-  - Writing assistant for document creation
-  - Data analyst for analysis and visualization
-  - Translator for multi-language support
-- Online Collaborative Notebook - Block-based note-taking with:
-  - Text, headings, checklists, and code blocks
-  - Auto-save and version history
-  - Support for multiple programming languages
+**AI & Productivity**
+- Ultimate AI Assistant - Multi-modal intelligent assistant
+- Online Collaborative Notebook - Block-based note-taking
 - Pomodoro Studio and Time Management
 - Task Manager and Kanban Board
 - Calendar and World Clock
 - Password Manager and Generator
 
-#### System Utilities
+**System Utilities**
 - File Manager with virtual filesystem
 - System Monitor Dashboard
 - Network Tools and Monitor
@@ -51,7 +51,7 @@ An open-source, browser-based Linux desktop environment that runs entirely in a 
 - Disk Usage Analyzer
 - Settings and Theme Customizer
 
-#### Knowledge & Information
+**Knowledge & Information**
 - Wikipedia Reader
 - GitHub Trending Explorer
 - Hacker News Reader
@@ -59,7 +59,7 @@ An open-source, browser-based Linux desktop environment that runs entirely in a 
 - Currency and Crypto Tracker
 - Dictionary and Translation
 
-#### Media & Creative
+**Media & Creative**
 - Music Player with Web Audio
 - Video Player
 - Image Viewer and Editor
@@ -67,23 +67,27 @@ An open-source, browser-based Linux desktop environment that runs entirely in a 
 - Screen Recorder
 - Music Studio and Visualizer
 
-#### Games
+**Games**
 - 2048, Tetris, Snake, Memory
 - Minesweeper and more
 
 ### Terminal Features
+
 - 180+ built-in commands
 - Pipes (`|`), redirects (`>`, `>>`, `<`), chaining (`;`, `&&`, `||`)
 - Background processes (`&`), `jobs`, `kill`
 - Tab completion, command history, reverse search
-- Live API commands: `weather`, `crypto`, `news`, `stock`, `translate`, and more
+- Live API commands: `weather`, `crypto`, `news`, `stock`, `translate`, `ipinfo`, `quote`, `time`
 
 ### API Integrations
+
 The project integrates with 20+ public APIs:
-- Open-Meteo (Weather)
+
+- Open-Meteo / OpenWeatherMap (Weather)
 - CoinGecko (Crypto prices)
 - GitHub REST API (Trending repos)
 - Wikipedia REST API
+- NewsAPI (News headlines)
 - NASA APOD (Astronomy)
 - Frankfurter (Currency exchange)
 - IP Geolocation
@@ -96,6 +100,7 @@ All integrations use key-less public endpoints where possible, running entirely 
 **Production:** https://saya-ch.github.io/WebLinuxOS/
 
 **Local Development:**
+
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
@@ -124,6 +129,7 @@ WebLinuxOS/
 ```
 
 ### State Management
+
 - Zustand store manages window state, filesystem, theme, and app preferences
 - Virtual filesystem stored in localStorage with hierarchical JSON structure
 - Lazy loading for all application components to optimize bundle size
@@ -152,31 +158,42 @@ Terminal shortcuts:
 ## Deployment
 
 ### GitHub Pages (Automated)
+
 1. Push to `main` branch
 2. GitHub Actions automatically builds and deploys
 3. Access at `https://<username>.github.io/WebLinuxOS/`
 
 ### Static Hosting
+
 Upload contents of `web-linux/dist/` to any static host (Netlify, Vercel, Cloudflare Pages, S3, nginx).
 
 ## Version History
 
-### v37.3 (Latest)
+### v37.4
+
+- Enhanced terminal with new online commands (weather, news, crypto, translate, ipinfo, quote, time)
+- Improved dynamic wallpaper performance with device-aware particle rendering
+- Fixed TypeScript build errors
+- Enhanced AI Ultimate Assistant with multi-modal support
+- Improved system performance and stability
+
+### v37.3
+
 - Added Ultimate AI Assistant with multi-modal support
 - Added Online Collaborative Notebook with block-based editing
 - Enhanced system performance and stability
 - Improved UI/UX across all applications
 
 ### v37.0
+
 - Added Quantum Calculator
 - Added Welcome Hub
 - Enhanced desktop widgets
 
 ### v36.0
+
 - Web IDE Pro - Full-featured online programming environment
 - Enhanced code editor capabilities
-
-[View full changelog](CHANGELOG.md)
 
 ## Contributing
 
@@ -214,9 +231,3 @@ Free to use, modify, and distribute, including for commercial purposes.
 - Window manager, terminal, and virtual filesystem are original work
 - Inspired by [linux.js](https://github.com/hrtowii/linux.js), [WebSH](https://github.com/nicedoc/web-sh)
 - Wallpapers from Unsplash and Pexels (CC0)
-
----
-
-Made with care by [saya-ch](https://github.com/saya-ch) and contributors.
-
-If you find WebLinuxOS useful, consider giving it a star!

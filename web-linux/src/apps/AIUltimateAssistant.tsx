@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useStore } from '../store'
 
 interface Message {
   id: string
@@ -75,7 +74,7 @@ export default function AIUltimateAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentConversation?.messages])
 
-  const generateResponse = useCallback(async (userMessage: string, model: string): Promise<string> => {
+  const generateResponse = useCallback(async (_userMessage: string, model: string): Promise<string> => {
     // 模拟AI响应 (实际应用中可接入真实API)
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
     
