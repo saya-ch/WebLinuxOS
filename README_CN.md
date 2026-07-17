@@ -1,247 +1,271 @@
+<div align="center">
+
 # WebLinuxOS
 
-[English](README.md) | 中文
+一个完全运行在浏览器中的 Linux 桌面环境
 
-一个功能完整的基于Web的Linux桌面环境，完全在浏览器中运行。无需后端 - 所有功能均在客户端运行。
+[在线体验](https://saya-ch.github.io/WebLinuxOS/) · [报告问题](https://github.com/saya-ch/WebLinuxOS/issues) · [功能建议](https://github.com/saya-ch/WebLinuxOS/issues)
 
-## 在线演示
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6.svg)](https://www.typescriptlang.org)
+[![Vite 8](https://img.shields.io/badge/Vite-8-646cff.svg)](https://vite.dev)
 
-访问在线演示：[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)
+English | [中文](README_CN.md)
 
-## 概述
+</div>
 
-WebLinuxOS将Linux桌面体验带入您的浏览器。它具有现代化的响应式界面，支持多窗口管理、虚拟桌面和120+应用程序 - 全部完全在客户端运行，无需后端依赖。
+<p align="center">
+  <img src="web-linux/screenshots/01-desktop.png" alt="WebLinuxOS 桌面" width="800" />
+</p>
 
-本项目展示了现代Web技术的可能性，将传统桌面环境的熟悉感与Web应用的可访问性相结合。
+## 为什么选择 WebLinuxOS？
 
-## 核心特性
+无需安装，无需后端，无需配置。WebLinuxOS 在一个浏览器标签页中提供完整的 Linux 桌面体验 — 240+ 内置应用、支持 150+ 命令的终端、虚拟文件系统、实时 API 集成，全部 100% 在客户端运行。
 
-### 桌面环境
-- **多个虚拟桌面**：使用可自定义壁纸在多个工作区之间切换
-- **高级窗口管理**：打开、关闭、最小化和最大化窗口的流畅动画
-- **智能启动器**：模糊搜索和分类应用列表
-- **系统托盘**：网络、音量和电池指示器，带快速控制
-- **全局搜索**：跨应用和文件搜索
-- **命令面板**：快速访问系统命令
-- **上下文菜单**：文件和桌面的右键菜单
-- **动态壁纸**：粒子和交互式壁纸效果
-- **启动画面**：优雅的启动动画
-- **深色/浅色主题**：可自定义的主题切换
-- **工作空间管理器**：保存/恢复窗口布局，多工作流配置，一键切换工作模式
-- **桌面小部件**：让桌面成为信息工作台的实时小部件系统：
-  - **时钟** — 模拟指针表盘 + 数字时间与日期
-  - **系统脉搏** — 实时 JS 堆内存、CPU 核心、电池与在线状态，附带滚动折线图
-  - **实时天气** — 接入 Open-Meteo 公开 API（无需密钥），自动定位并优雅降级
-  - **专注计时器** — 番茄钟倒计时圆环，完成时播放提示音，支持 15/25/45 分钟预设
-  - **快捷便签** — 持久化便签，自动保存到 localStorage
-  - 小部件可拖动、可通过桌面右键菜单单独开关，布局跨会话持久化
+---
+
+## 功能特性
+
+### 窗口管理
+
+- 拖拽、缩放、最小化、最大化，支持对齐辅助线
+- 多显示器风格的平铺和窗口堆叠
+- 最多 9 个虚拟桌面，支持快捷键切换
+- 任务栏、Dock 栏和带实时指示器的系统托盘
+
+### 虚拟文件系统
+
+- 创建、删除、重命名、复制和移动文件与文件夹
+- 所有文件操作支持撤销/重做
+- 基于 localStorage 持久化的层级 JSON 结构
+- 完整路径解析、权限和目录导航
+
+### 终端模拟器
+
+- 150+ 内置命令，覆盖文件操作、网络、系统监控和实用工具
+- 管道 (`|`)、重定向 (`>` `>>` `<`)、链式 (`;` `&&` `||`) 操作符
+- 后台进程 (`&`)、`jobs`、`kill`
+- Tab 补全、命令历史、反向搜索 (`Ctrl+R`)
+- 通过 Pyodide 提供 Python 运行时 — 在终端中直接运行 Python 3
+
+### 实时 API 集成
+
+| 服务 | API | 是否需要密钥 |
+|------|-----|:----------:|
+| 天气 | Open-Meteo / OpenWeatherMap | 否 / 可选 |
+| 新闻 | Hacker News / NewsAPI | 否 / 可选 |
+| 加密货币 | CoinGecko | 否 |
+| GitHub | GitHub REST API | 否 |
+| 汇率 | Frankfurter | 否 |
+| 维基百科 | Wikipedia REST API | 否 |
+| 翻译 | LibreTranslate | 否 |
+| IP 地理定位 | ipapi | 否 |
+| 天文每日一图 | NASA APOD | 可选 |
+| 国家信息 | REST Countries | 否 |
+
+所有集成使用免费公共端点，开箱即用。可选 API 密钥可解锁更高的请求频率和额外数据。
 
 ### 开发工具
-- **代码编辑器**：支持多种语言的语法高亮和代码编辑
-- **API测试器**：内置REST API客户端，支持各种HTTP方法
-- **JSON格式化器**：美化、验证和格式化JSON数据
-- **正则表达式构建器**：交互式正则表达式测试和构建工具
-- **GitHub热门**：直接在操作系统中查看热门仓库
-- **Python REPL**：通过Pyodide在浏览器中运行Python 3代码
-- **80+终端命令**：文件操作、系统监控、网络工具和实用程序，包括 find、stat、diff、netstat、dnslookup、iplookup、yaml、regex 等高级命令
-- **代码片段管理器**：保存和组织代码片段以便快速访问
-- **组件沙盒**：测试和预览React组件
 
-### 办公与生产力
-- **文本/Markdown编辑器**：带实时预览的富文本编辑
-- **电子表格**：用于数据输入的基本电子表格功能
-- **日历**：日历视图的日期和事件管理
-- **待办事项列表**：带完成跟踪的任务管理
-- **看板**：支持拖放的视觉任务组织
-- **项目规划器**：时间线和里程碑跟踪
-- **智能笔记**：带标签、颜色、归档和导入/导出功能的智能笔记
-- **思维导图**：基于节点的创意可视化
-- **演示文稿创建器**：基于幻灯片的演示文稿
-- **抽认卡**：学习和记忆工具
-- **习惯追踪器**：追踪日常习惯和进度
-- **智能仪表盘**：实时数据仪表盘，包括天气、加密货币和系统统计
+- Web IDE Pro — 功能完整的在线编程环境
+- 代码编辑器，支持语法高亮
+- 在线代码运行器（通过 Pyodide 支持多语言）
+- 代码游乐场、沙盒和工作室
+- 代码格式化器、Diff 查看器和审查工具
+- API 测试器和 REST 客户端
+- 正则表达式构建器和 JSON 格式化器
 
-### 实用工具
-- **计算器**：带高级功能和历史记录的科学计算器
-- **密码管理器**：带加密的安全密码存储
-- **番茄钟**：可自定义工作会话的生产力计时器
-- **取色器**：各种格式的颜色选择，带剪贴板复制
-- **二维码生成器**：为文本、URL和联系人创建二维码
-- **单位转换器**：测量单位之间的转换
-- **实时翻译器**：多语言翻译
-- **在线工具箱**：JSON解析、Base64编码、URL编码
-- **剪贴板管理器**：高级剪贴板历史和管理
-- **截图工具**：桌面截图
-- **屏幕录制器**：将屏幕活动录制为视频
+### 办公与效率
 
-### 多媒体
-- **音乐播放器**：带播放列表支持的音频播放
-- **视频播放器**：带控制功能的视频播放
-- **画图**：带工具的基本绘图应用程序
-- **图片查看器**：查看和缩放图片
-- **摄像头**：用于视频捕获的网络摄像头访问
-- **录音机**：带播放的音频录制
-- **音乐可视化器**：音频可视化效果
+- Markdown 编辑器（实时预览和幻灯片）
+- 电子表格、日历和世界时钟
+- 任务管理器、看板和项目规划器
+- 番茄钟计时器和习惯追踪器
+- 智能笔记（标签、颜色、导入/导出）
+- 思维导图和演示文稿制作器
 
-### 娱乐
-- **天气应用**：基于位置数据的当前天气和预报
-- **世界时钟**：多时区显示
-- **新闻聚合中心**：多源技术新闻聚合（Hacker News / Dev.to / Reddit），分类、搜索、收藏
-- **数据可视化仪表盘**：加密货币、国家信息、系统性能数据可视化
-- **新闻阅读器**：最新新闻更新
-- **游戏**：贪吃蛇、俄罗斯方块和其他经典游戏
-- **虚拟宠物**：互动宠物模拟
-- **粒子系统**：视觉效果演示
+### 创意与多媒体
+
+- 画板和绘图工具
+- 音乐播放器、音乐工作室和可视化器
+- 视频播放器和图片查看器
+- 屏幕录制和截图工具
+
+### 系统与实用工具
+
+- 文件管理器、系统监控和进程管理器
+- 网络监控、速度测试和 DNS 查询
+- 计算器、密码管理器和二维码生成器
+- 取色器、单位转换器和剪贴板管理器
+
+### 桌面增强
+
+- 动态壁纸系统（粒子、网络、波浪、星云效果）
+- 桌面小组件（时钟、系统脉搏、天气、番茄钟、便签）
+- 带优先级的通知系统
+- 命令面板和全局搜索
+- 亮/暗主题，支持自定义强调色
+
+---
+
+## 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| UI 框架 | React 19 |
+| 语言 | TypeScript 6 |
+| 构建工具 | Vite 8 |
+| 状态管理 | Zustand 5 |
+| Python 运行时 | Pyodide 0.26 |
+| 图标 | Lucide React |
+| 代码编辑器 | Monaco Editor（通过 Pyodide） |
+| 存储 | localStorage |
+
+---
 
 ## 快速开始
 
+### 环境要求
+
+- Node.js 18+
+- npm
+
+### 安装与运行
+
 ```bash
-# 克隆仓库
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
-
-# 安装依赖
 npm install
-
-# 开发服务器
 npm run dev
-
-# 生产构建
-npm run build
-
-# 部署到GitHub Pages
-npm run deploy
 ```
+
+在浏览器中打开 `http://localhost:5173`。
+
+### 生产构建
+
+```bash
+npm run build
+```
+
+输出在 `web-linux/dist/`，可部署到任何静态托管服务。
+
+### 可选 API 密钥
+
+在 `web-linux/` 目录下创建 `.env` 文件以启用增强功能：
+
+```env
+VITE_OPENWEATHERMAP_API_KEY=your_key
+VITE_NEWSAPI_KEY=your_key
+VITE_EXCHANGERATE_API_KEY=your_key
+VITE_NASA_API_KEY=your_key
+```
+
+所有核心功能无需 API 密钥即可使用。
+
+---
 
 ## 键盘快捷键
 
 | 快捷键 | 功能 |
 |--------|------|
-| Ctrl+Shift+L | 打开启动器 |
-| Ctrl+K | 全局搜索 |
-| Ctrl+P | 命令面板 |
-| Alt+Tab | 切换窗口 |
-| Ctrl+Q | 关闭窗口 |
-| Ctrl+C | 复制 |
-| Ctrl+V | 粘贴 |
-| Ctrl+Shift+C | 终端中断 |
-| Ctrl+1-9 | 切换到桌面 |
-| Ctrl+Alt+方向键 | 切换桌面 |
-| Ctrl+Shift+1-9 | 将窗口移动到桌面 |
+| `Ctrl/⌘ + Shift + L` | 打开应用启动器 |
+| `Ctrl + Shift + T` | 打开终端 |
+| `Ctrl + E` | 打开文件管理器 |
+| `Ctrl + ,` | 打开设置 |
+| `Ctrl + K` | 全局搜索 |
+| `Ctrl + Shift + C` | 打开计算器 |
+| `Ctrl + Q` | 关闭当前窗口 |
+| `Ctrl + M` | 最小化当前窗口 |
+| `Alt + Tab` | 切换窗口 |
+| `Ctrl + 1-9` | 切换到第 N 个桌面 |
+| `Ctrl + Shift + 1-9` | 将窗口移动到第 N 个桌面 |
+| `F11` | 全屏切换 |
 
-## 技术栈
-
-- **React 19**：使用最新功能的UI框架
-- **TypeScript 6**：类型安全的开发
-- **Zustand 5**：轻量级状态管理
-- **Vite 8**：优化的构建工具
-- **Pyodide**：完全在浏览器中运行的Python运行时
-- **Lucide React**：美观的图标库
-- **Tailwind CSS**：实用优先的样式设计（部分组件使用）
-- **IndexedDB**：用于持久化数据的本地存储
-
-## 架构
-
-WebLinuxOS遵循模块化架构：
-
-```
-src/
-  apps/              # 单独的应用程序
-  components/
-    desktop/         # 桌面环境组件
-  store/             # 状态管理工具
-  types.ts           # TypeScript类型定义
-  icons.tsx          # 图标组件
-  App.tsx            # 主应用程序组件
-```
-
-## 性能优化
-
-WebLinuxOS经过性能优化：
-
-- **代码分割**：每个应用程序按需加载
-- **懒加载**：应用程序仅在打开时加载
-- **记忆化**：使用memo优化React组件
-- **高效渲染**：虚拟列表和优化的更新
-- **GPU加速**：使用transform和opacity的动画
-- **节流优化**：使用requestAnimationFrame的拖放和调整大小
-
-## 设计系统
-
-### 颜色系统
-- 主色：`#9b8af0`（紫色渐变）
-- 成功：`#00e896`
-- 警告：`#ffc400`
-- 错误：`#ff4d5f`
-- 信息：`#40a9ff`
-
-### 阴影层次
-- 层次1：`0 3px 10px rgba(0, 0, 0, 0.18)`
-- 层次2：`0 6px 20px rgba(0, 0, 0, 0.25)`
-- 层次3：`0 10px 40px rgba(0, 0, 0, 0.3)`
-
-### 动画系统
-- 窗口打开/关闭：0.28s cubic-bezier
-- 悬停效果：0.15s ease
-- 弹跳动画：0.35s cubic-bezier
-- 玻璃模糊：20px blur
-
-## 浏览器支持
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-注意：某些功能可能需要现代浏览器功能。
-
-## 贡献
-
-欢迎贡献！请遵循以下步骤：
-
-1. Fork仓库
-2. 创建您的功能分支：`git checkout -b feature-name`
-3. 进行更改
-4. 运行测试：`npm run test`
-5. 构建：`npm run build`
-6. 提交Pull Request
-
-## 许可证
-
-MIT许可证 - 免费用于个人或商业用途。
-
-## 统计
-
-- **120+应用程序**：丰富的内置应用程序
-- **90+终端命令**：全面的命令行界面
-- **150+源文件**：模块化和可维护的代码库
-- **50+键盘快捷键**：高效的工作流程
-
-## 使用场景
-
-WebLinuxOS非常适合：
-
-- **学习**：探索桌面环境概念
-- **演示**：展示Web应用程序功能
-- **开发**：测试Web技术
-- **可访问性**：从任何设备访问您的文件
-- **生产力**：轻量级在线工作空间
-- **教育**：教授编程和系统概念
-- **原型设计**：快速桌面级应用程序原型
-
-## 路线图
-
-计划的未来改进：
-- 增强移动端响应式设计
-- 更多应用程序和功能
-- 性能改进
-- 额外的语言支持
-- 云同步
-- PWA安装支持
-- 插件系统架构
-- 实时协作功能
+**终端快捷键**：`Ctrl+L` 清屏 · `Ctrl+C` 中断 · `Ctrl+R` 反向搜索 · `Tab` 自动补全
 
 ---
 
-**版本**：5.5.0
-**最后更新**：2026-06-11
+## 项目结构
+
+```
+WebLinuxOS/
+└── web-linux/
+    ├── src/
+    │   ├── App.tsx                 # 根组件，键盘快捷键
+    │   ├── apps.tsx                # 应用注册表（240+ 应用）
+    │   ├── store.tsx               # Zustand 全局状态
+    │   ├── types.ts                # TypeScript 类型定义
+    │   ├── icons.tsx               # 图标组件
+    │   ├── components/
+    │   │   ├── desktop/            # 窗口管理器、任务栏、Dock、桌面
+    │   │   ├── CommandPalette.tsx
+    │   │   ├── NotificationSystem.tsx
+    │   │   └── ...
+    │   ├── apps/                   # 应用实现
+    │   │   ├── terminal/           # 终端模拟器和命令
+    │   │   ├── CodeEditor.tsx
+    │   │   ├── FileManager.tsx
+    │   │   └── ...
+    │   ├── services/               # API 客户端（aiService、apiService）
+    │   ├── store/                  # 虚拟文件系统、持久化工具
+    │   ├── utils/                  # 辅助函数
+    │   └── styles/                 # 主题样式表
+    ├── screenshots/                # 项目截图
+    ├── index.html
+    ├── vite.config.ts
+    └── package.json
+```
+
+---
+
+## 部署
+
+### GitHub Pages（自动部署）
+
+推送到 `main` 分支 — GitHub Actions 会自动构建并部署。
+
+### 静态托管
+
+将 `web-linux/dist/` 上传到任意静态托管服务（Vercel、Netlify、Cloudflare Pages、S3、nginx 等）。
+
+---
+
+## 贡献指南
+
+欢迎贡献代码。
+
+1. Fork 本仓库
+2. 创建功能分支：`git checkout -b feature/my-feature`
+3. 进行修改
+4. 验证：`npm run typecheck && npm run build`
+5. 提交 Pull Request
+
+**添加新应用：**
+
+1. 在 `web-linux/src/apps/` 中创建组件
+2. 在 `web-linux/src/apps.tsx` 中注册
+3. 在 `web-linux/src/components/desktop/WindowManager.tsx` 中添加懒加载导入
+
+---
+
+## 浏览器支持
+
+| 浏览器 | 版本 |
+|--------|------|
+| Chrome | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Edge | 90+ |
+
+---
+
+## 许可证
+
+[MIT](LICENSE) — 可自由使用、修改和分发，包括商业用途。
+
+## 致谢
+
+- 窗口管理器、终端和虚拟文件系统为原创实现
+- 灵感来源：[linux.js](https://github.com/hrtowii/linux.js)、[WebSH](https://github.com/nicedoc/web-sh)
+- 壁纸来自 Unsplash 和 Pexels（CC0）
