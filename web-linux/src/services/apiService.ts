@@ -66,6 +66,109 @@ export interface WikipediaSummary {
   }
 }
 
+export interface IPInfo {
+  ip: string
+  city?: string
+  region?: string
+  country?: string
+  country_name?: string
+  postal?: string
+  latitude?: number
+  longitude?: number
+  timezone?: string
+  org?: string
+}
+
+export interface GitHubUser {
+  id: number
+  login: string
+  avatar_url: string
+  html_url: string
+  name?: string
+  company?: string
+  blog?: string
+  location?: string
+  bio?: string
+  public_repos: number
+  followers: number
+  following: number
+  created_at: string
+}
+
+export interface GitHubRepo {
+  id: number
+  name: string
+  full_name: string
+  description: string | null
+  html_url: string
+  stargazers_count: number
+  forks_count: number
+  language: string | null
+  updated_at: string
+  topics?: string[]
+  owner: {
+    login: string
+    avatar_url: string
+  }
+}
+
+export interface ExchangeRates {
+  base: string
+  date: string
+  rates: Record<string, number>
+}
+
+export interface JokeData {
+  type: 'single' | 'twopart'
+  joke?: string
+  setup?: string
+  delivery?: string
+}
+
+export interface RandomUser {
+  name: {
+    title: string
+    first: string
+    last: string
+  }
+  email: string
+  location: {
+    city: string
+    country: string
+  }
+  picture: {
+    large: string
+    medium: string
+    thumbnail: string
+  }
+}
+
+export interface BoredActivity {
+  activity: string
+  type: string
+  participants: number
+  price: number
+  link?: string
+  key: string
+  accessibility: number
+}
+
+export interface NameAnalysis {
+  nationality: Record<string, number>
+  age: number
+  gender: string
+}
+
+export interface SpaceArticle {
+  id: number
+  title: string
+  url: string
+  imageUrl: string
+  newsSite: string
+  summary: string
+  publishedAt: string
+}
+
 export class ApiService {
   private static instance: ApiService
   private baseUrls = {
@@ -273,10 +376,10 @@ export class ApiService {
     }
   }
 
-  async fetchIPInfo(): Promise<Record<string, unknown> | null> {
+  async fetchIPInfo(): Promise<IPInfo | null> {
     try {
       const response = await fetch(this.baseUrls.ipapi)
-      return response.json()
+      return (await response.json()) as IPInfo
     } catch {
       return null
     }
@@ -298,42 +401,47 @@ export class ApiService {
   }
 
   // 新增：GitHub API
-  async fetchGitHubUser(username: string): Promise<Record<string, unknown> | null> {
+  async fetchGitHubUser(username: string): Promise<GitHubUser | null> {
     try {
       const response = await fetch(`${this.baseUrls.github}/users/${username}`)
       if (!response.ok) return null
-      return response.json()
+      return (await response.json()) as GitHubUser
     } catch {
       return null
     }
   }
 
-  async fetchGitHubRepos(username: string): Promise<Record<string, unknown>[] | null> {
+  async fetchGitHubRepos(username: string): Promise<GitHubRepo[] | null> {
     try {
       const response = await fetch(`${this.baseUrls.github}/users/${username}/repos?sort=updated&per_page=10`)
       if (!response.ok) return null
-      return response.json()
+      return (await response.json()) as GitHubRepo[]
     } catch {
       return null
     }
   }
 
-  async searchGitHubRepos(query: string): Promise<Record<string, unknown>[] | null> {
+  async searchGitHubRepos(query: string): Promise<GitHubRepo[] | null> {
     try {
       const response = await fetch(`${this.baseUrls.github}/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=20`)
       const data = await response.json()
-      return data.items || []
+      return (data.items as GitHubRepo[]) || []
     } catch {
       return null
     }
   }
 
   // 新增：汇率API
-  async fetchExchangeRates(base: string = 'USD'): Promise<Record<string, number> | null> {
+  async fetchExchangeRates(base: string = 'USD'): Promise<ExchangeRates | null> {
     try {
       const response = await fetch(`${this.baseUrls.exchange}/${base}`)
       const data = await response.json()
-      return data.rates || null
+      if (!data.rates) return null
+      return {
+        base,
+        date: data.date || new Date().toISOString().split('T')[0],
+        rates: data.rates,
+      }
     } catch {
       return null
     }
@@ -344,7 +452,7 @@ export class ApiService {
   }
 
   // 新增：笑话API
-  async fetchRandomJoke(category: string = 'Programming'): Promise<{type: string; joke?: string; setup?: string; delivery?: string} | null> {
+  async fetchRandomJoke(category: string = 'Programming'): Promise<JokeData | null> {
     try {
       const response = await fetch(`${this.baseUrls.jokeapi}/${category}?safe-mode&type=twopart,single`)
       const data = await response.json()
@@ -360,11 +468,11 @@ export class ApiService {
   }
 
   // 新增：随机用户生成
-  async fetchRandomUser(): Promise<Record<string, unknown> | null> {
+  async fetchRandomUser(): Promise<RandomUser | null> {
     try {
       const response = await fetch(`${this.baseUrls.randomuser}?inc=name,email,location,picture`)
       const data = await response.json()
-      return data.results?.[0] || null
+      return (data.results?.[0] as RandomUser) || null
     } catch {
       return null
     }
@@ -382,10 +490,10 @@ export class ApiService {
   }
 
   // 新增：无聊活动建议
-  async fetchRandomActivity(): Promise<Record<string, unknown> | null> {
+  async fetchRandomActivity(): Promise<BoredActivity | null> {
     try {
       const response = await fetch(this.baseUrls.boredapi)
-      return response.json()
+      return (await response.json()) as BoredActivity
     } catch {
       return null
     }
@@ -403,7 +511,7 @@ export class ApiService {
   }
 
   // 新增：姓名分析API
-  async analyzeName(name: string): Promise<{nationality: Record<string, number>; age: number; gender: string} | null> {
+  async analyzeName(name: string): Promise<NameAnalysis | null> {
     try {
       const [nationalizeData, agifyData, genderizeData] = await Promise.all([
         fetch(`${this.baseUrls.nationalize}/?name=${name}`).then(r => r.json()),
@@ -447,10 +555,20 @@ export class ApiService {
   }
 
   // 新增：太空新闻
-  async fetchSpaceNews(limit: number = 10): Promise<Record<string, unknown>[] | null> {
+  async fetchSpaceNews(limit: number = 10): Promise<SpaceArticle[] | null> {
     try {
       const response = await fetch(`${this.baseUrls.spaceflight}?_limit=${limit}`)
-      return response.json()
+      const data = await response.json()
+      if (!Array.isArray(data)) return null
+      return data.map((item: { id: number; title: string; url: string; imageUrl: string; newsSite: string; summary: string; publishedAt: string }) => ({
+        id: item.id,
+        title: item.title,
+        url: item.url,
+        imageUrl: item.imageUrl,
+        newsSite: item.newsSite,
+        summary: item.summary,
+        publishedAt: item.publishedAt,
+      }))
     } catch {
       return null
     }
@@ -461,7 +579,7 @@ export class ApiService {
     weather: WeatherData | null;
     quote: QuoteData | null;
     advice: string | null;
-    activity: Record<string, unknown> | null;
+    activity: BoredActivity | null;
   }> {
     const [weather, quote, advice, activity] = await Promise.all([
       this.fetchWeather(39.9, 116.4), // 北京坐标

@@ -1441,4 +1441,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'api-health', name: 'API 健康监控', icon: <ActivityIcon />, component: 'ApiHealthMonitor', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'activity-heatmap', name: '活动热力图', icon: <ActivityIcon />, component: 'ActivityHeatmap', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
+  // === v39.0 全新创新应用 - Snap Studio 浏览器原生图片工坊 ===
+  { id: 'snap-studio', name: 'Snap Studio 美图工坊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>, component: 'SnapStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Canvas 像素级图片编辑器：滤镜、微调、缩放、撤销重做、多格式导出' },
 ]

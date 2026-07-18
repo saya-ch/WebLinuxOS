@@ -43,7 +43,7 @@ export default function WelcomeHub() {
       apiService.fetchRandomActivity()
     ]).then(([quoteData, activityData]) => {
       if (quoteData) setQuote(`${quoteData.content} — ${quoteData.author}`)
-      if (activityData) setActivity((activityData as Record<string, unknown>).activity as string || '')
+      if (activityData) setActivity(activityData.activity || '')
     })
   }, [])
 

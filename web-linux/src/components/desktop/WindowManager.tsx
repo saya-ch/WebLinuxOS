@@ -191,6 +191,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SmartNewsReader: () => import('../../apps/SmartNewsReader'),
   RSSReader: () => import('../../apps/RSSReader'),
   GitHubExplorer: () => import('../../apps/GitHubExplorer'),
+  SnapStudio: () => import('../../apps/SnapStudio'),
   GitHubTrending: () => import('../../apps/GitHubTrending'),
   NetworkMonitor: () => import('../../apps/NetworkMonitor'),
   NetworkSpeedTest: () => import('../../apps/NetworkSpeedTest'),

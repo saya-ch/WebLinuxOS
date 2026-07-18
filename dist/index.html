@@ -41,104 +41,203 @@
         position: fixed;
         inset: 0;
         background:
-          radial-gradient(ellipse at top left, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-          radial-gradient(ellipse at bottom right, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
-          radial-gradient(ellipse at center, rgba(155, 138, 240, 0.03) 0%, transparent 70%),
-          linear-gradient(135deg, #05050a 0%, #0a0a1a 30%, #0f0f28 60%, #161640 100%);
+          radial-gradient(ellipse 60% 50% at 30% 20%, rgba(124, 58, 237, 0.18) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 50% at 80% 80%, rgba(56, 189, 248, 0.14) 0%, transparent 60%),
+          radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%),
+          #06060c;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 99999;
-        animation: bgPulse 4s ease-in-out infinite;
+        font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        overflow: hidden;
       }
-      #preload .logo {
-        font-size: 80px;
-        margin-bottom: 20px;
-        animation: logoFloat 1.5s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate;
+      /* 背景网格 */
+      #preload::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+        -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
       }
-      #preload .text {
-        font-family: 'Cabinet Grotesk', 'Geist', sans-serif;
-        font-size: 36px;
+      /* 漂浮光斑 */
+      #preload::after {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        top: -200px;
+        right: -200px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, transparent 60%);
+        border-radius: 50%;
+        filter: blur(80px);
+        animation: orbitMove 12s ease-in-out infinite alternate;
+      }
+      @keyframes orbitMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(-200px, 200px); }
+      }
+      #preload .brand-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-bottom: 32px;
+        z-index: 1;
+      }
+      #preload .glyph {
+        position: relative;
+        width: 88px;
+        height: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #preload .glyph-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1.5px solid rgba(124, 58, 237, 0.3);
+        animation: ringSpin 8s linear infinite;
+      }
+      #preload .glyph-ring-2 {
+        position: absolute;
+        inset: 8px;
+        border-radius: 50%;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-top-color: transparent;
+        border-right-color: transparent;
+        animation: ringSpin 4s linear infinite reverse;
+      }
+      @keyframes ringSpin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      #preload .glyph-core {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: 800;
-        letter-spacing: -0.03em;
-        background: linear-gradient(135deg, #f0f0ff 0%, #c4b5fd 30%, #a78bfa 50%, #8b7cf0 70%, #7c6cf0 100%);
+        font-size: 24px;
+        color: white;
+        letter-spacing: -0.02em;
+        box-shadow:
+          0 12px 32px rgba(124, 58, 237, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      }
+      #preload .brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      #preload .title {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        background: linear-gradient(135deg, #f5f3ff 0%, #c4b5fd 40%, #7dd3fc 100%);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 16px;
-        animation: textGradient 3s ease-in-out infinite alternate;
       }
-      #preload .sub {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 15px;
-        font-weight: 400;
-        letter-spacing: 0.08em;
-        color: #8a8ab8;
+      #preload .subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: #94a3b8;
+        letter-spacing: 0.32em;
         text-transform: uppercase;
       }
+      #preload .boot-log {
+        width: 360px;
+        max-width: 80%;
+        margin-bottom: 18px;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 11px;
+        color: #67e8f9;
+        line-height: 1.7;
+        min-height: 80px;
+        z-index: 1;
+      }
+      #preload .boot-log .line {
+        opacity: 0;
+        animation: logFadeIn 0.4s ease-out forwards;
+      }
+      #preload .boot-log .ok { color: #4ade80; }
+      #preload .boot-log .info { color: #67e8f9; }
+      #preload .boot-log .warn { color: #fbbf24; }
+      @keyframes logFadeIn {
+        from { opacity: 0; transform: translateX(-4px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
       #preload .progress {
-        margin-top: 24px;
-        width: 120px;
+        width: 360px;
+        max-width: 80%;
         height: 2px;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
         border-radius: 2px;
         overflow: hidden;
+        position: relative;
+        z-index: 1;
       }
       #preload .progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #8b7cf0 0%, #06b6d4 50%, #8b7cf0 100%);
-        animation: progressSlide 1.5s ease-in-out infinite;
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #7c3aed 0%, #38bdf8 50%, #7c3aed 100%);
+        background-size: 200% 100%;
+        transform-origin: left;
+        animation: progressFill 2.2s ease-in-out forwards, progressShine 1.5s linear infinite;
       }
-      @keyframes logoFloat {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        25% { transform: translateY(-4px) rotate(-2deg); }
-        75% { transform: translateY(-4px) rotate(2deg); }
+      @keyframes progressFill {
+        0% { transform: scaleX(0); }
+        100% { transform: scaleX(1); }
       }
-      @keyframes logoGlow {
-        0% { filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3)); }
-        100% { filter: drop-shadow(0 0 16px rgba(139, 92, 246, 0.5)); }
-      }
-      @keyframes textGradient {
+      @keyframes progressShine {
         0% { background-position: 0% 50%; }
-        100% { background-position: 100% 50%; }
+        100% { background-position: 200% 50%; }
       }
-      @keyframes bgPulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.98; }
-      }
-      @keyframes progressSlide {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
+      #preload .hint {
+        margin-top: 20px;
+        font-size: 11px;
+        color: #475569;
+        letter-spacing: 0.05em;
+        z-index: 1;
       }
     </style>
-    <script type="module" crossorigin src="/WebLinuxOS/assets/index-nM-t3c5y.js"></script>
+    <script type="module" crossorigin src="/WebLinuxOS/assets/index-BYBvYtgT.js"></script>
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-react-C9Lobkur.js">
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-zustand-D-_4Pe5E.js">
     <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-Dc7lL3PI.css">
   </head>
   <body>
     <div id="preload">
-      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 20px; animation: logoFloat 1.5s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate;">
-        <circle cx="40" cy="40" r="38" fill="#1a1a2e" stroke="#8b7cf0" stroke-width="2"/>
-        <ellipse cx="40" cy="35" rx="18" ry="16" fill="#3d3d5c"/>
-        <ellipse cx="40" cy="33" rx="14" ry="12" fill="#4a4a6a"/>
-        <circle cx="35" cy="30" r="3" fill="#1a1a2e"/>
-        <circle cx="45" cy="30" r="3" fill="#1a1a2e"/>
-        <ellipse cx="40" cy="38" rx="4" ry="3" fill="#f5a623"/>
-        <rect x="28" y="48" width="24" height="12" rx="2" fill="#3d3d5c"/>
-        <ellipse cx="40" cy="58" rx="14" ry="4" fill="#3d3d5c"/>
-        <circle cx="36" cy="52" r="2" fill="#00ff00" opacity="0.8"/>
-        <circle cx="44" cy="52" r="2" fill="#ff0000" opacity="0.8"/>
-      </svg>
-      <div class="text">WebLinuxOS</div>
-      <div class="sub">正在加载桌面环境...</div>
+      <div class="brand-wrap">
+        <div class="glyph">
+          <div class="glyph-ring"></div>
+          <div class="glyph-ring-2"></div>
+          <div class="glyph-core">W</div>
+        </div>
+        <div class="brand-text">
+          <div class="title">WebLinuxOS</div>
+          <div class="subtitle">A Web-native Linux Desktop</div>
+        </div>
+      </div>
+      <div class="boot-log" id="boot-log"></div>
       <div class="progress">
         <div class="progress-bar"></div>
       </div>
+      <div class="hint">v39 · 启动中 · 请稍候</div>
     </div>
     <noscript>
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1a1a2e;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06060c;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
         <div>
           <h1 style="font-size:24px;margin-bottom:16px;">需要启用 JavaScript</h1>
           <p style="color:#9090a4;">WebLinuxOS 需要浏览器启用 JavaScript 才能正常运行。</p>
@@ -146,5 +245,33 @@
       </div>
     </noscript>
     <div id="root"></div>
+    <script>
+      // 启动日志动画
+      (function() {
+        var lines = [
+          { type: 'info', text: '[ OK ] Started WebLinuxOS init process' },
+          { type: 'info', text: '[ OK ] Reached target Multi-User System' },
+          { type: 'info', text: '[ OK ] Listening on virtual desktop 0.0.0.0:5173' },
+          { type: 'ok',   text: '[ OK ] Loaded 200+ integrated applications' },
+          { type: 'ok',   text: '[ OK ] Mounted virtual file system' },
+          { type: 'ok',   text: '[ OK ] Pyodide runtime ready' },
+          { type: 'warn', text: '[INFO] Tailwind-free design system initialized' },
+          { type: 'info', text: '[ OK ] Welcome to WebLinuxOS' },
+        ];
+        var el = document.getElementById('boot-log');
+        if (!el) return;
+        var delay = 0;
+        lines.forEach(function(l, i) {
+          delay += 220;
+          setTimeout(function() {
+            var span = document.createElement('div');
+            span.className = 'line ' + l.type;
+            span.textContent = l.text;
+            el.appendChild(span);
+            if (el.children.length > 6) el.removeChild(el.children[0]);
+          }, delay);
+        });
+      })();
+    </script>
   </body>
 </html>

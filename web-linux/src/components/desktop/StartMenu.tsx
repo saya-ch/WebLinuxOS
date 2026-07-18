@@ -228,6 +228,24 @@ const StartMenu = memo(function StartMenu() {
                     {app.icon}
                   </span>
                   <span className="launcher-app-item-name">{app.name}</span>
+                  {app.isNew && (
+                    <span
+                      style={{
+                        marginLeft: 6,
+                        padding: '1px 6px',
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: '0.05em',
+                        color: '#fff',
+                        background: 'linear-gradient(135deg,#7c3aed,#38bdf8)',
+                        borderRadius: 4,
+                        lineHeight: 1.4,
+                      }}
+                      title={app.description || '新应用'}
+                    >
+                      NEW
+                    </span>
+                  )}
 
                   <span
                     onClick={(e) => {

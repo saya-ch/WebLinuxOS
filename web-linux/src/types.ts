@@ -12,6 +12,10 @@ export interface AppDefinition {
   minHeight: number
   resizable: boolean
   multiple: boolean
+  /** 标记新增/推荐应用，用于在启动面板上添加视觉提示 */
+  isNew?: boolean
+  /** 应用简介，用于工具提示和详情面板 */
+  description?: string
 }
 
 export interface WindowState {
