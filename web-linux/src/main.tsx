@@ -62,9 +62,9 @@ if (typeof window !== 'undefined') {
     cspMeta.content = [
       "default-src 'self' https:",
       "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
+      "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
       "connect-src 'self' https: wss: ws:",
       "media-src 'self' blob: https:",
       "frame-src 'self' https: data:",

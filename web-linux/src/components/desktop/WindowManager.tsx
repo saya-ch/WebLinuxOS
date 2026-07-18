@@ -319,6 +319,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v27.0 新增创新应用 ===
   NexusAI: () => import('../../apps/NexusAI'),
   DevForge: () => import('../../apps/DevForge'),
+  // === v40 新增云剪贴板 ===
+  CloudClipboard: () => import('../../apps/CloudClipboard'),
   // === v30.0 新增实时协作文档编辑器 ===
   RealtimeDocumentEditor: () => import('../../apps/RealtimeDocumentEditor'),
   // === v35.0 核心创新：在线编程实验室 ===

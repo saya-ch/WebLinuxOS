@@ -120,6 +120,36 @@ export const API_CONFIG = {
   httpBin: {
     baseUrl: 'https://httpbin.org',
   },
+  /**
+   * Pollinations.ai — 免费、无需 API Key 的 AI 文本与图像生成服务
+   * 文档: https://pollinations.ai
+   * 用途: 真实 AI 对话、代码生成、图像生成
+   */
+  pollinations: {
+    textBaseUrl: 'https://text.pollinations.ai',
+    imageBaseUrl: 'https://image.pollinations.ai',
+    defaultModel: 'openai',
+    visionModel: 'openai-large',
+    imageModel: 'flux',
+  },
+  /**
+   * Open-Meteo Geocoding — 城市名经纬度查询（免费、无需 key）
+   */
+  openMeteoGeocoding: {
+    baseUrl: 'https://geocoding-api.open-meteo.com/v1',
+  },
+  /**
+   * Frankfurter — 欧洲央行公开汇率接口（免费、无需 key）
+   */
+  frankfurter: {
+    baseUrl: 'https://api.frankfurter.app/v1',
+  },
+  /**
+   * GitHub Gist — 用于云剪贴板 / 笔记同步（匿名读取免费）
+   */
+  githubGist: {
+    baseUrl: 'https://api.github.com/gists',
+  },
 }
 
 export async function fetchWithTimeout(

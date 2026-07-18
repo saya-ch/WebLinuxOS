@@ -3,6 +3,7 @@
 **A complete Linux desktop environment that runs entirely in your browser.** No installation, no backend, no API keys.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-7c3aed?style=flat-square)](https://saya-ch.github.io/WebLinuxOS/)
+[![Version](https://img.shields.io/badge/Version-40.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org)
@@ -20,9 +21,67 @@ There are plenty of "operating system in the browser" experiments on the web. Mo
 - A **terminal emulator** with `200+` commands, pipes, redirects, history, tab completion, and a real **Python 3 runtime** via Pyodide.
 - A **window manager** with drag, resize, snap, minimize, maximize, focus stacking, and per-window snapshots.
 - **Multiple virtual desktops** with per-desktop window grouping and keyboard navigation.
-- **Real public APIs** for weather, news, crypto, exchange rates, GitHub trending, Wikipedia, and more — no keys required.
+- **Real public APIs** for AI chat, image generation, weather, news, crypto, exchange rates, GitHub trending, Wikipedia, and more — no keys required.
 
 The goal is to demonstrate that the modern web platform is good enough to host a productive desktop-class environment, while also being a useful tool in its own right.
+
+---
+
+## What's New in v40
+
+This release transforms WebLinuxOS from a "Linux simulator" into a working productivity platform with real, networked capabilities.
+
+### Nexus AI — Real Conversational AI
+
+A full chat application powered by [Pollinations.ai](https://pollinations.ai), a free, key-less AI gateway. No accounts, no API keys, no rate limits to configure.
+
+- **Multi-model**: GPT-4o, DeepSeek V3, Llama 3.3, Mistral Small, Qwen 2.5, and more.
+- **Streaming responses** via Server-Sent Events with per-token rendering.
+- **Image generation** through the `/image` command (FLUX.1 model, 1024×1024).
+- **Multi-conversation** with persistent history stored locally.
+- **Adjustable temperature** and per-message model switching.
+- **Markdown rendering** with code blocks, tables, and inline images.
+
+Open the launcher and search for **NexusAI** to start chatting. Try:
+
+```
+/image a cyberpunk cat wearing a VR headset, neon colors
+Explain how WebAssembly works to a 5-year-old
+Translate "你好世界" to English, Japanese, French, and German
+```
+
+### Cloud Clipboard — Cross-Device Snippet Sync
+
+A clipboard manager that actually syncs across devices using [GitHub Gist](https://gist.github.com) as the backing store.
+
+- **Local-first**: All snippets persist to `localStorage` even offline.
+- **Gist sync**: Optional one-click push/pull to a private Gist for cross-device access.
+- **Shareable URLs**: Generate self-contained share links that decode on load.
+- **Syntax detection**: Automatically identifies JSON, HTML, CSS, JS, TS, Python, Bash, Markdown.
+- **Tag filtering** and full-text search across all entries.
+- **Token management**: GitHub PAT stored only in `localStorage`, with verify-and-revoke UI.
+
+### AI Terminal Commands
+
+Eight new commands bring the AI assistant into the terminal workflow:
+
+| Command | Action |
+|---------|--------|
+| `ai "prompt"` | One-shot AI completion |
+| `ai-chat` | Interactive multi-turn chat |
+| `ai-image "prompt"` | Generate image, return URL |
+| `ai-models` | List available Pollinations models |
+| `ai-translate "text" --to en` | Translate text |
+| `ai-explain "code or concept"` | Get an explanation |
+| `ai-code "task description"` | Generate code |
+| `clear-ai` | Clear terminal AI session history |
+
+### Other Improvements
+
+- Fixed Content Security Policy that was blocking Google Fonts on the deployed site.
+- `APP_REGISTRY_EXTRAS` is now correctly spread into the main registry (previously extensions were defined but never registered).
+- Type safety hardened across the new services.
+- README rewritten to reflect the v40 surface area.
 
 ---
 
@@ -47,16 +106,18 @@ A real POSIX-style terminal with 200+ built-in commands:
 | System | `top`, `ps`, `df`, `free`, `uptime`, `whoami`, `date`, `uname`, `hostname`, `env` |
 | Network | `ping`, `curl`, `wget`, `netstat`, `dig`, `dns`, `ip` |
 | Online | `weather`, `news`, `crypto`, `github`, `github-trending`, `stock`, `nasa`, `wikipedia` |
+| AI | `ai`, `ai-chat`, `ai-image`, `ai-models`, `ai-translate`, `ai-explain`, `ai-code` |
 | Utilities | `base64`, `url-encode`, `hash`, `uuidgen`, `jwt-decode`, `qrcode`, `color`, `calc` |
 | Languages | `python` (Pyodide 3.11 runtime with full stdlib) |
 | Misc | Pipes, redirects, background processes, command history, tab completion |
 
 ### Apps
 
-The launcher ships 200+ integrated apps across 8 categories. New in this release: **Snap Studio** — a real, browser-native image editor powered by the Canvas 2D API with pixel-accurate filters, presets, adjustments, multi-format export, and undo/redo.
+The launcher ships 200+ integrated apps across 8 categories. Curated highlights:
 
-Other curated highlights:
-
+- **Nexus AI** — real multi-model AI chat with streaming and image generation.
+- **Cloud Clipboard** — Gist-synced snippet manager with shareable URLs.
+- **Snap Studio** — Canvas 2D image editor with filters, presets, multi-format export.
 - **CodePen Lite** — HTML/CSS/JS playground with live preview.
 - **GitHub Explorer** — real-time search across the GitHub REST API.
 - **Live Data Hub** — aggregated widgets for weather, crypto, news, ISS position.
@@ -70,7 +131,10 @@ All endpoints are public and key-free:
 
 | Service | Use |
 |---------|-----|
+| Pollinations.ai | AI chat, image generation, vision models |
+| GitHub Gist | Cloud clipboard sync (optional, PAT required) |
 | Open-Meteo | Weather & forecast |
+| Open-Meteo Geocoding | City name → coordinates |
 | CoinGecko | Crypto prices & market cap |
 | Hacker News | Tech news |
 | GitHub | Repos, trending, user profiles |
@@ -120,6 +184,7 @@ WebLinuxOS/
 └── web-linux/
     ├── src/
     │   ├── App.tsx                    # Keyboard shortcuts, app lifecycle
+    │   ├── main.tsx                   # CSP, boot, Google Fonts
     │   ├── apps.tsx                   # 200+ app registry
     │   ├── store.tsx                  # Zustand global state, file ops, undo/redo
     │   ├── types.ts                   # Strict TypeScript types
@@ -132,11 +197,17 @@ WebLinuxOS/
     │   │   └── GlobalSearch.tsx       # Ctrl+K
     │   ├── apps/                      # 200+ React app components
     │   │   ├── terminal/              # Terminal engine + 200+ commands
+    │   │   ├── NexusAI.tsx            # Real AI chat (Pollinations.ai)
+    │   │   ├── CloudClipboard.tsx     # Gist-synced clipboard manager
     │   │   ├── SnapStudio.tsx         # Canvas-based image editor
     │   │   ├── GitHubExplorer.tsx     # Real GitHub API integration
     │   │   └── ...
     │   ├── services/
-    │   │   └── apiService.ts          # Typed API clients (strict types)
+    │   │   ├── apiService.ts          # Typed API clients (strict types)
+    │   │   ├── aiService.ts           # Pollinations.ai chat / image / stream
+    │   │   └── clipboardService.ts    # Gist sync, share URLs, language detect
+    │   ├── config/
+    │   │   └── apiConfig.ts           # All endpoint URLs in one place
     │   ├── store/                     # Virtual FS, persistence utils
     │   ├── utils/                     # Logger, performance monitor
     │   └── styles/                    # Cyberpunk, quantum, worldpulse themes
@@ -155,7 +226,15 @@ Vite is configured for explicit vendor chunking (`vendor-react`, `vendor-zustand
 
 ### Type safety
 
-The project compiles with `strict: true`. Recent updates added full type interfaces to `apiService.ts` (`GitHubUser`, `GitHubRepo`, `ExchangeRates`, `IPInfo`, `JokeData`, `RandomUser`, `BoredActivity`, `NameAnalysis`, `SpaceArticle`) so the entire API surface is checked at compile time.
+The project compiles with `strict: true`. The full API surface is checked at compile time, including AI messages (`AIMessage`), clipboard items (`ClipboardItem`), and all external API responses (`GitHubUser`, `GitHubRepo`, `ExchangeRates`, `IPInfo`, `JokeData`, `RandomUser`, `BoredActivity`, `NameAnalysis`, `SpaceArticle`).
+
+### AI service design
+
+`aiService.ts` wraps Pollinations.ai behind three primitives — `chat()`, `streamChat()`, `generateImage()` — so any future model swap is a one-file change. SSE parsing is done manually to avoid pulling in an event-source dependency. The terminal commands in `apps/terminal/aiCommands.ts` reuse the same service, ensuring consistent behavior between the chat app and the shell.
+
+### Cloud clipboard design
+
+`clipboardService.ts` is local-first: every mutation lands in `localStorage` immediately, then optionally propagates to GitHub Gist. Shareable URLs encode the snippet as a compressed query parameter, so recipients don't need a Gist or a token to read what was shared. Language detection is heuristic-based (regex + structural checks) to keep the bundle small.
 
 ---
 
@@ -186,6 +265,18 @@ Terminal: `Ctrl+L` clear · `Ctrl+C` interrupt · `Ctrl+R` reverse search · `Ta
 
 The included GitHub Actions workflow (`.github/workflows/deploy.yml`) builds on every push to `main` and publishes to GitHub Pages automatically. To self-host, run `npm run build` and serve the `web-linux/dist/` directory from any static host — Vercel, Netlify, Cloudflare Pages, S3, nginx, or GitHub Pages.
 
+The `VITE_BASE_PATH` for GitHub Pages is `/WebLinuxOS/` and is applied during the `build:github` script. CSP headers in `main.tsx` are scoped to allow only the legitimate external endpoints (Pollinations, GitHub, fonts, and the public APIs listed above).
+
+---
+
+## Privacy
+
+WebLinuxOS runs entirely client-side. No analytics, no telemetry, no third-party trackers.
+
+- Conversations with Nexus AI are sent directly from your browser to `pollinations.ai`. They are not stored on any WebLinuxOS server (there is no server).
+- The Cloud Clipboard's GitHub token is stored only in your browser's `localStorage`. It is never sent anywhere except `api.github.com`.
+- All other data (file system, window state, notes, settings) lives in `localStorage` and never leaves your device unless you explicitly invoke a sync feature.
+
 ---
 
 ## Contributing
@@ -199,9 +290,27 @@ The included GitHub Actions workflow (`.github/workflows/deploy.yml`) builds on 
 
 1. Create `web-linux/src/apps/MyApp.tsx`.
 2. Add a lazy import in `web-linux/src/components/desktop/WindowManager.tsx#componentMap`.
-3. Register metadata in `web-linux/src/apps.tsx#appRegistry`.
+3. Register metadata in `web-linux/src/apps.tsx#appRegistry` (or append to `APP_REGISTRY_EXTRAS`).
 
-All three steps are validated by a one-line comment block above `appRegistry` and the build pipeline will fail if any app is registered without an existing component.
+The build pipeline will fail if any app is registered without an existing component.
+
+### Adding a new terminal command
+
+1. Create `web-linux/src/apps/terminal/myCommands.ts`.
+2. Use `registerCommand('my-cmd', { handler, description, usage, examples })`.
+3. Add `import './myCommands'` to `web-linux/src/apps/terminal/index.ts`.
+
+Commands are automatically picked up by `help`, tab completion, and the command palette.
+
+---
+
+## Roadmap
+
+- Voice input for Nexus AI via the Web Speech API.
+- PWA install with offline shell.
+- Collaborative whiteboard over WebRTC.
+- File system persistence to IndexedDB for larger quotas.
+- More AI providers (OpenAI-compatible, Anthropic, local via WebLLM).
 
 ---
 
@@ -212,5 +321,7 @@ All three steps are validated by a one-line comment block above `appRegistry` an
 ## Acknowledgments
 
 - The terminal engine and virtual file system are original implementations.
+- AI capabilities are powered by [Pollinations.ai](https://pollinations.ai), a free and open AI gateway.
+- Cloud sync uses the [GitHub Gist API](https://docs.github.com/en/rest/gists).
 - The cyberpunk and quantum themes draw inspiration from design systems by Linear, Vercel, and the broader open-source community.
-- Public APIs are credited inline in `apiService.ts`.
+- All other public APIs are credited inline in `apiService.ts` and `apiConfig.ts`.

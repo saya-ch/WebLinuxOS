@@ -1,440 +1,281 @@
 /**
- * AI服务抽象层
- * 支持多个AI提供商的统一接口
+ * Real AI Service — 基于 Pollinations.ai 的免费 AI 服务
+ *
+ * Pollinations.ai 提供完全免费、无需 API Key 的 AI 文本与图像生成接口。
+ * 该服务对 GitHub Pages 静态部署友好，可直接在浏览器中调用。
+ *
+ * 文档: https://pollinations.ai
+ *
+ * 提供的能力:
+ *  - chat(messages, options): 多轮对话（OpenAI 风格 messages 数组）
+ *  - complete(prompt, options): 单轮文本补全
+ *  - streamChat(messages, options): 流式对话（通过回调逐 token 输出）
+ *  - generateImage(prompt, options): 文生图（返回 URL）
+ *  - models(): 获取可用模型列表
  */
+
+import { API_CONFIG, fetchWithTimeout } from '../config/apiConfig'
+
+export type AIRole = 'system' | 'user' | 'assistant'
 
 export interface AIMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
+  role: AIRole
+  content: string
 }
 
-interface CodeMetrics {
-  lines: number;
-  functions: number;
-  comments: number;
+export interface AIChatOptions {
+  /** 模型名称，例如 'openai'、'openai-large'、'mistral'、'llama' 等 */
+  model?: string
+  /** 随机种子，固定种子可获得可复现输出 */
+  seed?: number
+  /** 采样温度，0-2 之间，越大越发散 */
+  temperature?: number
+  /** 是否启用推理模式（部分模型支持） */
+  reasoning?: boolean
+  /** 私有 token（可选，用于 Pollinations 高级用法） */
+  token?: string
+  /** 请求超时（毫秒），默认 60s */
+  timeout?: number
 }
 
-export interface AIResponse {
-  success: boolean;
-  content?: string;
-  error?: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
+export interface AIImageOptions {
+  /** 模型：'flux' | 'turbo' */
+  model?: string
+  /** 图片宽度 */
+  width?: number
+  /** 图片高度 */
+  height?: number
+  /** 随机种子 */
+  seed?: number
+  /** 生成数量（Pollinations 通过 n 控制） */
+  n?: number
+  /** 是否私有（不在公共画廊显示） */
+  private?: boolean
+  /** 增强提示词 */
+  enhance?: boolean
+  /** 透明背景 */
+  transparent?: boolean
 }
 
-export interface AIProvider {
-  name: string;
-  isAvailable: boolean;
-  chat(messages: AIMessage[]): Promise<AIResponse>;
-  analyzeCode(code: string, language: string): Promise<AIResponse>;
-  generateCode(prompt: string, language: string): Promise<AIResponse>;
-  explainCode(code: string): Promise<AIResponse>;
+export interface AIModelInfo {
+  name: string
+  type: string
+  description?: string
+  vision?: boolean
+  reasoning?: boolean
+}
+
+/** 可用的文本模型（硬编码常用列表，避免每次都拉远端） */
+export const AVAILABLE_TEXT_MODELS: AIModelInfo[] = [
+  { name: 'openai', type: 'chat', description: 'GPT-4o mini — 通用对话，速度快、成本低（Pollinations 免费）' },
+  { name: 'openai-large', type: 'chat', description: 'GPT-4o — 推理与视觉能力更强', vision: true, reasoning: true },
+  { name: 'openai-fast', type: 'chat', description: 'GPT-4o mini 快速通道，最低延迟' },
+  { name: 'mistral', type: 'chat', description: 'Mistral Small 3.1 — 开源对话模型' },
+  { name: 'llama', type: 'chat', description: 'Llama 4 Scout — Meta 开源大模型' },
+  { name: 'deepseek', type: 'chat', description: 'DeepSeek V3 — 中文与代码能力突出', reasoning: true },
+  { name: 'qwen-coder', type: 'chat', description: 'Qwen 2.5 Coder — 代码补全与生成' },
+  { name: 'searchgpt', type: 'chat', description: 'SearchGPT — 带联网搜索能力的对话模型' },
+  { name: 'unity', type: 'chat', description: 'Unity — 中等规模多场景模型' },
+]
+
+/** 可用图像模型 */
+export const AVAILABLE_IMAGE_MODELS: AIModelInfo[] = [
+  { name: 'flux', type: 'image', description: 'FLUX.1 — 高质量文生图模型' },
+  { name: 'turbo', type: 'image', description: 'Turbo — 极速生成（牺牲少量质量）' },
+]
+
+/**
+ * 多轮对话接口（OpenAI 风格 messages 数组）
+ * 使用 POST /openai 接口以获得更稳定的输出
+ */
+export async function chat(
+  messages: AIMessage[],
+  options: AIChatOptions = {},
+): Promise<string> {
+  const model = options.model || API_CONFIG.pollinations.defaultModel
+  const url = `${API_CONFIG.pollinations.textBaseUrl}/openai`
+
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    temperature: options.temperature ?? 0.7,
+    private: true,
+  }
+  if (options.seed !== undefined) body.seed = options.seed
+  if (options.reasoning !== undefined) body.reasoning = options.reasoning
+  if (options.token) body.token = options.token
+
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    options.timeout ?? 60_000,
+  )
+
+  if (!response.ok) {
+    throw new Error(`AI 请求失败: HTTP ${response.status} ${response.statusText}`)
+  }
+
+  // 兼容 OpenAI 标准响应
+  const data = await response.json()
+  const content =
+    data?.choices?.[0]?.message?.content ??
+    data?.choices?.[0]?.text ??
+    (typeof data === 'string' ? data : '')
+  if (!content) {
+    throw new Error('AI 返回为空，请稍后重试或更换模型')
+  }
+  return content
 }
 
 /**
- * AI服务管理器
- * 统一管理多个AI提供商
+ * 单轮文本补全（GET 接口，更简单但只支持单条 prompt）
  */
-export class AIServiceManager {
-  private providers: Map<string, AIProvider> = new Map();
-  private defaultProvider: string = 'huggingface';
+export async function complete(
+  prompt: string,
+  options: AIChatOptions = {},
+): Promise<string> {
+  const model = options.model || API_CONFIG.pollinations.defaultModel
+  const url = new URL(`${API_CONFIG.pollinations.textBaseUrl}/${encodeURIComponent(prompt)}`)
+  url.searchParams.set('model', model)
+  if (options.seed !== undefined) url.searchParams.set('seed', String(options.seed))
+  if (options.temperature !== undefined) url.searchParams.set('temperature', String(options.temperature))
+  if (options.reasoning !== undefined) url.searchParams.set('reasoning', String(options.reasoning))
 
-  /**
-   * 注册AI提供商
-   */
-  registerProvider(provider: AIProvider): void {
-    this.providers.set(provider.name, provider);
+  const response = await fetchWithTimeout(url.toString(), {}, options.timeout ?? 60_000)
+  if (!response.ok) {
+    throw new Error(`AI 请求失败: HTTP ${response.status}`)
   }
-
-  /**
-   * 获取可用的提供商
-   */
-  getAvailableProviders(): AIProvider[] {
-    return Array.from(this.providers.values()).filter(p => p.isAvailable);
-  }
-
-  /**
-   * 发送聊天消息
-   */
-  async chat(messages: AIMessage[], provider?: string): Promise<AIResponse> {
-    const p = this.providers.get(provider || this.defaultProvider);
-    if (!p || !p.isAvailable) {
-      return { success: false, error: 'Provider not available' };
-    }
-    return p.chat(messages);
-  }
-
-  /**
-   * 分析代码
-   */
-  async analyzeCode(code: string, language: string, provider?: string): Promise<AIResponse> {
-    const p = this.providers.get(provider || this.defaultProvider);
-    if (!p || !p.isAvailable) {
-      return { success: false, error: 'Provider not available' };
-    }
-    return p.analyzeCode(code, language);
-  }
-
-  /**
-   * 生成代码
-   */
-  async generateCode(prompt: string, language: string, provider?: string): Promise<AIResponse> {
-    const p = this.providers.get(provider || this.defaultProvider);
-    if (!p || !p.isAvailable) {
-      return { success: false, error: 'Provider not available' };
-    }
-    return p.generateCode(prompt, language);
-  }
-
-  /**
-   * 解释代码
-   */
-  async explainCode(code: string, provider?: string): Promise<AIResponse> {
-    const p = this.providers.get(provider || this.defaultProvider);
-    if (!p || !p.isAvailable) {
-      return { success: false, error: 'Provider not available' };
-    }
-    return p.explainCode(code);
-  }
+  return await response.text()
 }
 
 /**
- * 基于本地规则的基础AI提供者
- * 不依赖外部API，提供基础的代码分析功能
+ * 流式对话 — 通过回调逐块返回，便于终端打字机效果或 UI 实时显示
+ * 实现：GET 接口配合 ReadableStream 读取
  */
-export class LocalAIProvider implements AIProvider {
-  name = 'local';
-  isAvailable = true;
+export async function streamChat(
+  messages: AIMessage[],
+  onChunk: (delta: string) => void,
+  options: AIChatOptions = {},
+): Promise<string> {
+  const model = options.model || API_CONFIG.pollinations.defaultModel
+  const url = `${API_CONFIG.pollinations.textBaseUrl}/openai`
 
-  async chat(messages: AIMessage[]): Promise<AIResponse> {
-    // 简单的本地响应逻辑
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.role === 'user') {
-      const response = this.generateLocalResponse(lastMessage.content);
-      return { success: true, content: response };
-    }
-    return { success: false, error: 'Invalid message format' };
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    temperature: options.temperature ?? 0.7,
+    stream: true,
+    private: true,
+  }
+  if (options.seed !== undefined) body.seed = options.seed
+  if (options.reasoning !== undefined) body.reasoning = options.reasoning
+
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    options.timeout ?? 120_000,
+  )
+
+  if (!response.ok || !response.body) {
+    // 回退到非流式调用
+    const full = await chat(messages, options)
+    onChunk(full)
+    return full
   }
 
-  async analyzeCode(code: string, language: string): Promise<AIResponse> {
-    const analysis = this.performBasicAnalysis(code, language);
-    return { success: true, content: analysis };
-  }
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let full = ''
+  let buffer = ''
 
-  async generateCode(prompt: string, language: string): Promise<AIResponse> {
-    // 提供基础的代码模板
-    const template = this.getCodeTemplate(prompt, language);
-    return { success: true, content: template };
-  }
-
-  async explainCode(code: string): Promise<AIResponse> {
-    const explanation = this.generateBasicExplanation(code);
-    return { success: true, content: explanation };
-  }
-
-  private generateLocalResponse(input: string): string {
-    const lowerInput = input.toLowerCase();
-    
-    if (lowerInput.includes('hello') || lowerInput.includes('hi')) {
-      return '你好！我是WebLinuxOS的AI助手。我可以帮助你分析代码、生成代码模板和解释代码。';
-    }
-    
-    if (lowerInput.includes('help') || lowerInput.includes('帮助')) {
-      return `我可以帮你：
-1. 分析代码 - 输入"分析这段代码："+ 代码
-2. 生成代码模板 - 输入"生成" + 语言 + "代码"
-3. 解释代码 - 输入"解释" + 代码
-4. 回答编程问题`;
-    }
-
-    return '我理解你的问题。作为WebLinuxOS的AI助手，我可以帮助分析代码、生成代码模板和解释代码逻辑。输入"帮助"查看我能做什么。';
-  }
-
-  private performBasicAnalysis(code: string, language: string): string {
-    const lines = code.split('\n').length;
-    const characters = code.length;
-    const functions = (code.match(/function\s+\w+|const\s+\w+\s*=\s*(?:async\s*)?\(|=>\s*{/g) || []).length;
-    const comments = (code.match(/\/\/.*|\/\*[\s\S]*?\*\/|#.*/g) || []).length;
-    const complexity = this.estimateComplexity(code);
-
-    return `📊 代码分析报告 (${language})
-
-📝 基本信息:
-- 行数: ${lines}
-- 字符数: ${characters}
-- 函数/方法数: ${functions}
-- 注释数: ${comments}
-
-📈 质量指标:
-- 复杂度: ${complexity}
-- 注释覆盖率: ${lines > 0 ? ((comments / lines) * 100).toFixed(1) : 0}%
-
-💡 建议:
-${this.generateSuggestions(code, language, { lines, functions, comments })}`;
-  }
-
-  private estimateComplexity(code: string): string {
-    const loops = (code.match(/for\s*\(|while\s*\(|\.forEach\(|\.map\(|\.filter\(/g) || []).length;
-    const conditions = (code.match(/if\s*\(|switch\s*\(|case\s+/g) || []).length;
-    const nesting = this.getMaxNesting(code);
-
-    const score = loops * 2 + conditions + nesting;
-    
-    if (score < 5) return '简单 (✓)';
-    if (score < 15) return '中等 (⚠)';
-    return '复杂 (⚠️)';
-  }
-
-  private getMaxNesting(code: string): number {
-    let maxNesting = 0;
-    let currentNesting = 0;
-    
-    for (const char of code) {
-      if (char === '{') {
-        currentNesting++;
-        maxNesting = Math.max(maxNesting, currentNesting);
-      } else if (char === '}') {
-        currentNesting--;
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed.startsWith('data:')) continue
+      const payload = trimmed.slice(5).trim()
+      if (payload === '[DONE]') continue
+      try {
+        const json = JSON.parse(payload)
+        const delta = json?.choices?.[0]?.delta?.content ?? ''
+        if (delta) {
+          full += delta
+          onChunk(delta)
+        }
+      } catch {
+        // 忽略 JSON 解析失败的帧（可能是注释或心跳）
       }
     }
-    
-    return maxNesting;
   }
-
-  private generateSuggestions(code: string, _language: string, metrics: CodeMetrics): string {
-    const suggestions: string[] = [];
-
-    if (metrics.lines > 100) {
-      suggestions.push('- 考虑将大文件拆分为更小的模块');
-    }
-
-    if (metrics.functions > 10) {
-      suggestions.push('- 函数数量较多，可考虑按功能分组');
-    }
-
-    if (metrics.comments < metrics.lines * 0.1) {
-      suggestions.push('- 添加更多注释以提高代码可读性');
-    }
-
-    if (!code.includes('try') && !code.includes('catch')) {
-      suggestions.push('- 考虑添加错误处理逻辑');
-    }
-
-    if (suggestions.length === 0) {
-      suggestions.push('- 代码结构良好，继续保持！');
-    }
-
-    return suggestions.join('\n');
-  }
-
-  private getCodeTemplate(prompt: string, language: string): string {
-    const templates: Record<string, Record<string, string>> = {
-      javascript: {
-        function: `// 功能函数模板
-function functionName(params) {
-  // TODO: 实现功能
-  const result = params;
-  return result;
+  return full
 }
 
-// 使用示例
-// functionName(argument);`,
-        class: `// 类模板
-class ClassName {
-  constructor(properties) {
-    // 初始化属性
-  }
+/**
+ * 生成图像，返回可直接使用的图片 URL（无需下载）
+ * Pollinations 的 GET /image/{prompt} 直接返回 PNG
+ */
+export function generateImage(prompt: string, options: AIImageOptions = {}): string {
+  const model = options.model || API_CONFIG.pollinations.imageModel
+  const url = new URL(`${API_CONFIG.pollinations.imageBaseUrl}/prompt/${encodeURIComponent(prompt)}`)
+  url.searchParams.set('model', model)
+  url.searchParams.set('width', String(options.width ?? 1024))
+  url.searchParams.set('height', String(options.height ?? 1024))
+  if (options.seed !== undefined) url.searchParams.set('seed', String(options.seed))
+  if (options.n !== undefined) url.searchParams.set('n', String(options.n))
+  if (options.private) url.searchParams.set('private', 'true')
+  if (options.enhance) url.searchParams.set('enhance', 'true')
+  if (options.transparent) url.searchParams.set('transparent', 'true')
+  // 加时间戳避免缓存导致相同种子返回同一张图（在未指定 seed 时）
+  url.searchParams.set('nologo', 'true')
+  return url.toString()
+}
 
-  method() {
-    // 方法实现
-  }
-
-  // Getter
-  getProperty() {
-    // return this.property;
-  }
-
-  // Setter
-  setProperty(value) {
-    // this.property = value;
-  }
-}`,
-        async: `// 异步函数模板
-async function asyncFunction(params) {
+/**
+ * 获取可用模型列表（实时拉取）
+ */
+export async function listModels(): Promise<AIModelInfo[]> {
   try {
-    const response = await fetchData(params);
-    return response;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-}`
-      },
-      python: {
-        function: `# Python函数模板
-def function_name(params):
-    """
-    函数说明
-    
-    Args:
-        params: 参数说明
-    
-    Returns:
-        返回值说明
-    """
-    # TODO: 实现功能
-    result = params
-    return result`,
-        class: `# Python类模板
-class ClassName:
-    def __init__(self, properties):
-        """初始化"""
-        pass
-    
-    def method(self):
-        """方法"""
-        pass
-    
-    @property
-    def property(self):
-        """属性"""
-        pass`
-      },
-      typescript: {
-        interface: `// TypeScript接口模板
-interface InterfaceName {
-  property: string;
-  method(): void;
-}`,
-        function: `// TypeScript函数模板
-function functionName<T>(params: T): ReturnType {
-  // TODO: 实现功能
-  const result: ReturnType = params as ReturnType;
-  return result;
-}`
-      }
-    };
-
-    const langTemplates = templates[language.toLowerCase()] || templates.javascript;
-    
-    // 根据prompt匹配最相关的模板
-    for (const [key, template] of Object.entries(langTemplates)) {
-      if (prompt.toLowerCase().includes(key)) {
-        return template;
-      }
+    const response = await fetchWithTimeout(`${API_CONFIG.pollinations.textBaseUrl}/models`, {}, 10_000)
+    if (!response.ok) return AVAILABLE_TEXT_MODELS
+    const data = await response.json()
+    if (Array.isArray(data)) {
+      return data.map((m: unknown) => {
+        if (typeof m === 'string') return { name: m, type: 'chat' }
+        const obj = m as Record<string, unknown>
+        return {
+          name: String(obj.name ?? obj.id ?? ''),
+          type: String(obj.type ?? 'chat'),
+          description: obj.description ? String(obj.description) : undefined,
+          vision: Boolean(obj.vision),
+          reasoning: Boolean(obj.reasoning),
+        }
+      })
     }
-
-    // 默认返回基础函数模板
-    return langTemplates.function || templates.javascript.function;
-  }
-
-  private generateBasicExplanation(code: string): string {
-    const lines = code.split('\n');
-    let explanation = '📚 代码解释:\n\n';
-
-    // 基于代码结构的简单解释
-    if (code.includes('function') || code.includes('=>')) {
-      explanation += '✓ 这是一个函数定义\n';
-    }
-
-    if (code.includes('class')) {
-      explanation += '✓ 这是一个类定义\n';
-    }
-
-    if (code.includes('import') || code.includes('require')) {
-      explanation += '✓ 导入了外部模块\n';
-    }
-
-    if (code.includes('async') || code.includes('await')) {
-      explanation += '✓ 使用了异步编程\n';
-    }
-
-    if (code.includes('try') && code.includes('catch')) {
-      explanation += '✓ 包含错误处理逻辑\n';
-    }
-
-    if (code.includes('for') || code.includes('while') || code.includes('.forEach')) {
-      explanation += '✓ 包含循环结构\n';
-    }
-
-    if (code.includes('if') || code.includes('switch')) {
-      explanation += '✓ 包含条件判断\n';
-    }
-
-    explanation += `\n💡 代码共 ${lines.length} 行，包含 ${code.length} 个字符。`;
-
-    return explanation;
+    return AVAILABLE_TEXT_MODELS
+  } catch {
+    return AVAILABLE_TEXT_MODELS
   }
 }
 
 /**
- * API服务配置
+ * 默认系统提示词 — WebLinuxOS 内置 AI 助手人格
  */
-export const apiConfigs = {
-  // 天气API - Open-Meteo (免费)
-  weather: {
-    baseUrl: 'https://api.open-meteo.com/v1',
-    endpoints: {
-      current: '/forecast',
-      historical: '/forecast'
-    }
-  },
-
-  // 新闻API - 可选配置
-  news: {
-    baseUrl: 'https://hacker-news.firebaseio.com/v0',
-    endpoints: {
-      topStories: '/topstories.json',
-      item: '/item'
-    }
-  },
-
-  // 翻译API - LibreTranslate (免费)
-  translate: {
-    baseUrl: 'https://api.argos-translate.com',
-    endpoints: {
-      translate: '/translate'
-    }
-  },
-
-  // 货币API - CoinGecko (免费)
-  crypto: {
-    baseUrl: 'https://api.coingecko.com/api/v3',
-    endpoints: {
-      prices: '/simple/price',
-      trending: '/search/trending'
-    }
-  },
-
-  // 维基百科API
-  wikipedia: {
-    baseUrl: 'https://en.wikipedia.org/api/rest_v1',
-    endpoints: {
-      summary: '/page/summary',
-      random: '/page/random/summary'
-    }
-  },
-
-  // IP地址API
-  ipapi: {
-    baseUrl: 'https://ipapi.co/json'
-  },
-
-  // 引用API
-  quotes: {
-    baseUrl: 'https://api.quotable.io',
-    endpoints: {
-      random: '/random',
-      quotes: '/quotes'
-    }
-  }
-};
-
-// 创建全局AI服务实例
-export const aiService = new AIServiceManager();
-
-// 注册本地AI提供者
-aiService.registerProvider(new LocalAIProvider());
+export const DEFAULT_SYSTEM_PROMPT = `你是 WebLinuxOS 内置的 AI 助手"Nexus"。
+- 你运行在一个完全在浏览器中执行的 Web Linux 桌面环境中
+- 回答需简洁、专业、有用；优先给出可执行的解决方案
+- 中文问题用中文回答，英文问题用英文回答
+- 当用户询问代码时，使用代码块格式，并标注语言
+- 当用户询问系统功能时，可结合 WebLinuxOS 的内置应用进行介绍
+- 严禁输出有害、不实或违反伦理的内容`

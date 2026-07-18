@@ -29,6 +29,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 云剪贴板（v40 创新功能 — 基于 GitHub Gist 的真实跨设备同步）
+  { id: 'cloud-clipboard', name: '云剪贴板', icon: <BackupIcon />, component: 'CloudClipboard', category: 'utilities', defaultWidth: 1000, defaultHeight: 720, minWidth: 720, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 GitHub Gist 的跨设备云剪贴板：本地存储 + Gist 同步 + 分享链接 + 语法检测' },
   // 工作区管理器（v38.2创新功能）
   { id: 'workspace-manager', name: '工作区管理器', icon: <GridIcon />, component: 'WorkspaceManager', category: 'system', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // 终极AI助手（v37.3创新功能）
@@ -1415,7 +1417,7 @@ export const appRegistry: AppDefinition[] = [
   // === v25.0 新增灵感流 - 快速捕捉想法与灵感 ===
   { id: 'idea-stream', name: '灵感流', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/><path d="M12 6v6M9 9l3 3 3-3"/></svg>, component: 'IdeaStream', category: 'office', defaultWidth: 820, defaultHeight: 720, minWidth: 560, minHeight: 480, resizable: true, multiple: false },
   // === v27.0 新增创新应用 - NexusAI 智能中枢与 DevForge 开发者锻造台 ===
-  { id: 'nexus-ai', name: 'NexusAI 智能中枢', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>, component: 'NexusAI', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
+  { id: 'nexus-ai', name: 'NexusAI 真实AI助手', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>, component: 'NexusAI', category: 'utilities', defaultWidth: 1000, defaultHeight: 720, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 Pollinations.ai 的真实联网大模型对话（GPT-4o/DeepSeek/Llama），无需 API Key，支持流式输出与图像生成' },
   { id: 'dev-forge', name: 'DevForge 开发者锻造台', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, component: 'DevForge', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // === v29.0 新增核心实用工具 ===
   { id: 'dev-toolbox-central', name: '核心工具箱', icon: <Code2Icon />, component: 'DevToolboxCentral', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
@@ -1443,4 +1445,8 @@ export const appRegistry: AppDefinition[] = [
   { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
   // === v39.0 全新创新应用 - Snap Studio 浏览器原生图片工坊 ===
   { id: 'snap-studio', name: 'Snap Studio 美图工坊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>, component: 'SnapStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Canvas 像素级图片编辑器：滤镜、微调、缩放、撤销重做、多格式导出' },
+  // === v40.0 创新功能扩展 ===
+  // 注意：以下 ...APP_REGISTRY_EXTRAS 必须放在 appRegistry 数组末尾，
+  // 否则会被后续字面量项覆盖。
+  ...APP_REGISTRY_EXTRAS,
 ]
