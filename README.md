@@ -31,13 +31,15 @@ WebLinuxOS brings a complete Linux desktop experience to your browser. Built wit
 
 ### Terminal
 
-A fully functional terminal with **150+ commands**:
+A fully functional terminal with **200+ commands**:
 
 - File operations: `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`
 - System tools: `top`, `ps`, `df`, `free`, `uptime`, `whoami`, `date`, `uname`
 - Network utilities: `ping`, `curl`, `wget`, `netstat`, `dig`, `traceroute`
 - Real-time APIs: `weather`, `news`, `crypto`, `github`, `stock`, `nasa`
 - Python runtime: Execute Python 3 code directly via Pyodide
+- Developer tools: `wikipedia`, `npm`, `pypi`, `github-user`, `uuidgen`, `jwt-decode`, `url-shortener`
+- Utilities: `converter`, `date-diff`, `birthday`, `bmi`, `base64-encode`, `html-encode`, `color-convert`, `qrcode-generate`
 - Advanced features: Pipes, redirects, background processes, tab completion, history
 
 ### Productivity Suite
@@ -60,6 +62,7 @@ A fully functional terminal with **150+ commands**:
 - Regex builder and tester
 - Code formatter and diff viewer
 - HTTP status code reference
+- Developer Toolbox: All-in-one toolkit with JSON tools, regex tester, code formatter, hash calculator, and encoding utilities
 
 ### Real-Time API Integration
 
