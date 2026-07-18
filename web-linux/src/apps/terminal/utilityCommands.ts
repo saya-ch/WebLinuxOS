@@ -1,4 +1,4 @@
-import { registerCommand } from './commands'
+import { registerCommand, COMMANDS } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { findNodeByPath } from '../../store'
 
@@ -1412,4 +1412,421 @@ registerCommand('du', {
   description: '显示目录大小',
   usage: 'du',
   examples: ['du']
+})
+
+registerCommand('help', {
+  handler: (): CommandResult => {
+    const commands = Object.entries(COMMANDS)
+      .map(([name, def]) => ({ name, ...def }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+    
+    const output: string[] = []
+    output.push('📖 WebLinuxOS 命令列表')
+    output.push('')
+    output.push('═'.repeat(80))
+    output.push(`命令名称${' '.repeat(20)}描述`)
+    output.push('─'.repeat(80))
+    
+    commands.forEach(cmd => {
+      const name = cmd.name.padEnd(22)
+      const desc = cmd.description
+      output.push(`${name}${desc}`)
+    })
+    
+    output.push('')
+    output.push('═'.repeat(80))
+    output.push('提示: 使用 <命令> --help 或 <命令> -h 查看详细用法')
+    output.push('示例: weather --help')
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示所有可用命令',
+  usage: 'help',
+  examples: ['help']
+})
+
+registerCommand('whoami', {
+  handler: (context: CommandContext): CommandResult => {
+    return { output: context.username }
+  },
+  description: '显示当前用户名',
+  usage: 'whoami',
+  examples: ['whoami']
+})
+
+registerCommand('hostname', {
+  handler: (context: CommandContext): CommandResult => {
+    return { output: context.hostname }
+  },
+  description: '显示主机名',
+  usage: 'hostname',
+  examples: ['hostname']
+})
+
+registerCommand('date', {
+  handler: (): CommandResult => {
+    const now = new Date()
+    return { output: now.toLocaleString('zh-CN') }
+  },
+  description: '显示当前日期时间',
+  usage: 'date',
+  examples: ['date']
+})
+
+registerCommand('uname', {
+  handler: (): CommandResult => {
+    const output = [
+      'WebLinuxOS v38.0.0',
+      'Web Kernel',
+      'Build: ' + (typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'unknown'),
+    ]
+    return { output: output.join('\n') }
+  },
+  description: '显示系统信息',
+  usage: 'uname',
+  examples: ['uname']
+})
+
+registerCommand('history', {
+  handler: (): CommandResult => {
+    return {
+      output: [
+        '📜 命令历史',
+        '',
+        '此功能需要终端支持命令历史记录',
+        '',
+        '使用方向键 ↑↓ 浏览历史命令',
+        '使用 Ctrl+R 搜索历史命令',
+      ].join('\n')
+    }
+  },
+  description: '显示命令历史',
+  usage: 'history',
+  examples: ['history']
+})
+
+registerCommand('env', {
+  handler: (context: CommandContext): CommandResult => {
+    const env = {
+      USER: context.username,
+      HOSTNAME: context.hostname,
+      PWD: context.cwd,
+      HOME: '/home/user',
+      SHELL: 'webshell',
+      PATH: '/bin:/usr/bin:/usr/local/bin',
+      TERM: 'weblinux-terminal',
+      LANG: 'zh_CN.UTF-8',
+      VERSION: '38.0.0',
+    }
+    
+    const output = [
+      '🌐 环境变量',
+      '',
+      ...Object.entries(env).map(([key, value]) => `${key}=${value}`),
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示环境变量',
+  usage: 'env',
+  examples: ['env']
+})
+
+registerCommand('which', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const cmd = args[0]
+    
+    if (!cmd) {
+      return {
+        output: [
+          '🔍 which - 查找命令位置',
+          '',
+          '用法: which <命令>',
+          '',
+          '示例:',
+          '  which ls',
+          '  which weather',
+        ].join('\n')
+      }
+    }
+    
+    if (COMMANDS[cmd.toLowerCase()]) {
+      return { output: `/usr/bin/${cmd}` }
+    }
+    
+    return { output: `${cmd}: 未找到命令` }
+  },
+  description: '查找命令位置',
+  usage: 'which <命令>',
+  examples: ['which ls', 'which weather']
+})
+
+registerCommand('reboot', {
+  handler: (): CommandResult => {
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+    
+    return {
+      output: [
+        '🔄 正在重启系统...',
+        '',
+        '系统将在 1 秒后重新加载',
+      ].join('\n')
+    }
+  },
+  description: '重启系统',
+  usage: 'reboot',
+  examples: ['reboot']
+})
+
+registerCommand('shutdown', {
+  handler: (): CommandResult => {
+    return {
+      output: [
+        '⏹️ 系统关机',
+        '',
+        'WebLinuxOS 是一个 Web 应用，无法真正关机。',
+        '您可以关闭浏览器标签页来退出。',
+        '',
+        '提示: 输入 reboot 重新加载系统',
+      ].join('\n')
+    }
+  },
+  description: '关闭系统',
+  usage: 'shutdown',
+  examples: ['shutdown']
+})
+
+registerCommand('sleep', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const seconds = parseInt(args[0]) || 1
+    
+    if (seconds < 1 || seconds > 60) {
+      return {
+        output: [
+          '😴 sleep - 延迟执行',
+          '',
+          '用法: sleep <秒数> (1-60)',
+          '',
+          '示例:',
+          '  sleep 5',
+          '  sleep 10',
+        ].join('\n')
+      }
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, seconds * 1000))
+    
+    return { output: '' }
+  },
+  description: '延迟执行指定秒数',
+  usage: 'sleep <秒数>',
+  examples: ['sleep 5', 'sleep 10']
+})
+
+registerCommand('seq', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '🔢 seq - 生成数字序列',
+          '',
+          '用法: seq <起始> <结束> [步长]',
+          '',
+          '示例:',
+          '  seq 1 10',
+          '  seq 0 20 2',
+          '  seq 10 1',
+        ].join('\n')
+      }
+    }
+    
+    const start = parseInt(args[0]) || 1
+    const end = parseInt(args[1]) || 10
+    const step = args.length > 2 ? parseInt(args[2]) : (start < end ? 1 : -1)
+    
+    if (isNaN(start) || isNaN(end) || isNaN(step)) {
+      return { output: '错误: 无效的参数' }
+    }
+    
+    const numbers: number[] = []
+    if (step > 0) {
+      for (let i = start; i <= end; i += step) {
+        numbers.push(i)
+      }
+    } else {
+      for (let i = start; i >= end; i += step) {
+        numbers.push(i)
+      }
+    }
+    
+    return { output: numbers.join('\n') }
+  },
+  description: '生成数字序列',
+  usage: 'seq <起始> <结束> [步长]',
+  examples: ['seq 1 10', 'seq 0 20 2']
+})
+
+registerCommand('head', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const lines = parseInt(args[0]) || 10
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📄 head - 显示文件开头',
+          '',
+          '用法: head <行数>',
+          '',
+          '示例:',
+          '  head 5',
+          '  head 20',
+        ].join('\n')
+      }
+    }
+    
+    return {
+      output: [
+        `显示前 ${lines} 行`,
+        '',
+        '此功能需要与文件内容结合使用',
+        '示例: cat file.txt | head 5',
+      ].join('\n')
+    }
+  },
+  description: '显示文件开头部分',
+  usage: 'head <行数>',
+  examples: ['head 5', 'head 10']
+})
+
+registerCommand('tail', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const lines = parseInt(args[0]) || 10
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📄 tail - 显示文件结尾',
+          '',
+          '用法: tail <行数>',
+          '',
+          '示例:',
+          '  tail 5',
+          '  tail 20',
+        ].join('\n')
+      }
+    }
+    
+    return {
+      output: [
+        `显示后 ${lines} 行`,
+        '',
+        '此功能需要与文件内容结合使用',
+        '示例: cat file.txt | tail 5',
+      ].join('\n')
+    }
+  },
+  description: '显示文件结尾部分',
+  usage: 'tail <行数>',
+  examples: ['tail 5', 'tail 10']
+})
+
+registerCommand('wc', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const text = args.join(' ')
+    
+    if (!text) {
+      return {
+        output: [
+          '📊 wc - 字数统计',
+          '',
+          '用法: wc <文本>',
+          '',
+          '示例:',
+          '  wc "Hello World"',
+          '  wc "这是一段中文文本"',
+        ].join('\n')
+      }
+    }
+    
+    const chars = text.length
+    const words = text.split(/\s+/).filter(w => w.length > 0).length
+    const lines = text.split('\n').length
+    
+    return {
+      output: [
+        '📊 字数统计',
+        '',
+        `字符数: ${chars}`,
+        `单词数: ${words}`,
+        `行数: ${lines}`,
+      ].join('\n')
+    }
+  },
+  description: '统计字符数、单词数和行数',
+  usage: 'wc <文本>',
+  examples: ['wc "Hello World"']
+})
+
+registerCommand('sort', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    const items = args
+    
+    if (items.length === 0) {
+      return {
+        output: [
+          '📋 sort - 排序',
+          '',
+          '用法: sort <项目1> <项目2> ...',
+          '',
+          '示例:',
+          '  sort apple banana cherry',
+          '  sort 3 1 4 1 5 9',
+        ].join('\n')
+      }
+    }
+    
+    const sorted = [...items].sort()
+    
+    return { output: sorted.join('\n') }
+  },
+  description: '对输入进行排序',
+  usage: 'sort <项目...>',
+  examples: ['sort apple banana cherry']
+})
+
+registerCommand('uniq', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📋 uniq - 去除重复项',
+          '',
+          '用法: uniq <项目1> <项目2> ...',
+          '',
+          '示例:',
+          '  uniq a b a c b',
+          '  uniq 1 2 2 3 1',
+        ].join('\n')
+      }
+    }
+    
+    const unique = [...new Set(args)]
+    
+    return { output: unique.join('\n') }
+  },
+  description: '去除重复项',
+  usage: 'uniq <项目...>',
+  examples: ['uniq a b a c']
 })

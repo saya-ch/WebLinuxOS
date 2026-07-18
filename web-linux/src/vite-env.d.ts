@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __BUILD_TIME__: string
+
 declare module '*.css' {
   const content: { [key: string]: string }
   export default content
