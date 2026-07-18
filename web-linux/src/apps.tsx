@@ -74,6 +74,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'system-monitor-dashboard', name: '系统监控仪表盘', icon: <ActivityIcon />, component: 'SystemMonitorDashboard', category: 'utilities', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // 在线代码运行器增强版（v38.1新增）
   { id: 'online-code-runner-enhanced', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
+  // 代码搜索（v38.2新增）- 搜索GitHub开源项目
+  { id: 'code-search', name: '代码搜索', icon: <SearchIcon />, component: 'CodeSearch', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

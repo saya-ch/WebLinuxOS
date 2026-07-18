@@ -379,6 +379,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v38.0 新增创新应用 ===
   DrawPad: () => import('../../apps/DrawPad'),
   CodeShare: () => import('../../apps/CodeShare'),
+  // === v38.2 新增代码搜索应用 ===
+  CodeSearch: () => import('../../apps/CodeSearch'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

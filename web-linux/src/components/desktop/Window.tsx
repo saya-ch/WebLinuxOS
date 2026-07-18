@@ -289,44 +289,54 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     const halfHeight = screenH / 2
     const thirdWidth = screenW / 3
     const twoThirdsWidth = (screenW * 2) / 3
+    const quarterWidth = screenW / 4
+    const threeQuartersWidth = (screenW * 3) / 4
 
     if (mouseX < EDGE_THRESHOLD) {
       if (mouseY < EDGE_THRESHOLD) {
-        return { x: 0, y: 0, width: halfWidth, height: halfHeight, snap: 'TOP-LEFT' }
+        return { x: 0, y: 0, width: halfWidth, height: halfHeight, snap: '左上四分之一' }
       } else if (mouseY > screenH - EDGE_THRESHOLD) {
-        return { x: 0, y: halfHeight, width: halfWidth, height: halfHeight, snap: 'BOTTOM-LEFT' }
+        return { x: 0, y: halfHeight, width: halfWidth, height: halfHeight, snap: '左下四分之一' }
       } else if (Math.abs(mouseY - halfHeight) < SNAP_THRESHOLD) {
-        return { x: 0, y: 0, width: halfWidth, height: screenH, snap: 'LEFT' }
+        return { x: 0, y: 0, width: halfWidth, height: screenH, snap: '左侧半屏' }
       }
       return null
     }
 
     if (mouseX > screenW - EDGE_THRESHOLD) {
       if (mouseY < EDGE_THRESHOLD) {
-        return { x: halfWidth, y: 0, width: halfWidth, height: halfHeight, snap: 'TOP-RIGHT' }
+        return { x: halfWidth, y: 0, width: halfWidth, height: halfHeight, snap: '右上四分之一' }
       } else if (mouseY > screenH - EDGE_THRESHOLD) {
-        return { x: halfWidth, y: halfHeight, width: halfWidth, height: halfHeight, snap: 'BOTTOM-RIGHT' }
+        return { x: halfWidth, y: halfHeight, width: halfWidth, height: halfHeight, snap: '右下四分之一' }
       } else if (Math.abs(mouseY - halfHeight) < SNAP_THRESHOLD) {
-        return { x: halfWidth, y: 0, width: halfWidth, height: screenH, snap: 'RIGHT' }
+        return { x: halfWidth, y: 0, width: halfWidth, height: screenH, snap: '右侧半屏' }
       }
       return null
     }
 
     if (Math.abs(mouseX - halfWidth) < SNAP_THRESHOLD) {
       if (mouseY < EDGE_THRESHOLD) {
-        return { x: 0, y: 0, width: screenW, height: halfHeight, snap: 'TOP' }
+        return { x: 0, y: 0, width: screenW, height: halfHeight, snap: '顶部半屏' }
       } else if (mouseY > screenH - EDGE_THRESHOLD) {
-        return { x: 0, y: halfHeight, width: screenW, height: halfHeight, snap: 'BOTTOM' }
+        return { x: 0, y: halfHeight, width: screenW, height: halfHeight, snap: '底部半屏' }
       }
       return null
     }
 
     if (Math.abs(mouseX - thirdWidth) < SNAP_THRESHOLD) {
-      return { x: 0, y: 0, width: thirdWidth, height: screenH, snap: 'LEFT-THIRD' }
+      return { x: 0, y: 0, width: thirdWidth, height: screenH, snap: '左三分之一' }
     }
 
     if (Math.abs(mouseX - twoThirdsWidth) < SNAP_THRESHOLD) {
-      return { x: twoThirdsWidth, y: 0, width: thirdWidth, height: screenH, snap: 'RIGHT-THIRD' }
+      return { x: twoThirdsWidth, y: 0, width: thirdWidth, height: screenH, snap: '右三分之一' }
+    }
+
+    if (Math.abs(mouseX - quarterWidth) < SNAP_THRESHOLD) {
+      return { x: 0, y: 0, width: quarterWidth, height: screenH, snap: '左四分之一' }
+    }
+
+    if (Math.abs(mouseX - threeQuartersWidth) < SNAP_THRESHOLD) {
+      return { x: threeQuartersWidth, y: 0, width: quarterWidth, height: screenH, snap: '右四分之一' }
     }
 
     return null
@@ -450,6 +460,36 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           updateWindowPosition(win.id, newX, newY)
         })
       }
+      
+      if (dragging && snapLayout) {
+        const ghostStyle: React.CSSProperties = {
+          position: 'fixed',
+          left: snapLayout.x,
+          top: snapLayout.y,
+          width: snapLayout.width,
+          height: snapLayout.height,
+          border: '2px dashed rgba(139, 124, 240, 0.6)',
+          borderRadius: 8,
+          backgroundColor: 'rgba(139, 124, 240, 0.1)',
+          pointerEvents: 'none',
+          zIndex: 999999,
+          boxShadow: '0 0 30px rgba(139, 124, 240, 0.3)',
+          transition: 'all 0.15s ease',
+        }
+        
+        const ghostDiv = document.getElementById('window-snap-ghost')
+        if (ghostDiv) {
+          Object.assign(ghostDiv.style, ghostStyle)
+        } else {
+          const newGhost = document.createElement('div')
+          newGhost.id = 'window-snap-ghost'
+          Object.assign(newGhost.style, ghostStyle)
+          document.body.appendChild(newGhost)
+        }
+      } else {
+        const ghostDiv = document.getElementById('window-snap-ghost')
+        if (ghostDiv) ghostDiv.remove()
+      }
       if (resizing) {
         const dx = e.clientX - ref.startX
         const dy = e.clientY - ref.startY
@@ -496,6 +536,9 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         cancelAnimationFrame(resizeRafRef.current)
         resizeRafRef.current = null
       }
+
+      const ghostDiv = document.getElementById('window-snap-ghost')
+      if (ghostDiv) ghostDiv.remove()
 
       if (dragging && snapLayout) {
         updateWindowPosition(win.id, snapLayout.x, snapLayout.y)
