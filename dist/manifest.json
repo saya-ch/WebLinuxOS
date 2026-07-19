@@ -1,12 +1,15 @@
 {
   "name": "WebLinuxOS",
   "short_name": "WebLinux",
-  "description": "一个完全运行在浏览器中的功能性Linux桌面环境",
-  "start_url": "./",
-  "scope": "./",
+  "description": "一个完全运行在浏览器中的功能性Linux桌面环境，支持虚拟文件系统、终端、窗口管理和实时API集成",
+  "start_url": "/WebLinuxOS/",
+  "scope": "/WebLinuxOS/",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "display_override": ["fullscreen", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#08080f",
+  "theme_color": "#7c6cf0",
+  "categories": ["productivity", "development", "utilities"],
   "icons": [
     {
       "src": "./favicon.svg",
@@ -14,5 +17,67 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "终端",
+      "short_name": "终端",
+      "description": "打开终端",
+      "url": "/WebLinuxOS/#terminal",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "64x64"
+        }
+      ]
+    },
+    {
+      "name": "文件管理器",
+      "short_name": "文件",
+      "description": "打开文件管理器",
+      "url": "/WebLinuxOS/#files",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "64x64"
+        }
+      ]
+    },
+    {
+      "name": "Nexus AI",
+      "short_name": "AI",
+      "description": "打开AI助手",
+      "url": "/WebLinuxOS/#nexusai",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "64x64"
+        }
+      ]
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "weblinux",
+      "url": "/WebLinuxOS/#app=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/WebLinuxOS/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "file",
+          "accept": ["*/*"]
+        }
+      ]
+    }
+  },
+  "related_applications": [],
+  "prefer_related_applications": false
 }

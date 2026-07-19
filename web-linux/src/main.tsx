@@ -81,10 +81,35 @@ if (typeof window !== 'undefined') {
   }
 }
 
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/WebLinuxOS/sw.js')
+        .then((registration) => {
+          console.log('[WebLinuxOS] Service Worker 注册成功:', registration.scope)
+          
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[WebLinuxOS] 发现新版本，正在更新...')
+                  newWorker.postMessage({ type: 'SKIP_WAITING' })
+                }
+              })
+            }
+          })
+        })
+        .catch((err) => {
+          console.warn('[WebLinuxOS] Service Worker 注册失败:', err)
+        })
+    })
+  }
+}
+
+registerServiceWorker()
+
 function RootApp() {
-  // 移除加载预加载遮罩层，确保逻辑健壮：
-  // - 同时支持 #preload 与 .preload 两种命名
-  // - 延迟执行以便动画平滑过渡
   useEffect(() => {
     const tryRemove = () => {
       const preload =
@@ -106,7 +131,6 @@ function RootApp() {
       }
     }
 
-    // 立即尝试一次，同时在 DOMContentLoaded 后再尝试一次，提升健壮性
     tryRemove()
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', tryRemove, { once: true })

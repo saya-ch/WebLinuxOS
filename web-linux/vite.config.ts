@@ -3,8 +3,6 @@ import react from '@vitejs/plugin-react'
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-// 读取 package.json 中的版本号，构建期注入到全局常量 __APP_VERSION__
-// 避免在多处硬编码版本号导致不一致（曾出现 preload 显示 v39、package.json 为 v40 的问题）
 function readAppVersion(): string {
   try {
     const pkgPath = resolve(__dirname, 'package.json')
@@ -54,7 +52,7 @@ export default defineConfig(({ mode }) => {
       modulePreload: {
         polyfill: false,
         resolveDependencies: (_filename, deps) => {
-          const criticalModules = ['vendor-react', 'vendor-zustand', 'component-desktop']
+          const criticalModules = ['vendor-react', 'vendor-zustand']
           return deps.filter(dep => criticalModules.some(m => dep.includes(m)))
         },
       },
@@ -63,8 +61,11 @@ export default defineConfig(({ mode }) => {
           'top-level-await': true,
         },
         drop: isProduction ? ['console', 'debugger'] : [],
+        minifyIdentifiers: isProduction,
+        minifySyntax: isProduction,
       },
       rollupOptions: {
+        cache: true,
         output: {
           manualChunks(id: string) {
             if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
@@ -103,6 +104,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/uuid')) {
               return 'vendor-uuid'
             }
+            if (id.includes('src/apps/terminal')) {
+              return 'app-terminal'
+            }
+            if (id.includes('src/apps/NexusAI')) {
+              return 'app-nexusai'
+            }
+            if (id.includes('src/apps/CodeEditor') || id.includes('src/apps/CodeForge')) {
+              return 'app-codeeditor'
+            }
             return undefined
           },
           entryFileNames: 'assets/[name]-[hash].js',
@@ -115,6 +125,9 @@ export default defineConfig(({ mode }) => {
       include: ['react', 'react-dom', 'zustand', 'lucide-react', 'marked'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
+      esbuildOptions: {
+        target: 'es2022',
+      },
     },
     define: {
       __BUILD_TIME__: JSON.stringify(new Date().toISOString().replace('T', ' ').split('.')[0]),
@@ -138,7 +151,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
         'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'no-store',
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
