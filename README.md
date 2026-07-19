@@ -58,6 +58,22 @@ Comprehensive system health checking with actionable recommendations:
 - Improved component registration flow in WindowManager
 - Enhanced theme support in new components
 
+### Creative Terminal Commands
+
+Eight new commands bring real-world data and utilities directly to the terminal:
+
+- **nasa** — Fetch the daily NASA Astronomy Picture of the Day with description and image links
+- **wikipedia** — Query Wikipedia encyclopedia summaries with support for Chinese queries
+- **github-trending** — View trending GitHub repositories with optional language filtering
+- **dict** — Look up English word definitions with phonetics, parts of speech, and example sentences
+- **ip** — Query public IP address or get detailed geolocation info for any IP
+- **weather-forecast** — 7-day weather forecast for major cities worldwide
+- **randomuser** — Generate random user profiles for testing and prototyping
+- **fact** — Get random cat facts for a quick break
+- **emoji** — Browse categorized emoji collections
+
+All commands include fallback data for offline use and proper error handling with timeout protection.
+
 ---
 
 ## What's New in v41
@@ -185,7 +201,7 @@ A real POSIX-style terminal with 200+ built-in commands:
 | File | `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `touch`, `pwd`, `tree`, `find`, `grep` |
 | System | `top`, `ps`, `df`, `free`, `uptime`, `whoami`, `date`, `uname`, `hostname`, `env` |
 | Network | `ping`, `curl`, `wget`, `netstat`, `dig`, `dns`, `ip` |
-| Online | `weather`, `news`, `crypto`, `github`, `github-trending`, `stock`, `nasa`, `wikipedia` |
+| Online | `weather`, `news`, `crypto`, `github`, `github-trending`, `stock`, `nasa`, `wikipedia`, `dict`, `ip`, `weather-forecast`, `randomuser`, `fact`, `emoji` |
 | AI | `ai`, `ai-chat`, `ai-image`, `ai-models`, `ai-translate`, `ai-explain`, `ai-code` |
 | Utilities | `base64`, `url-encode`, `hash`, `uuidgen`, `jwt-decode`, `qrcode`, `color`, `calc` |
 | Languages | `python` (Pyodide 3.11 runtime with full stdlib) |
@@ -232,6 +248,10 @@ All endpoints are public and key-free:
 | howmanypeopleareinspacerightnow.com | Astronaut headcount |
 | RandomUser | Profile picture generator |
 | Picsum | Sample images for Snap Studio |
+| NASA APOD | Daily astronomy picture |
+| Free Dictionary | English word definitions |
+| ipapi.co | IP geolocation lookup |
+| catfact.ninja | Cat facts |
 
 ---
 
