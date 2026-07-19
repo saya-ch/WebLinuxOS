@@ -1,15 +1,29 @@
+// 终端命令注册入口
+//
+// 导入顺序很重要：registerCommand 默认会跳过重复注册（保留首次实现），
+// 因此包含「权威实现」的模块必须在前，包含「扩展或重复实现」的模块在后。
+// 如果某个命令确实需要在运行时被覆盖，请使用 registerCommand(name, def, { force: true, source: '...' })。
+
+// 1. 核心命令框架（仅类型与注册器，不注册任何具体命令）
 export * from './commands'
 
-import './fileCommands'
-import './systemCommands'
-import './networkCommands'
-import './apiCommands'
+// 2. 权威实现：基础系统、文件、工具命令
+import './fileCommands'        // 文件系统操作（ls/cd/cat/mkdir/rm/cp/mv/grep/find 等）
+import './systemCommands'      // 系统命令（whoami/hostname/neofetch/version/about/uptime）
+import './toolCommands'        // 工具命令（echo/base64/hash/uuid/calc/sort/uniq 等大量实用工具）
+
+// 3. 权威实现：网络与创意命令（带本地回退数据，体验更佳）
+import './networkCommands'     // 网络命令（ping/curl/ifconfig 等）
+import './creativeCommands'    // 创意命令（nasa/wikipedia/github-trending - 含错误回退数据）
+
+// 4. 扩展命令：以下文件包含部分重复定义，会被自动跳过，保留上面的权威实现
+import './apiCommands'         // API 命令（部分与 creativeCommands 重复）
+import './onlineCommands'      // 在线命令（neofetch 等与 systemCommands 重复）
+import './utilityCommands'     // 实用命令（echo/whoami/hostname 等重复定义）
+import './enhancedCommands'    // 增强命令（wikipedia 等重复定义）
+
+// 5. 独立功能模块：不与上述命令冲突
 import './funCommands'
-import './utilityCommands'
-import './toolCommands'
-import './onlineCommands'
-import './enhancedCommands'
 import './aiCommands'
 import './advancedCommands'
 import './storageCommands'
-import './creativeCommands'

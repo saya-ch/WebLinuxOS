@@ -151,8 +151,15 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
   try {
     const stored = safeGetItem(key)
     if (!stored) return defaultValue
-    const parsed = JSON.parse(stored)
-    return parsed as T
+    try {
+      const parsed = JSON.parse(stored)
+      return parsed as T
+    } catch {
+      // 兼容历史数据：旧版本可能将纯字符串（如 'light'、'dark'）直接存入 localStorage，
+      // 此时 JSON.parse 会失败，回退到将原始字符串作为值返回。
+      // 这样既保证了与旧版本设置兼容，又能在新版本中以 JSON 格式正常存储。
+      return stored as unknown as T
+    }
   } catch (err) {
     console.warn(
       `Failed to load from localStorage for key "${key}":`,

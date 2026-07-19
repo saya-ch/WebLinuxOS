@@ -33,13 +33,34 @@ export interface CommandDefinition {
 
 export const COMMANDS: Record<string, CommandDefinition> = {}
 
-export function registerCommand(name: string, definition: CommandDefinition) {
+// 已注册命令的来源记录，用于在开发模式下定位重复注册问题
+const COMMAND_SOURCES: Record<string, string> = {}
+
+interface RegisterOptions {
+  /** 强制覆盖已存在的同名命令。默认 false：遇到重复时跳过并保留首次注册的实现。 */
+  force?: boolean
+  /** 来源标识，便于排查重复注册。通常传入模块文件名。 */
+  source?: string
+}
+
+export function registerCommand(name: string, definition: CommandDefinition, options?: RegisterOptions) {
   const normalizedName = name.toLowerCase()
-  // 重复注册保护：开发环境输出警告，避免静默覆盖造成功能丢失
-  if (import.meta.env.DEV && COMMANDS[normalizedName]) {
-    console.warn(`[terminal] 命令 "${normalizedName}" 被重复注册，将覆盖旧实现`)
+  if (COMMANDS[normalizedName]) {
+    if (options?.force) {
+      COMMANDS[normalizedName] = definition
+      COMMAND_SOURCES[normalizedName] = options.source || 'unknown (forced)'
+      return
+    }
+    // 静默跳过：保留首次注册的实现，避免被后续加载的旧版本覆盖
+    if (import.meta.env.DEV) {
+      const prev = COMMAND_SOURCES[normalizedName] || 'unknown'
+      const next = options?.source || 'unknown'
+      console.warn(`[terminal] 命令 "${normalizedName}" 重复注册被跳过 (已注册于 ${prev}, 重复来源 ${next})`)
+    }
+    return
   }
   COMMANDS[normalizedName] = definition
+  COMMAND_SOURCES[normalizedName] = options?.source || 'unknown'
 }
 
 export function getCommand(name: string): CommandDefinition | undefined {

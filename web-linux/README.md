@@ -1,313 +1,314 @@
 # WebLinuxOS
 
-A production-grade Linux desktop environment running entirely in the browser. Built with modern web technologies, featuring 240+ applications, complete window management system, virtual file system, terminal emulator with 100+ commands, and Python runtime support - all running client-side with persistent storage.
+> A production-grade Linux desktop environment running entirely in the browser.
+> Built with React 19, TypeScript, Zustand, and Vite. 240+ applications, virtual file system, terminal emulator, and Python runtime — all client-side.
 
-**Live Demo**: https://saya-ch.github.io/WebLinuxOS/
+**Live Demo**: <https://saya-ch.github.io/WebLinuxOS/>
 
-## Overview
+[![Deploy to GitHub Pages](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-43.0.0-7c3aed.svg)](./web-linux/package.json)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-WebLinuxOS delivers a comprehensive Linux desktop experience through modern web technologies. It features a complete windowing system with drag, resize, minimize, maximize, and multi-desktop support, along with 240+ applications spanning development tools, productivity suites, multimedia applications, system utilities, and internet tools.
+---
 
-## Key Features
+## Why WebLinuxOS?
 
-### Desktop Environment
+Most "web desktop" projects are visual shells with limited utility. WebLinuxOS is
+different: it ships a complete operating environment with a real terminal (100+
+commands), a working file system backed by IndexedDB, a Python runtime via
+Pyodide, and 240+ applications that solve real problems — from cron scheduling
+to PII redaction.
 
-- Multi-window management with full drag, resize, minimize, maximize controls
-- Virtual desktops (up to 9) with custom wallpaper support per desktop
+Everything runs in the browser. No backend, no account, no telemetry.
+
+## Highlights
+
+### Three new tools in v43
+
+| Tool | What it does |
+| --- | --- |
+| **PrivacyGuard** | Detects 17 classes of personally identifiable information (email, phone, ID, cards, IP, API keys, JWT, PEM keys, BTC addresses, …) and sanitizes them via four modes: highlight, partial mask, hash, full redact. 100% local. |
+| **JSONForge** | All-in-one JSON workbench: format / minify, JSON ⇌ YAML, JSON ⇌ CSV, deep JSON diff, and automatic JSON Schema generation with type inference. |
+| **CronLab** | Visual cron expression builder with human-readable explanation, next-N-run preview, and 12 presets. Supports aliases (`mon`, `jan`, `L`, `W`, `#`). |
+
+### Desktop environment
+
+- Multi-window manager with drag, resize, snap, minimize, maximize, multi-desktop
 - Smart app launcher with fuzzy search and keyboard navigation
-- System tray with real-time network, volume, and battery indicators
-- Global search across all applications and files
-- Command palette for quick system operations (Ctrl+P)
-- Dark/light theme switching with smooth transitions
-- Dynamic particle and nebula wallpaper effects with mouse interaction
-- Notification center with persistent alerts and action support
+- System tray with live network, volume, and battery indicators
+- Global search (`Ctrl+K`) across apps, files, and commands
+- Command palette (`Ctrl+P`) for system operations
+- Dark/light theme with smooth transitions
+- Dynamic particle/nebula wallpaper with mouse interaction
+- Notification center with persistent alerts
 - Desktop widgets: clock, system monitor, weather, sticky notes, focus timer
-- Quantum Interface Theme - Futuristic design inspired by quantum physics
 
-### Utilities
+### Developer tools
 
-- Quantum Calculator - Advanced scientific calculator with quantum-inspired design
-- Standard calculator with history and scientific functions
-- Password manager with encryption and strength checker
-- Unit converter supporting multiple measurement types
+- **Code editor** with syntax highlighting for 20+ languages
+- **WebIDE Pro** — full online development environment
+- **Online code runner** for JavaScript, TypeScript, SQL, Bash, HTML, Markdown
+- **Python REPL** via Pyodide with package support
+- **Terminal** with 100+ commands including:
+  - File ops: `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `grep`, `find`
+  - System: `top`, `ps`, `neofetch`, `free`, `df`, `uptime`
+  - Network: `ping`, `curl`, `weather`, `news`, `crypto`, `translate`
+  - Dev: `calc`, `hash`, `base64`, `uuid`, `regex`, `jwt-decode`
+- **REST API tester** with request builder and JSON preview
+- **JSON tools** — formatter, validator, YAML converter, diff, schema
+- **Regex builder/tester** with pattern library
+- **GitHub trending** and profile explorer
+- **Code snippet manager** with import/export
 
-### Development Tools
+### Productivity
 
-- Code editor with syntax highlighting for 20+ languages
-- AI code assistant with multiple modes (generation, explanation, refactoring)
-- AI智能助手 Ultra - Advanced AI assistant with chat, code, and analysis modes
-- REST API tester with request builder and JSON preview
-- JSON formatter, validator, and YAML converter
-- Interactive regex builder and tester with pattern library
-- GitHub trending repositories viewer and profile explorer
-- Python REPL (via Pyodide) with package support
-- Full-featured terminal with 100+ commands including:
-  - File operations (ls, cd, cat, mkdir, rm, cp, mv, grep, find, etc.)
-  - System monitoring (top, ps, neofetch, free, df, uptime)
-  - Network tools (ping, curl, weather, news, crypto, translate)
-  - Development utilities (calc, hash, base64, uuid, regex, jwt)
-- Code snippet manager with import/export and syntax highlighting
-- CSS toolbox with gradient, shadow, and layout generators
-- Online code runner supporting JavaScript, TypeScript, SQL, Bash, HTML, and Markdown
-- WebIDE - Full-featured online development environment
-- API playground and health monitor
-- Code collaboration platform with real-time sync
-
-### Productivity Suite
-
-- Markdown editor with live preview and export to HTML
-- Smart notes with tag-based organization, search, and Markdown rendering
-- Spreadsheet with formula support and chart generation
-- Calendar and event manager with reminders
-- Todo list with completion tracking and priority levels
-- Kanban board with drag-and-drop task management
-- Mind map tool with export capabilities
-- Presentation creator with slide templates
-- Smart schedule assistant with AI-powered suggestions
-- Project planner with Gantt charts
-- Time management master with Pomodoro integration
+- Markdown editor with live preview and HTML export
+- Smart notes with tags, search, and Markdown rendering
+- Spreadsheet with formulas and charts
+- Calendar with reminders; Kanban board with drag-and-drop
+- Mind map, presentation creator, project planner with Gantt charts
+- Pomodoro studio with customizable sessions
 - Habit tracker with streak visualization
 
-### Utilities
+### Internet & data
 
-- Scientific calculator with advanced functions and history
-- Password manager with encryption and strength checker
-- Pomodoro timer with customizable sessions
-- Color picker supporting multiple formats (HEX, RGB, HSL)
-- Real-time translation supporting 100+ languages
-- Clipboard manager with history and search
-- Weather app (real-time data from Open-Meteo)
-- Online API hub (NASA, news, cryptocurrency, Wikipedia)
-- Real-time dashboard with weather, news, and crypto data
-- Disk usage analyzer with visual charts
-- Task manager with process monitoring and resource usage
-- Network monitor with connection details and speed test
-- System health dashboard with performance metrics
-- Unit converter (length, weight, temperature, etc.)
-- Base64/URL/Hash tools
-- QR code generator and scanner
+- Weather (real-time, Open-Meteo)
+- Cryptocurrency tracker (CoinGecko)
+- Hacker News reader
+- Wikipedia explorer
+- NASA astronomy picture of the day
+- GitHub trending repositories
+- RSS reader
+- Real-time translator (100+ languages)
 
-### Multimedia & Entertainment
+### Multimedia & games
 
-- Music player with playlist support and visualizer
-- Drawing application with layers and filters
-- Camera access for video capture and screenshots
-- Classic games (Snake, Tetris, 2048, Memory, Breakout)
-- Photo viewer with slideshow support
-- Video player with format support
-- Music studio with beat maker
+- Music player with playlist and visualizer
+- Drawing app with layers and filters
+- Camera capture, screen recorder, sound recorder
+- Classic games: Snake, Tetris, 2048, Memory, Breakout
 - Virtual pet with interactive features
 
-### Innovation & Advanced Features
-
-- WorldPulse - Real-time global intelligence dashboard
-- Intelligent dashboard - Comprehensive system and data overview
-- Smart project hub - AI-powered project management
-- AI learning companion - Personalized education assistant
-- Creative inspiration workshop - Idea generation and brainstorming
-- Knowledge explorer - Wikipedia-powered research tool
-- Smart notes Pro - Advanced note-taking with AI features
-- Productivity center - Unified productivity workspace
-
-## Technology Stack
-
-- **Frontend Framework**: React 19 with Hooks and Suspense
-- **Language**: TypeScript 6 for type-safe development
-- **State Management**: Zustand 5 for lightweight, performant state
-- **Build Tool**: Vite 8 for optimized production builds
-- **Runtime**: Pyodide for Python execution in browser
-- **Icons**: Lucide React icon library
-- **Storage**: IndexedDB with localStorage fallback
-- **Architecture**: Modular design with code splitting and lazy loading
-
-## Quick Start
+## Quick start
 
 ```bash
-# Clone the repository
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
-
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Deploy to GitHub Pages
-npm run deploy
+npm run dev          # start dev server at http://localhost:5173/WebLinuxOS/
 ```
 
-## Keyboard Shortcuts
+Build for production:
+
+```bash
+npm run build       # type-check + bundle to ../dist
+npm run preview     # serve the production build locally
+```
+
+The GitHub Actions workflow in `.github/workflows/deploy.yml` builds and
+publishes to GitHub Pages on every push to `main`.
+
+## Keyboard shortcuts
 
 | Shortcut | Action |
-|----------|--------|
-| Ctrl+Shift+L | Open launcher |
-| Ctrl+K | Global search |
-| Ctrl+P | Command palette |
-| Alt+Tab | Window switch |
-| Ctrl+Q | Close window |
-| Ctrl+M | Minimize window |
-| Ctrl+1-9 | Quick app launch |
-| Ctrl+Shift+T | Open terminal |
-| Ctrl+Shift+E | Open text editor |
-| Ctrl+Shift+C | Open calculator |
-| Ctrl+Shift+W | Open weather |
-| Ctrl+Alt+1-9 | Switch desktop |
-| Ctrl+Shift+Alt+Arrow | Move window between desktops |
-| F11 | Fullscreen |
-| PrintScreen | Screenshot |
+| --- | --- |
+| `Ctrl+Shift+L` | Open app launcher |
+| `Ctrl+K` | Global search |
+| `Ctrl+P` | Command palette |
+| `Ctrl+Space` | Smart command center |
+| `Alt+Tab` | Cycle windows |
+| `Ctrl+Q` | Close focused window |
+| `Ctrl+M` | Minimize focused window |
+| `Ctrl+1..9` | Quick app launch |
+| `Ctrl+Shift+T` | Open terminal |
+| `Ctrl+Shift+E` | Open text editor |
+| `Ctrl+Shift+C` | Open calculator |
+| `Ctrl+Shift+W` | Open weather |
+| `Ctrl+Alt+1..9` | Switch virtual desktop |
+| `Ctrl+Shift+Alt+←/→` | Move window across desktops |
+| `F11` | Toggle fullscreen |
+| `PrintScreen` | Screenshot |
 
 ## Architecture
 
 ```
-src/
-  apps/              # Individual applications (240+)
-    terminal/        # Terminal commands and utilities
-      commands.ts    # Core command system
-      apiCommands.ts # API-based commands
-      fileCommands.ts # File system commands
-      networkCommands.ts # Network commands
-      toolCommands.ts # Utility commands
-  components/
-    desktop/         # Desktop environment components
-      Desktop.tsx    # Main desktop component
-      Window.tsx     # Window component with drag/resize
-      Taskbar.tsx    # System taskbar
-      LiveWallpaper.tsx # Dynamic wallpaper effects
-    common/          # Shared UI components
-  store/             # Zustand state management
-  utils/             # Utility functions
-    apiCache.ts      # API caching with retry logic
-  types.ts           # TypeScript definitions
-  icons.tsx          # Icon exports
+web-linux/
+├── public/                 # Static assets served as-is
+├── screenshots/            # Used by README and OG image
+├── src/
+│   ├── apps/               # 240+ application components
+│   │   └── terminal/       # Terminal command modules
+│   │       ├── commands.ts # Register / dispatch core
+│   │       ├── fileCommands.ts
+│   │       ├── systemCommands.ts
+│   │       ├── toolCommands.ts
+│   │       ├── networkCommands.ts
+│   │       ├── creativeCommands.ts   # nasa / wikipedia / github-trending
+│   │       └── …
+│   ├── components/
+│   │   └── desktop/        # Desktop, Window, Taskbar, StartMenu, Wallpaper
+│   ├── config/apiConfig.ts # Public API endpoints (key-free)
+│   ├── services/           # AI service, API service, clipboard service
+│   ├── store/              # Zustand store + storage utils
+│   ├── styles/             # Theme CSS (cyberpunk, quantum)
+│   ├── utils/              # apiCache, fileSystemAPI, logger, perf monitor
+│   ├── apps.tsx            # App registry (declarative metadata)
+│   ├── App.tsx             # Root component + global shortcuts
+│   └── main.tsx            # React entry
+├── index.html              # Boot screen + theme preload
+├── vite.config.ts          # GitHub Pages base path + manual chunks
+└── package.json
 ```
 
-## Performance Optimizations
+### Application registry
 
-- Code splitting with dynamic imports for each application
-- Lazy loading of components with React.lazy and Suspense
-- Memoization for expensive computations with useMemo and useCallback
-- GPU-accelerated animations with transform and will-change
-- Virtual scrolling for large lists and data sets
-- Persistent state caching with IndexedDB
-- API response caching with configurable TTL
-- Retry mechanisms for flaky API calls
-- Performance guardrails with contain and content-visibility
+Apps are declared as plain data in [`src/apps.tsx`](./web-linux/src/apps.tsx).
+Each entry includes id, name, icon, component name, default window size, and
+category. Components are lazy-loaded through `componentMap` in
+[`src/components/desktop/WindowManager.tsx`](./web-linux/src/components/desktop/WindowManager.tsx),
+so opening an app only fetches its chunk on demand.
 
-## API Integrations
+### Terminal commands
 
-WebLinuxOS integrates with numerous public APIs:
+Terminal commands self-register via `registerCommand(name, definition)` in
+[`src/apps/terminal/commands.ts`](./web-linux/src/apps/terminal/commands.ts).
+Duplicate registrations are detected and skipped (with a dev-mode warning) so
+that "canonical" implementations in `systemCommands.ts`, `toolCommands.ts`,
+and `creativeCommands.ts` always take precedence. To override on purpose:
 
-- Open-Meteo - Weather data
-- CoinGecko - Cryptocurrency prices
-- ipapi.co - IP address information
-- GitHub API - Repository and user information
-- Hacker News (Algolia) - News articles
-- LibreTranslate / MyMemory - Translation services
-- Wikipedia API - Knowledge base
-- NASA APIs - Astronomy data
-- Cat Fact Ninja - Fun facts
-- Quotable.io - Inspirational quotes
-- Open Trivia Database - Quiz questions
+```ts
+registerCommand('my-cmd', def, { force: true, source: 'myModule' })
+```
 
-## Statistics
+## Technology stack
 
-- 240+ applications
-- 100+ terminal commands
-- 250+ source files
-- 60+ keyboard shortcuts
-- 15+ integrated APIs
-- 9 virtual desktops
-- Multi-language support
+| Layer | Choice | Why |
+| --- | --- | --- |
+| UI framework | React 19 | Concurrent rendering, Suspense, hooks |
+| Language | TypeScript 6 | End-to-end type safety |
+| State | Zustand 5 | Lightweight, no boilerplate |
+| Build | Vite 8 | Fast HMR, ES2022 target, code splitting |
+| Python runtime | Pyodide 0.26 | Real CPython compiled to WASM |
+| Icons | Lucide React | Tree-shakeable, consistent design |
+| Storage | IndexedDB + localStorage | Persistent virtual file system |
+| PWA | manifest.json + service worker | Installable, offline-capable |
 
-## Browser Support
+## API integrations
 
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+All integrations use public, key-free endpoints so the deployed app works
+without secrets:
 
-## Use Cases
+| Service | Used for |
+| --- | --- |
+| Open-Meteo | Weather forecasts and current conditions |
+| CoinGecko | Cryptocurrency prices |
+| ipapi.co | IP address geolocation |
+| GitHub API | Repository and user lookups |
+| Hacker News (Algolia) | News articles |
+| LibreTranslate / MyMemory | Translation |
+| Wikipedia REST API | Knowledge base |
+| NASA APOD | Astronomy picture of the day |
+| Cat Fact Ninja | Fun facts |
+| Quotable.io | Inspirational quotes |
+| Open Trivia Database | Quiz questions |
+| Pollinations.ai | Free text-to-text AI (no key required) |
+| microlink.io | Webpage metadata and screenshots |
+| Frankfurter | Exchange rates |
 
-- Learning programming concepts in a safe environment
-- Demonstrating modern web application capabilities
-- Cross-platform tool access without installation
+## Performance
+
+- Code splitting per app via `React.lazy` + dynamic `import()`
+- Manual chunks for heavy vendors (React, Zustand, Lucide, marked, Pyodide)
+- Memoized selectors with `useMemo` / `useCallback`
+- GPU-accelerated animations (`transform`, `will-change`)
+- IndexedDB persistence with throttled writes
+- API response caching with configurable TTL and retry logic
+- `content-visibility` for off-screen windows
+
+## Recent releases
+
+### v43.0 — Privacy & developer tooling
+
+- New: **PrivacyGuard** — 17-class PII detection and four sanitization modes
+- New: **JSONForge** — JSON ⇌ YAML / CSV, deep diff, and schema generation
+- New: **CronLab** — visual cron builder with next-run preview
+- Fixed: terminal commands registered multiple times were silently
+  overwriting each other (35 affected). Now the first registration wins,
+  with optional `{ force: true }` override.
+- Fixed: `localStorage` theme parsing broke when value was stored as a
+  plain string instead of JSON. Boot screen and storage utils now accept both.
+- Updated: boot screen version label synced with `package.json` (v43).
+- Updated: HTML meta description refreshed to mention the new tools.
+
+### v42.0 — Advanced code runner and system diagnostics
+
+- New: `CodeRunnerAdvanced` — JavaScript live execution with console capture
+- New: `SystemDiagnosticsPro` — CPU / memory / network / WebGL analysis
+
+### v41.0 — Prompt engineering and web snapshots
+
+- New: **PromptForge** — prompt template library, variable interpolation,
+  live testing, AI optimization suggestions
+- New: **WebSnapshot** — URL → screenshot + metadata, multi-viewport compare
+
+### v40.0 — Real AI and cloud clipboard
+
+- Integrated Pollinations.ai for key-free AI completions
+- Cloud clipboard backed by GitHub Gist for cross-device sync
+
+Older releases are documented in [`CHANGELOG.md`](./CHANGELOG.md).
+
+## Browser support
+
+Tested on the latest two versions of Chrome, Firefox, Safari, and Edge.
+The File System Access API and Pyodide require modern browsers; graceful
+fallbacks are in place.
+
+## Use cases
+
+- Learning Linux concepts in a sandboxed environment
+- Demonstrating modern web capabilities
+- Cross-platform access to developer tools without installation
 - Lightweight online workspace for developers
-- Teaching Linux concepts and system administration
-- Rapid prototyping and proof-of-concept development
-- API testing and development
-- Code experimentation with multiple languages
-- Browser-based productivity suite
-
-## Roadmap
-
-- Enhanced mobile responsive design with touch support
-- PWA installation support with offline capabilities
-- Cloud synchronization for cross-device sync
-- Plugin system architecture for extensibility
-- Real-time collaboration features
-- Advanced window tiling and snapping
-- Multi-user support with authentication
-- Voice commands and accessibility improvements
-
-## Recent Updates
-
-### Version 37.0 - Quantum Interface Release
-
-- Added Quantum Interface Theme with futuristic quantum-inspired design
-- Implemented Quantum Calculator with scientific functions and history
-- Enhanced visual design with unique fonts: Michroma, Exo 2, Chakra Petch, Rajdhani
-- Improved UI components with quantum superposition and entanglement visual effects
-- Added new color scheme based on quantum physics concepts
-- Enhanced performance monitoring and system visualization
-
-### Version 24.0 - AI Enhancement Release
-
-- Added AI智能助手 Ultra with multi-mode AI assistant
-- Enhanced LiveWallpaper with particle connections and glow effects
-- Improved typography with Cabinet Grotesk and Space Grotesk fonts
-- Optimized preload screen with progress indicator
-- Enhanced color scheme and visual polish
-- Performance improvements for wallpaper rendering
+- Teaching programming with JavaScript, TypeScript, and Python
+- API testing and prototyping
+- Quick JSON / cron / PII sanitization without uploading data anywhere
 
 ## Contributing
 
-Contributions are welcome. Please follow these steps:
+Contributions are welcome. The workflow:
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes following the existing code style
-4. Build and test: `npm run build && npm run dev`
-5. Submit a Pull Request with a detailed description
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make changes following the existing code style (Prettier + ESLint)
+4. Verify locally: `npm run lint && npm run build`
+5. Open a pull request with a clear description
 
-## Creating New Apps
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for details.
 
-To add a new application:
+### Adding a new app
 
-1. Create a file in `src/apps/` (e.g., `MyApp.tsx`)
-2. Export a default React component
-3. Register it in `src/apps.tsx` with proper metadata
-4. Add to `src/components/desktop/WindowManager.tsx` for dynamic import
-5. Add appropriate icons and keyboard shortcuts
-6. Test thoroughly across themes
+1. Create `src/apps/MyApp.tsx` exporting a default React component
+2. Register it in `src/apps.tsx` (the `APP_REGISTRY_EXTRAS` array keeps new
+   entries grouped together)
+3. Add the lazy import to `componentMap` in
+   `src/components/desktop/WindowManager.tsx`
+4. Optionally wire a keyboard shortcut in `src/App.tsx`
 
-## Creating New Terminal Commands
+### Adding a terminal command
 
-To add a new terminal command:
-
-1. Choose an appropriate command file (apiCommands.ts, fileCommands.ts, toolCommands.ts, etc.)
-2. Use `registerCommand(name, definition)` to register your command
-3. Define handler function, description, usage, and examples
-4. Add to help command listing
-5. Test with various inputs and edge cases
+1. Pick the right command file (e.g. `toolCommands.ts` for utilities)
+2. Call `registerCommand('name', { handler, description, usage, examples })`
+3. The new command is automatically picked up by `help` and tab completion
+4. If your command file is new, add an `import './myCommands'` line at the
+   correct position in `src/apps/terminal/index.ts` (canonical implementations
+   should come before override-capable ones)
 
 ## License
 
-MIT License - Free for personal or commercial use.
+MIT — see [`LICENSE`](./LICENSE).
 
 ---
 
-**Version**: 37.0 | **Last Updated**: July 2026 | **Maintainer**: Saya Ch
+Maintained by **Saya Ch** · <https://github.com/saya-ch>

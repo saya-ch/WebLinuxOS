@@ -84,6 +84,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'prompt-forge', name: 'PromptForge 提示词工作室', icon: <WandIcon />, component: 'PromptForge', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'AI 提示词工程工作室：精选模板库+变量插值+实时测试+一键 AI 优化建议+历史记录' },
   // WebSnapshot 网页快照分析（v41创新功能 — 基于 microlink.io 的真实网页截图与元数据抓取）
   { id: 'web-snapshot', name: 'WebSnapshot 网页快照', icon: <CameraIcon />, component: 'WebSnapshot', category: 'internet', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '网页快照分析工具：输入 URL 获取截图/标题/描述/OG 图，支持桌面/平板/手机视口与对比模式' },
+  // PrivacyGuard 隐私守护者（v43创新功能 — 17 类 PII 检测+脱敏，零网络请求）
+  { id: 'privacy-guard', name: 'PrivacyGuard 隐私守护', icon: <ShieldIcon />, component: 'PrivacyGuard', category: 'utilities', defaultWidth: 1100, defaultHeight: 760, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '本地 PII 检测与脱敏：识别邮箱/手机号/身份证/银行卡/IP/API Key/JWT/私钥等 17 类敏感信息，支持仅检测、部分掩码、哈希替换、完全移除四种模式' },
+  // JSONForge JSON 一体化处理工作台（v43创新功能 — 格式化/YAML/CSV/Diff/Schema 五合一）
+  { id: 'json-forge', name: 'JSONForge JSON 工坊', icon: <Code2Icon />, component: 'JSONForge', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'JSON 一体化处理：格式化/压缩、JSON⇌YAML、JSON⇌CSV、双 JSON Diff、JSON Schema 自动生成，全部本地计算' },
+  // CronLab Cron 表达式实验室（v43创新功能 — 可视化构建+解释+下次触发预览）
+  { id: 'cron-lab', name: 'CronLab Cron 实验室', icon: <ClockIcon />, component: 'CronLab', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Cron 表达式实验室：可视化构建器、人类可读解释、下次触发时间预览、12 种常用预设，支持别名(L/W/#/mon-jan)语法' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
