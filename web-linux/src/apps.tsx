@@ -57,8 +57,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'cyber-hub', name: 'CyberHub 控制中心', icon: <ActivityIcon />, component: 'CyberHub', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // 新增智能开发者工作台（v31.0创新功能）
   { id: 'dev-workbench', name: '智能开发者工作台', icon: <RocketIcon />, component: 'DevWorkbench', category: 'development', defaultWidth: 1400, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  // 新增系统诊断与性能分析（v32.0创新功能）
-  { id: 'system-diagnostics-pro', name: '系统诊断分析', icon: <ActivityIcon />, component: 'SystemDiagnosticsPro', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // 新增系统诊断与性能分析（v42增强）
+  { id: 'system-diagnostics-pro', name: '系统诊断分析', icon: <ActivityIcon />, component: 'SystemDiagnosticsPro', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '全面系统健康检查：CPU/内存/网络/WebGL/存储性能分析与优化建议' },
   // 新增AI智能工作流助手（v32.0创新功能）
   { id: 'ai-workflow-assistant', name: 'AI工作流助手', icon: <SparklesIcon />, component: 'AIWorkflowAssistant', category: 'utilities', defaultWidth: 800, defaultHeight: 650, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   // 新增代码片段库（v32.0创新功能）
@@ -76,6 +76,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'system-monitor-dashboard', name: '系统监控仪表盘', icon: <ActivityIcon />, component: 'SystemMonitorDashboard', category: 'utilities', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // 在线代码运行器增强版（v38.1新增）
   { id: 'online-code-runner-enhanced', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
+  // 高级代码运行器（v42新增）- 支持JavaScript实时执行，带控制台输出捕获和示例代码
+  { id: 'code-runner-advanced', name: '高级代码运行器', icon: <TerminalIcon />, component: 'CodeRunnerAdvanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'JavaScript 实时执行环境：控制台输出捕获+算法示例+函数式编程示例' },
   // 代码搜索（v38.2新增）- 搜索GitHub开源项目
   { id: 'code-search', name: '代码搜索', icon: <SearchIcon />, component: 'CodeSearch', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // PromptForge 提示词工程工作室（v41创新功能 — 模板库+变量插值+实时测试+AI优化建议）

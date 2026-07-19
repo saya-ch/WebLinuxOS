@@ -92,6 +92,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CodePlayground: () => import('../../apps/CodePlayground'),
   CodeReviewer: () => import('../../apps/CodeReviewer'),
   CodeRunner: () => import('../../apps/CodeRunner'),
+  CodeRunnerAdvanced: () => import('../../apps/CodeRunnerAdvanced'),
   CodeSandbox: () => import('../../apps/CodeSandbox'),
   CodeSearch: () => import('../../apps/CodeSearch'),
   CodeShare: () => import('../../apps/CodeShare'),

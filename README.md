@@ -3,7 +3,7 @@
 **A complete Linux desktop environment that runs entirely in your browser.** No installation, no backend, no API keys.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-7c3aed?style=flat-square)](https://saya-ch.github.io/WebLinuxOS/)
-[![Version](https://img.shields.io/badge/Version-41.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/Version-42.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org)
@@ -24,6 +24,39 @@ There are plenty of "operating system in the browser" experiments on the web. Mo
 - **Real public APIs** for AI chat, image generation, weather, news, crypto, exchange rates, GitHub trending, Wikipedia, and more — no keys required.
 
 The goal is to demonstrate that the modern web platform is good enough to host a productive desktop-class environment, while also being a useful tool in its own right.
+
+---
+
+## What's New in v42
+
+This release introduces enhanced developer tools and improved system diagnostics, making WebLinuxOS an even more powerful development environment.
+
+### Advanced Code Runner — JavaScript Sandbox
+
+A real-time JavaScript execution environment designed for learning and prototyping:
+
+- **Live execution** with captured console output (log, warn, error, info)
+- **Execution timing** with millisecond precision performance measurement
+- **Built-in examples**: Basic JavaScript, Algorithms (quicksort, binary search), DOM simulation, Functional programming patterns
+- **Safe sandboxed execution** using Function constructor with proper error handling
+- **Theme-aware UI** that adapts to light/dark mode
+
+### Enhanced System Diagnostics
+
+Comprehensive system health checking with actionable recommendations:
+
+- **Hardware analysis**: CPU cores, device memory, WebGL renderer detection
+- **Network diagnostics**: Connection type, estimated bandwidth, RTT measurement
+- **Storage inspection**: Quota usage, localStorage availability
+- **Display metrics**: Resolution, color depth, device pixel ratio
+- **Performance benchmarking**: Quick CPU stress test with timing results
+- **Grouped results** with pass/warn/fail indicators and optimization suggestions
+
+### Quality Improvements
+
+- Updated all version references to v42 across the codebase
+- Improved component registration flow in WindowManager
+- Enhanced theme support in new components
 
 ---
 

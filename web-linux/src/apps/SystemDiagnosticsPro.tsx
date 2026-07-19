@@ -1,441 +1,550 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { ActivityIcon, RefreshCwIcon, AlertTriangleIcon, CheckCircleIcon } from '../icons'
+import { useState, useEffect, useCallback } from 'react'
+import { useStore } from '../store'
 
-interface PerformanceMetric {
-  name: string
-  value: number
-  unit: string
-  status: 'good' | 'warning' | 'critical'
-  trend: 'up' | 'down' | 'stable'
-  history: number[]
-}
+/**
+ * SystemDiagnosticsPro - 系统诊断增强版
+ * 提供全面的系统健康检查和性能分析
+ */
 
 interface DiagnosticResult {
   category: string
-  status: 'passed' | 'warning' | 'failed'
+  name: string
+  status: 'pass' | 'warn' | 'fail' | 'info'
   message: string
-  details?: string
+  value?: string | number
+  recommendation?: string
+}
+
+interface SystemInfo {
+  platform: string
+  userAgent: string
+  language: string
+  cookiesEnabled: boolean
+  doNotTrack: string | null
+  hardwareConcurrency: number
+  deviceMemory: number | undefined
+  maxTouchPoints: number
+  colorDepth: number
+  pixelDepth: number
+  screenWidth: number
+  screenHeight: number
+  innerWidth: number
+  innerHeight: number
+  devicePixelRatio: number
+  connection: {
+    effectiveType: string
+    downlink: number
+    rtt: number
+    saveData: boolean
+  } | null
 }
 
 export default function SystemDiagnosticsPro() {
-  const [isScanning, setIsScanning] = useState(false)
-  const [scanProgress, setScanProgress] = useState(0)
-  const [metrics, setMetrics] = useState<PerformanceMetric[]>([])
+  const theme = useStore((s) => s.theme)
   const [diagnostics, setDiagnostics] = useState<DiagnosticResult[]>([])
-  const [lastScan, setLastScan] = useState<Date | null>(null)
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'metrics' | 'diagnostics'>('overview')
+  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null)
+  const [isRunning, setIsRunning] = useState(false)
+  const [progress, setProgress] = useState(0)
 
-  // 模拟性能数据收集
-  const collectMetrics = useCallback(async () => {
-    setIsScanning(true)
-    setScanProgress(0)
-
-    const newMetrics: PerformanceMetric[] = []
-    const categories = [
-      { name: 'CPU使用率', min: 15, max: 85, unit: '%' },
-      { name: '内存占用', min: 40, max: 75, unit: '%' },
-      { name: 'GPU负载', min: 10, max: 60, unit: '%' },
-      { name: '网络延迟', min: 5, max: 50, unit: 'ms' },
-      { name: '磁盘读写', min: 20, max: 80, unit: 'MB/s' },
-      { name: '电池健康', min: 85, max: 100, unit: '%' },
-      { name: '温度', min: 35, max: 65, unit: '°C' },
-      { name: 'FPS', min: 30, max: 60, unit: 'fps' },
-    ]
-
-    for (let i = 0; i < categories.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300))
-      const cat = categories[i]
-      const value = Math.round(cat.min + Math.random() * (cat.max - cat.min))
-      const status = value > 80 ? 'critical' : value > 60 ? 'warning' : 'good'
-      
-      newMetrics.push({
-        name: cat.name,
-        value,
-        unit: cat.unit,
-        status: status as 'good' | 'warning' | 'critical',
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, () => 
-          Math.round(cat.min + Math.random() * (cat.max - cat.min))
-        )
-      })
-      
-      setScanProgress(Math.round(((i + 1) / categories.length) * 100))
-      setMetrics([...newMetrics])
+  const gatherSystemInfo = useCallback((): SystemInfo => {
+    const nav = navigator as Navigator & {
+      deviceMemory?: number
+      connection?: {
+        effectiveType: string
+        downlink: number
+        rtt: number
+        saveData: boolean
+      }
     }
 
-    // 诊断结果
-    const newDiagnostics: DiagnosticResult[] = [
-      {
-        category: '内存管理',
-        status: newMetrics[1].value > 70 ? 'warning' : 'passed',
-        message: newMetrics[1].value > 70 
-          ? '内存使用率较高，建议关闭不必要的应用' 
-          : '内存使用正常',
-        details: `当前使用 ${newMetrics[1].value}%，可用内存充足`
-      },
-      {
-        category: 'CPU性能',
-        status: newMetrics[0].value > 75 ? 'warning' : 'passed',
-        message: newMetrics[0].value > 75 
-          ? 'CPU负载较高，可能影响响应速度' 
-          : 'CPU性能表现良好',
-        details: `核心负载 ${newMetrics[0].value}%，多核利用率良好`
-      },
-      {
-        category: '网络连接',
-        status: newMetrics[3].value > 40 ? 'warning' : 'passed',
-        message: newMetrics[3].value > 40 
-          ? '网络延迟偏高，可能影响实时通信' 
-          : '网络连接稳定',
-        details: `延迟 ${newMetrics[3].value}ms，丢包率 0%`
-      },
-      {
-        category: '电池状态',
-        status: newMetrics[5].value < 90 ? 'warning' : 'passed',
-        message: newMetrics[5].value < 90 
-          ? '电池健康度下降，建议检查电源管理' 
-          : '电池状态良好',
-        details: `健康度 ${newMetrics[5].value}%，循环次数正常`
-      },
-      {
-        category: '磁盘性能',
-        status: newMetrics[4].value < 30 ? 'warning' : 'passed',
-        message: newMetrics[4].value < 30 
-          ? '磁盘读写速度较慢，建议清理磁盘空间' 
-          : '磁盘性能正常',
-        details: `读写速度 ${newMetrics[4].value} MB/s`
-      },
-      {
-        category: '系统温度',
-        status: newMetrics[6].value > 60 ? 'warning' : 'passed',
-        message: newMetrics[6].value > 60 
-          ? '系统温度偏高，请检查散热' 
-          : '系统温度正常',
-        details: `当前温度 ${newMetrics[6].value}°C`
-      },
-      {
-        category: '渲染性能',
-        status: newMetrics[7].value < 45 ? 'warning' : 'passed',
-        message: newMetrics[7].value < 45 
-          ? '帧率偏低，可能影响动画流畅度' 
-          : '渲染性能良好',
-        details: `平均帧率 ${newMetrics[7].value} fps`
-      },
-      {
-        category: '安全检查',
-        status: 'passed',
-        message: '未检测到安全风险',
-        details: 'HTTPS连接正常，CSP策略有效'
-      },
-      {
-        category: '存储空间',
-        status: 'passed',
-        message: '存储空间充足',
-        details: 'LocalStorage使用正常，无越界风险'
-      },
-      {
-        category: '浏览器兼容',
-        status: 'passed',
-        message: '浏览器特性支持良好',
-        details: 'WebGL、Service Worker、IndexedDB均可用'
-      }
-    ]
-
-    setDiagnostics(newDiagnostics)
-    setLastScan(new Date())
-    setIsScanning(false)
+    return {
+      platform: navigator.platform,
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      cookiesEnabled: navigator.cookieEnabled,
+      doNotTrack: navigator.doNotTrack,
+      hardwareConcurrency: navigator.hardwareConcurrency || 1,
+      deviceMemory: nav.deviceMemory,
+      maxTouchPoints: navigator.maxTouchPoints || 0,
+      colorDepth: screen.colorDepth,
+      pixelDepth: screen.pixelDepth,
+      screenWidth: screen.width,
+      screenHeight: screen.height,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio,
+      connection: nav.connection ? {
+        effectiveType: nav.connection.effectiveType,
+        downlink: nav.connection.downlink,
+        rtt: nav.connection.rtt,
+        saveData: nav.connection.saveData
+      } : null
+    }
   }, [])
 
+  const runDiagnostics = useCallback(async () => {
+    setIsRunning(true)
+    setDiagnostics([])
+    setProgress(0)
+
+    const results: DiagnosticResult[] = []
+    const info = gatherSystemInfo()
+    setSystemInfo(info)
+
+    // 1. 浏览器兼容性检查
+    results.push({
+      category: '浏览器',
+      name: 'Cookie 支持',
+      status: info.cookiesEnabled ? 'pass' : 'fail',
+      message: info.cookiesEnabled ? 'Cookies 已启用' : 'Cookies 被禁用',
+      value: info.cookiesEnabled ? '已启用' : '已禁用',
+      recommendation: info.cookiesEnabled ? undefined : '建议启用 Cookies 以获得最佳体验'
+    })
+    setProgress(10)
+
+    // 2. 硬件检查
+    results.push({
+      category: '硬件',
+      name: 'CPU 核心',
+      status: info.hardwareConcurrency >= 4 ? 'pass' : info.hardwareConcurrency >= 2 ? 'warn' : 'fail',
+      message: `检测到 ${info.hardwareConcurrency} 个逻辑核心`,
+      value: info.hardwareConcurrency,
+      recommendation: info.hardwareConcurrency < 2 ? '建议使用至少双核处理器' : undefined
+    })
+    setProgress(20)
+
+    // 3. 内存检查
+    if (info.deviceMemory) {
+      results.push({
+        category: '硬件',
+        name: '设备内存',
+        status: info.deviceMemory >= 8 ? 'pass' : info.deviceMemory >= 4 ? 'warn' : 'fail',
+        message: `检测到约 ${info.deviceMemory}GB 内存`,
+        value: `${info.deviceMemory}GB`,
+        recommendation: info.deviceMemory < 4 ? '建议使用至少 8GB 内存以获得流畅体验' : undefined
+      })
+    } else {
+      results.push({
+        category: '硬件',
+        name: '设备内存',
+        status: 'info',
+        message: '无法检测设备内存'
+      })
+    }
+    setProgress(30)
+
+    // 4. 显示检查
+    results.push({
+      category: '显示',
+      name: '屏幕分辨率',
+      status: 'info',
+      message: `${info.screenWidth}x${info.screenHeight} 像素`,
+      value: `${info.screenWidth}x${info.screenHeight}`
+    })
+
+    results.push({
+      category: '显示',
+      name: '设备像素比',
+      status: 'info',
+      message: `DPR: ${info.devicePixelRatio}`,
+      value: info.devicePixelRatio
+    })
+
+    results.push({
+      category: '显示',
+      name: '色彩深度',
+      status: info.colorDepth >= 24 ? 'pass' : 'warn',
+      message: `${info.colorDepth} 位色深`,
+      value: `${info.colorDepth}bit`,
+      recommendation: info.colorDepth < 24 ? '建议使用真彩色显示' : undefined
+    })
+    setProgress(40)
+
+    // 5. 网络检查
+    if (info.connection) {
+      results.push({
+        category: '网络',
+        name: '连接类型',
+        status: info.connection.effectiveType === '4g' ? 'pass' : 'warn',
+        message: `当前连接类型: ${info.connection.effectiveType}`,
+        value: info.connection.effectiveType,
+        recommendation: info.connection.effectiveType !== '4g' ? '建议使用高速网络连接' : undefined
+      })
+
+      results.push({
+        category: '网络',
+        name: '下行速度',
+        status: info.connection.downlink >= 10 ? 'pass' : info.connection.downlink >= 5 ? 'warn' : 'fail',
+        message: `估计下行速度: ${info.connection.downlink}Mbps`,
+        value: `${info.connection.downlink}Mbps`
+      })
+
+      results.push({
+        category: '网络',
+        name: '往返时间',
+        status: info.connection.rtt <= 100 ? 'pass' : info.connection.rtt <= 300 ? 'warn' : 'fail',
+        message: `估计 RTT: ${info.connection.rtt}ms`,
+        value: `${info.connection.rtt}ms`
+      })
+    } else {
+      results.push({
+        category: '网络',
+        name: '网络信息',
+        status: 'info',
+        message: '无法获取网络连接信息'
+      })
+    }
+    setProgress(50)
+
+    // 6. 存储检查
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate()
+        const usedMB = Math.round((estimate.usage || 0) / (1024 * 1024))
+        const quotaMB = Math.round((estimate.quota || 0) / (1024 * 1024))
+        const usagePercent = quotaMB > 0 ? Math.round((usedMB / quotaMB) * 100) : 0
+
+        results.push({
+          category: '存储',
+          name: '存储配额',
+          status: usagePercent < 80 ? 'pass' : usagePercent < 95 ? 'warn' : 'fail',
+          message: `已使用 ${usedMB}MB / ${quotaMB}MB (${usagePercent}%)`,
+          value: `${usedMB}MB / ${quotaMB}MB`,
+          recommendation: usagePercent > 80 ? '建议清理部分数据释放存储空间' : undefined
+        })
+      }
+    } catch {
+      results.push({
+        category: '存储',
+        name: '存储检查',
+        status: 'warn',
+        message: '无法获取存储信息'
+      })
+    }
+    setProgress(60)
+
+    // 7. WebGL 检查
+    try {
+      const canvas = document.createElement('canvas')
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      if (gl) {
+        const debugInfo = (gl as WebGLRenderingContext).getExtension('WEBGL_debug_renderer_info')
+        if (debugInfo) {
+          const renderer = (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+          results.push({
+            category: '图形',
+            name: 'WebGL 渲染器',
+            status: 'pass',
+            message: `GPU: ${renderer}`,
+            value: renderer
+          })
+        }
+      } else {
+        results.push({
+          category: '图形',
+          name: 'WebGL',
+          status: 'fail',
+          message: 'WebGL 不可用',
+          recommendation: '请启用 WebGL 支持'
+        })
+      }
+    } catch {
+      results.push({
+        category: '图形',
+        name: 'WebGL',
+        status: 'warn',
+        message: '无法检测 WebGL'
+      })
+    }
+    setProgress(70)
+
+    // 8. 性能检查
+    try {
+      const start = performance.now()
+      for (let i = 0; i < 1000000; i++) {
+        Math.sqrt(i)
+      }
+      const duration = performance.now() - start
+      
+      results.push({
+        category: '性能',
+        name: 'CPU 性能测试',
+        status: duration < 50 ? 'pass' : duration < 100 ? 'warn' : 'fail',
+        message: `计算测试耗时 ${duration.toFixed(2)}ms`,
+        value: `${duration.toFixed(2)}ms`,
+        recommendation: duration > 100 ? '系统性能可能影响使用体验' : undefined
+      })
+    } catch {
+      results.push({
+        category: '性能',
+        name: '性能测试',
+        status: 'info',
+        message: '无法执行性能测试'
+      })
+    }
+    setProgress(80)
+
+    // 9. 本地存储检查
+    try {
+      const testKey = '__weblinuxos_test__'
+      localStorage.setItem(testKey, 'test')
+      localStorage.removeItem(testKey)
+      results.push({
+        category: '存储',
+        name: 'localStorage',
+        status: 'pass',
+        message: 'localStorage 可用'
+      })
+    } catch {
+      results.push({
+        category: '存储',
+        name: 'localStorage',
+        status: 'fail',
+        message: 'localStorage 不可用或已满',
+        recommendation: '请清理浏览器缓存或检查存储配额'
+      })
+    }
+    setProgress(90)
+
+    // 10. 触控支持
+    results.push({
+      category: '输入',
+      name: '触控支持',
+      status: 'info',
+      message: info.maxTouchPoints > 0 ? `支持触控 (${info.maxTouchPoints} 点)` : '不支持触控',
+      value: info.maxTouchPoints > 0 ? `${info.maxTouchPoints} 点触控` : '无'
+    })
+    setProgress(100)
+
+    setDiagnostics(results)
+    setIsRunning(false)
+  }, [gatherSystemInfo])
+
   useEffect(() => {
-    collectMetrics()
-  }, [collectMetrics])
+    runDiagnostics()
+  }, [runDiagnostics])
 
-  const overallScore = useMemo(() => {
-    if (metrics.length === 0) return 0
-    const goodCount = metrics.filter(m => m.status === 'good').length
-    const warningCount = metrics.filter(m => m.status === 'warning').length
-    return Math.round((goodCount * 10 + warningCount * 6) / metrics.length * 10)
-  }, [metrics])
-
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: DiagnosticResult['status']) => {
     switch (status) {
-      case 'good': return '#22c55e'
-      case 'warning': return '#f59e0b'
-      case 'critical': return '#ef4444'
-      default: return '#6b7280'
+      case 'pass': return theme === 'light' ? '#10b981' : '#34d399'
+      case 'warn': return theme === 'light' ? '#f59e0b' : '#fbbf24'
+      case 'fail': return theme === 'light' ? '#ef4444' : '#f87171'
+      default: return theme === 'light' ? '#6b7280' : '#9ca3af'
     }
   }
 
+  const getStatusIcon = (status: DiagnosticResult['status']) => {
+    switch (status) {
+      case 'pass': return '✓'
+      case 'warn': return '!'
+      case 'fail': return '✗'
+      default: return 'i'
+    }
+  }
+
+  const groupedDiagnostics = diagnostics.reduce((acc, d) => {
+    if (!acc[d.category]) acc[d.category] = []
+    acc[d.category].push(d)
+    return acc
+  }, {} as Record<string, DiagnosticResult[]>)
+
+  const passCount = diagnostics.filter(d => d.status === 'pass').length
+  const warnCount = diagnostics.filter(d => d.status === 'warn').length
+  const failCount = diagnostics.filter(d => d.status === 'fail').length
+
   return (
     <div style={{
-      height: '100%',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-      color: '#f1f5f9',
-      fontFamily: 'Inter, system-ui, sans-serif',
-      overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      height: '100%',
+      background: theme === 'light' ? '#f9fafb' : '#0f0f1a',
+      color: theme === 'light' ? '#1f2937' : '#e5e7eb',
+      fontFamily: '"Inter", "Noto Sans SC", sans-serif',
+      fontSize: 13
     }}>
       {/* 头部 */}
       <div style={{
         padding: '16px 20px',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: `1px solid ${theme === 'light' ? '#e5e7eb' : '#1f2937'}`,
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'rgba(0,0,0,0.2)'
+        alignItems: 'center'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <ActivityIcon size={24} style={{ color: '#8b5cf6' }} />
-          <div>
-            <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>系统诊断与性能分析</h1>
-            <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
-              {lastScan ? `上次扫描: ${lastScan.toLocaleTimeString()}` : '正在扫描...'}
-            </p>
-          </div>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>系统诊断</h2>
+          <p style={{ margin: '4px 0 0', fontSize: 12, color: theme === 'light' ? '#6b7280' : '#9ca3af' }}>
+            全面的系统健康检查和性能分析
+          </p>
         </div>
         <button
-          onClick={collectMetrics}
-          disabled={isScanning}
+          onClick={runDiagnostics}
+          disabled={isRunning}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 16px',
-            background: isScanning ? '#475569' : '#8b5cf6',
+            padding: '8px 20px',
+            background: isRunning ? '#6b7280' : '#3b82f6',
+            color: 'white',
             border: 'none',
-            borderRadius: 8,
-            color: '#fff',
-            fontSize: 13,
+            borderRadius: 6,
+            cursor: isRunning ? 'not-allowed' : 'pointer',
             fontWeight: 500,
-            cursor: isScanning ? 'not-allowed' : 'pointer',
-            transition: 'all 0.2s'
+            fontSize: 13
           }}
         >
-          <RefreshCwIcon size={14} style={{ 
-            animation: isScanning ? 'spin 1s linear infinite' : 'none' 
-          }} />
-          {isScanning ? '扫描中...' : '重新扫描'}
+          {isRunning ? '诊断中...' : '重新诊断'}
         </button>
       </div>
 
-      {/* 标签页 */}
-      <div style={{
-        display: 'flex',
-        gap: 4,
-        padding: '12px 20px',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        {['overview', 'metrics', 'diagnostics'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setSelectedTab(tab as any)}
-            style={{
-              padding: '8px 16px',
-              background: selectedTab === tab ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
-              border: selectedTab === tab ? '1px solid #8b5cf6' : '1px solid transparent',
-              borderRadius: 6,
-              color: selectedTab === tab ? '#a78bfa' : '#94a3b8',
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab === 'overview' ? '概览' : tab === 'metrics' ? '性能指标' : '诊断结果'}
-          </button>
-        ))}
-      </div>
-
-      {/* 内容区域 */}
-      <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
-        {selectedTab === 'overview' && (
-          <div>
-            {/* 总分卡片 */}
+      {/* 进度条 */}
+      {isRunning && (
+        <div style={{ padding: '0 20px', marginTop: 12 }}>
+          <div style={{
+            height: 4,
+            background: theme === 'light' ? '#e5e7eb' : '#1f2937',
+            borderRadius: 2,
+            overflow: 'hidden'
+          }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
-              borderRadius: 16,
-              padding: 24,
-              marginBottom: 20,
-              border: '1px solid rgba(139, 92, 246, 0.2)',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 8 }}>系统健康评分</div>
-              <div style={{
-                fontSize: 64,
-                fontWeight: 700,
-                background: `linear-gradient(135deg, ${overallScore >= 80 ? '#22c55e' : overallScore >= 60 ? '#f59e0b' : '#ef4444'} 0%, #fff 100%)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}>
-                {overallScore}
-              </div>
-              <div style={{ 
-                fontSize: 14, 
-                color: overallScore >= 80 ? '#22c55e' : overallScore >= 60 ? '#f59e0b' : '#ef4444',
-                marginTop: 4
-              }}>
-                {overallScore >= 80 ? '系统状态良好' : overallScore >= 60 ? '系统状态一般' : '系统状态较差'}
-              </div>
-              
-              {isScanning && (
-                <div style={{ marginTop: 16 }}>
-                  <div style={{
-                    height: 4,
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: 2,
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      height: '100%',
-                      width: `${scanProgress}%`,
-                      background: '#8b5cf6',
-                      transition: 'width 0.3s'
-                    }} />
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>
-                    扫描进度: {scanProgress}%
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 快速指标网格 */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: 12
-            }}>
-              {metrics.slice(0, 6).map((metric, i) => (
-                <div key={i} style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  borderRadius: 12,
-                  padding: 16,
-                  border: `1px solid ${getStatusColor(metric.status)}20`
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{metric.name}</span>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 500,
-                      background: `${getStatusColor(metric.status)}20`,
-                      color: getStatusColor(metric.status)
-                    }}>
-                      {metric.status === 'good' ? '正常' : metric.status === 'warning' ? '警告' : '严重'}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                    <span style={{ fontSize: 28, fontWeight: 600 }}>{metric.value}</span>
-                    <span style={{ fontSize: 14, color: '#94a3b8' }}>{metric.unit}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+              width: `${progress}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+              transition: 'width 0.3s ease'
+            }} />
           </div>
-        )}
+        </div>
+      )}
 
-        {selectedTab === 'metrics' && (
-          <div style={{ display: 'grid', gap: 12 }}>
-            {metrics.map((metric, i) => (
-              <div key={i} style={{
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 12,
-                padding: 16,
-                border: '1px solid rgba(255,255,255,0.1)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 500 }}>{metric.name}</div>
-                    <div style={{ fontSize: 12, color: '#94a3b8' }}>实时监控</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                    <span style={{ fontSize: 24, fontWeight: 600, color: getStatusColor(metric.status) }}>
-                      {metric.value}
-                    </span>
-                    <span style={{ fontSize: 14, color: '#94a3b8' }}>{metric.unit}</span>
-                  </div>
-                </div>
-                
-                {/* 历史趋势图 */}
-                <div style={{ 
-                  height: 40, 
-                  display: 'flex', 
-                  alignItems: 'flex-end', 
-                  gap: 2,
-                  padding: '8px 0'
-                }}>
-                  {metric.history.map((val, j) => (
-                    <div
-                      key={j}
-                      style={{
-                        flex: 1,
-                        height: `${(val / 100) * 100}%`,
-                        background: `linear-gradient(to top, ${getStatusColor(metric.status)}40, ${getStatusColor(metric.status)}20)`,
-                        borderRadius: 2,
-                        minWidth: 4
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
+      {/* 统计摘要 */}
+      {!isRunning && diagnostics.length > 0 && (
+        <div style={{
+          display: 'flex',
+          gap: 16,
+          padding: '12px 20px',
+          borderBottom: `1px solid ${theme === 'light' ? '#e5e7eb' : '#1f2937'}`
+        }}>
+          <div style={{
+            padding: '12px 16px',
+            background: theme === 'light' ? '#ecfdf5' : '#064e3b',
+            borderRadius: 8,
+            flex: 1,
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: getStatusColor('pass') }}>{passCount}</div>
+            <div style={{ fontSize: 11, color: theme === 'light' ? '#6b7280' : '#9ca3af' }}>通过</div>
           </div>
-        )}
+          <div style={{
+            padding: '12px 16px',
+            background: theme === 'light' ? '#fffbeb' : '#78350f',
+            borderRadius: 8,
+            flex: 1,
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: getStatusColor('warn') }}>{warnCount}</div>
+            <div style={{ fontSize: 11, color: theme === 'light' ? '#6b7280' : '#9ca3af' }}>警告</div>
+          </div>
+          <div style={{
+            padding: '12px 16px',
+            background: theme === 'light' ? '#fef2f2' : '#7f1d1d',
+            borderRadius: 8,
+            flex: 1,
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: getStatusColor('fail') }}>{failCount}</div>
+            <div style={{ fontSize: 11, color: theme === 'light' ? '#6b7280' : '#9ca3af' }}>失败</div>
+          </div>
+        </div>
+      )}
 
-        {selectedTab === 'diagnostics' && (
-          <div style={{ display: 'grid', gap: 8 }}>
-            {diagnostics.map((diag, i) => (
+      {/* 诊断结果 */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '12px 20px' }}>
+        {Object.entries(groupedDiagnostics).map(([category, items]) => (
+          <div key={category} style={{ marginBottom: 16 }}>
+            <h3 style={{
+              margin: '0 0 8px',
+              fontSize: 14,
+              fontWeight: 600,
+              color: theme === 'light' ? '#374151' : '#d1d5db',
+              paddingBottom: 6,
+              borderBottom: `1px solid ${theme === 'light' ? '#e5e7eb' : '#1f2937'}`
+            }}>
+              {category}
+            </h3>
+            {items.map((item, i) => (
               <div key={i} style={{
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 12,
-                padding: 16,
-                border: `1px solid ${getStatusColor(diag.status)}20`,
                 display: 'flex',
                 alignItems: 'flex-start',
+                padding: '10px 12px',
+                background: theme === 'light' ? '#ffffff' : '#1a1a2e',
+                borderRadius: 6,
+                marginBottom: 6,
                 gap: 12
               }}>
                 <div style={{
-                  padding: 8,
-                  borderRadius: 8,
-                  background: `${getStatusColor(diag.status)}15`,
-                  color: getStatusColor(diag.status)
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: getStatusColor(item.status),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  flexShrink: 0
                 }}>
-                  {diag.status === 'passed' ? <CheckCircleIcon size={20} /> : <AlertTriangleIcon size={20} />}
+                  {getStatusIcon(item.status)}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, fontWeight: 500 }}>{diag.category}</span>
-                    <span style={{
-                      padding: '2px 8px',
+                  <div style={{ fontWeight: 500, marginBottom: 2 }}>{item.name}</div>
+                  <div style={{ fontSize: 12, color: theme === 'light' ? '#6b7280' : '#9ca3af' }}>
+                    {item.message}
+                  </div>
+                  {item.recommendation && (
+                    <div style={{
+                      marginTop: 6,
+                      padding: '6px 10px',
+                      background: theme === 'light' ? '#fef3c7' : '#78350f',
                       borderRadius: 4,
                       fontSize: 11,
-                      fontWeight: 500,
-                      background: `${getStatusColor(diag.status)}20`,
-                      color: getStatusColor(diag.status)
+                      color: theme === 'light' ? '#92400e' : '#fcd34d'
                     }}>
-                      {diag.status === 'passed' ? '通过' : '警告'}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 13, color: '#cbd5e1', marginBottom: 4 }}>{diag.message}</div>
-                  {diag.details && (
-                    <div style={{ fontSize: 12, color: '#64748b' }}>{diag.details}</div>
+                      建议: {item.recommendation}
+                    </div>
                   )}
                 </div>
+                {item.value && (
+                  <div style={{
+                    padding: '4px 10px',
+                    background: theme === 'light' ? '#f3f4f6' : '#1f2937',
+                    borderRadius: 4,
+                    fontSize: 12,
+                    fontFamily: '"JetBrains Mono", monospace'
+                  }}>
+                    {item.value}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        )}
+        ))}
       </div>
 
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      {/* 系统信息摘要 */}
+      {systemInfo && (
+        <div style={{
+          padding: '12px 20px',
+          borderTop: `1px solid ${theme === 'light' ? '#e5e7eb' : '#1f2937'}`,
+          fontSize: 11,
+          color: theme === 'light' ? '#6b7280' : '#9ca3af',
+          fontFamily: '"JetBrains Mono", monospace'
+        }}>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            <span>平台: {systemInfo.platform}</span>
+            <span>语言: {systemInfo.language}</span>
+            <span>窗口: {systemInfo.innerWidth}x{systemInfo.innerHeight}</span>
+            <span>DPR: {systemInfo.devicePixelRatio}x</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
