@@ -200,7 +200,9 @@ export const useStore = create<Store>((set, get) => ({
   apps: [],
   desktopIcons: initialDesktopIcons,
   files: initialFiles,
-  nextZIndex: 0,
+  // 起始 z-index 必须高于桌面 widget 的 z-index (5)，否则前几个窗口会被
+  // widget 的拖动条拦截点击事件。
+  nextZIndex: 100,
   theme: initialTheme,
   wallpaper: initialWallpaper,
   liveWallpaper: initialLiveWallpaper,
