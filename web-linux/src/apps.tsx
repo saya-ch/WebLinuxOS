@@ -11,7 +11,7 @@ import {
   PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon, ChatIcon, BoardIcon,
   LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
-  VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon
+  VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon
 } from './icons'
 
 
@@ -78,6 +78,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'online-code-runner-enhanced', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // 代码搜索（v38.2新增）- 搜索GitHub开源项目
   { id: 'code-search', name: '代码搜索', icon: <SearchIcon />, component: 'CodeSearch', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // PromptForge 提示词工程工作室（v41创新功能 — 模板库+变量插值+实时测试+AI优化建议）
+  { id: 'prompt-forge', name: 'PromptForge 提示词工作室', icon: <WandIcon />, component: 'PromptForge', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'AI 提示词工程工作室：精选模板库+变量插值+实时测试+一键 AI 优化建议+历史记录' },
+  // WebSnapshot 网页快照分析（v41创新功能 — 基于 microlink.io 的真实网页截图与元数据抓取）
+  { id: 'web-snapshot', name: 'WebSnapshot 网页快照', icon: <CameraIcon />, component: 'WebSnapshot', category: 'internet', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '网页快照分析工具：输入 URL 获取截图/标题/描述/OG 图，支持桌面/平板/手机视口与对比模式' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

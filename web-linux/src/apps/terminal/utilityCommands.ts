@@ -391,44 +391,55 @@ registerCommand('hash', {
           '用法: hash <算法> <文本>',
           '',
           '支持的算法:',
-          '  md5    - MD5 哈希',
           '  sha1   - SHA-1 哈希',
-          '  sha256 - SHA-256 哈希',
+          '  sha256 - SHA-256 哈希（默认）',
+          '  sha384 - SHA-384 哈希',
           '  sha512 - SHA-512 哈希',
           '',
           '示例:',
           '  hash sha256 password123',
-          '  hash md5 hello world',
           '  hash sha1 test',
           '',
           '💡 不指定算法时默认使用 SHA-256',
+          '💡 浏览器 Web Crypto API 不支持 MD5，已从列表中移除',
         ].join('\n')
       }
     }
-    
+
     let algorithm = 'SHA-256'
     let text = args.join(' ')
-    
+
     const knownAlgorithms: Record<string, string> = {
-      'md5': 'MD5',
       'sha1': 'SHA-1',
       'sha256': 'SHA-256',
+      'sha384': 'SHA-384',
       'sha512': 'SHA-512',
     }
-    
+
     const firstArg = args[0]?.toLowerCase() || ''
     if (firstArg && knownAlgorithms[firstArg]) {
       algorithm = knownAlgorithms[firstArg]
       text = args.slice(1).join(' ')
+    } else if (firstArg === 'md5') {
+      return {
+        output: [
+          '⚠️ MD5 不被支持',
+          '',
+          '浏览器 Web Crypto API 不实现 MD5 算法（出于安全考虑）。',
+          '如需 MD5，可使用 Pyodide 运行 Python: python -c "import hashlib; print(hashlib.md5(b\\"text\\").hexdigest())"',
+          '',
+          '可选算法: sha1, sha256, sha384, sha512',
+        ].join('\n')
+      }
     }
-    
+
     if (!text) {
       return { output: 'hash: 请提供要计算哈希的文本' }
     }
-    
+
     try {
       const hash = await computeHash(text, algorithm)
-      
+
       return {
         output: [
           `🔑 ${algorithm} 哈希`,
@@ -443,9 +454,9 @@ registerCommand('hash', {
       return { output: `hash: 无法计算 ${algorithm} 哈希` }
     }
   },
-  description: '计算文本哈希值（支持MD5/SHA1/SHA256/SHA512）',
+  description: '计算文本哈希值（支持SHA1/SHA256/SHA384/SHA512）',
   usage: 'hash [算法] <文本>',
-  examples: ['hash sha256 password123', 'hash md5 hello']
+  examples: ['hash sha256 password123', 'hash sha1 test']
 })
 
 registerCommand('rev', {
@@ -1463,29 +1474,8 @@ registerCommand('hostname', {
   examples: ['hostname']
 })
 
-registerCommand('date', {
-  handler: (): CommandResult => {
-    const now = new Date()
-    return { output: now.toLocaleString('zh-CN') }
-  },
-  description: '显示当前日期时间',
-  usage: 'date',
-  examples: ['date']
-})
-
-registerCommand('uname', {
-  handler: (): CommandResult => {
-    const output = [
-      'WebLinuxOS v38.0.0',
-      'Web Kernel',
-      'Build: ' + (typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'unknown'),
-    ]
-    return { output: output.join('\n') }
-  },
-  description: '显示系统信息',
-  usage: 'uname',
-  examples: ['uname']
-})
+// 注意：date / uname 命令的完整实现位于 systemCommands.ts（支持 +%Y 格式化、-a/-r/-s/-n/-m 等参数）
+// 此处不再重复注册，避免简化版覆盖完整版造成功能丢失。
 
 registerCommand('history', {
   handler: (): CommandResult => {
@@ -1672,161 +1662,7 @@ registerCommand('seq', {
   examples: ['seq 1 10', 'seq 0 20 2']
 })
 
-registerCommand('head', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const lines = parseInt(args[0]) || 10
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '📄 head - 显示文件开头',
-          '',
-          '用法: head <行数>',
-          '',
-          '示例:',
-          '  head 5',
-          '  head 20',
-        ].join('\n')
-      }
-    }
-    
-    return {
-      output: [
-        `显示前 ${lines} 行`,
-        '',
-        '此功能需要与文件内容结合使用',
-        '示例: cat file.txt | head 5',
-      ].join('\n')
-    }
-  },
-  description: '显示文件开头部分',
-  usage: 'head <行数>',
-  examples: ['head 5', 'head 10']
-})
-
-registerCommand('tail', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const lines = parseInt(args[0]) || 10
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '📄 tail - 显示文件结尾',
-          '',
-          '用法: tail <行数>',
-          '',
-          '示例:',
-          '  tail 5',
-          '  tail 20',
-        ].join('\n')
-      }
-    }
-    
-    return {
-      output: [
-        `显示后 ${lines} 行`,
-        '',
-        '此功能需要与文件内容结合使用',
-        '示例: cat file.txt | tail 5',
-      ].join('\n')
-    }
-  },
-  description: '显示文件结尾部分',
-  usage: 'tail <行数>',
-  examples: ['tail 5', 'tail 10']
-})
-
-registerCommand('wc', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const text = args.join(' ')
-    
-    if (!text) {
-      return {
-        output: [
-          '📊 wc - 字数统计',
-          '',
-          '用法: wc <文本>',
-          '',
-          '示例:',
-          '  wc "Hello World"',
-          '  wc "这是一段中文文本"',
-        ].join('\n')
-      }
-    }
-    
-    const chars = text.length
-    const words = text.split(/\s+/).filter(w => w.length > 0).length
-    const lines = text.split('\n').length
-    
-    return {
-      output: [
-        '📊 字数统计',
-        '',
-        `字符数: ${chars}`,
-        `单词数: ${words}`,
-        `行数: ${lines}`,
-      ].join('\n')
-    }
-  },
-  description: '统计字符数、单词数和行数',
-  usage: 'wc <文本>',
-  examples: ['wc "Hello World"']
-})
-
-registerCommand('sort', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const items = args
-    
-    if (items.length === 0) {
-      return {
-        output: [
-          '📋 sort - 排序',
-          '',
-          '用法: sort <项目1> <项目2> ...',
-          '',
-          '示例:',
-          '  sort apple banana cherry',
-          '  sort 3 1 4 1 5 9',
-        ].join('\n')
-      }
-    }
-    
-    const sorted = [...items].sort()
-    
-    return { output: sorted.join('\n') }
-  },
-  description: '对输入进行排序',
-  usage: 'sort <项目...>',
-  examples: ['sort apple banana cherry']
-})
-
-registerCommand('uniq', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    
-    if (args.length === 0) {
-      return {
-        output: [
-          '📋 uniq - 去除重复项',
-          '',
-          '用法: uniq <项目1> <项目2> ...',
-          '',
-          '示例:',
-          '  uniq a b a c b',
-          '  uniq 1 2 2 3 1',
-        ].join('\n')
-      }
-    }
-    
-    const unique = [...new Set(args)]
-    
-    return { output: unique.join('\n') }
-  },
-  description: '去除重复项',
-  usage: 'uniq <项目...>',
-  examples: ['uniq a b a c']
-})
+// 注意：head / tail / wc 命令的文件感知实现位于 fileCommands.ts
+// （支持 head -n 5 file.txt、tail -20 log.txt、wc file.txt 等用法）
+// 此处不再重复注册，避免简化版覆盖文件感知版造成功能丢失。
+// sort / uniq 命令的文件感知实现位于 toolCommands.ts，同样不再重复注册。

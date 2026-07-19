@@ -3,7 +3,7 @@
 **A complete Linux desktop environment that runs entirely in your browser.** No installation, no backend, no API keys.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-7c3aed?style=flat-square)](https://saya-ch.github.io/WebLinuxOS/)
-[![Version](https://img.shields.io/badge/Version-40.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/Version-41.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org)
@@ -24,6 +24,53 @@ There are plenty of "operating system in the browser" experiments on the web. Mo
 - **Real public APIs** for AI chat, image generation, weather, news, crypto, exchange rates, GitHub trending, Wikipedia, and more — no keys required.
 
 The goal is to demonstrate that the modern web platform is good enough to host a productive desktop-class environment, while also being a useful tool in its own right.
+
+---
+
+## What's New in v41
+
+This release ships two brand-new creative-workflow apps, fixes a class of bugs uncovered by a codebase-wide audit, and unifies version management so `lsb_release`, `neofetch`, `version`, and `about` all report the same number as `package.json`.
+
+### PromptForge — Prompt Engineering Studio
+
+A dedicated workspace for prompt engineers, content creators, and AI power users. Unlike Nexus AI (a general chat), PromptForge treats the prompt itself as the artifact you manage, iterate on, and optimize.
+
+- **Curated template library** across 6 categories (writing, coding, analysis, creative, education, marketing) plus custom user templates.
+- **Variable interpolation** with `{{var}}` syntax. Variables are auto-extracted from the template and rendered as fill-in fields.
+- **Live testing** against any Pollinations.ai model with adjustable temperature and streaming output.
+- **One-click optimize** — ask GPT-4o to critique and rewrite your prompt as a world-class prompt engineer would.
+- **History** — every run (input, output, model, temperature, duration) is persisted for review.
+- **Import / export** templates as JSON for sharing across teams.
+- **Favorites, tags, and full-text search** for navigating large template libraries.
+
+### WebSnapshot — Web Page Snapshot Analyzer
+
+A real working tool for capturing and analyzing any web page, powered by the free [microlink.io](https://microlink.io) API.
+
+- **One URL, full metadata**: title, description, favicon, OG image, author, publisher, language, publish date.
+- **Three device viewports**: desktop (1440×900), tablet (768×1024), mobile (375×812).
+- **Side-by-side compare mode** — pick any two snapshots and view them together.
+- **Download screenshots** as PNG with a single click.
+- **Local history** (up to 100 entries) with favorites, search, and JSON export.
+
+### Code Quality & Stability
+
+A full audit of the terminal command system and network layer produced the following fixes:
+
+- **Resolved duplicate command registration**: `utilityCommands.ts` was overwriting full implementations from `systemCommands.ts` and `fileCommands.ts` with simplified stubs. The conflicting stubs (`date`, `uname`, `head`, `tail`, `wc`, `sort`, `uniq`) have been removed; `registerCommand` now warns on duplicates in dev mode.
+- **Fixed CoinGecko currency code**: `vs_currencies=usd,cnc` (invalid) → `vs_currencies=usd,cny`.
+- **Eliminated mixed-content violations**: `astronauts`, `iss`, `numbersApi` endpoints upgraded from `http://` to `https://` so they work on HTTPS-deployed Pages.
+- **Stopped `ping` from fabricating data**: previously returned fake `192.168.x.x` IPs and random RTTs on DNS failure; now reports the real resolution error.
+- **Replaced MD5 in `hash` command**: Web Crypto API doesn't support MD5; `hash --md5` now suggests SHA-384 and explains why.
+- **Fixed operator-precedence bug in `joke` command** that returned "暂无笑话" even when data was present.
+- **Bounded `fileOperationHistory`** to 100 entries to prevent unbounded memory growth in long sessions.
+- **Cleaned up `windowSnapshots`** on `clearWindows` to release unused preview thumbnails.
+- **De-duplicated lazy-import Promises** in `WindowManager.loadComponent` — the same dynamic import was being fired twice (once for `React.lazy`, once for the loading-state side effect).
+- **Added CORS guidance** to the `stock` command since Yahoo Finance blocks browser requests.
+
+### Version Injection
+
+`__APP_VERSION__` is now defined once in `vite.config.ts` (read from `package.json`) and consumed everywhere through Vite's `define`. Previously the version string was hardcoded in `systemCommands.ts` (4 places) and would silently drift. `__BUILD_TIME__` is also injected for the `version` command.
 
 ---
 
@@ -115,6 +162,8 @@ A real POSIX-style terminal with 200+ built-in commands:
 
 The launcher ships 200+ integrated apps across 8 categories. Curated highlights:
 
+- **PromptForge** — prompt engineering studio with template library, variable interpolation, live testing, and one-click AI optimization.
+- **WebSnapshot** — capture any web page's screenshot and metadata across desktop / tablet / mobile viewports.
 - **Nexus AI** — real multi-model AI chat with streaming and image generation.
 - **Cloud Clipboard** — Gist-synced snippet manager with shareable URLs.
 - **Snap Studio** — Canvas 2D image editor with filters, presets, multi-format export.
@@ -132,6 +181,7 @@ All endpoints are public and key-free:
 | Service | Use |
 |---------|-----|
 | Pollinations.ai | AI chat, image generation, vision models |
+| microlink.io | Web page screenshots and metadata extraction |
 | GitHub Gist | Cloud clipboard sync (optional, PAT required) |
 | Open-Meteo | Weather & forecast |
 | Open-Meteo Geocoding | City name → coordinates |
@@ -145,6 +195,8 @@ All endpoints are public and key-free:
 | Bored API | Activity suggestions |
 | Nationalize / Agify / Genderize | Name analysis |
 | Spaceflight News | Space industry articles |
+| wheretheiss.at | Real-time ISS satellite position |
+| howmanypeopleareinspacerightnow.com | Astronaut headcount |
 | RandomUser | Profile picture generator |
 | Picsum | Sample images for Snap Studio |
 
@@ -198,6 +250,8 @@ WebLinuxOS/
     │   ├── apps/                      # 200+ React app components
     │   │   ├── terminal/              # Terminal engine + 200+ commands
     │   │   ├── NexusAI.tsx            # Real AI chat (Pollinations.ai)
+    │   │   ├── PromptForge.tsx        # Prompt engineering studio
+    │   │   ├── WebSnapshot.tsx        # Web page snapshot analyzer (microlink.io)
     │   │   ├── CloudClipboard.tsx     # Gist-synced clipboard manager
     │   │   ├── SnapStudio.tsx         # Canvas-based image editor
     │   │   ├── GitHubExplorer.tsx     # Real GitHub API integration
@@ -322,6 +376,7 @@ Commands are automatically picked up by `help`, tab completion, and the command 
 
 - The terminal engine and virtual file system are original implementations.
 - AI capabilities are powered by [Pollinations.ai](https://pollinations.ai), a free and open AI gateway.
+- Web page snapshots are powered by [microlink.io](https://microlink.io), a free API for extracting metadata and screenshots from any URL.
 - Cloud sync uses the [GitHub Gist API](https://docs.github.com/en/rest/gists).
 - The cyberpunk and quantum themes draw inspiration from design systems by Linear, Vercel, and the broader open-source community.
 - All other public APIs are credited inline in `apiService.ts` and `apiConfig.ts`.

@@ -32,42 +32,59 @@ registerCommand('ping', {
     const results: string[] = []
     const times: number[] = []
     
-    let resolvedIp = '127.0.0.1'
+    let resolvedIp = ''
+    let dnsResolved = false
     try {
       const url = target.startsWith('http') ? target : `https://${target}`
-      const testUrl = url.replace(/^https?:\/\//, '')
-      
+      const testUrl = url.replace(/^https?:\/\//, '').split('/')[0]
+
       const dnsData = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(testUrl)}&type=A`, { mode: 'cors' })
       if (dnsData.ok) {
         const json = await dnsData.json()
         if (json.Answer && json.Answer[0] && json.Answer[0].data) {
           resolvedIp = json.Answer[0].data
+          dnsResolved = true
         }
       }
     } catch {
-      resolvedIp = `192.168.1.${Math.floor(Math.random() * 254 + 1)}`
+      // DNS 解析失败时不伪造 IP，保留 resolvedIp 为空
     }
-    
+
+    if (!dnsResolved) {
+      return {
+        output: [
+          `ping: ${target}: 无法解析主机`,
+          '',
+          '提示：浏览器环境无法直接进行 ICMP ping，',
+          '本命令通过 DNS-over-HTTPS 解析主机，并用 HTTP HEAD 请求测量延迟。',
+          '若主机名无效或 DNS 解析失败，将无法继续。',
+        ].join('\n')
+      }
+    }
+
     results.push(`PING ${target} (${resolvedIp}): 56 data bytes`)
-    
+
     for (let i = 0; i < count; i++) {
       let time: number
+      let timedOut = false
       try {
         const url = target.startsWith('http') ? target : `https://${target}`
         time = await measureLatency(url)
+        if (time >= 3000) timedOut = true
       } catch {
-        time = Math.floor(Math.random() * 100 + 50)
+        timedOut = true
+        time = 0
       }
-      
-      times.push(time)
+
       const ttl = Math.floor(Math.random() * 64 + 64)
-      
-      if (time < 3000) {
-        results.push(`64 bytes from ${target}: icmp_seq=${i + 1} ttl=${ttl} time=${time} ms`)
+
+      if (!timedOut) {
+        times.push(time)
+        results.push(`64 bytes from ${target} (${resolvedIp}): icmp_seq=${i + 1} ttl=${ttl} time=${time} ms`)
       } else {
         results.push(`Request timeout for icmp_seq ${i + 1}`)
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 200))
     }
     

@@ -321,6 +321,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevForge: () => import('../../apps/DevForge'),
   // === v40 新增云剪贴板 ===
   CloudClipboard: () => import('../../apps/CloudClipboard'),
+  // === v41 新增 PromptForge 提示词工程工作室 ===
+  PromptForge: () => import('../../apps/PromptForge'),
+  // === v41 新增 WebSnapshot 网页快照分析 ===
+  WebSnapshot: () => import('../../apps/WebSnapshot'),
   // === v30.0 新增实时协作文档编辑器 ===
   RealtimeDocumentEditor: () => import('../../apps/RealtimeDocumentEditor'),
   // === v35.0 核心创新：在线编程实验室 ===
@@ -399,12 +403,15 @@ function loadComponent(name: string): React.LazyExoticComponent<React.ComponentT
 
   if (componentMap[name]) {
     loadingStates.set(name, 'loading')
-    componentCache[name] = lazy(componentMap[name])
-    componentMap[name]().then(() => {
+    // 仅调用一次 componentMap[name]()，React.lazy 内部会缓存 Promise，
+    // 避免双重触发动态 import 造成重复网络请求。
+    const importPromise = componentMap[name]()
+    importPromise.then(() => {
       loadingStates.set(name, 'loaded')
     }).catch(() => {
       loadingStates.set(name, 'error')
     })
+    componentCache[name] = lazy(() => importPromise)
     return componentCache[name]
   }
 

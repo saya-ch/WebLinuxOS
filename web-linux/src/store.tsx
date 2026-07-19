@@ -167,6 +167,9 @@ interface Store {
 
 let windowIdCounter = 0
 
+// 文件操作历史最大长度限制，防止无限增长导致内存膨胀
+const MAX_FILE_OPERATION_HISTORY = 100
+
 // 初始化 windowsPerDesktop
 function initWindowsPerDesktop(total: number): Record<number, string[]> {
   const result: Record<number, string[]> = {}
@@ -174,6 +177,22 @@ function initWindowsPerDesktop(total: number): Record<number, string[]> {
     result[i] = []
   }
   return result
+}
+
+// 修剪文件操作历史，超过上限时丢弃最旧条目（同时调整 historyIndex 偏移）
+function trimHistory(history: FileOperation[], historyIndex: number): {
+  history: FileOperation[]
+  historyIndex: number
+} {
+  if (history.length <= MAX_FILE_OPERATION_HISTORY) {
+    return { history, historyIndex }
+  }
+  // 丢弃最旧的 (length - MAX) 条
+  const dropCount = history.length - MAX_FILE_OPERATION_HISTORY
+  return {
+    history: history.slice(dropCount),
+    historyIndex: Math.max(-1, historyIndex - dropCount),
+  }
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -449,7 +468,9 @@ export const useStore = create<Store>((set, get) => ({
   clearWindows: () => set(() => {
     return {
       windows: [],
-      windowsPerDesktop: initWindowsPerDesktop(get().totalDesktops)
+      windowsPerDesktop: initWindowsPerDesktop(get().totalDesktops),
+      // 同时清空窗口快照缓存，避免内存泄漏
+      windowSnapshots: {}
     }
   }),
 
@@ -668,8 +689,7 @@ export const useStore = create<Store>((set, get) => ({
       }, 0)
       return {
         files: newFiles,
-        fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1,
+        ...trimHistory(newHistory, newHistory.length - 1),
       }
     }),
 
@@ -716,8 +736,7 @@ export const useStore = create<Store>((set, get) => ({
       }, 0)
       return {
         files: newFiles,
-        fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1,
+        ...trimHistory(newHistory, newHistory.length - 1),
       }
     }),
 
@@ -746,8 +765,7 @@ export const useStore = create<Store>((set, get) => ({
       debouncedSaveToStorage(STORAGE_KEYS.FILES, newFiles, 500)
       return {
         files: newFiles,
-        fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1,
+        ...trimHistory(newHistory, newHistory.length - 1),
       }
     }),
 
@@ -785,8 +803,7 @@ export const useStore = create<Store>((set, get) => ({
       }, 0)
       return {
         files: newFiles,
-        fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1,
+        ...trimHistory(newHistory, newHistory.length - 1),
       }
     }),
 
@@ -845,8 +862,7 @@ export const useStore = create<Store>((set, get) => ({
       }, 0)
       return {
         files: newFiles,
-        fileOperationHistory: newHistory,
-        historyIndex: newHistory.length - 1,
+        ...trimHistory(newHistory, newHistory.length - 1),
       }
     })
   },
@@ -895,7 +911,7 @@ export const useStore = create<Store>((set, get) => ({
           duration: 3000,
         })
       }, 0)
-      return { files: withNode, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+      return { files: withNode, ...trimHistory(newHistory, newHistory.length - 1) }
     })
   },
 
@@ -923,7 +939,7 @@ export const useStore = create<Store>((set, get) => ({
           const newFiles = removeFromTree(s.files, operation.fileId)
           const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
           saveToStorage(STORAGE_KEYS.FILES, newFiles)
-          return { files: newFiles, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+          return { files: newFiles, ...trimHistory(newHistory, newHistory.length - 1) }
         })
         break
       case 'delete':
@@ -937,7 +953,7 @@ export const useStore = create<Store>((set, get) => ({
             })
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, restored)
-            return { files: restored, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+            return { files: restored, ...trimHistory(newHistory, newHistory.length - 1) }
           })
         }
         break
@@ -947,7 +963,7 @@ export const useStore = create<Store>((set, get) => ({
             const updated = updateInTree(s.files, operation.fileId, () => operation.previousState!)
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, updated)
-            return { files: updated, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+            return { files: updated, ...trimHistory(newHistory, newHistory.length - 1) }
           })
         }
         break
@@ -957,7 +973,7 @@ export const useStore = create<Store>((set, get) => ({
             const updated = updateInTree(s.files, operation.fileId, () => operation.previousState!)
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, updated)
-            return { files: updated, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+            return { files: updated, ...trimHistory(newHistory, newHistory.length - 1) }
           })
         }
         break
@@ -973,7 +989,7 @@ export const useStore = create<Store>((set, get) => ({
             })
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, withNode)
-            return { files: withNode, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+            return { files: withNode, ...trimHistory(newHistory, newHistory.length - 1) }
           })
         }
         break
@@ -983,7 +999,7 @@ export const useStore = create<Store>((set, get) => ({
             const newFiles = removeFromTree(s.files, operation.fileId)
             const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, newFiles)
-            return { files: newFiles, fileOperationHistory: newHistory, historyIndex: newHistory.length - 1 }
+            return { files: newFiles, ...trimHistory(newHistory, newHistory.length - 1) }
           })
         }
         break

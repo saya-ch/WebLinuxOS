@@ -67,7 +67,9 @@ export const API_CONFIG = {
     zhBaseUrl: 'https://zh.wikipedia.org/api/rest_v1',
   },
   spaceflightNews: {
-    baseUrl: 'https://api.spaceflightnewsapi.net/v4',
+    // 注意：实际使用 v3 端点（apiService.ts 的 baseUrls.spaceflight）。
+    // v4 端点存在但参数语法不同（limit 而非 _limit），需同步迁移时再切换。
+    baseUrl: 'https://api.spaceflightnewsapi.net/v3',
   },
   adviceSlip: {
     baseUrl: 'https://api.adviceslip.com',
@@ -112,7 +114,8 @@ export const API_CONFIG = {
     baseUrl: 'https://icanhazdadjoke.com',
   },
   numbersApi: {
-    baseUrl: 'http://numbersapi.com',
+    // 必须使用 https，避免在 HTTPS 页面被浏览器作为混合内容阻止
+    baseUrl: 'https://numbersapi.com',
   },
   jsonPlaceholder: {
     baseUrl: 'https://jsonplaceholder.typicode.com',

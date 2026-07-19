@@ -92,12 +92,13 @@ registerCommand('uname', {
 registerCommand('lsb_release', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
+
     if (args.includes('-a')) {
-      return { output: `Distributor ID: WebLinux\nDescription:    Web Linux 2.9\nRelease:        2.9.0\nCodename:       web` }
+      return { output: `Distributor ID: WebLinux\nDescription:    Web Linux ${version}\nRelease:        ${version}\nCodename:       web` }
     }
-    
-    return { output: 'Web Linux 2.9' }
+
+    return { output: `Web Linux ${version}` }
   },
   description: '显示发行版信息',
   usage: 'lsb_release [-a]',
@@ -107,14 +108,15 @@ registerCommand('lsb_release', {
 registerCommand('neofetch', {
   handler: (context: CommandContext): CommandResult => {
     const { username, hostname, theme } = context
-    
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
+
     const output = [
       `            .-/+oossssoo+/-.               ${username}@${hostname}`,
       `        \`:+ssssssssssssssssss+:\`           -------------`,
-      `      -+ssssssssssssssssssssssso+-         OS: WebLinuxOS 2.9.0`,
+      `      -+ssssssssssssssssssssssso+-         OS: WebLinuxOS ${version}`,
       `    /osssssssssssssssssssssssssso/        Kernel: 6.15.0-web`,
       `  /ossssssssssssssssssssssssssssso/       Shell: bash 5.2.21`,
-      ` :sssssssssssssssssssssssssssssssss:      DE: WebDE 2.9`,
+      ` :sssssssssssssssssssssssssssssssss:      DE: WebDE ${version}`,
       ` ossssssssssssssssssssssssssssssssso      Theme: ${theme}`,
       ` ossssssssssssssssssssssssssssssssso      Uptime: ${Math.floor(Math.random() * 24)} hours`,
       ` :sssssssssssssssssssssssssssssssss:      Packages: ${Math.floor(Math.random() * 500 + 100)}`,
@@ -124,7 +126,7 @@ registerCommand('neofetch', {
       `        \`:+ssssssssssssssssss+:\``,
       `            .-/+oossssoo+/-.`,
     ].join('\n')
-    
+
     return { output }
   },
   description: '显示系统信息（ASCII艺术风格）',
@@ -134,18 +136,20 @@ registerCommand('neofetch', {
 
 registerCommand('version', {
   handler: (): CommandResult => {
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
+    const buildTime = typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'unknown'
     const output = [
       'WebLinuxOS 版本信息',
       '',
-      '  版本:   2.9.0',
+      `  版本:   ${version}`,
       '  内核:   6.15.0-web',
       '  架构:   x86_64',
       '  平台:   WebAssembly',
-      '  发布:   2026-05-25',
+      `  构建:   ${buildTime}`,
       '',
       '更多信息请访问: https://github.com/saya-ch/WebLinuxOS',
     ].join('\n')
-    
+
     return { output }
   },
   description: '显示系统版本信息',
@@ -155,6 +159,8 @@ registerCommand('version', {
 
 registerCommand('about', {
   handler: (): CommandResult => {
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
+    const buildTime = typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'unknown'
     const output = [
       '═══════════════════════════════════════',
       '         WebLinuxOS 关于',
@@ -163,20 +169,21 @@ registerCommand('about', {
       '  WebLinuxOS 是一个功能完整的',
       '  Web端Linux桌面操作系统模拟器',
       '',
-      '  版本: 2.9.0',
-      '  发布日期: 2026-05-25',
+      `  版本: ${version}`,
+      `  构建: ${buildTime}`,
       '',
       '  特性:',
-      '    ✓ 60+ 预装应用程序',
+      '    ✓ 200+ 预装应用程序',
       '    ✓ 多窗口管理系统',
       '    ✓ 虚拟文件系统',
       '    ✓ 终端模拟器',
       '    ✓ Python运行时支持',
+      '    ✓ 真实 AI 集成（Pollinations.ai）',
       '    ✓ 深色/浅色主题',
       '',
       '═══════════════════════════════════════',
     ].join('\n')
-    
+
     return { output }
   },
   description: '显示关于信息',

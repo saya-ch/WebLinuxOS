@@ -616,7 +616,7 @@ registerCommand('joke', {
         output: [
           '😄 随机笑话',
           '',
-          data.joke || data.setup + '\n' + data.delivery || '暂无笑话',
+          data.joke || (data.setup && data.delivery ? data.setup + '\n' + data.delivery : '暂无笑话'),
           '',
           `分类: ${data.category || '普通'}`,
           '数据来源: JokeAPI',

@@ -282,7 +282,7 @@ export class ApiService {
   async fetchCryptoPrices(symbols: string[]): Promise<CryptoPrice[]> {
     try {
       const ids = symbols.join(',')
-      const url = `${this.baseUrls.crypto}/simple/price?ids=${ids}&vs_currencies=usd,cnc&include_market_cap=true&include_24hr_change=true&include_24hr_vol=true`
+      const url = `${this.baseUrls.crypto}/simple/price?ids=${ids}&vs_currencies=usd,cny&include_market_cap=true&include_24hr_change=true&include_24hr_vol=true`
       const response = await fetch(url)
       const data = await response.json()
 

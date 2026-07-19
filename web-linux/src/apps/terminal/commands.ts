@@ -34,7 +34,12 @@ export interface CommandDefinition {
 export const COMMANDS: Record<string, CommandDefinition> = {}
 
 export function registerCommand(name: string, definition: CommandDefinition) {
-  COMMANDS[name] = definition
+  const normalizedName = name.toLowerCase()
+  // 重复注册保护：开发环境输出警告，避免静默覆盖造成功能丢失
+  if (import.meta.env.DEV && COMMANDS[normalizedName]) {
+    console.warn(`[terminal] 命令 "${normalizedName}" 被重复注册，将覆盖旧实现`)
+  }
+  COMMANDS[normalizedName] = definition
 }
 
 export function getCommand(name: string): CommandDefinition | undefined {

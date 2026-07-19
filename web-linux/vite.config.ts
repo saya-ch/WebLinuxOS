@@ -1,7 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync, existsSync, mkdirSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
 import { resolve } from 'path'
+
+// 读取 package.json 中的版本号，构建期注入到全局常量 __APP_VERSION__
+// 避免在多处硬编码版本号导致不一致（曾出现 preload 显示 v39、package.json 为 v40 的问题）
+function readAppVersion(): string {
+  try {
+    const pkgPath = resolve(__dirname, 'package.json')
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+    return pkg.version || '0.0.0'
+  } catch {
+    return '0.0.0'
+  }
+}
+
+const APP_VERSION = readAppVersion()
 
 export default defineConfig(({ mode }) => {
   const outDir = process.env.OUTPUT_DIR || '../dist'
@@ -104,6 +118,7 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       __BUILD_TIME__: JSON.stringify(new Date().toISOString().replace('T', ' ').split('.')[0]),
+      __APP_VERSION__: JSON.stringify(APP_VERSION),
     },
     resolve: {
       conditions: ['es2022'],
