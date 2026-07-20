@@ -97,6 +97,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'quick-capture', name: 'QuickCapture 捕手', icon: <LayersIcon />, component: 'QuickCapture', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 720, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '碎片信息收集工作台：五类内容(文本/代码/链接/待办/引用)+智能识别粘贴+多标签筛选+置顶收藏+导入导出+快捷键' },
   // 性能监控面板（v44创新功能 — 实时性能监控+FPS/内存/存储分析+智能警告）
   { id: 'performance-dashboard', name: '性能监控面板', icon: <ActivityIcon />, component: 'PerformanceDashboard', category: 'system', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时性能监控：FPS/内存/CPU/存储分析，智能性能警告，历史数据可视化，优化建议' },
+  // API测试终极版（v45创新功能 — 真实API调用+模板库+历史记录+收藏管理）
+  { id: 'api-tester-ultra', name: 'API测试终结者', icon: <ApiLabIcon />, component: 'APITesterUltra', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业API测试工具：真实API调用、预设模板库(GitHub/NASA/汇率等)、请求历史、收藏管理、响应格式化、一键复制/下载' },
+  // 开发者快捷键大全（v45创新功能 — VS Code/Chrome/macOS/Terminal/Git/Vim快捷键速查）
+  { id: 'dev-shortcuts', name: '开发者快捷键大全', icon: <CommandIcon />, component: 'DevShortcuts', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '开发者必备快捷键速查表：覆盖VS Code/Chrome/macOS/Terminal/Git/Vim/Web开发，支持搜索、分类筛选、一键复制、自定义添加、收藏管理' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

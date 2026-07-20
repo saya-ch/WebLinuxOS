@@ -362,6 +362,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WorldClock: () => import('../../apps/WorldClock'),
   WorldPulse: () => import('../../apps/WorldPulse'),
   QuickCapture: () => import('../../apps/QuickCapture'),
+  APITesterUltra: () => import('../../apps/APITesterUltra'),
+  DevShortcuts: () => import('../../apps/DevShortcuts'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
