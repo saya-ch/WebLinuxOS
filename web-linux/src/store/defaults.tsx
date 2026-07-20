@@ -23,7 +23,7 @@ export const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'icon-network', appId: 'network-explorer', name: '网络探索', icon: <ApiLabIcon />, x: 260, y: 420 },
   { id: 'icon-world-pulse', appId: 'world-pulse', name: 'WorldPulse', icon: <GlobeIcon />, x: 380, y: 520 },
   { id: 'icon-intelligent-dashboard', appId: 'intelligent-dashboard', name: '智能仪表盘', icon: <ActivityIcon />, x: 380, y: 20 },
-  { id: 'icon-quick-capture', appId: 'quick-capture', name: 'QuickCapture', icon: <LayersIcon />, x: 380, y: 320 },
+  { id: 'icon-quick-capture', appId: 'quick-capture', name: 'QuickCapture', icon: <LayersIcon />, x: 260, y: 520 },
 ]
 
 export const defaultFiles: FileNode[] = [
