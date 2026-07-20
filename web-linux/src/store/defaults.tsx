@@ -2,7 +2,7 @@ import type { DesktopIcon, FileNode } from '../types'
 import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
-  ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon, GlobeIcon
+  ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon, GlobeIcon, LayersIcon
 } from '../icons'
 
 export const defaultDesktopIcons: DesktopIcon[] = [
@@ -23,8 +23,7 @@ export const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'icon-network', appId: 'network-explorer', name: '网络探索', icon: <ApiLabIcon />, x: 260, y: 420 },
   { id: 'icon-world-pulse', appId: 'world-pulse', name: 'WorldPulse', icon: <GlobeIcon />, x: 380, y: 520 },
   { id: 'icon-intelligent-dashboard', appId: 'intelligent-dashboard', name: '智能仪表盘', icon: <ActivityIcon />, x: 380, y: 20 },
-  { id: 'icon-productivity-center', appId: 'productivity-center', name: '生产力中心', icon: <BoardIcon />, x: 380, y: 120 },
-  { id: 'icon-knowledge-explorer', appId: 'knowledge-explorer', name: '知识探索', icon: <SearchIcon />, x: 380, y: 220 },
+  { id: 'icon-quick-capture', appId: 'quick-capture', name: 'QuickCapture', icon: <LayersIcon />, x: 380, y: 320 },
 ]
 
 export const defaultFiles: FileNode[] = [

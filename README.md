@@ -1,529 +1,132 @@
 # WebLinuxOS
 
-**A complete Linux desktop environment that runs entirely in your browser.** No installation, no backend, no API keys.
+> 一个在浏览器中运行的完整 Linux 桌面环境 — 不是模拟器，是真正能完成工作的工具集。
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-7c3aed?style=flat-square)](https://saya-ch.github.io/WebLinuxOS/)
-[![Version](https://img.shields.io/badge/Version-44.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
-[![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org)
-[![Vite 8](https://img.shields.io/badge/Vite-8-646cff?style=flat-square)](https://vite.dev)
+[在线体验](https://saya-ch.github.io/WebLinuxOS/) · [更新日志](CHANGELOG.md) · [报告问题](https://github.com/saya-ch/WebLinuxOS/issues)
 
-> WebLinuxOS is not a screen-recording demo or a mock. Every window, every command, every network call is real and runs locally in your browser. The application is shipped as a static bundle and can be self-hosted, forked, or extended.
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://saya-ch.github.io/WebLinuxOS/)
+[![Version](https://img.shields.io/badge/version-v44.0.1-blue)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=social)](https://github.com/saya-ch/WebLinuxOS)
 
----
+## 介绍
 
-## Why WebLinuxOS
+WebLinuxOS 是一个开箱即用的浏览器内 Linux 桌面环境，把 200+ 个原生级应用集成到一个 Web 应用里。与"OS 模拟器"不同，这里的每个应用都有真实使用价值 — 终端能跑命令、编辑器能写代码、Markdown 工具能渲染、隐私工具能识别敏感信息。
 
-There are plenty of "operating system in the browser" experiments on the web. Most of them stop at the splash screen or pretend to be a desktop by overlaying a video. WebLinuxOS ships the full stack:
+适合这些场景：
 
-- A **virtual file system** with folders, files, undo/redo, copy/move, persistence to `localStorage`.
-- A **terminal emulator** with `200+` commands, pipes, redirects, history, tab completion, and a real **Python 3 runtime** via Pyodide.
-- A **window manager** with drag, resize, snap, minimize, maximize, focus stacking, and per-window snapshots.
-- **Multiple virtual desktops** with per-desktop window grouping and keyboard navigation.
-- **Real public APIs** for AI chat, image generation, weather, news, crypto, exchange rates, GitHub trending, Wikipedia, and more — no keys required.
+- 在 iPad / Chromebook / 任何只有浏览器的设备上工作
+- 给学生一个无需安装 Linux 就能学习命令行的沙盒
+- 快速给客户演示一个工具，而不需要配置本地环境
+- 在 GitHub Pages 上托管的纯静态个人工作台
 
-The goal is to demonstrate that the modern web platform is good enough to host a productive desktop-class environment, while also being a useful tool in its own right.
+## 核心特性
 
----
+### 桌面与窗口系统
+- 多窗口、虚拟桌面（4 个工作区）、可拖拽、可调整大小、可最小化/最大化
+- 任务栏、开始菜单、命令面板（Ctrl+P）、全局搜索（Ctrl+K）
+- 多主题：赛博朋克 / 量子 / 玻璃拟态 / 经典浅色
 
-## What's New in v44
+### 200+ 内置应用
+覆盖开发、办公、网络、媒体、系统、工具、游戏七大类。完整应用清单见 [APPS.md](web-linux/CHANGELOG_APPS.md) 或在系统内打开"应用商店"查看。
 
-This release focuses on making core apps genuinely functional with real API integrations, enhanced UI/UX, and a new online code compiler.
+### 真实可用的功能（不只模拟）
+- **终端**：70+ 命令实现，文件系统浏览 / 文本处理 / 网络诊断 / Cron / Git 模拟
+- **代码编辑器**：Monaco 内核、语法高亮、多语言、自动补全
+- **Markdown 编辑器**：实时双向预览、表格 / 公式 / 代码块、导出 HTML
+- **PrivacyGuard**：本地 PII 检测，识别 17 类敏感信息（邮箱/手机号/身份证/API Key/JWT 等）
+- **JSONForge**：格式化 / 压缩 / YAML / CSV / Schema / Diff 五合一
+- **CronLab**：可视化构建 Cron 表达式，预测未来 5 次触发时间
+- **WorldPulse**：基于公开 API 的全球天气、汇率、地震、新闻聚合
+- **WebSnapshot**：通过 microlink.io 抓取任意网页截图与元数据
+- **QuickCapture**（v44 新增）：碎片信息收集工作台
 
-### Enhanced Calculator
+### 隐私优先
+所有本地数据存储在浏览器 localStorage，不上传任何服务器。除非用户主动启用在线 API（如 WorldPulse / WebSnapshot），其他应用完全离线运行。
 
-The calculator has been upgraded from a basic four-function tool to a full scientific calculator:
+## 快速开始
 
-- **Scientific mode** with sin, cos, tan, log, ln, sqrt, factorial, power, constants (pi, e)
-- **Keyboard input** — type numbers and operators directly, Enter for =, Escape for clear
-- **Calculation history** panel showing recent computations
-- **Error handling** for division by zero, overflow, domain errors (asin/acos), tangent singularities
-- **Memory functions** (M+, M-, MR, MC) and percentage/square-root buttons
-- **Adaptive display** — font size scales with result length, scientific notation for very large/small numbers
+无需安装，浏览器直接打开：
+https://saya-ch.github.io/WebLinuxOS/
 
-### Real Weather Integration
-
-The weather app now uses the **Open-Meteo API** (free, no key required) for live data:
-
-- **City search with autocomplete** using Open-Meteo Geocoding API (400ms debounce)
-- **Current conditions**: temperature, feels-like, humidity, wind speed/direction, UV index, visibility, sunrise/sunset
-- **7-day forecast** with min/max temperatures and weather icons
-- **24-hour hourly forecast** with temperature trend sparkline
-- **Geolocation support** — one-click to use your current location
-- **10-minute cache** to reduce API calls, with manual refresh
-- **Temperature unit toggle** (Celsius / Fahrenheit)
-
-### Improved Markdown Previewer
-
-Replaced the regex-based renderer with the `marked` library for full GFM support:
-
-- **Split-pane layout** with resizable divider (editor + live preview)
-- **Toolbar** for bold, italic, headings, links, images, code, lists, quotes, tables, and horizontal rules
-- **Table of contents** auto-generated from headings
-- **Export**: copy HTML, download as .html, download as .md
-- **Keyboard shortcuts**: Ctrl+B bold, Ctrl+I italic, Ctrl+S save
-- **XSS sanitization** removing script tags and event handlers
-- **Auto-save** to localStorage with 500ms debounce
-
-### Online Code Compiler
-
-A new app that provides a real in-browser code execution environment:
-
-- **JavaScript execution** with console output capture (log, warn, error, info) and timing
-- **HTML/CSS live preview** in a sandboxed iframe
-- **Built-in examples**: Fibonacci, sorting algorithms, DOM manipulation patterns
-- **Auto-save** per language to localStorage
-- **Theme-aware** editor with monospace fonts and syntax-friendly colors
-
-### System Monitor Overhaul
-
-Now shows real browser performance data instead of simulated values:
-
-- **Real hardware info**: CPU cores, device memory, WebGL renderer, screen resolution/DPI
-- **Battery status** via navigator.getBattery()
-- **Network info** via navigator.connection (type, bandwidth, RTT)
-- **Live FPS counter** using requestAnimationFrame
-- **Memory usage trend** chart drawn on Canvas
-- **Process list** showing all open windows from the store
-- **Storage analysis** with localStorage usage breakdown and top-key ranking
-- **Performance benchmarks** (math, DOM, memory) with scores
-
-### File Manager Improvements
-
-- **Breadcrumb navigation** with back/forward history
-- **Context menu** with Open, Rename, Delete, Copy, Cut, Paste, New File/Folder
-- **Drag-and-drop** file moving between folders
-- **View modes**: List and Grid/Icon view
-- **Sort by** name, date, size, or type (ascending/descending)
-- **Multi-select** with Ctrl+Click and Shift+Click
-- **File type icons** — distinct icons for images, video, audio, code, JSON, archives, etc.
-- **Preview panel** showing file content for text files
-- **Keyboard shortcuts**: Delete, F2 rename, Ctrl+A/C/X/V, Ctrl+F search
-
-### Desktop UI Polish
-
-- **Boot animation** — desktop icons fade in with staggered timing and elastic easing
-- **Frosted glass** effect on desktop icons on hover
-- **Desktop clock widget** in the top-right corner (time + date)
-- **Enhanced context menus** with rounded corners, blur backdrop, and appear animation
-- **Depth gradient overlay** for spatial atmosphere
-- **Draggable desktop icons** with smooth animation and position persistence
-- **"Show Desktop" ripple** effect when clicking the desktop area
-
-### Taskbar Refinements
-
-- **Frosted glass** taskbar with 30px backdrop blur and saturation boost
-- **Custom tooltips** with glass morphism and fade-in animation
-- **Active window indicator** with pulsing glow line under focused app
-- **Slide-up animation** on first load
-- **Thumbnail previews** positioned relative to hovered button with viewport clamping
-
----
-
-## What's New in v42
-
-This release introduces enhanced developer tools and improved system diagnostics, making WebLinuxOS an even more powerful development environment.
-
-### Advanced Code Runner — JavaScript Sandbox
-
-A real-time JavaScript execution environment designed for learning and prototyping:
-
-- **Live execution** with captured console output (log, warn, error, info)
-- **Execution timing** with millisecond precision performance measurement
-- **Built-in examples**: Basic JavaScript, Algorithms (quicksort, binary search), DOM simulation, Functional programming patterns
-- **Safe sandboxed execution** using Function constructor with proper error handling
-- **Theme-aware UI** that adapts to light/dark mode
-
-### Enhanced System Diagnostics
-
-Comprehensive system health checking with actionable recommendations:
-
-- **Hardware analysis**: CPU cores, device memory, WebGL renderer detection
-- **Network diagnostics**: Connection type, estimated bandwidth, RTT measurement
-- **Storage inspection**: Quota usage, localStorage availability
-- **Display metrics**: Resolution, color depth, device pixel ratio
-- **Performance benchmarking**: Quick CPU stress test with timing results
-- **Grouped results** with pass/warn/fail indicators and optimization suggestions
-
-### Quality Improvements
-
-- Updated all version references to v42 across the codebase
-- Improved component registration flow in WindowManager
-- Enhanced theme support in new components
-
-### Creative Terminal Commands
-
-Eight new commands bring real-world data and utilities directly to the terminal:
-
-- **nasa** — Fetch the daily NASA Astronomy Picture of the Day with description and image links
-- **wikipedia** — Query Wikipedia encyclopedia summaries with support for Chinese queries
-- **github-trending** — View trending GitHub repositories with optional language filtering
-- **dict** — Look up English word definitions with phonetics, parts of speech, and example sentences
-- **ip** — Query public IP address or get detailed geolocation info for any IP
-- **weather-forecast** — 7-day weather forecast for major cities worldwide
-- **randomuser** — Generate random user profiles for testing and prototyping
-- **fact** — Get random cat facts for a quick break
-- **emoji** — Browse categorized emoji collections
-
-All commands include fallback data for offline use and proper error handling with timeout protection.
-
----
-
-## What's New in v41
-
-This release ships two brand-new creative-workflow apps, fixes a class of bugs uncovered by a codebase-wide audit, and unifies version management so `lsb_release`, `neofetch`, `version`, and `about` all report the same number as `package.json`.
-
-### PromptForge — Prompt Engineering Studio
-
-A dedicated workspace for prompt engineers, content creators, and AI power users. Unlike Nexus AI (a general chat), PromptForge treats the prompt itself as the artifact you manage, iterate on, and optimize.
-
-- **Curated template library** across 6 categories (writing, coding, analysis, creative, education, marketing) plus custom user templates.
-- **Variable interpolation** with `{{var}}` syntax. Variables are auto-extracted from the template and rendered as fill-in fields.
-- **Live testing** against any Pollinations.ai model with adjustable temperature and streaming output.
-- **One-click optimize** — ask GPT-4o to critique and rewrite your prompt as a world-class prompt engineer would.
-- **History** — every run (input, output, model, temperature, duration) is persisted for review.
-- **Import / export** templates as JSON for sharing across teams.
-- **Favorites, tags, and full-text search** for navigating large template libraries.
-
-### WebSnapshot — Web Page Snapshot Analyzer
-
-A real working tool for capturing and analyzing any web page, powered by the free [microlink.io](https://microlink.io) API.
-
-- **One URL, full metadata**: title, description, favicon, OG image, author, publisher, language, publish date.
-- **Three device viewports**: desktop (1440×900), tablet (768×1024), mobile (375×812).
-- **Side-by-side compare mode** — pick any two snapshots and view them together.
-- **Download screenshots** as PNG with a single click.
-- **Local history** (up to 100 entries) with favorites, search, and JSON export.
-
-### Code Quality & Stability
-
-A full audit of the terminal command system and network layer produced the following fixes:
-
-- **Resolved duplicate command registration**: `utilityCommands.ts` was overwriting full implementations from `systemCommands.ts` and `fileCommands.ts` with simplified stubs. The conflicting stubs (`date`, `uname`, `head`, `tail`, `wc`, `sort`, `uniq`) have been removed; `registerCommand` now warns on duplicates in dev mode.
-- **Fixed CoinGecko currency code**: `vs_currencies=usd,cnc` (invalid) → `vs_currencies=usd,cny`.
-- **Eliminated mixed-content violations**: `astronauts`, `iss`, `numbersApi` endpoints upgraded from `http://` to `https://` so they work on HTTPS-deployed Pages.
-- **Stopped `ping` from fabricating data**: previously returned fake `192.168.x.x` IPs and random RTTs on DNS failure; now reports the real resolution error.
-- **Replaced MD5 in `hash` command**: Web Crypto API doesn't support MD5; `hash --md5` now suggests SHA-384 and explains why.
-- **Fixed operator-precedence bug in `joke` command** that returned "暂无笑话" even when data was present.
-- **Bounded `fileOperationHistory`** to 100 entries to prevent unbounded memory growth in long sessions.
-- **Cleaned up `windowSnapshots`** on `clearWindows` to release unused preview thumbnails.
-- **De-duplicated lazy-import Promises** in `WindowManager.loadComponent` — the same dynamic import was being fired twice (once for `React.lazy`, once for the loading-state side effect).
-- **Added CORS guidance** to the `stock` command since Yahoo Finance blocks browser requests.
-
-### Version Injection
-
-`__APP_VERSION__` is now defined once in `vite.config.ts` (read from `package.json`) and consumed everywhere through Vite's `define`. Previously the version string was hardcoded in `systemCommands.ts` (4 places) and would silently drift. `__BUILD_TIME__` is also injected for the `version` command.
-
----
-
-## What's New in v40
-
-This release transforms WebLinuxOS from a "Linux simulator" into a working productivity platform with real, networked capabilities.
-
-### Nexus AI — Real Conversational AI
-
-A full chat application powered by [Pollinations.ai](https://pollinations.ai), a free, key-less AI gateway. No accounts, no API keys, no rate limits to configure.
-
-- **Multi-model**: GPT-4o, DeepSeek V3, Llama 3.3, Mistral Small, Qwen 2.5, and more.
-- **Streaming responses** via Server-Sent Events with per-token rendering.
-- **Image generation** through the `/image` command (FLUX.1 model, 1024×1024).
-- **Multi-conversation** with persistent history stored locally.
-- **Adjustable temperature** and per-message model switching.
-- **Markdown rendering** with code blocks, tables, and inline images.
-
-Open the launcher and search for **NexusAI** to start chatting. Try:
-
-```
-/image a cyberpunk cat wearing a VR headset, neon colors
-Explain how WebAssembly works to a 5-year-old
-Translate "你好世界" to English, Japanese, French, and German
-```
-
-### Cloud Clipboard — Cross-Device Snippet Sync
-
-A clipboard manager that actually syncs across devices using [GitHub Gist](https://gist.github.com) as the backing store.
-
-- **Local-first**: All snippets persist to `localStorage` even offline.
-- **Gist sync**: Optional one-click push/pull to a private Gist for cross-device access.
-- **Shareable URLs**: Generate self-contained share links that decode on load.
-- **Syntax detection**: Automatically identifies JSON, HTML, CSS, JS, TS, Python, Bash, Markdown.
-- **Tag filtering** and full-text search across all entries.
-- **Token management**: GitHub PAT stored only in `localStorage`, with verify-and-revoke UI.
-
-### AI Terminal Commands
-
-Eight new commands bring the AI assistant into the terminal workflow:
-
-| Command | Action |
-|---------|--------|
-| `ai "prompt"` | One-shot AI completion |
-| `ai-chat` | Interactive multi-turn chat |
-| `ai-image "prompt"` | Generate image, return URL |
-| `ai-models` | List available Pollinations models |
-| `ai-translate "text" --to en` | Translate text |
-| `ai-explain "code or concept"` | Get an explanation |
-| `ai-code "task description"` | Generate code |
-| `clear-ai` | Clear terminal AI session history |
-
-### Other Improvements
-
-- Fixed Content Security Policy that was blocking Google Fonts on the deployed site.
-- `APP_REGISTRY_EXTRAS` is now correctly spread into the main registry (previously extensions were defined but never registered).
-- Type safety hardened across the new services.
-- README rewritten to reflect the v40 surface area.
-
----
-
-## Highlights
-
-### Desktop & Window Manager
-
-- Nine virtual desktops with `Ctrl + Alt + ←/→` and `Ctrl + Alt + 1..9` shortcuts.
-- Edge-snap resize, quarter-tiling, alignment guides, focus stacking with z-index ordering.
-- Window snapshots (lightweight thumbnail previews) for the taskbar.
-- Live wallpapers: particles, wave, nebula, aurora — performance-aware, throttled to 30 FPS on low-end hardware.
-- Notification center with priority, duration, deduplication.
-- Global search (`Ctrl/⌘ + K`), command palette (`Ctrl/⌘ + P`), smart command center (`Ctrl/⌘ + Space`).
-
-### Terminal
-
-A real POSIX-style terminal with 200+ built-in commands:
-
-| Category | Examples |
-|----------|----------|
-| File | `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `touch`, `pwd`, `tree`, `find`, `grep` |
-| System | `top`, `ps`, `df`, `free`, `uptime`, `whoami`, `date`, `uname`, `hostname`, `env` |
-| Network | `ping`, `curl`, `wget`, `netstat`, `dig`, `dns`, `ip` |
-| Online | `weather`, `news`, `crypto`, `github`, `github-trending`, `stock`, `nasa`, `wikipedia`, `dict`, `ip`, `weather-forecast`, `randomuser`, `fact`, `emoji` |
-| AI | `ai`, `ai-chat`, `ai-image`, `ai-models`, `ai-translate`, `ai-explain`, `ai-code` |
-| Utilities | `base64`, `url-encode`, `hash`, `uuidgen`, `jwt-decode`, `qrcode`, `color`, `calc` |
-| Languages | `python` (Pyodide 3.11 runtime with full stdlib) |
-| Misc | Pipes, redirects, background processes, command history, tab completion |
-
-### Apps
-
-The launcher ships 200+ integrated apps across 8 categories. Curated highlights:
-
-- **PromptForge** — prompt engineering studio with template library, variable interpolation, live testing, and one-click AI optimization.
-- **WebSnapshot** — capture any web page's screenshot and metadata across desktop / tablet / mobile viewports.
-- **Nexus AI** — real multi-model AI chat with streaming and image generation.
-- **Cloud Clipboard** — Gist-synced snippet manager with shareable URLs.
-- **Snap Studio** — Canvas 2D image editor with filters, presets, multi-format export.
-- **CodePen Lite** — HTML/CSS/JS playground with live preview.
-- **GitHub Explorer** — real-time search across the GitHub REST API.
-- **Live Data Hub** — aggregated widgets for weather, crypto, news, ISS position.
-- **Knowledge Vine** — Zettelkasten-style note linking.
-- **Pomodoro Studio** — focus sessions with statistics.
-- **System Monitor** — real-time CPU/memory/network visualization (canvas-based, no external libs).
-
-### Real-Time API Integrations
-
-All endpoints are public and key-free:
-
-| Service | Use |
-|---------|-----|
-| Pollinations.ai | AI chat, image generation, vision models |
-| microlink.io | Web page screenshots and metadata extraction |
-| GitHub Gist | Cloud clipboard sync (optional, PAT required) |
-| Open-Meteo | Weather & forecast |
-| Open-Meteo Geocoding | City name → coordinates |
-| CoinGecko | Crypto prices & market cap |
-| Hacker News | Tech news |
-| GitHub | Repos, trending, user profiles |
-| Wikipedia | Encyclopedia summaries |
-| Frankfurter | Exchange rates |
-| Quotable | Inspirational quotes |
-| Advice Slip | Random advice |
-| Bored API | Activity suggestions |
-| Nationalize / Agify / Genderize | Name analysis |
-| Spaceflight News | Space industry articles |
-| wheretheiss.at | Real-time ISS satellite position |
-| howmanypeopleareinspacerightnow.com | Astronaut headcount |
-| RandomUser | Profile picture generator |
-| Picsum | Sample images for Snap Studio |
-| NASA APOD | Daily astronomy picture |
-| Free Dictionary | English word definitions |
-| ipapi.co | IP geolocation lookup |
-| catfact.ninja | Cat facts |
-
----
-
-## Quick Start
+本地开发：
 
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
 cd WebLinuxOS/web-linux
 npm install
-npm run dev
+npm run dev      # http://localhost:5173
 ```
 
-Open <http://localhost:5173/WebLinuxOS/>.
-
-### Build for production
+构建生产版本：
 
 ```bash
-npm run build      # Outputs to /dist, suitable for any static host
-npm run deploy     # Builds for GitHub Pages (base path /WebLinuxOS/)
+npm run build
+npm run preview
 ```
 
-### Verify the build
+## 技术栈
 
-```bash
-npm run typecheck  # tsc --noEmit
-npm run lint
-```
+- **框架**：React 18 + TypeScript
+- **构建**：Vite 5
+- **状态管理**：Zustand
+- **样式**：CSS Variables（无 Tailwind）+ 主题系统
+- **UI 图标**：Lucide React
+- **代码编辑器**：Monaco Editor
+- **Markdown**：marked + DOMPurify
+- **Python runtime**：Pyodide（可选应用）
+- **部署**：GitHub Pages（通过 GitHub Actions 自动构建）
 
----
-
-## Architecture
+## 项目结构
 
 ```
 WebLinuxOS/
-└── web-linux/
-    ├── src/
-    │   ├── App.tsx                    # Keyboard shortcuts, app lifecycle
-    │   ├── main.tsx                   # CSP, boot, Google Fonts
-    │   ├── apps.tsx                   # 200+ app registry
-    │   ├── store.tsx                  # Zustand global state, file ops, undo/redo
-    │   ├── types.ts                   # Strict TypeScript types
-    │   ├── icons.tsx                  # Lucide icon mapping
-    │   ├── components/
-    │   │   ├── desktop/               # WindowManager, Desktop, Taskbar, StartMenu
-    │   │   ├── CommandPalette.tsx     # Ctrl+P fuzzy launcher
-    │   │   ├── NotificationSystem.tsx
-    │   │   ├── SmartCommandCenter.tsx # Ctrl+Space
-    │   │   └── GlobalSearch.tsx       # Ctrl+K
-    │   ├── apps/                      # 200+ React app components
-    │   │   ├── terminal/              # Terminal engine + 200+ commands
-    │   │   ├── NexusAI.tsx            # Real AI chat (Pollinations.ai)
-    │   │   ├── PromptForge.tsx        # Prompt engineering studio
-    │   │   ├── WebSnapshot.tsx        # Web page snapshot analyzer (microlink.io)
-    │   │   ├── CloudClipboard.tsx     # Gist-synced clipboard manager
-    │   │   ├── SnapStudio.tsx         # Canvas-based image editor
-    │   │   ├── GitHubExplorer.tsx     # Real GitHub API integration
-    │   │   └── ...
-    │   ├── services/
-    │   │   ├── apiService.ts          # Typed API clients (strict types)
-    │   │   ├── aiService.ts           # Pollinations.ai chat / image / stream
-    │   │   └── clipboardService.ts    # Gist sync, share URLs, language detect
-    │   ├── config/
-    │   │   └── apiConfig.ts           # All endpoint URLs in one place
-    │   ├── store/                     # Virtual FS, persistence utils
-    │   ├── utils/                     # Logger, performance monitor
-    │   └── styles/                    # Cyberpunk, quantum, worldpulse themes
-    ├── public/                        # Static assets
-    ├── index.html                     # Boot screen + root container
-    └── vite.config.ts                 # Vite config, vendor chunking
+├── web-linux/                # 前端应用
+│   ├── src/
+│   │   ├── apps/             # 200+ 应用实现
+│   │   ├── components/       # 桌面、窗口、任务栏等核心组件
+│   │   ├── store/            # Zustand 状态管理 + 默认数据
+│   │   ├── styles/           # 主题样式
+│   │   └── types/            # TypeScript 类型定义
+│   ├── public/               # 静态资源
+│   └── vite.config.ts
+├── .github/workflows/        # GitHub Actions 自动部署
+├── dist/                     # 构建产物（由 Actions 生成）
+└── CHANGELOG.md              # 详细更新日志
 ```
 
-### State management
+## 贡献
 
-A single Zustand store owns the desktop state, window list, virtual file system, notifications, and theme. Selectors are used per-field so unrelated state changes don't re-render subscribers. File operations are persisted via debounced `localStorage` writes to avoid thrashing.
+欢迎贡献代码、报告 Bug 或提出新功能建议。
 
-### Bundle strategy
+1. Fork 仓库
+2. 创建特性分支 (`git checkout -b feature/awesome-thing`)
+3. 提交改动 (`git commit -m 'feat: add awesome thing'`)
+4. 推送到分支 (`git push origin feature/awesome-thing`)
+5. 发起 Pull Request
 
-Vite is configured for explicit vendor chunking (`vendor-react`, `vendor-zustand`, `vendor-lucide`, etc.), so the initial payload stays small. Application components are dynamically imported through `WindowManager.componentMap` — most apps only load when first opened.
+新增应用的推荐做法：在 `web-linux/src/apps/` 添加组件，在 `apps.tsx` 的 `appRegistry` 中注册，再在 `WindowManager.tsx` 的 `componentMap` 中加入懒加载入口。
 
-### Type safety
+## 路线图
 
-The project compiles with `strict: true`. The full API surface is checked at compile time, including AI messages (`AIMessage`), clipboard items (`ClipboardItem`), and all external API responses (`GitHubUser`, `GitHubRepo`, `ExchangeRates`, `IPInfo`, `JokeData`, `RandomUser`, `BoredActivity`, `NameAnalysis`, `SpaceArticle`).
+- [ ] PWA 支持（可离线安装为本地应用）
+- [ ] 文件系统多设备同步（可选 WebDAV / GitHub Gist）
+- [ ] 协作模式（CRDT 多人共享工作区）
+- [ ] 移动端适配优化
+- [ ] 插件系统（第三方应用热加载）
 
-### AI service design
+## 许可
 
-`aiService.ts` wraps Pollinations.ai behind three primitives — `chat()`, `streamChat()`, `generateImage()` — so any future model swap is a one-file change. SSE parsing is done manually to avoid pulling in an event-source dependency. The terminal commands in `apps/terminal/aiCommands.ts` reuse the same service, ensuring consistent behavior between the chat app and the shell.
+本项目基于 MIT 协议开源。详见 [LICENSE](LICENSE) 文件。
 
-### Cloud clipboard design
+## 致谢
 
-`clipboardService.ts` is local-first: every mutation lands in `localStorage` immediately, then optionally propagates to GitHub Gist. Shareable URLs encode the snippet as a compressed query parameter, so recipients don't need a Gist or a token to read what was shared. Language detection is heuristic-based (regex + structural checks) to keep the bundle small.
-
----
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/⌘ + Space` | Smart command center |
-| `Ctrl/⌘ + K` | Global search |
-| `Ctrl/⌘ + P` | Command palette |
-| `Ctrl/⌘ + ,` | Settings |
-| `Ctrl/⌘ + T` | Terminal |
-| `Ctrl/⌘ + E` | File manager |
-| `Ctrl/⌘ + B` | Browser |
-| `Ctrl + 1..9` | Switch to desktop N |
-| `Ctrl + Alt + ←/→` | Previous / next desktop |
-| `Ctrl + Alt + Tab` | Cycle windows |
-| `F11` | Toggle fullscreen |
-| `Ctrl + Q` | Close focused window |
-| `Ctrl + M` | Minimize focused window |
-| `Ctrl/⌘ + Z` / `Ctrl/⌘ + Y` | Undo / redo (file operations) |
-
-Terminal: `Ctrl+L` clear · `Ctrl+C` interrupt · `Ctrl+R` reverse search · `Tab` autocomplete.
+- [Lucide](https://lucide.dev/) — 图标库
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) — 代码编辑器
+- [Pyodide](https://pyodide.org/) — 浏览器 Python 运行时
+- [microlink.io](https://microlink.io/) — 网页元数据抓取
+- 所有贡献者和用户
 
 ---
 
-## Deployment
-
-The included GitHub Actions workflow (`.github/workflows/deploy.yml`) builds on every push to `main` and publishes to GitHub Pages automatically. To self-host, run `npm run build` and serve the `web-linux/dist/` directory from any static host — Vercel, Netlify, Cloudflare Pages, S3, nginx, or GitHub Pages.
-
-The `VITE_BASE_PATH` for GitHub Pages is `/WebLinuxOS/` and is applied during the `build:github` script. CSP headers in `main.tsx` are scoped to allow only the legitimate external endpoints (Pollinations, GitHub, fonts, and the public APIs listed above).
-
----
-
-## Privacy
-
-WebLinuxOS runs entirely client-side. No analytics, no telemetry, no third-party trackers.
-
-- Conversations with Nexus AI are sent directly from your browser to `pollinations.ai`. They are not stored on any WebLinuxOS server (there is no server).
-- The Cloud Clipboard's GitHub token is stored only in your browser's `localStorage`. It is never sent anywhere except `api.github.com`.
-- All other data (file system, window state, notes, settings) lives in `localStorage` and never leaves your device unless you explicitly invoke a sync feature.
-
----
-
-## Contributing
-
-1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/my-feature`.
-3. Make your changes; verify with `npm run typecheck && npm run build`.
-4. Open a Pull Request with a clear description of the change.
-
-### Adding a new app
-
-1. Create `web-linux/src/apps/MyApp.tsx`.
-2. Add a lazy import in `web-linux/src/components/desktop/WindowManager.tsx#componentMap`.
-3. Register metadata in `web-linux/src/apps.tsx#appRegistry` (or append to `APP_REGISTRY_EXTRAS`).
-
-The build pipeline will fail if any app is registered without an existing component.
-
-### Adding a new terminal command
-
-1. Create `web-linux/src/apps/terminal/myCommands.ts`.
-2. Use `registerCommand('my-cmd', { handler, description, usage, examples })`.
-3. Add `import './myCommands'` to `web-linux/src/apps/terminal/index.ts`.
-
-Commands are automatically picked up by `help`, tab completion, and the command palette.
-
----
-
-## Roadmap
-
-- Voice input for Nexus AI via the Web Speech API.
-- PWA install with offline shell.
-- Collaborative whiteboard over WebRTC.
-- File system persistence to IndexedDB for larger quotas.
-- More AI providers (OpenAI-compatible, Anthropic, local via WebLLM).
-
----
-
-## License
-
-[MIT](LICENSE) — Free to use, modify, and distribute, including for commercial purposes.
-
-## Acknowledgments
-
-- The terminal engine and virtual file system are original implementations.
-- AI capabilities are powered by [Pollinations.ai](https://pollinations.ai), a free and open AI gateway.
-- Web page snapshots are powered by [microlink.io](https://microlink.io), a free API for extracting metadata and screenshots from any URL.
-- Cloud sync uses the [GitHub Gist API](https://docs.github.com/en/rest/gists).
-- The cyberpunk and quantum themes draw inspiration from design systems by Linear, Vercel, and the broader open-source community.
-- All other public APIs are credited inline in `apiService.ts` and `apiConfig.ts`.
+如果这个项目对你有帮助，请给个 Star 支持一下。

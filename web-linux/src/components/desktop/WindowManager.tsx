@@ -360,6 +360,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WorkspaceManager: () => import('../../apps/WorkspaceManager'),
   WorldClock: () => import('../../apps/WorldClock'),
   WorldPulse: () => import('../../apps/WorldPulse'),
+  QuickCapture: () => import('../../apps/QuickCapture'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

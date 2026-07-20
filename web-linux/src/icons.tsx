@@ -12,7 +12,7 @@ import {
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
   Star, Tag, Save, Monitor, Power, Target, TrendingUp, Lightbulb, Bookmark, ArrowRight,
-  CheckCircle, BarChart3,
+  CheckCircle, BarChart3, Layers,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -155,7 +155,8 @@ export const LightbulbIcon = Lightbulb
 export const BookmarkIcon = Bookmark
 export const ArrowRightIcon = ArrowRight
 export const CheckCircleIcon = CheckCircle
-export const BarChart3Icon = BarChart3
+export const BarChartIcon = BarChart3
+export const LayersIcon = Layers
 export const StarOffIcon = ({ size = 18 }: { size?: number }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
