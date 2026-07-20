@@ -90,6 +90,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'json-forge', name: 'JSONForge JSON 工坊', icon: <Code2Icon />, component: 'JSONForge', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'JSON 一体化处理：格式化/压缩、JSON⇌YAML、JSON⇌CSV、双 JSON Diff、JSON Schema 自动生成，全部本地计算' },
   // CronLab Cron 表达式实验室（v43创新功能 — 可视化构建+解释+下次触发预览）
   { id: 'cron-lab', name: 'CronLab Cron 实验室', icon: <ClockIcon />, component: 'CronLab', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Cron 表达式实验室：可视化构建器、人类可读解释、下次触发时间预览、12 种常用预设，支持别名(L/W/#/mon-jan)语法' },
+  // 在线代码编译器（v44创新功能 — JavaScript实时执行+HTML/CSS预览+多语言示例）
+  { id: 'online-compiler', name: '在线代码编译器', icon: <TerminalIcon />, component: 'OnlineCompiler', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '在线代码编译运行器：JavaScript实时执行+HTML/CSS预览+控制台输出捕获+算法示例' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

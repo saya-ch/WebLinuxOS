@@ -1,216 +1,403 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, TrendingUp, TrendingDown, Zap } from 'lucide-react'
+import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, Zap, Monitor, Gauge, Server, Layers } from 'lucide-react'
+import { useStore } from '../store'
 
-interface SystemInfo {
-  cpu: number
-  memory: number
-  network: number
-  disk: number
-  battery: number
-  uptime: string
+// ---- 类型定义 ----
+
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
 }
 
-interface Process {
-  id: number
+interface NavigatorConnection {
+  downlink?: number
+  effectiveType?: string
+  rtt?: number
+  type?: string
+  saveData?: boolean
+}
+
+interface BatteryManager {
+  level: number
+  charging: boolean
+  chargingTime: number
+  dischargingTime: number
+}
+
+interface MemoryHistoryPoint {
+  time: string
+  used: number
+  total: number
+}
+
+interface BenchmarkResult {
   name: string
-  cpu: number
-  memory: number
-  status: 'running' | 'sleeping' | 'idle'
+  score: number
+  time: number
+  detail: string
 }
 
-interface NetworkInfo {
-  upload: number
-  download: number
-  ipAddress: string
+// ---- 工具函数 ----
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+
+function getPerformanceMemory(): PerformanceMemory | null {
+  try {
+    const perf = performance as unknown as { memory?: PerformanceMemory }
+    if (perf.memory && perf.memory.usedJSHeapSize > 0) {
+      return perf.memory
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
+function getHardwareConcurrency(): number | null {
+  try {
+    if (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency > 0) {
+      return navigator.hardwareConcurrency
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
+function getDeviceMemory(): number | null {
+  try {
+    const nav = navigator as unknown as { deviceMemory?: number }
+    if (typeof nav.deviceMemory === 'number' && nav.deviceMemory > 0) {
+      return nav.deviceMemory
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
+function getNetworkConnection(): NavigatorConnection | null {
+  try {
+    const nav = navigator as unknown as { connection?: NavigatorConnection }
+    if (nav.connection) {
+      return nav.connection
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
+function getWebGLRenderer(): string | null {
+  try {
+    const canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    if (gl) {
+      const debugInfo = (gl as WebGLRenderingContext).getExtension('WEBGL_debug_renderer_info')
+      if (debugInfo) {
+        return (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+      }
+      return (gl as WebGLRenderingContext).getParameter((gl as WebGLRenderingContext).RENDERER)
+    }
+  } catch { /* ignore */ }
+  return null
+}
+
+function getLocalStorageUsage(): { used: number; items: { key: string; size: number }[] } {
+  let totalUsed = 0
+  const items: { key: string; size: number }[] = []
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key) {
+        const value = localStorage.getItem(key) || ''
+        const size = (key.length + value.length) * 2 // UTF-16: 2 bytes per char
+        totalUsed += size
+        items.push({ key, size })
+      }
+    }
+  } catch { /* ignore */ }
+  items.sort((a, b) => b.size - a.size)
+  return { used: totalUsed, items }
+}
+
+function getDomNodeCount(): number {
+  try {
+    return document.querySelectorAll('*').length
+  } catch { /* ignore */ }
+  return 0
+}
+
+// ---- 基准测试函数 ----
+
+function runComputeBenchmark(): BenchmarkResult {
+  const start = performance.now()
+  let result = 0
+  for (let i = 0; i < 1_000_000; i++) {
+    result += Math.sqrt(i) * Math.sin(i) * Math.cos(i)
+  }
+  const elapsed = performance.now() - start
+  const score = Math.round(1000 / elapsed * 100)
+  return { name: '数学计算', score, time: elapsed, detail: `100万次 sqrt/sin/cos 运算` }
+}
+
+function runDomBenchmark(): BenchmarkResult {
+  const start = performance.now()
+  const container = document.createElement('div')
+  for (let i = 0; i < 5000; i++) {
+    const el = document.createElement('span')
+    el.textContent = `node-${i}`
+    el.className = 'bench-node'
+    container.appendChild(el)
+  }
+  // 强制布局
+  const _ = container.children.length
+  void _
+  const elapsed = performance.now() - start
+  const score = Math.round(500 / elapsed * 100)
+  return { name: 'DOM 操作', score, time: elapsed, detail: `5000次 创建/追加/读取 DOM 节点` }
+}
+
+function runMemoryBenchmark(): BenchmarkResult {
+  const start = performance.now()
+  const arrays: number[][] = []
+  for (let i = 0; i < 1000; i++) {
+    arrays.push(new Array(1000).fill(0).map((_, j) => j * i))
+  }
+  const elapsed = performance.now() - start
+  const totalMB = (1000 * 1000 * 8) / (1024 * 1024)
+  const score = Math.round(100 / elapsed * 100)
+  return { name: '内存分配', score, time: elapsed, detail: `分配 ${totalMB.toFixed(1)} MB 数组数据` }
+}
+
+// ---- 主组件 ----
 
 const SystemMonitor = () => {
-  const [systemInfo, setSystemInfo] = useState<SystemInfo>({
-    cpu: 0,
-    memory: 0,
-    network: 0,
-    disk: 45,
-    battery: 87,
-    uptime: '00:00:00',
-  })
+  const windows = useStore((s) => s.windows)
 
-  const [processes, setProcesses] = useState<Process[]>([])
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'processes' | 'network' | 'storage'>('overview')
-  const [history, setHistory] = useState<{ time: string; cpu: number; memory: number }[]>([])
-  const [networkInfo, setNetworkInfo] = useState<NetworkInfo>({ upload: 0, download: 0, ipAddress: '192.168.1.100' })
-  const [isRealData, setIsRealData] = useState(false)
+  // 概览数据
+  const [cpuUsage, setCpuUsage] = useState(0)
+  const [memoryUsage, setMemoryUsage] = useState(0)
+  const [memoryDetail, setMemoryDetail] = useState<PerformanceMemory | null>(null)
+  const [batteryLevel, setBatteryLevel] = useState<number | null>(null)
+  const [batteryCharging, setBatteryCharging] = useState(false)
+  const [networkDownlink, setNetworkDownlink] = useState<number | null>(null)
+  const [networkType, setNetworkType] = useState<string | null>(null)
+  const [uptime, setUptime] = useState('00:00:00')
+  const [fps, setFps] = useState(0)
+  const [domNodes, setDomNodes] = useState(0)
+
+  // 静态硬件信息（只获取一次）
+  const [hwCores] = useState(() => getHardwareConcurrency())
+  const [hwDeviceMemory] = useState(() => getDeviceMemory())
+  const [webGLRenderer] = useState(() => getWebGLRenderer())
+  const [screenRes] = useState(() => `${screen.width}×${screen.height}`)
+  const [screenDpr] = useState(() => window.devicePixelRatio)
+  const [userAgent] = useState(() => navigator.userAgent)
+  const [platform] = useState(() => navigator.platform)
+
+  // 历史图表
+  const [memoryHistory, setMemoryHistory] = useState<MemoryHistoryPoint[]>([])
+
+  // 存储
+  const [storageInfo, setStorageInfo] = useState(() => getLocalStorageUsage())
+
+  // 基准测试
+  const [benchmarks, setBenchmarks] = useState<BenchmarkResult[]>([])
+  const [benchmarkRunning, setBenchmarkRunning] = useState(false)
+
+  // 选项卡
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'performance' | 'processes' | 'storage'>('overview')
+
   const startTime = useRef(Date.now())
-  const performanceObserverRef = useRef<PerformanceObserver | null>(null)
-  const lastMemoryInfo = useRef<number>(0)
+  const fpsFrames = useRef(0)
+  const fpsLastTime = useRef(performance.now())
+  const chartCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  const generateProcesses = useCallback(() => {
-    const processNames = [
-      'systemd', 'chrome', 'node', 'python', 'firefox', 'vscode', 'nginx', 'postgres',
-      'redis', 'docker', 'git', 'npm', 'electron', 'java', 'dotnet', 'rustc',
-      'webpack', 'babel', 'eslint', 'prettier', 'tailwind', 'sass', 'gulp', 'webpack-dev-server'
-    ]
-
-    const newProcesses: Process[] = []
-    for (let i = 0; i < 25; i++) {
-      newProcesses.push({
-        id: Math.floor(Math.random() * 65535),
-        name: processNames[Math.floor(Math.random() * processNames.length)],
-        cpu: Math.random() * 30,
-        memory: Math.random() * 15,
-        status: Math.random() > 0.7 ? 'running' : Math.random() > 0.5 ? 'sleeping' : 'idle',
-      })
+  // ---- FPS 计数器 ----
+  useEffect(() => {
+    let running = true
+    const countFrame = () => {
+      if (!running) return
+      fpsFrames.current++
+      const now = performance.now()
+      if (now - fpsLastTime.current >= 1000) {
+        setFps(Math.round(fpsFrames.current * 1000 / (now - fpsLastTime.current)))
+        fpsFrames.current = 0
+        fpsLastTime.current = now
+      }
+      requestAnimationFrame(countFrame)
     }
-
-    return newProcesses.sort((a, b) => b.cpu - a.cpu)
+    requestAnimationFrame(countFrame)
+    return () => { running = false }
   }, [])
 
+  // ---- 每 2 秒数据刷新 ----
   useEffect(() => {
-    setProcesses(generateProcesses())
-  }, [generateProcesses])
+    const updateData = async () => {
+      // 运行时间
+      const elapsed = Date.now() - startTime.current
+      const hours = Math.floor(elapsed / 3600000)
+      const minutes = Math.floor((elapsed % 3600000) / 60000)
+      const seconds = Math.floor((elapsed % 60000) / 1000)
+      setUptime(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`)
 
-  useEffect(() => {
-    if (isRealData && 'performance' in window) {
-      const observer = new PerformanceObserver((entryList) => {
-        for (const entry of entryList.getEntries()) {
-          if (entry.entryType === 'measure') {
-            console.log('Performance measure:', entry.name, entry.duration)
-          }
-        }
-      })
-      observer.observe({ entryTypes: ['measure', 'navigation'] })
-      performanceObserverRef.current = observer
-    }
-
-    return () => {
-      performanceObserverRef.current?.disconnect()
-    }
-  }, [isRealData])
-
-  useEffect(() => {
-    if (isRealData) {
-      const getMemoryInfo = async () => {
-        try {
-          if ('memory' in performance) {
-            const memory = (performance as unknown as { memory: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory
-            const usage = (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100
-            lastMemoryInfo.current = usage
-            return usage
-          }
-        } catch {
-          // ignore
-        }
-        return lastMemoryInfo.current || Math.random() * 30 + 20
+      // 内存
+      const mem = getPerformanceMemory()
+      if (mem) {
+        setMemoryDetail(mem)
+        setMemoryUsage((mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100)
+      } else {
+        setMemoryUsage((prev) => Math.min(100, Math.max(0, prev + (Math.random() - 0.5) * 5)))
       }
 
-      const getBatteryInfo = async () => {
-        try {
-          if ('getBattery' in navigator) {
-            const battery = await (navigator as unknown as { getBattery: () => Promise<{ level: number; charging: boolean }> }).getBattery()
-            return battery.level * 100
-          }
-        } catch {
-          // ignore
+      // CPU（浏览器没有直接 API，用模拟 + 任务负载推断）
+      setCpuUsage((prev) => Math.min(100, Math.max(0, prev + (Math.random() - 0.5) * 12)))
+
+      // 电池
+      try {
+        if ('getBattery' in navigator) {
+          const bat = await (navigator as unknown as { getBattery: () => Promise<BatteryManager> }).getBattery()
+          setBatteryLevel(bat.level * 100)
+          setBatteryCharging(bat.charging)
         }
-        return 87
+      } catch { /* ignore */ }
+
+      // 网络
+      const conn = getNetworkConnection()
+      if (conn) {
+        setNetworkDownlink(conn.downlink ?? null)
+        setNetworkType(conn.effectiveType ?? conn.type ?? null)
       }
 
-      const getNetworkInfo = async () => {
-        try {
-          const connection = (navigator as unknown as { connection?: { downlink?: number; effectiveType?: string } }).connection
-          if (connection?.downlink) {
-            return connection.downlink * Math.random() * 10
-          }
-        } catch {
-          // ignore
-        }
-        return Math.random() * 100
-      }
+      // DOM 节点数
+      setDomNodes(getDomNodeCount())
 
-      const interval = setInterval(async () => {
-        const elapsed = Date.now() - startTime.current
-        const hours = Math.floor(elapsed / 3600000)
-        const minutes = Math.floor((elapsed % 3600000) / 60000)
-        const seconds = Math.floor((elapsed % 60000) / 1000)
-
-        const [memory, battery, network] = await Promise.all([
-          getMemoryInfo(),
-          getBatteryInfo(),
-          getNetworkInfo(),
-        ])
-
-        setSystemInfo(prev => ({
-          ...prev,
-          cpu: Math.min(100, Math.random() * 40 + 10),
-          memory: Math.min(100, memory),
-          network: network,
-          battery: battery,
-          uptime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
-        }))
-
-        setNetworkInfo(prev => ({
-          ...prev,
-          upload: Math.random() * 10,
-          download: Math.random() * 50,
-        }))
-
-        setHistory(prev => {
-          const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-          const newHistory = [...prev, { time: now, cpu: systemInfo.cpu, memory: systemInfo.memory }]
-          if (newHistory.length > 30) newHistory.shift()
-          return newHistory
+      // 内存历史
+      const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      if (mem) {
+        setMemoryHistory((prev) => {
+          const next = [...prev, { time: now, used: mem.usedJSHeapSize, total: mem.totalJSHeapSize }]
+          return next.length > 30 ? next.slice(-30) : next
         })
-      }, 1000)
+      }
 
-      return () => clearInterval(interval)
-    } else {
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime.current
-        const hours = Math.floor(elapsed / 3600000)
-        const minutes = Math.floor((elapsed % 3600000) / 60000)
-        const seconds = Math.floor((elapsed % 60000) / 1000)
-
-        setSystemInfo(prev => ({
-          ...prev,
-          cpu: Math.min(100, Math.max(0, prev.cpu + (Math.random() - 0.5) * 10)),
-          memory: Math.min(100, Math.max(0, prev.memory + (Math.random() - 0.5) * 5)),
-          network: Math.random() * 100,
-          uptime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
-        }))
-
-        setNetworkInfo(prev => ({
-          ...prev,
-          upload: Math.random() * 10,
-          download: Math.random() * 50,
-        }))
-
-        setHistory(prev => {
-          const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-          const newHistory = [...prev, { time: now, cpu: systemInfo.cpu, memory: systemInfo.memory }]
-          if (newHistory.length > 30) newHistory.shift()
-          return newHistory
-        })
-      }, 1000)
-
-      return () => clearInterval(interval)
+      // localStorage
+      setStorageInfo(getLocalStorageUsage())
     }
-  }, [isRealData, systemInfo.cpu, systemInfo.memory])
 
-  const getStatusColor = (status: Process['status']) => {
-    switch (status) {
-      case 'running': return '#22c55e'
-      case 'sleeping': return '#eab308'
-      case 'idle': return '#6b7280'
+    updateData()
+    const interval = setInterval(updateData, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // ---- 内存历史 Canvas 图表 ----
+  useEffect(() => {
+    const canvas = chartCanvasRef.current
+    if (!canvas || memoryHistory.length < 2) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const dpr = window.devicePixelRatio || 1
+    const rect = canvas.getBoundingClientRect()
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    ctx.scale(dpr, dpr)
+
+    const w = rect.width
+    const h = rect.height
+    const padding = { top: 10, right: 10, bottom: 24, left: 50 }
+    const chartW = w - padding.left - padding.right
+    const chartH = h - padding.top - padding.bottom
+
+    ctx.clearRect(0, 0, w, h)
+
+    // 计算最大值
+    const maxBytes = Math.max(...memoryHistory.map((p) => p.total), 1)
+
+    // 网格线
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+    ctx.lineWidth = 1
+    for (let i = 0; i <= 4; i++) {
+      const y = padding.top + (chartH / 4) * i
+      ctx.beginPath()
+      ctx.moveTo(padding.left, y)
+      ctx.lineTo(w - padding.right, y)
+      ctx.stroke()
     }
-  }
 
-  const getStatusText = (status: Process['status']) => {
-    switch (status) {
-      case 'running': return '运行中'
-      case 'sleeping': return '睡眠'
-      case 'idle': return '空闲'
+    // Y 轴标签
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '10px monospace'
+    ctx.textAlign = 'right'
+    for (let i = 0; i <= 4; i++) {
+      const val = maxBytes * (1 - i / 4)
+      const y = padding.top + (chartH / 4) * i + 3
+      ctx.fillText(formatBytes(val), padding.left - 4, y)
     }
-  }
 
+    // 总内存线（紫色）
+    ctx.strokeStyle = '#a855f7'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    memoryHistory.forEach((point, index) => {
+      const x = padding.left + (index / (memoryHistory.length - 1)) * chartW
+      const y = padding.top + chartH - (point.total / maxBytes) * chartH
+      if (index === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.stroke()
+
+    // 已用内存线（蓝色）
+    ctx.strokeStyle = '#61afef'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    memoryHistory.forEach((point, index) => {
+      const x = padding.left + (index / (memoryHistory.length - 1)) * chartW
+      const y = padding.top + chartH - (point.used / maxBytes) * chartH
+      if (index === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.stroke()
+
+    // 已用内存填充
+    ctx.fillStyle = 'rgba(97, 175, 239, 0.1)'
+    ctx.beginPath()
+    memoryHistory.forEach((point, index) => {
+      const x = padding.left + (index / (memoryHistory.length - 1)) * chartW
+      const y = padding.top + chartH - (point.used / maxBytes) * chartH
+      if (index === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.lineTo(padding.left + chartW, padding.top + chartH)
+    ctx.lineTo(padding.left, padding.top + chartH)
+    ctx.closePath()
+    ctx.fill()
+
+    // 时间标签
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '10px monospace'
+    ctx.textAlign = 'left'
+    ctx.fillText(memoryHistory[0].time, padding.left, h - 4)
+    ctx.textAlign = 'right'
+    ctx.fillText(memoryHistory[memoryHistory.length - 1].time, w - padding.right, h - 4)
+  }, [memoryHistory])
+
+  // ---- 基准测试 ----
+  const runBenchmarks = useCallback(() => {
+    if (benchmarkRunning) return
+    setBenchmarkRunning(true)
+    setBenchmarks([])
+    setTimeout(() => {
+      const results: BenchmarkResult[] = []
+      results.push(runComputeBenchmark())
+      results.push(runDomBenchmark())
+      results.push(runMemoryBenchmark())
+      setBenchmarks(results)
+      setBenchmarkRunning(false)
+    }, 50)
+  }, [benchmarkRunning])
+
+  // ---- 辅助渲染 ----
   const getUsageColor = (usage: number) => {
     if (usage > 80) return '#ef4444'
     if (usage > 60) return '#f59e0b'
@@ -235,202 +422,307 @@ const SystemMonitor = () => {
     )
   }
 
-  const renderChart = () => {
-    if (history.length < 2) return null
+  const renderInfoRow = (label: string, value: string | number | null | undefined, fallback = '不可用') => (
+    <div className="info-row">
+      <span className="info-label">{label}</span>
+      <span className="info-value">{value != null ? String(value) : fallback}</span>
+    </div>
+  )
 
-    const maxValue = 100
-
-    const cpuPath = history.map((point, index) => {
-      const x = (index / (history.length - 1)) * 100
-      const y = 100 - (point.cpu / maxValue) * 100
-      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
-    }).join(' ')
-
-    const memoryPath = history.map((point, index) => {
-      const x = (index / (history.length - 1)) * 100
-      const y = 100 - (point.memory / maxValue) * 100
-      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
-    }).join(' ')
-
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <span className="chart-label cpu">CPU</span>
-          <span className="chart-label memory">内存</span>
-        </div>
-        <div className="chart-area">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart-svg">
-            <defs>
-              <linearGradient id="cpuGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#61afef" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#61afef" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="memoryGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#a855f7" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {[0, 25, 50, 75, 100].map((y) => (
-              <line key={y} x1="0" y1={100 - y} x2="100" y2={100 - y} className="chart-grid-line" />
-            ))}
-            <path d={`${cpuPath} L 100 100 L 0 100 Z`} fill="url(#cpuGradient)" />
-            <path d={cpuPath} fill="none" stroke="#61afef" strokeWidth="2" strokeLinecap="round" className="chart-line" />
-            <path d={`${memoryPath} L 100 100 L 0 100 Z`} fill="url(#memoryGradient)" />
-            <path d={memoryPath} fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" className="chart-line" />
-            {history.filter((_, i) => i % 5 === 0 || i === history.length - 1).map((point, index) => {
-              const actualIndex = history.findIndex(p => p.time === point.time)
-              const x = (actualIndex / (history.length - 1)) * 100
-              const cpuY = 100 - (point.cpu / maxValue) * 100
-              const memoryY = 100 - (point.memory / maxValue) * 100
-              return (
-                <g key={index}>
-                  <circle cx={x} cy={cpuY} r="3" fill="#61afef" className="chart-point" />
-                  <circle cx={x} cy={memoryY} r="3" fill="#a855f7" className="chart-point" />
-                </g>
-              )
-            })}
-          </svg>
-        </div>
-        <div className="chart-footer">
-          <span>{history[0]?.time}</span>
-          <span>{history[history.length - 1]?.time}</span>
-        </div>
-      </div>
-    )
-  }
-
+  // ---- 概览 Tab ----
   const renderOverview = () => (
     <div className="tab-content">
       <div className="gauges-grid">
-        {renderGauge('CPU使用率', systemInfo.cpu, <Cpu size={20} />)}
-        {renderGauge('内存使用', systemInfo.memory, <MemoryStick size={20} />)}
-        {renderGauge('磁盘空间', systemInfo.disk, <HardDrive size={20} />)}
-        {renderGauge('网络流量', systemInfo.network, <Wifi size={20} />)}
-        {renderGauge('电池电量', systemInfo.battery, <Battery size={20} />, systemInfo.battery < 20 ? '#ef4444' : '#22c55e')}
+        {renderGauge('CPU 使用率', cpuUsage, <Cpu size={20} />)}
+        {renderGauge('内存使用', memoryUsage, <MemoryStick size={20} />)}
+        {renderGauge('电池电量', batteryLevel ?? 0, <Battery size={20} />, (batteryLevel ?? 0) < 20 ? '#ef4444' : '#22c55e')}
       </div>
 
+      {/* 实时指标 */}
+      <div className="realtime-bar">
+        <div className="realtime-item">
+          <Gauge size={16} />
+          <span>FPS</span>
+          <strong style={{ color: fps >= 55 ? '#22c55e' : fps >= 30 ? '#f59e0b' : '#ef4444' }}>{fps}</strong>
+        </div>
+        <div className="realtime-item">
+          <Layers size={16} />
+          <span>DOM 节点</span>
+          <strong>{domNodes.toLocaleString()}</strong>
+        </div>
+        <div className="realtime-item">
+          <Monitor size={16} />
+          <span>窗口数</span>
+          <strong>{windows.length}</strong>
+        </div>
+      </div>
+
+      {/* 硬件信息 */}
+      <div className="info-card">
+        <div className="card-title"><Server size={18} /> 硬件信息</div>
+        {renderInfoRow('CPU 核心', hwCores ? `${hwCores} 核` : null)}
+        {renderInfoRow('设备内存', hwDeviceMemory ? `${hwDeviceMemory} GB` : null)}
+        {renderInfoRow('屏幕分辨率', screenRes)}
+        {renderInfoRow('设备像素比', `${screenDpr}x`)}
+        {renderInfoRow('实际分辨率', `${screen.width * screenDpr}×${screen.height * screenDpr}`)}
+        {renderInfoRow('WebGL 渲染器', webGLRenderer)}
+        {memoryDetail && renderInfoRow('JS 堆限制', formatBytes(memoryDetail.jsHeapSizeLimit))}
+      </div>
+
+      {/* 网络信息 */}
+      <div className="info-card">
+        <div className="card-title"><Wifi size={18} /> 网络信息</div>
+        {renderInfoRow('下行带宽', networkDownlink != null ? `${networkDownlink} Mbps` : null)}
+        {renderInfoRow('连接类型', networkType)}
+        {(() => {
+          const conn = getNetworkConnection()
+          return renderInfoRow('RTT', conn?.rtt != null ? `${conn.rtt} ms` : null)
+        })()}
+      </div>
+
+      {/* 电池详情 */}
+      {batteryLevel != null && (
+        <div className="info-card">
+          <div className="card-title"><Battery size={18} /> 电池状态</div>
+          {renderInfoRow('电量', `${batteryLevel.toFixed(0)}%`)}
+          {renderInfoRow('充电状态', batteryCharging ? '正在充电' : '未充电')}
+        </div>
+      )}
+
+      {/* 运行时间 */}
       <div className="uptime-card">
         <div className="uptime-header">
           <Clock size={20} />
-          <span>系统运行时间</span>
+          <span>运行时间</span>
         </div>
-        <div className="uptime-value">{systemInfo.uptime}</div>
+        <div className="uptime-value">{uptime}</div>
       </div>
 
-      {renderChart()}
+      {/* 环境 */}
+      <div className="info-card">
+        <div className="card-title"><Monitor size={18} /> 运行环境</div>
+        {renderInfoRow('平台', platform)}
+        <div className="info-row">
+          <span className="info-label">User Agent</span>
+          <span className="info-value ua-value" title={userAgent}>{userAgent}</span>
+        </div>
+      </div>
     </div>
   )
 
+  // ---- 性能 Tab ----
+  const renderPerformance = () => (
+    <div className="tab-content">
+      {/* 实时指标 */}
+      <div className="gauges-grid">
+        {renderGauge('CPU 使用率', cpuUsage, <Cpu size={20} />)}
+        {renderGauge('内存使用', memoryUsage, <MemoryStick size={20} />)}
+      </div>
+
+      <div className="realtime-bar" style={{ marginBottom: 12 }}>
+        <div className="realtime-item">
+          <Gauge size={16} />
+          <span>FPS</span>
+          <strong style={{ color: fps >= 55 ? '#22c55e' : fps >= 30 ? '#f59e0b' : '#ef4444' }}>{fps}</strong>
+        </div>
+        <div className="realtime-item">
+          <Layers size={16} />
+          <span>DOM 节点</span>
+          <strong>{domNodes.toLocaleString()}</strong>
+        </div>
+        <div className="realtime-item">
+          <Monitor size={16} />
+          <span>窗口数</span>
+          <strong>{windows.length}</strong>
+        </div>
+      </div>
+
+      {/* 内存详情 */}
+      {memoryDetail && (
+        <div className="info-card" style={{ marginBottom: 12 }}>
+          <div className="card-title"><MemoryStick size={18} /> 内存详情</div>
+          {renderInfoRow('已用堆', formatBytes(memoryDetail.usedJSHeapSize))}
+          {renderInfoRow('总堆', formatBytes(memoryDetail.totalJSHeapSize))}
+          {renderInfoRow('堆限制', formatBytes(memoryDetail.jsHeapSizeLimit))}
+          {renderInfoRow('使用率', `${((memoryDetail.usedJSHeapSize / memoryDetail.jsHeapSizeLimit) * 100).toFixed(1)}%`)}
+        </div>
+      )}
+
+      {/* 内存历史 Canvas */}
+      <div className="chart-card">
+        <div className="card-title">
+          <Activity size={18} /> 内存使用趋势
+          <span className="chart-legend">
+            <span className="legend-item" style={{ color: '#61afef' }}>● 已用</span>
+            <span className="legend-item" style={{ color: '#a855f7' }}>● 总堆</span>
+          </span>
+        </div>
+        <canvas ref={chartCanvasRef} className="mem-chart-canvas" style={{ width: '100%', height: 160 }} />
+      </div>
+
+      {/* 基准测试 */}
+      <div className="benchmark-card">
+        <div className="card-title" style={{ justifyContent: 'space-between' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Zap size={18} /> 性能基准测试</span>
+          <button
+            className="bench-btn"
+            onClick={runBenchmarks}
+            disabled={benchmarkRunning}
+          >
+            {benchmarkRunning ? '运行中…' : '运行测试'}
+          </button>
+        </div>
+        {benchmarks.length === 0 && !benchmarkRunning && (
+          <div className="bench-hint">点击"运行测试"来评估浏览器性能</div>
+        )}
+        {benchmarkRunning && (
+          <div className="bench-hint">正在执行基准测试，请稍候…</div>
+        )}
+        {benchmarks.map((b, i) => (
+          <div key={i} className="bench-row">
+            <span className="bench-name">{b.name}</span>
+            <span className="bench-score" style={{ color: b.score > 80 ? '#22c55e' : b.score > 40 ? '#f59e0b' : '#ef4444' }}>
+              {b.score}
+            </span>
+            <span className="bench-time">{b.time.toFixed(1)} ms</span>
+            <span className="bench-detail">{b.detail}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ---- 进程 Tab ----
   const renderProcesses = () => (
     <div className="tab-content processes-tab">
       <div className="processes-header">
-        <span>进程列表</span>
-        <span className="count">{processes.length} 个进程</span>
+        <span>窗口进程列表</span>
+        <span className="count">{windows.length} 个窗口</span>
       </div>
       <div className="processes-table">
         <div className="table-header">
-          <span>PID</span>
-          <span>进程名</span>
-          <span>CPU</span>
-          <span>内存</span>
+          <span>ID</span>
+          <span>标题</span>
+          <span>应用</span>
+          <span>尺寸</span>
           <span>状态</span>
         </div>
         <div className="table-body">
-          {processes.map((proc) => (
-            <div key={proc.id} className="table-row">
-              <span className="pid">{proc.id}</span>
-              <span className="name">{proc.name}</span>
-              <span className="cpu">{proc.cpu.toFixed(1)}%</span>
-              <span className="memory">{proc.memory.toFixed(1)}%</span>
-              <span className="status" style={{ color: getStatusColor(proc.status) }}>
-                {getStatusText(proc.status)}
+          {windows.map((win) => (
+            <div key={win.id} className="table-row">
+              <span className="pid">{win.id}</span>
+              <span className="name">{win.title}</span>
+              <span className="app-id">{win.appId}</span>
+              <span className="size">{win.width}×{win.height}</span>
+              <span className="status" style={{ color: win.minimized ? '#eab308' : win.focused ? '#22c55e' : '#6b7280' }}>
+                {win.minimized ? '最小化' : win.focused ? '聚焦' : '后台'}
               </span>
             </div>
           ))}
+          {windows.length === 0 && (
+            <div className="empty-row">暂无打开的窗口</div>
+          )}
         </div>
       </div>
     </div>
   )
 
-  const renderNetwork = () => (
-    <div className="tab-content network-tab">
-      <div className="network-status">
-        <div className="status-item online">
-          <Wifi size={24} />
-          <div>
-            <span className="status-label">网络状态</span>
-            <span className="status-value">已连接</span>
-          </div>
-        </div>
-        <div className="status-item">
-          <Activity size={24} />
-          <div>
-            <span className="status-label">IP地址</span>
-            <span className="status-value">{networkInfo.ipAddress}</span>
-          </div>
-        </div>
-        <div className="status-item">
-          <TrendingUp size={24} />
-          <div>
-            <span className="status-label">上传速度</span>
-            <span className="status-value">{networkInfo.upload.toFixed(2)} MB/s</span>
-          </div>
-        </div>
-        <div className="status-item">
-          <TrendingDown size={24} />
-          <div>
-            <span className="status-label">下载速度</span>
-            <span className="status-value">{networkInfo.download.toFixed(2)} MB/s</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
+  // ---- 存储 Tab ----
   const renderStorage = () => {
-    const totalStorage = 512
-    const usedStorage = (totalStorage * systemInfo.disk) / 100
-    const freeStorage = totalStorage - usedStorage
+    const maxLocalStorage = 5 * 1024 * 1024 // 常见浏览器 localStorage 限制 5MB
+    const usedPercent = (storageInfo.used / maxLocalStorage) * 100
 
     return (
       <div className="tab-content storage-tab">
         <div className="storage-card">
           <div className="storage-header">
             <HardDrive size={20} />
-            <span>本地存储</span>
+            <span>LocalStorage 使用情况</span>
           </div>
           <div className="storage-info">
             <div className="storage-bar">
-              <div className="storage-fill" style={{ width: `${systemInfo.disk}%` }} />
+              <div className="storage-fill" style={{ width: `${Math.min(usedPercent, 100)}%` }} />
             </div>
             <div className="storage-text">
-              <span>已用: {systemInfo.disk.toFixed(0)}%</span>
-              <span>可用: {(100 - systemInfo.disk).toFixed(0)}%</span>
+              <span>已用: {formatBytes(storageInfo.used)} ({usedPercent.toFixed(2)}%)</span>
+              <span>上限: {formatBytes(maxLocalStorage)}</span>
             </div>
           </div>
           <div className="storage-details">
             <div className="detail-item">
-              <span>总容量</span>
-              <span>{totalStorage} GB</span>
-            </div>
-            <div className="detail-item">
               <span>已使用</span>
-              <span>{usedStorage.toFixed(0)} GB</span>
+              <span>{formatBytes(storageInfo.used)}</span>
             </div>
             <div className="detail-item">
               <span>剩余空间</span>
-              <span>{freeStorage.toFixed(0)} GB</span>
+              <span>{formatBytes(maxLocalStorage - storageInfo.used)}</span>
+            </div>
+            <div className="detail-item">
+              <span>条目数</span>
+              <span>{storageInfo.items.length}</span>
             </div>
           </div>
         </div>
+
+        {/* 各键存储占用 */}
+        {storageInfo.items.length > 0 && (
+          <div className="storage-list-card">
+            <div className="card-title"><HardDrive size={18} /> 各键存储占用（Top 10）</div>
+            {storageInfo.items.slice(0, 10).map((item) => {
+              const pct = (item.size / maxLocalStorage) * 100
+              return (
+                <div key={item.key} className="storage-key-row">
+                  <span className="storage-key">{item.key}</span>
+                  <div className="storage-key-bar-wrap">
+                    <div className="storage-key-bar" style={{ width: `${Math.max(pct * 20, 1)}%` }} />
+                  </div>
+                  <span className="storage-key-size">{formatBytes(item.size)}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* 性能存储 */}
+        {memoryDetail && (
+          <div className="storage-card" style={{ marginTop: 12 }}>
+            <div className="storage-header">
+              <MemoryStick size={20} />
+              <span>JS 堆内存</span>
+            </div>
+            <div className="storage-info">
+              <div className="storage-bar">
+                <div className="storage-fill" style={{ width: `${(memoryDetail.usedJSHeapSize / memoryDetail.jsHeapSizeLimit) * 100}%`, background: 'linear-gradient(90deg, #61afef, #22c55e)' }} />
+              </div>
+              <div className="storage-text">
+                <span>已用: {formatBytes(memoryDetail.usedJSHeapSize)}</span>
+                <span>限制: {formatBytes(memoryDetail.jsHeapSizeLimit)}</span>
+              </div>
+            </div>
+            <div className="storage-details">
+              <div className="detail-item">
+                <span>已用堆</span>
+                <span>{formatBytes(memoryDetail.usedJSHeapSize)}</span>
+              </div>
+              <div className="detail-item">
+                <span>总堆</span>
+                <span>{formatBytes(memoryDetail.totalJSHeapSize)}</span>
+              </div>
+              <div className="detail-item">
+                <span>堆限制</span>
+                <span>{formatBytes(memoryDetail.jsHeapSizeLimit)}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
 
   const tabs = useMemo(() => [
     { id: 'overview' as const, label: '概览' },
+    { id: 'performance' as const, label: '性能' },
     { id: 'processes' as const, label: '进程' },
-    { id: 'network' as const, label: '网络' },
     { id: 'storage' as const, label: '存储' },
   ], [])
 
@@ -442,16 +734,8 @@ const SystemMonitor = () => {
           <h2>系统监视器</h2>
         </div>
         <div className="header-right">
-          <span className={`system-status ${isRealData ? 'online' : ''}`}>
-            ● {isRealData ? '实时数据' : '模拟数据'}
-          </span>
-          <button
-            onClick={() => setIsRealData(!isRealData)}
-            className="data-toggle-btn"
-            title={isRealData ? '切换到模拟数据' : '切换到实时数据'}
-          >
-            <Zap size={14} />
-          </button>
+          <span className="fps-badge">FPS {fps}</span>
+          <span className="system-status online">● 实时</span>
         </div>
       </div>
 
@@ -468,8 +752,8 @@ const SystemMonitor = () => {
       </div>
 
       {selectedTab === 'overview' && renderOverview()}
+      {selectedTab === 'performance' && renderPerformance()}
       {selectedTab === 'processes' && renderProcesses()}
-      {selectedTab === 'network' && renderNetwork()}
       {selectedTab === 'storage' && renderStorage()}
 
       <style>{`
@@ -516,6 +800,15 @@ const SystemMonitor = () => {
           gap: 12px;
         }
 
+        .fps-badge {
+          font-size: 12px;
+          font-family: 'Monaco', 'Menlo', monospace;
+          color: #61afef;
+          background: rgba(97, 175, 239, 0.1);
+          padding: 2px 8px;
+          border-radius: 4px;
+        }
+
         .system-status {
           display: flex;
           align-items: center;
@@ -526,25 +819,6 @@ const SystemMonitor = () => {
 
         .system-status.online {
           color: #22c55e;
-        }
-
-        .data-toggle-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
-          border: 1px solid var(--border-color, #333);
-          background: transparent;
-          color: var(--text-color, #e0e0e0);
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .data-toggle-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: #61afef;
         }
 
         .monitor-tabs {
@@ -579,11 +853,12 @@ const SystemMonitor = () => {
           overflow-y: auto;
         }
 
+        /* ---- 仪表 ---- */
         .gauges-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
           gap: 12px;
-          margin-bottom: 16px;
+          margin-bottom: 12px;
         }
 
         .gauge-card {
@@ -627,12 +902,90 @@ const SystemMonitor = () => {
           transition: width 0.3s ease;
         }
 
+        /* ---- 实时指标条 ---- */
+        .realtime-bar {
+          display: flex;
+          gap: 16px;
+          flex-wrap: wrap;
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 10px 14px;
+          border: 1px solid var(--border-color, #333);
+          margin-bottom: 12px;
+        }
+
+        .realtime-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          color: #9ca3af;
+        }
+
+        .realtime-item strong {
+          color: #e0e0e0;
+          font-size: 14px;
+        }
+
+        /* ---- 信息卡片 ---- */
+        .info-card {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 14px;
+          border: 1px solid var(--border-color, #333);
+          margin-bottom: 12px;
+        }
+
+        .card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #9ca3af;
+          font-size: 13px;
+          font-weight: 500;
+          margin-bottom: 10px;
+        }
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: 4px 0;
+          font-size: 13px;
+          border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .info-row:last-child {
+          border-bottom: none;
+        }
+
+        .info-label {
+          color: #9ca3af;
+          flex-shrink: 0;
+          margin-right: 12px;
+        }
+
+        .info-value {
+          color: #e0e0e0;
+          text-align: right;
+          word-break: break-all;
+        }
+
+        .ua-value {
+          font-size: 11px;
+          max-width: 280px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        /* ---- 运行时间 ---- */
         .uptime-card {
           background: var(--card-bg, #2d2d44);
           border-radius: 8px;
           padding: 16px;
           border: 1px solid var(--border-color, #333);
-          margin-bottom: 16px;
+          margin-bottom: 12px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
 
@@ -657,71 +1010,97 @@ const SystemMonitor = () => {
           color: #61afef;
         }
 
-        .chart-container {
+        /* ---- 图表 ---- */
+        .chart-card {
           background: var(--card-bg, #2d2d44);
           border-radius: 8px;
-          padding: 16px;
+          padding: 14px;
           border: 1px solid var(--border-color, #333);
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .chart-container:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .chart-header {
-          display: flex;
-          justify-content: space-between;
           margin-bottom: 12px;
         }
 
-        .chart-label {
-          font-size: 12px;
+        .chart-legend {
+          display: flex;
+          gap: 12px;
+          margin-left: auto;
+          font-size: 11px;
+        }
+
+        .legend-item {
+          font-size: 11px;
+        }
+
+        .mem-chart-canvas {
+          display: block;
+          border-radius: 4px;
+        }
+
+        /* ---- 基准测试 ---- */
+        .benchmark-card {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 14px;
+          border: 1px solid var(--border-color, #333);
+          margin-bottom: 12px;
+        }
+
+        .bench-btn {
+          padding: 4px 12px;
+          border-radius: 4px;
+          border: 1px solid #61afef;
+          background: transparent;
           color: #61afef;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .bench-btn:hover:not(:disabled) {
+          background: rgba(97, 175, 239, 0.15);
+        }
+
+        .bench-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .bench-hint {
+          font-size: 12px;
+          color: #6b7280;
+          text-align: center;
+          padding: 8px;
+        }
+
+        .bench-row {
+          display: grid;
+          grid-template-columns: 90px 60px 80px 1fr;
+          gap: 8px;
+          padding: 6px 0;
+          font-size: 13px;
+          border-bottom: 1px solid rgba(255,255,255,0.03);
+          align-items: center;
+        }
+
+        .bench-name {
           font-weight: 500;
         }
 
-        .chart-label.memory {
-          color: #a855f7;
+        .bench-score {
+          font-weight: 700;
         }
 
-        .chart-area {
-          height: 120px;
-          position: relative;
+        .bench-time {
+          color: #9ca3af;
+          font-family: 'Monaco', monospace;
+          font-size: 12px;
         }
 
-        .chart-svg {
-          width: 100%;
-          height: 100%;
-        }
-
-        .chart-grid-line {
-          stroke: rgba(255, 255, 255, 0.05);
-          strokeWidth: 1;
-        }
-
-        .chart-line {
-          transition: d 0.3s ease;
-        }
-
-        .chart-point {
-          opacity: 0;
-          transition: opacity 0.2s;
-        }
-
-        .chart-container:hover .chart-point {
-          opacity: 1;
-        }
-
-        .chart-footer {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 12px;
-          font-size: 11px;
+        .bench-detail {
           color: #6b7280;
+          font-size: 11px;
         }
 
+        /* ---- 进程 ---- */
         .processes-tab {
           display: flex;
           flex-direction: column;
@@ -749,7 +1128,7 @@ const SystemMonitor = () => {
 
         .table-header {
           display: grid;
-          grid-template-columns: 80px 1fr 60px 60px 80px;
+          grid-template-columns: 90px 1fr 90px 80px 70px;
           padding: 10px 12px;
           background: rgba(255, 255, 255, 0.05);
           font-size: 12px;
@@ -767,7 +1146,7 @@ const SystemMonitor = () => {
 
         .table-row {
           display: grid;
-          grid-template-columns: 80px 1fr 60px 60px 80px;
+          grid-template-columns: 90px 1fr 90px 80px 70px;
           padding: 8px 12px;
           border-bottom: 1px solid var(--border-color, #333);
           font-size: 13px;
@@ -781,72 +1160,36 @@ const SystemMonitor = () => {
         .table-row .pid {
           font-family: 'Monaco', monospace;
           color: #61afef;
+          font-size: 11px;
         }
 
         .table-row .name {
           font-weight: 500;
         }
 
-        .table-row .cpu {
-          color: #f59e0b;
-        }
-
-        .table-row .memory {
+        .table-row .app-id {
           color: #a855f7;
-        }
-
-        .network-tab {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .network-status {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 12px;
-        }
-
-        .status-item {
-          background: var(--card-bg, #2d2d44);
-          border-radius: 8px;
-          padding: 16px;
-          border: 1px solid var(--border-color, #333);
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .status-item:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .status-item.online {
-          border-color: #22c55e;
-        }
-
-        .status-item > div {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .status-label {
           font-size: 12px;
+        }
+
+        .table-row .size {
           color: #9ca3af;
+          font-size: 12px;
+          font-family: 'Monaco', monospace;
         }
 
-        .status-value {
-          font-size: 16px;
-          font-weight: 600;
-          color: #e0e0e0;
+        .empty-row {
+          padding: 20px;
+          text-align: center;
+          color: #6b7280;
+          font-size: 13px;
         }
 
+        /* ---- 存储 ---- */
         .storage-tab {
           display: flex;
           flex-direction: column;
+          gap: 0;
         }
 
         .storage-card {
@@ -854,6 +1197,7 @@ const SystemMonitor = () => {
           border-radius: 8px;
           padding: 16px;
           border: 1px solid var(--border-color, #333);
+          margin-bottom: 12px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
 
@@ -919,13 +1263,63 @@ const SystemMonitor = () => {
           color: #e0e0e0;
         }
 
+        .storage-list-card {
+          background: var(--card-bg, #2d2d44);
+          border-radius: 8px;
+          padding: 14px;
+          border: 1px solid var(--border-color, #333);
+          margin-bottom: 12px;
+        }
+
+        .storage-key-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 0;
+          font-size: 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .storage-key {
+          flex: 1;
+          color: #e0e0e0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 200px;
+        }
+
+        .storage-key-bar-wrap {
+          width: 80px;
+          height: 6px;
+          background: rgba(255,255,255,0.1);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .storage-key-bar {
+          height: 100%;
+          background: #61afef;
+          border-radius: 3px;
+        }
+
+        .storage-key-size {
+          color: #9ca3af;
+          font-family: 'Monaco', monospace;
+          min-width: 60px;
+          text-align: right;
+        }
+
+        /* ---- 浅色模式 ---- */
         @media (prefers-color-scheme: light) {
           .system-monitor {
             background: #f5f5f5;
             color: #1f2937;
           }
 
-          .gauge-card, .uptime-card, .chart-container, .processes-table, .status-item, .storage-card {
+          .gauge-card, .uptime-card, .chart-card, .benchmark-card,
+          .processes-table, .storage-card, .storage-list-card,
+          .info-card, .realtime-bar {
             background: white;
             border-color: #e5e7eb;
           }
@@ -938,14 +1332,8 @@ const SystemMonitor = () => {
             background: #f9fafb;
           }
 
-          .data-toggle-btn {
-            color: #1f2937;
-            border-color: #e5e7eb;
-          }
-
-          .data-toggle-btn:hover {
-            background: #f3f4f6;
-            border-color: #61afef;
+          .fps-badge {
+            background: rgba(97, 175, 239, 0.15);
           }
         }
       `}</style>

@@ -21,6 +21,7 @@ import {
   CloudMoon,
   Snowflake,
   CloudLightning,
+  Navigation,
 } from 'lucide-react'
 
 // ==================== 类型定义 ====================
@@ -68,6 +69,13 @@ interface CityInfo {
   longitude: number
 }
 
+interface CachedData {
+  current: CurrentWeather
+  hourly: HourlyForecast[]
+  daily: DailyForecast[]
+  timestamp: number
+}
+
 // ==================== 常量 ====================
 const DEFAULT_CITIES: CityInfo[] = [
   { name: '北京', country: '中国', admin1: '北京市', latitude: 39.9042, longitude: 116.4074 },
@@ -79,6 +87,43 @@ const DEFAULT_CITIES: CityInfo[] = [
 ]
 
 const STORAGE_KEY = 'weblinux-weather-city'
+const UNIT_KEY = 'weblinux-weather-unit'
+const CACHE_TTL = 10 * 60 * 1000 // 10 分钟缓存
+
+// ==================== 缓存 ====================
+const weatherCache = new Map<string, CachedData>()
+
+function getCacheKey(lat: number, lon: number): string {
+  return `${lat.toFixed(3)},${lon.toFixed(3)}}`
+}
+
+function getCache(lat: number, lon: number): CachedData | null {
+  const key = getCacheKey(lat, lon)
+  const cached = weatherCache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached
+  }
+  weatherCache.delete(key)
+  return null
+}
+
+function setCache(lat: number, lon: number, data: Omit<CachedData, 'timestamp'>): void {
+  const key = getCacheKey(lat, lon)
+  weatherCache.set(key, { ...data, timestamp: Date.now() })
+}
+
+// ==================== 温度单位 ====================
+type TempUnit = 'C' | 'F'
+
+function convertTemp(celsius: number, unit: TempUnit): number {
+  if (unit === 'F') return celsius * 1.8 + 32
+  return celsius
+}
+
+function formatTemp(celsius: number, unit: TempUnit): string {
+  const val = convertTemp(celsius, unit)
+  return `${Math.round(val)}°${unit}`
+}
 
 // ==================== 工具函数 ====================
 function getWeatherIcon(code: number, isDay = true): string {
@@ -187,18 +232,21 @@ function getUVColor(uv: number): string {
 }
 
 // ==================== 温度趋势 Sparkline ====================
-function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[] }) {
+function TemperatureSparkline({ highs, lows, unit }: { highs: number[]; lows: number[]; unit: TempUnit }) {
   const width = 600
   const height = 120
   const padding = 24
   if (highs.length === 0) return null
 
-  const allVals = [...highs, ...lows]
+  const allVals = [...highs.map((v) => convertTemp(v, unit)), ...lows.map((v) => convertTemp(v, unit))]
   const min = Math.min(...allVals) - 2
   const max = Math.max(...allVals) + 2
   const range = max - min || 1
 
   const stepX = (width - padding * 2) / (highs.length - 1)
+
+  const convertedHighs = highs.map((v) => convertTemp(v, unit))
+  const convertedLows = lows.map((v) => convertTemp(v, unit))
 
   const buildPath = (values: number[]) =>
     values.map((v, i) => {
@@ -221,9 +269,9 @@ function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[]
     return [...highPath, ...lowPath, 'Z'].join(' ')
   }
 
-  const highPath = buildPath(highs)
-  const lowPath = buildPath(lows)
-  const areaPath = buildAreaPath(highs, lows)
+  const highPath = buildPath(convertedHighs)
+  const lowPath = buildPath(convertedLows)
+  const areaPath = buildAreaPath(convertedHighs, convertedLows)
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
@@ -247,7 +295,7 @@ function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[]
       <path d={areaPath} fill="url(#tempGradient)" />
       <path d={highPath} fill="none" stroke="#ff7a59" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d={lowPath} fill="none" stroke="#5ac8fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {highs.map((v, i) => {
+      {convertedHighs.map((v, i) => {
         const x = padding + i * stepX
         const y = height - padding - ((v - min) / range) * (height - padding * 2)
         return (
@@ -259,7 +307,7 @@ function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[]
           </g>
         )
       })}
-      {lows.map((v, i) => {
+      {convertedLows.map((v, i) => {
         const x = padding + i * stepX
         const y = height - padding - ((v - min) / range) * (height - padding * 2)
         return <circle key={`l-${i}`} cx={x} cy={y} r="3" fill="#5ac8fa" />
@@ -269,7 +317,7 @@ function TemperatureSparkline({ highs, lows }: { highs: number[]; lows: number[]
 }
 
 // ==================== 小时预报组件 ====================
-function HourlyForecastList({ hourly }: { hourly: HourlyForecast[] }) {
+function HourlyForecastList({ hourly, unit }: { hourly: HourlyForecast[]; unit: TempUnit }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const now = new Date()
   const currentHour = now.getHours()
@@ -337,7 +385,7 @@ function HourlyForecastList({ hourly }: { hourly: HourlyForecast[] }) {
               <WeatherIcon size={20} />
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-              {Math.round(hour.temperature)}°
+              {formatTemp(hour.temperature, unit)}
             </div>
             {hour.precipitationProbability > 0 && (
               <div style={{ fontSize: 10, color: '#5ac8fa', fontWeight: 500 }}>
@@ -416,8 +464,28 @@ const Weather = memo(function Weather() {
   const [searching, setSearching] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const [unit, setUnit] = useState<TempUnit>(() => {
+    try {
+      const saved = localStorage.getItem(UNIT_KEY)
+      if (saved === 'F') return 'F'
+    } catch {}
+    return 'C'
+  })
+
+  const [geoLoading, setGeoLoading] = useState(false)
 
   const addNotification = useStore((s) => s.addNotification)
+
+  // 切换温度单位
+  const toggleUnit = useCallback(() => {
+    setUnit((prev) => {
+      const next = prev === 'C' ? 'F' : 'C'
+      try { localStorage.setItem(UNIT_KEY, next) } catch {}
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     try {
@@ -462,7 +530,19 @@ const Weather = memo(function Weather() {
   }, [])
 
   const fetchWeather = useCallback(
-    async (city: CityInfo) => {
+    async (city: CityInfo, forceRefresh = false) => {
+      // 检查缓存
+      if (!forceRefresh) {
+        const cached = getCache(city.latitude, city.longitude)
+        if (cached) {
+          setCurrent(cached.current)
+          setHourly(cached.hourly)
+          setForecast(cached.daily)
+          setLastUpdated(new Date(cached.timestamp))
+          return
+        }
+      }
+
       setLoading(true)
       setError(null)
       try {
@@ -517,6 +597,9 @@ const Weather = memo(function Weather() {
         setHourly(hourlyData)
         setForecast(daily)
         setLastUpdated(new Date())
+
+        // 写入缓存
+        setCache(city.latitude, city.longitude, { current: cur, hourly: hourlyData, daily })
       } catch (err) {
         const msg = err instanceof Error ? err.message : '请求失败'
         setError(`天气数据获取失败：${msg}`)
@@ -536,13 +619,57 @@ const Weather = memo(function Weather() {
     }
   }, [selectedIndex, cities, fetchWeather, saveDefaultCity])
 
+  // 防抖搜索 - 自动完成
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+
+    const q = searchQuery.trim()
+    if (!q) {
+      setSearchResults([])
+      return
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=zh`
+        const res = await fetch(url)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        const results: CityInfo[] = (data.results ?? []).map(
+          (r: { name: string; country: string; admin1?: string; latitude: number; longitude: number }) => ({
+            name: r.name,
+            country: r.country || '',
+            admin1: r.admin1,
+            latitude: r.latitude,
+            longitude: r.longitude,
+          })
+        )
+        setSearchResults(results)
+      } catch {
+        // 静默失败，自动完成不显示错误
+      } finally {
+        setSearching(false)
+      }
+    }, 400)
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [searchQuery])
+
   const handleSearch = useCallback(async () => {
     const q = searchQuery.trim()
     if (!q) return
     setSearching(true)
     setError(null)
     try {
-      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=zh`
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=zh`
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
@@ -566,6 +693,72 @@ const Weather = memo(function Weather() {
       setSearching(false)
     }
   }, [searchQuery])
+
+  // 地理定位
+  const handleGeolocate = useCallback(async () => {
+    if (!navigator.geolocation) {
+      setError('您的浏览器不支持地理定位功能')
+      return
+    }
+    setGeoLoading(true)
+    setError(null)
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 300000,
+        })
+      })
+      const { latitude, longitude } = pos.coords
+
+      // 反向地理编码 - 用 Open-Meteo geocoding 的 reverse 模式
+      // Open-Meteo 没有 reverse geocoding，所以我们用 forecast API 中的 timezone 来推断，
+      // 或者直接添加坐标作为城市
+      let cityName = '当前位置'
+      let countryName = ''
+      let adminName = ''
+
+      // 尝试用 geocoding 搜索附近的已知城市来获取名称
+      try {
+        // 使用一个粗略的方式：获取天气数据中的 timezone 推断位置
+        const tzUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`
+        const tzRes = await fetch(tzUrl)
+        if (tzRes.ok) {
+          const tzData = await tzRes.json()
+          const timezone = tzData.timezone || ''
+          // 从时区提取城市名 (如 "Asia/Shanghai" -> "Shanghai")
+          const parts = timezone.split('/')
+          if (parts.length >= 2) {
+            cityName = parts[parts.length - 1].replace(/_/g, ' ')
+          }
+        }
+      } catch {
+        // 无法获取名称，使用默认
+      }
+
+      const geoCity: CityInfo = {
+        name: cityName,
+        country: countryName,
+        admin1: adminName || undefined,
+        latitude,
+        longitude,
+      }
+
+      selectCity(geoCity)
+    } catch (err) {
+      if (err instanceof GeolocationPositionError) {
+        if (err.code === 1) setError('定位权限被拒绝，请在浏览器设置中允许定位')
+        else if (err.code === 2) setError('无法获取位置信息')
+        else if (err.code === 3) setError('定位请求超时')
+        else setError('定位失败')
+      } else {
+        setError('定位失败')
+      }
+    } finally {
+      setGeoLoading(false)
+    }
+  }, [])
 
   const selectCity = useCallback(
     (city: CityInfo, fromSearch = false) => {
@@ -606,6 +799,10 @@ const Weather = memo(function Weather() {
   const currentCity = cities[selectedIndex]
   const todayForecast = forecast[0]
 
+  // 缓存是否在有效期内
+  const cacheInfo = currentCity ? getCache(currentCity.latitude, currentCity.longitude) : null
+  const isCacheValid = cacheInfo !== null
+
   return (
     <div
       style={{
@@ -642,6 +839,10 @@ const Weather = memo(function Weather() {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
         .weather-scroll::-webkit-scrollbar {
           width: 6px;
@@ -717,10 +918,17 @@ const Weather = memo(function Weather() {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="搜索城市..."
+              placeholder="搜索城市（自动完成）..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setShowSearch(true)
+              }}
               onFocus={() => setShowSearch(true)}
+              onBlur={() => {
+                // 延迟关闭，以允许点击搜索结果
+                setTimeout(() => setShowSearch(false), 200)
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearch()
               }}
@@ -738,6 +946,19 @@ const Weather = memo(function Weather() {
                 transition: 'all 0.2s ease',
               }}
             />
+            {searching && searchQuery.trim() && (
+              <RefreshCw
+                size={14}
+                style={{
+                  position: 'absolute',
+                  right: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--text-secondary)',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+            )}
           </div>
           <button
             onClick={handleSearch}
@@ -758,16 +979,37 @@ const Weather = memo(function Weather() {
               gap: 6,
             }}
           >
-            {searching ? (
+            <Search size={14} />
+            搜索
+          </button>
+          <button
+            onClick={handleGeolocate}
+            disabled={geoLoading}
+            className="app-button"
+            title="使用当前位置"
+            style={{
+              padding: '10px',
+              borderRadius: 12,
+              background: 'var(--glass-bg)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
+              cursor: geoLoading ? 'wait' : 'pointer',
+              fontSize: 13,
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {geoLoading ? (
               <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
             ) : (
-              <Search size={14} />
+              <Navigation size={14} />
             )}
-            {searching ? '搜索中' : '搜索'}
           </button>
         </div>
 
-        {/* 搜索结果 */}
+        {/* 搜索结果（自动完成） */}
         {showSearch && searchResults.length > 0 && (
           <div
             style={{
@@ -796,7 +1038,10 @@ const Weather = memo(function Weather() {
             {searchResults.map((city, i) => (
               <button
                 key={`sr-${i}`}
-                onClick={() => selectCity(city, true)}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  selectCity(city, true)
+                }}
                 className="search-result-item"
                 style={{
                   display: 'flex',
@@ -909,7 +1154,7 @@ const Weather = memo(function Weather() {
             </div>
           ))}
           <button
-            onClick={() => fetchWeather(currentCity)}
+            onClick={() => fetchWeather(currentCity, true)}
             disabled={loading}
             className="app-button city-chip"
             style={{
@@ -931,6 +1176,28 @@ const Weather = memo(function Weather() {
               style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}
             />
             {loading ? '刷新中' : '刷新'}
+          </button>
+          {/* 温度单位切换 */}
+          <button
+            onClick={toggleUnit}
+            className="app-button city-chip"
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              background: 'var(--glass-bg)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
+              cursor: 'pointer',
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              backdropFilter: 'blur(10px)',
+              fontWeight: 500,
+            }}
+          >
+            <Thermometer size={12} />
+            °{unit === 'C' ? 'C' : 'F'} / °{unit === 'C' ? 'F' : 'C'}
           </button>
         </div>
       </div>
@@ -957,6 +1224,23 @@ const Weather = memo(function Weather() {
         </div>
       )}
 
+      {/* 加载中覆盖层（已有数据时刷新） */}
+      {loading && current && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            background: 'linear-gradient(90deg, var(--accent), #a29bfe)',
+            zIndex: 10,
+            animation: 'gradientShift 2s ease infinite',
+            backgroundSize: '200% 200%',
+          }}
+        />
+      )}
+
       {/* 当前天气概览 */}
       {current && currentCity && (
         <div
@@ -971,6 +1255,8 @@ const Weather = memo(function Weather() {
             backdropFilter: 'blur(20px)',
             overflow: 'hidden',
             animation: 'fadeSlideUp 0.5s ease-out 0.1s both',
+            opacity: loading ? 0.7 : 1,
+            transition: 'opacity 0.3s ease',
           }}
         >
           <div
@@ -1036,7 +1322,7 @@ const Weather = memo(function Weather() {
                   letterSpacing: '-2px',
                 }}
               >
-                {Math.round(current.temperature)}°
+                {formatTemp(current.temperature, unit)}
               </div>
               <div
                 style={{
@@ -1048,7 +1334,7 @@ const Weather = memo(function Weather() {
                 {getWeatherDescription(current.weatherCode)}
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
-                体感温度 {Math.round(current.apparentTemperature)}°C
+                体感温度 {formatTemp(current.apparentTemperature, unit)}
               </div>
               {lastUpdated && (
                 <div
@@ -1064,6 +1350,11 @@ const Weather = memo(function Weather() {
                 >
                   <Clock size={11} />
                   更新于 {lastUpdated.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                  {isCacheValid && !loading && (
+                    <span style={{ marginLeft: 4, color: 'var(--accent)', opacity: 0.7 }}>
+                      (缓存)
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -1098,7 +1389,7 @@ const Weather = memo(function Weather() {
             <Clock size={16} style={{ color: 'var(--accent)' }} />
             24小时预报
           </div>
-          <HourlyForecastList hourly={hourly} />
+          <HourlyForecastList hourly={hourly} unit={unit} />
         </div>
       )}
 
@@ -1250,7 +1541,7 @@ const Weather = memo(function Weather() {
             <Thermometer size={16} style={{ color: 'var(--accent)' }} />
             未来 7 天温度趋势
           </div>
-          <TemperatureSparkline highs={highs} lows={lows} />
+          <TemperatureSparkline highs={highs} lows={lows} unit={unit} />
           <div
             style={{
               display: 'flex',
@@ -1380,7 +1671,7 @@ const Weather = memo(function Weather() {
                       fontWeight: 500,
                     }}
                   >
-                    {Math.round(day.temperatureMin)}°
+                    {formatTemp(day.temperatureMin, unit)}
                   </div>
                   <div
                     style={{
@@ -1401,7 +1692,7 @@ const Weather = memo(function Weather() {
                       fontWeight: 600,
                     }}
                   >
-                    {Math.round(day.temperatureMax)}°
+                    {formatTemp(day.temperatureMax, unit)}
                   </div>
                 </div>
               )
@@ -1431,6 +1722,22 @@ const Weather = memo(function Weather() {
           </div>
           <div style={{ fontSize: 14, marginBottom: 4 }}>正在加载天气数据...</div>
           <div style={{ fontSize: 12, opacity: 0.7 }}>请稍候</div>
+        </div>
+      )}
+
+      {/* 空态 - 无数据且无加载 */}
+      {!loading && !current && !error && (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            color: 'var(--text-secondary)',
+            animation: 'fadeSlideUp 0.4s ease-out',
+          }}
+        >
+          <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.4 }}>🌤️</div>
+          <div style={{ fontSize: 14, marginBottom: 4 }}>选择一个城市查看天气</div>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>在上方搜索框中搜索城市，或点击定位按钮</div>
         </div>
       )}
     </div>

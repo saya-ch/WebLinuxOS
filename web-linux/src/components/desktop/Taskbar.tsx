@@ -1,6 +1,30 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
-import { TerminalIcon, SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon } from '../../icons'
+import { TerminalIcon, SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon } from '../../icons'
+
+// 进场/指示器/提示框动画 —— 通过 <style> 注入，避免新增依赖
+const TASKBAR_ENHANCEMENTS_CSS = `
+@keyframes taskbarSlideUp {
+  from { transform: translateY(110%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes taskbarItemEnter {
+  from { transform: translateY(10px) scale(0.8); opacity: 0; }
+  to   { transform: translateY(0)   scale(1);   opacity: 1; }
+}
+@keyframes taskbarFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes taskbarIndicatorGlow {
+  0%, 100% { box-shadow: 0 0 6px var(--accent), 0 0 3px var(--accent); opacity: 1; }
+  50%      { box-shadow: 0 0 14px var(--accent), 0 0 5px var(--accent); opacity: 0.78; }
+}
+.taskbar--slide-up { animation: taskbarSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.taskbar-app-enter { animation: taskbarItemEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.taskbar-tooltip-pop { animation: taskbarFadeIn 0.14s ease-out; }
+.taskbar-preview-pop { animation: taskbarFadeIn 0.18s ease-out; }
+`
 
 interface WindowContextMenuProps {
   winId: string
@@ -315,6 +339,41 @@ const NotificationCenter = memo(function NotificationCenter({ onClose }: Notific
   )
 })
 
+// 系统托盘图标：统一处理 hover 缩放 / 发光过渡，提升精致感
+const TrayItem = memo(function TrayItem({
+  children,
+  onMouseEnter,
+  onMouseLeave,
+  className,
+  style,
+  ...rest
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const [hover, setHover] = useState(false)
+  return (
+    <div
+      {...rest}
+      onMouseEnter={(e) => {
+        setHover(true)
+        onMouseEnter?.(e)
+      }}
+      onMouseLeave={(e) => {
+        setHover(false)
+        onMouseLeave?.(e)
+      }}
+      className={`taskbar-tray-item ${className ?? ''}`}
+      style={{
+        transition:
+          'background 0.2s ease, color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease',
+        transform: hover ? 'translateY(-1px) scale(1.14)' : 'none',
+        boxShadow: hover ? '0 4px 12px rgba(139, 124, 240, 0.28)' : 'none',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  )
+})
+
 const Taskbar = memo(function Taskbar() {
   const windows = useStore((s) => s.windows)
   const apps = useStore((s) => s.apps)
@@ -359,6 +418,8 @@ const Taskbar = memo(function Taskbar() {
     y: number
   }>({ visible: false, x: 0, y: 0 })
   const [hoveredWinId, setHoveredWinId] = useState<string | null>(null)
+  const [hoveredButtonRect, setHoveredButtonRect] = useState<DOMRect | null>(null)
+  const [tooltip, setTooltip] = useState<{ text: string; x: number } | null>(null)
 
   useEffect(() => {
     document.documentElement.style.filter = `brightness(${brightness}%)`
@@ -443,6 +504,75 @@ const Taskbar = memo(function Taskbar() {
     [switchDesktop],
   )
 
+  // 自定义提示框：在按钮上方居中显示应用名，避免原生 title 的迟滞感
+  const showAppTooltip = useCallback((e: React.MouseEvent<HTMLElement>, text: string) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = Math.max(70, Math.min(window.innerWidth - 70, rect.left + rect.width / 2))
+    setTooltip({ text, x })
+  }, [])
+
+  const hideAppTooltip = useCallback(() => setTooltip(null), [])
+
+  // 应用按钮 hover：同时驱动提示框 + 缩略图预览（若有打开窗口）
+  const handleAppEnter = useCallback(
+    (e: React.MouseEvent<HTMLElement>, winId: string | null, label: string) => {
+      showAppTooltip(e, label)
+      if (winId) {
+        setHoveredWinId(winId)
+        setHoveredButtonRect(e.currentTarget.getBoundingClientRect())
+      }
+    },
+    [showAppTooltip],
+  )
+
+  const handleAppLeave = useCallback(() => {
+    hideAppTooltip()
+    setHoveredWinId(null)
+    setHoveredButtonRect(null)
+  }, [hideAppTooltip])
+
+  // 活动窗口指示器：聚焦时为发光线条 + 脉冲，运行中（未聚焦）为暗淡小圆点
+  const renderIndicator = (isActive: boolean, isOpen: boolean) => {
+    if (isActive) {
+      return (
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '1px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '22px',
+            height: '2px',
+            borderRadius: '2px',
+            background: 'var(--accent)',
+            boxShadow: '0 0 8px var(--accent), 0 0 3px var(--accent)',
+            animation: 'taskbarIndicatorGlow 2.4s ease-in-out infinite',
+            pointerEvents: 'none',
+          }}
+        />
+      )
+    }
+    if (isOpen) {
+      return (
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '2px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '4px',
+            height: '4px',
+            borderRadius: '50%',
+            background: 'var(--text-secondary)',
+            opacity: 0.55,
+            pointerEvents: 'none',
+          }}
+        />
+      )
+    }
+    return null
+  }
+
   const desktopNumbers = Array.from({ length: totalDesktops }, (_, i) => i + 1)
 
   const currentDesktopWindows = windowsPerDesktop[currentDesktop] || []
@@ -454,12 +584,37 @@ const Taskbar = memo(function Taskbar() {
 
   const hoveredWin = hoveredWinId ? windows.find((w) => w.id === hoveredWinId) : null
 
+  // 预览面板水平定位：跟随被悬停按钮，并夹取在视口内
+  const previewLeft = hoveredButtonRect
+    ? Math.max(
+        190,
+        Math.min(
+          typeof window !== 'undefined' ? window.innerWidth - 190 : 9999,
+          hoveredButtonRect.left + hoveredButtonRect.width / 2,
+        ),
+      )
+    : '50%'
+
   return (
-    <div className="taskbar" onContextMenu={(e) => {
-      e.preventDefault()
-      setTaskbarContextMenu({ visible: true, x: e.clientX, y: e.clientY })
-      setWindowContextMenu({ visible: false, winId: '', x: 0, y: 0 })
-    }}>
+    <div
+      className="taskbar taskbar--slide-up"
+      onContextMenu={(e) => {
+        e.preventDefault()
+        setTaskbarContextMenu({ visible: true, x: e.clientX, y: e.clientY })
+        setWindowContextMenu({ visible: false, winId: '', x: 0, y: 0 })
+      }}
+      style={{
+        background:
+          'linear-gradient(to top, rgba(8, 8, 16, 0.78) 0%, rgba(16, 14, 32, 0.66) 100%)',
+        backdropFilter: 'blur(30px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+        borderTop: '1px solid rgba(139, 124, 240, 0.32)',
+        boxShadow:
+          '0 -6px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(139, 124, 240, 0.15)',
+      }}
+    >
+      <style>{TASKBAR_ENHANCEMENTS_CSS}</style>
+
       <div className="taskbar-left">
         <div
           className={`taskbar-launcher ${launcherOpen ? 'active' : ''}`}
@@ -474,11 +629,12 @@ const Taskbar = memo(function Taskbar() {
         {pinnedAppObjects.map((app) => {
           const openWin = currentOpenWindows.find((w) => w.appId === app.id)
           const isOpen = Boolean(openWin)
+          const isActive = Boolean(openWin?.focused && !openWin?.minimized)
           return (
             <button
               key={`pinned-${app.id}`}
-              className={`taskbar-button ${openWin?.focused && !openWin?.minimized ? 'active' : ''}`}
-              title={app.name}
+              className={`taskbar-button taskbar-app-enter ${isActive ? 'active' : ''}`}
+              style={{ borderBottom: 'none' }}
               onClick={() => {
                 if (openWin) {
                   handleTaskbarButtonClick(openWin.id, openWin.focused, openWin.minimized)
@@ -486,11 +642,12 @@ const Taskbar = memo(function Taskbar() {
                   openApp(app.id)
                 }
               }}
-              onMouseEnter={() => openWin && setHoveredWinId(openWin.id)}
-              onMouseLeave={() => setHoveredWinId(null)}
+              onMouseEnter={(e) => handleAppEnter(e, openWin?.id ?? null, app.name)}
+              onMouseLeave={handleAppLeave}
             >
               <span className="taskbar-button-icon">{app.icon}</span>
               {isOpen && <span className="taskbar-button-title">{app.name}</span>}
+              {renderIndicator(isActive, isOpen)}
             </button>
           )
         })}
@@ -530,13 +687,13 @@ const Taskbar = memo(function Taskbar() {
           .filter((win) => !pinnedApps.includes(win.appId))
           .map((win) => {
             const app = apps.find((a) => a.id === win.appId)
+            const isActive = Boolean(win.focused && !win.minimized)
             return (
               <button
                 key={win.id}
-                className={`taskbar-button ${win.focused && !win.minimized ? 'active' : ''} ${win.minimized ? '' : ''}`}
-                style={win.minimized ? { opacity: 0.6 } : undefined}
+                className={`taskbar-button taskbar-app-enter ${isActive ? 'active' : ''}`}
+                style={{ borderBottom: 'none', opacity: win.minimized ? 0.6 : 1 }}
                 onClick={() => handleTaskbarButtonClick(win.id, win.focused, win.minimized)}
-                title={`${win.title}${win.minimized ? ' (已最小化)' : ''}`}
                 onContextMenu={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -547,19 +704,19 @@ const Taskbar = memo(function Taskbar() {
                     y: e.clientY,
                   })
                 }}
-                onMouseEnter={() => setHoveredWinId(win.id)}
-                onMouseLeave={() => setHoveredWinId(null)}
+                onMouseEnter={(e) => handleAppEnter(e, win.id, win.title)}
+                onMouseLeave={handleAppLeave}
               >
                 <span className="taskbar-button-icon">{app?.icon}</span>
                 <span className="taskbar-button-title">{win.title}</span>
+                {renderIndicator(isActive, true)}
               </button>
             )
           })}
       </div>
 
-      <div className="taskbar-right">
-        <div
-          className="taskbar-tray-item"
+      <div className="taskbar-right" style={{ gap: '4px' }}>
+        <TrayItem
           title="全局搜索 (Ctrl+F)"
           onClick={(e) => {
             e.stopPropagation()
@@ -568,9 +725,8 @@ const Taskbar = memo(function Taskbar() {
           style={{ cursor: 'pointer' }}
         >
           <SearchIcon size={14} />
-        </div>
-        <div
-          className="taskbar-tray-item"
+        </TrayItem>
+        <TrayItem
           title="快速设置"
           onClick={(e) => {
             e.stopPropagation()
@@ -579,33 +735,29 @@ const Taskbar = memo(function Taskbar() {
           style={{ cursor: 'pointer' }}
         >
           <PowerIcon size={14} />
-        </div>
-        <div
-          className="taskbar-tray-item"
+        </TrayItem>
+        <TrayItem
           title={wifiEnabled ? '网络已连接' : '网络已断开'}
           onClick={() => openApp('network-monitor')}
           style={{ cursor: 'pointer' }}
         >
           {wifiEnabled ? <WifiIcon size={14} /> : <WifiOffIcon size={14} />}
-        </div>
-        <div
-          className="taskbar-tray-item"
+        </TrayItem>
+        <TrayItem
           title={`音量: ${volume}%`}
           onClick={() => setVolume((v) => (v === 0 ? 80 : v - 20))}
           style={{ cursor: 'pointer' }}
         >
           {getVolumeIcon()}
-        </div>
-        <div
-          className="taskbar-tray-item"
+        </TrayItem>
+        <TrayItem
           title={`电池: ${Math.round(battery)}% ${isCharging ? '(充电中)' : ''}`}
           onClick={() => openApp('power-manager')}
           style={{ cursor: 'pointer' }}
         >
           {getBatteryIcon()}
-        </div>
-        <div
-          className="taskbar-tray-item"
+        </TrayItem>
+        <TrayItem
           title={`通知 (${notifications.length})`}
           onClick={(e) => {
             e.stopPropagation()
@@ -635,50 +787,112 @@ const Taskbar = memo(function Taskbar() {
               {notifications.length > 9 ? '9+' : notifications.length}
             </span>
           )}
-        </div>
+        </TrayItem>
         <div
           className="taskbar-clock"
-          style={{ cursor: 'pointer' }}
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '0 10px 0 8px',
+            marginLeft: '4px',
+            borderLeft: '1px solid var(--window-border)',
+            borderRadius: '6px',
+            transition: 'background 0.2s ease, transform 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--taskbar-button-hover)'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.transform = 'translateY(0)'
+          }}
           onClick={(e) => {
             e.stopPropagation()
             toggleNotificationCenter()
           }}
+          title="通知中心 / 日历"
         >
-          <div style={{ fontSize: 12, lineHeight: 1.2, fontWeight: 500, textAlign: 'right' }}>
-            {formatTimeShort(time)}
-          </div>
-          <div
-            style={{
-              fontSize: 10,
-              color: 'var(--text-secondary)',
-              lineHeight: 1.2,
-              textAlign: 'right',
-              marginTop: '2px',
-            }}
-          >
-            {formatDate(time)}
+          <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' }}>
+            <CalendarIcon size={14} />
+          </span>
+          <div style={{ textAlign: 'right' }}>
+            <div
+              style={{
+                fontSize: 12,
+                lineHeight: 1.2,
+                fontWeight: 600,
+                letterSpacing: '0.3px',
+              }}
+            >
+              {formatTimeShort(time)}
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.2,
+                marginTop: '1px',
+              }}
+            >
+              {formatDate(time)}
+            </div>
           </div>
         </div>
       </div>
 
-      {hoveredWin && (
+      {tooltip && (
         <div
+          className="taskbar-tooltip-pop"
           style={{
             position: 'fixed',
-            bottom: '60px',
-            left: '50%',
+            bottom: '54px',
+            left: tooltip.x,
+            transform: 'translateX(-50%)',
+            background: 'var(--context-menu-bg)',
+            color: 'var(--text-primary)',
+            padding: '5px 10px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
+            border: '1px solid var(--window-border)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            zIndex: 10001,
+            maxWidth: '240px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            pointerEvents: 'none',
+          }}
+        >
+          {tooltip.text}
+        </div>
+      )}
+
+      {hoveredWin && (
+        <div
+          className="taskbar-preview-pop"
+          style={{
+            position: 'fixed',
+            bottom: '56px',
+            left: previewLeft,
             transform: 'translateX(-50%)',
             background: 'var(--window-bg)',
             border: '1px solid var(--window-border)',
             borderRadius: '12px',
             padding: '12px',
-            boxShadow: '0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 124, 240, 0.2)',
+            boxShadow:
+              '0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 124, 240, 0.2)',
             zIndex: 10000,
             minWidth: '200px',
             maxWidth: '360px',
             backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             pointerEvents: 'none',
-            transition: 'all 0.15s ease',
           }}
         >
           <div

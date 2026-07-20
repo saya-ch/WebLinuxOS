@@ -1,31 +1,53 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useStore } from '../store'
 
-// 交互式按钮组件
-const InteractiveButton = ({ style, children, onClick, disabled = false }: { 
-  style: React.CSSProperties, 
-  children: React.ReactNode, 
-  onClick?: () => void, 
-  disabled?: boolean 
+// 交互式按钮组件 - 增强视觉反馈
+const InteractiveButton = ({ style, children, onClick, disabled = false, dataKey }: {
+  style: React.CSSProperties,
+  children: React.ReactNode,
+  onClick?: () => void,
+  disabled?: boolean,
+  dataKey?: string
 }) => {
   const [isPressed, setIsPressed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  
-  const getButtonStyle = () => {
-    const baseStyle = { ...style }
-    
+  const [isActive, setIsActive] = useState(false)
+
+  const getButtonStyle = (): React.CSSProperties => {
+    const baseStyle: React.CSSProperties = { ...style, position: 'relative' as const }
+
     if (isHovered && !disabled) {
       baseStyle.transform = 'translateY(-2px)'
       baseStyle.boxShadow = '0 4px 12px rgba(0,0,0,0.3)'
+      baseStyle.filter = 'brightness(1.1)'
     }
-    
-    if (isPressed && !disabled) {
+
+    if (isPressed || isActive) {
       baseStyle.transform = 'translateY(1px)'
       baseStyle.boxShadow = '0 1px 4px rgba(0,0,0,0.2)'
+      baseStyle.filter = 'brightness(0.9)'
     }
-    
+
     return baseStyle
   }
-  
+
+  // 监听键盘按下高亮
+  useEffect(() => {
+    if (!dataKey) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === dataKey) setIsActive(true)
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === dataKey) setIsActive(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [dataKey])
+
   return (
     <button
       style={getButtonStyle()}
@@ -79,14 +101,30 @@ const COMMON_CURRENCIES = [
   { code: 'ZAR', name: '兰特', symbol: 'R' },
 ]
 
+// 格式化数字结果
+const formatResult = (num: number): string => {
+  if (!isFinite(num)) throw new Error('溢出错误')
+  if (isNaN(num)) throw new Error('无效结果')
+  // 超大/超小数用科学计数法
+  if (Math.abs(num) > 1e15 || (Math.abs(num) < 1e-10 && num !== 0)) {
+    return num.toExponential(8).replace(/\.?0+e/, 'e')
+  }
+  let formatted = String(parseFloat(num.toPrecision(12)))
+  if (formatted.includes('.')) {
+    formatted = formatted.replace(/\.?0+$/, '')
+  }
+  return formatted
+}
+
 export default function Calculator() {
+  const theme = useStore(s => s.theme)
   const [display, setDisplay] = useState('0')
   const [expression, setExpression] = useState('')
   const [resetFlag, setResetFlag] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [angleMode, setAngleMode] = useState<'rad' | 'deg'>('rad')
-  // 新增：模式和汇率状态
+  // 模式和汇率状态
   const [mode, setMode] = useState<'calc' | 'exchange'>('calc')
   const [exchangeData, setExchangeData] = useState<ExchangeRates | null>(null)
   const [exchangeLoading, setExchangeLoading] = useState(false)
@@ -95,6 +133,7 @@ export default function Calculator() {
   const [exchangeTo, setExchangeTo] = useState('CNY')
   const [exchangeAmount, setExchangeAmount] = useState('1')
   const [lastExchangeFetch, setLastExchangeFetch] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // 角度和弧度转换辅助函数
   const toRad = useCallback((x: number): number => {
@@ -111,7 +150,7 @@ export default function Calculator() {
 
       const tokens: Token[] = []
       let current = ''
-      
+
       for (let i = 0; i < sanitized.length; i++) {
         const char = sanitized[i]
         if (char.match(/[0-9.]/)) {
@@ -138,10 +177,14 @@ export default function Calculator() {
           case '+': return a + b
           case '-': return a - b
           case '*': return a * b
-          case '/': 
+          case '/':
             if (b === 0) throw new Error('除零错误')
             return a / b
-          case '**': return Math.pow(a, b)
+          case '**': {
+            const result = Math.pow(a, b)
+            if (!isFinite(result)) throw new Error('溢出错误')
+            return result
+          }
           default: throw new Error('未知操作符')
         }
       }
@@ -192,13 +235,16 @@ export default function Calculator() {
           const b = stack.pop()
           const a = stack.pop()
           if (a === undefined || b === undefined) throw new Error('表达式错误')
-          stack.push(applyOperator(a, b, item))
+          const result = applyOperator(a, b, item)
+          if (!isFinite(result)) throw new Error('溢出错误')
+          stack.push(result)
         }
       }
 
       if (stack.length !== 1) throw new Error('计算错误')
       return stack[0]
-    } catch {
+    } catch (e) {
+      if (e instanceof Error) throw e
       throw new Error('计算错误')
     }
   }, [])
@@ -213,7 +259,8 @@ export default function Calculator() {
   }, [resetFlag])
 
   const handleOperator = useCallback((op: string) => {
-    setExpression((prev) => prev + (display !== 'Error' ? display : '') + op)
+    if (display === 'Error') return
+    setExpression((prev) => prev + display + op)
     setResetFlag(true)
   }, [display])
 
@@ -237,32 +284,29 @@ export default function Calculator() {
       handleClear()
       return
     }
-    
+
     try {
       const fullExp = expression + display
+      if (!fullExp || fullExp === display && !expression) {
+        // 无操作时直接返回
+        return
+      }
       const evalResult = safeCalculate(fullExp)
-      
-      if (!isFinite(evalResult) || isNaN(evalResult)) {
-        throw new Error('无效结果')
-      }
-      
-      // 格式化结果，移除多余的零
-      let formatted = String(evalResult)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      
+
+      const formatted = formatResult(evalResult)
+
       // 保存到历史记录
       setHistory((prev) => [{
         expression: fullExp,
         result: formatted
-      }, ...prev.slice(0, 19)]) // 保留最近20条记录
-      
+      }, ...prev.slice(0, 19)])
+
       setDisplay(formatted)
       setExpression('')
       setResetFlag(true)
-    } catch {
-      setDisplay('Error')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error'
+      setDisplay(msg === '计算错误' || msg === '表达式错误' ? 'Error' : msg)
       setExpression('')
       setResetFlag(true)
     }
@@ -275,7 +319,7 @@ export default function Calculator() {
 
   const handleBackspace = useCallback(() => {
     setDisplay((prev) => {
-      if (prev === 'Error') return '0'
+      if (prev === 'Error' || prev === '除零错误' || prev === '溢出错误') return '0'
       return (prev.length <= 1 || (prev.length === 2 && prev.startsWith('-'))) ? '0' : prev.slice(0, -1)
     })
   }, [])
@@ -284,7 +328,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = parseFloat(display) / 100
-      setDisplay(String(val))
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -302,17 +346,12 @@ export default function Calculator() {
     try {
       const val = parseFloat(display)
       const result = fn(val)
-      if (!isFinite(result)) throw new Error()
-      let formatted = String(result)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(result))
       setResetFlag(true)
-    } catch {
-      setDisplay('Error')
+    } catch (e) {
+      setDisplay(e instanceof Error ? e.message : 'Error')
     }
-  }, [])
+  }, [display])
 
   const handleConstant = useCallback((value: string) => {
     if (resetFlag || display === 'Error') {
@@ -352,6 +391,10 @@ export default function Calculator() {
         setDisplay('Error')
         return
       }
+      if (n > 170) {
+        setDisplay('溢出错误')
+        return
+      }
       let result = 1
       for (let i = 2; i <= n; i++) {
         result *= i
@@ -367,11 +410,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.cbrt(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -381,47 +420,41 @@ export default function Calculator() {
   const handleTan = useCallback(() => {
     if (display === 'Error') return
     try {
-      const val = Math.tan(toRad(parseFloat(display)))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      const rad = toRad(parseFloat(display))
+      // 检查 tan 的奇点 (π/2 + nπ)
+      const cosVal = Math.cos(rad)
+      if (Math.abs(cosVal) < 1e-10) throw new Error('未定义')
+      const val = Math.tan(rad)
+      setDisplay(formatResult(val))
       setResetFlag(true)
-    } catch {
-      setDisplay('Error')
+    } catch (e) {
+      setDisplay(e instanceof Error ? e.message : 'Error')
     }
   }, [display, toRad])
 
   const handleAsin = useCallback(() => {
     if (display === 'Error') return
     try {
-      const val = Math.asin(parseFloat(display))
-      const result = angleMode === 'deg' ? (val * 180) / Math.PI : val
-      let formatted = String(result)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      const val = parseFloat(display)
+      if (val < -1 || val > 1) throw new Error('未定义')
+      const result = Math.asin(val)
+      setDisplay(formatResult(angleMode === 'deg' ? (result * 180) / Math.PI : result))
       setResetFlag(true)
-    } catch {
-      setDisplay('Error')
+    } catch (e) {
+      setDisplay(e instanceof Error ? e.message : 'Error')
     }
   }, [display, angleMode])
 
   const handleAcos = useCallback(() => {
     if (display === 'Error') return
     try {
-      const val = Math.acos(parseFloat(display))
-      const result = angleMode === 'deg' ? (val * 180) / Math.PI : val
-      let formatted = String(result)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      const val = parseFloat(display)
+      if (val < -1 || val > 1) throw new Error('未定义')
+      const result = Math.acos(val)
+      setDisplay(formatResult(angleMode === 'deg' ? (result * 180) / Math.PI : result))
       setResetFlag(true)
-    } catch {
-      setDisplay('Error')
+    } catch (e) {
+      setDisplay(e instanceof Error ? e.message : 'Error')
     }
   }, [display, angleMode])
 
@@ -429,12 +462,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.atan(parseFloat(display))
-      const result = angleMode === 'deg' ? (val * 180) / Math.PI : val
-      let formatted = String(result)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(angleMode === 'deg' ? (val * 180) / Math.PI : val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -475,14 +503,10 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.exp(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
-      setDisplay('Error')
+      setDisplay('溢出错误')
     }
   }, [display])
 
@@ -490,14 +514,10 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.pow(10, parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
-      setDisplay('Error')
+      setDisplay('溢出错误')
     }
   }, [display])
 
@@ -505,16 +525,11 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = parseFloat(display)
-      if (val === 0) throw new Error()
-      const result = 1 / val
-      let formatted = String(result)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      if (val === 0) throw new Error('除零错误')
+      setDisplay(formatResult(1 / val))
       setResetFlag(true)
-    } catch {
-      setDisplay('Error')
+    } catch (e) {
+      setDisplay(e instanceof Error ? e.message : 'Error')
     }
   }, [display])
 
@@ -533,11 +548,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.sinh(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -548,18 +559,14 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.cosh(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
     }
   }, [display])
 
-  // 增强功能：编程计算器
+  // 编程计算器
   const handleBinary = useCallback(() => {
     if (display === 'Error') return
     try {
@@ -620,7 +627,6 @@ export default function Calculator() {
     }
   }, [display])
 
-  // 从任意进制转换回十进制
   const handleFromBase = useCallback((base: number) => {
     if (display === 'Error') return
     try {
@@ -632,7 +638,7 @@ export default function Calculator() {
       setDisplay('Error')
     }
   }, [display])
-  
+
   // 记忆功能
   const [memory, setMemory] = useState<number>(0)
 
@@ -670,11 +676,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const result = Math.pow(10, parseFloat(display))
-      let formatted = String(result)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(result))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -685,11 +687,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.tanh(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -705,11 +703,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.log2(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -720,11 +714,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.log1p(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -735,11 +725,7 @@ export default function Calculator() {
     if (display === 'Error') return
     try {
       const val = Math.expm1(parseFloat(display))
-      let formatted = String(val)
-      if (formatted.includes('.')) {
-        formatted = formatted.replace(/\.?0+$/, '')
-      }
-      setDisplay(formatted)
+      setDisplay(formatResult(val))
       setResetFlag(true)
     } catch {
       setDisplay('Error')
@@ -764,10 +750,84 @@ export default function Calculator() {
     setResetFlag(true)
   }, [])
 
-  // 从 API 获取汇率（使用 open.er-api.com - 免费公开API，无需密钥）
+  // 键盘支持
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 避免在输入框中触发
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return
+      if (mode !== 'calc') return
+
+      const key = e.key
+
+      // 数字键
+      if (/^[0-9]$/.test(key)) {
+        e.preventDefault()
+        handleNumber(key)
+        return
+      }
+
+      switch (key) {
+        case '.':
+          e.preventDefault()
+          handleDecimal()
+          break
+        case '+':
+          e.preventDefault()
+          handleOperator('+')
+          break
+        case '-':
+          e.preventDefault()
+          handleOperator('-')
+          break
+        case '*':
+          e.preventDefault()
+          handleOperator('×')
+          break
+        case '/':
+          e.preventDefault()
+          handleOperator('÷')
+          break
+        case 'Enter':
+        case '=':
+          e.preventDefault()
+          handleEqual()
+          break
+        case 'Escape':
+          e.preventDefault()
+          handleClear()
+          break
+        case 'Backspace':
+          e.preventDefault()
+          handleBackspace()
+          break
+        case '%':
+          e.preventDefault()
+          handlePercent()
+          break
+        case '(':
+          e.preventDefault()
+          handleOpenParen()
+          break
+        case ')':
+          e.preventDefault()
+          handleCloseParen()
+          break
+        case '^':
+          e.preventDefault()
+          handleOperator('**')
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [mode, handleNumber, handleDecimal, handleOperator, handleEqual, handleClear, handleBackspace, handlePercent, handleOpenParen, handleCloseParen])
+
+  // 从 API 获取汇率
   const fetchExchangeRates = useCallback(async (baseCurrency: string) => {
     const now = Date.now()
-    // 缓存1小时：如果缓存不到1小时且已存在数据，则直接使用
     if (exchangeData && exchangeData.base === baseCurrency && (now - lastExchangeFetch) < 60 * 60 * 1000) {
       return
     }
@@ -785,7 +845,6 @@ export default function Calculator() {
         timestamp: data.time_last_update_unix || Date.now() / 1000,
       })
       setLastExchangeFetch(now)
-      // 持久化到localStorage
       try {
         localStorage.setItem('weblinux-rates-' + baseCurrency, JSON.stringify({
           rates: data.rates,
@@ -794,8 +853,7 @@ export default function Calculator() {
           fetchTime: now,
         }))
       } catch { /* ignore */ }
-    } catch (err) {
-      // 尝试从 localStorage 读取旧数据
+    } catch {
       try {
         const cached = localStorage.getItem('weblinux-rates-' + baseCurrency)
         if (cached) {
@@ -804,7 +862,6 @@ export default function Calculator() {
           setLastExchangeFetch(parsed.fetchTime || Date.now())
           setExchangeError('使用缓存数据（网络不可用）')
         } else {
-          // 默认模拟数据
           setExchangeData({
             rates: {
               USD: 1, EUR: 0.92, GBP: 0.79, JPY: 155, CNY: 7.24, HKD: 7.81,
@@ -824,24 +881,18 @@ export default function Calculator() {
     }
   }, [exchangeData, lastExchangeFetch])
 
-  // 计算汇率结果
   const getExchangeResult = useCallback((): string => {
     if (!exchangeData) return '—'
     const amt = parseFloat(exchangeAmount) || 0
     if (exchangeFrom === exchangeTo) {
       return amt.toLocaleString(undefined, { maximumFractionDigits: 4 })
     }
-    // 注意：API 返回的是相对于 base 的汇率。我们需要将 base 货币作为转换基础
-    // 如果 exchangeData.base === exchangeFrom：
-    //   result = amt * rates[exchangeTo]
-    // 否则：重新计算
     let rate: number
     if (exchangeData.base === exchangeFrom) {
       rate = exchangeData.rates[exchangeTo] || 1
     } else if (exchangeData.base === exchangeTo) {
       rate = 1 / (exchangeData.rates[exchangeFrom] || 1)
     } else {
-      // 通过USD或base换算
       const fromBase = exchangeData.rates[exchangeFrom] || 1
       const toBase = exchangeData.rates[exchangeTo] || 1
       rate = toBase / fromBase
@@ -862,6 +913,18 @@ export default function Calculator() {
 
   const [calcMode, setCalcMode] = useState<'basic' | 'scientific' | 'programming'>('basic')
 
+  // 主题感知颜色
+  const isDark = theme === 'dark'
+  const themeColors = useMemo(() => ({
+    surfaceAlpha: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+    borderAlpha: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    hoverBg: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+    errorBg: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)',
+    shadowColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)',
+    displayBg: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.02)',
+    memoryIndicator: isDark ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.15)',
+  }), [isDark])
+
   const buttonStyles = useMemo(() => ({
     btn: {
       padding: '14px 0',
@@ -871,8 +934,9 @@ export default function Calculator() {
       color: 'var(--text-primary)',
       cursor: 'pointer',
       borderRadius: 'var(--radius-md)',
-      transition: 'all 0.2s ease',
-      boxShadow: 'var(--shadow-elevation-1)',
+      transition: 'all 0.15s ease',
+      boxShadow: `0 1px 3px ${themeColors.shadowColor}`,
+      userSelect: 'none' as const,
     },
     op: {
       padding: '14px 0',
@@ -882,8 +946,10 @@ export default function Calculator() {
       color: '#fff',
       cursor: 'pointer',
       borderRadius: 'var(--radius-md)',
-      transition: 'all 0.2s ease',
-      boxShadow: 'var(--shadow-elevation-2)',
+      transition: 'all 0.15s ease',
+      boxShadow: `0 2px 6px ${themeColors.shadowColor}`,
+      fontWeight: 600 as const,
+      userSelect: 'none' as const,
     },
     func: {
       padding: '12px 0',
@@ -893,8 +959,9 @@ export default function Calculator() {
       color: 'var(--accent)',
       cursor: 'pointer',
       borderRadius: 'var(--radius-md)',
-      transition: 'all 0.2s ease',
-      boxShadow: 'var(--shadow-elevation-1)',
+      transition: 'all 0.15s ease',
+      boxShadow: `0 1px 3px ${themeColors.shadowColor}`,
+      userSelect: 'none' as const,
     },
     eq: {
       padding: '14px 0',
@@ -904,9 +971,10 @@ export default function Calculator() {
       color: '#fff',
       cursor: 'pointer',
       borderRadius: 'var(--radius-md)',
-      fontWeight: 'bold',
-      transition: 'all 0.2s ease',
-      boxShadow: 'var(--shadow-elevation-2)',
+      fontWeight: 'bold' as const,
+      transition: 'all 0.15s ease',
+      boxShadow: `0 2px 8px ${themeColors.shadowColor}`,
+      userSelect: 'none' as const,
     },
     modeToggle: {
       padding: '8px 14px',
@@ -917,45 +985,49 @@ export default function Calculator() {
       cursor: 'pointer',
       borderRadius: 'var(--radius-sm)',
       transition: 'all 0.2s ease',
+      userSelect: 'none' as const,
     },
     tabActive: {
       background: 'var(--accent-gradient)',
       color: '#fff',
     }
-  }), [])
+  }), [themeColors])
+
+  // 判断是否显示错误
+  const isDisplayError = display === 'Error' || display === '除零错误' || display === '溢出错误' || display === '未定义' || display === '无效结果'
 
   if (showHistory) {
     return (
-      <div className="app-container app-calculator" style={{ 
-        background: 'var(--window-bg)', 
-        padding: 16, 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column' 
+      <div ref={containerRef} className="app-container app-calculator" style={{
+        background: 'var(--window-bg)',
+        padding: 16,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: 20, fontWeight: 600 }}>📋 计算历史</h3>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button 
-              style={{ 
-                padding: '8px 16px', 
-                background: 'var(--color-surface)', 
-                border: 'none', 
-                borderRadius: 'var(--radius-sm)', 
-                color: 'var(--text-primary)', 
+            <button
+              style={{
+                padding: '8px 16px',
+                background: 'var(--color-surface)',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-primary)',
                 cursor: 'pointer',
                 fontSize: 13,
                 transition: 'all 0.2s ease',
               }}
               onClick={() => setShowHistory(false)}
             >返回</button>
-            <button 
-              style={{ 
-                padding: '8px 16px', 
-                background: 'var(--error-bg)', 
-                border: 'none', 
-                borderRadius: 'var(--radius-sm)', 
-                color: 'var(--error)', 
+            <button
+              style={{
+                padding: '8px 16px',
+                background: themeColors.errorBg,
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--error)',
                 cursor: 'pointer',
                 fontSize: 13,
                 transition: 'all 0.2s ease',
@@ -966,9 +1038,9 @@ export default function Calculator() {
         </div>
         <div style={{ flex: 1, overflow: 'auto' }}>
           {history.length === 0 ? (
-            <div style={{ 
-              color: 'var(--text-secondary)', 
-              textAlign: 'center', 
+            <div style={{
+              color: 'var(--text-secondary)',
+              textAlign: 'center',
               padding: 40,
               fontSize: 14,
               display: 'flex',
@@ -982,7 +1054,7 @@ export default function Calculator() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {history.map((item, index) => (
-                <div 
+                <div
                   key={index}
                   onClick={() => handleFromHistory(item)}
                   style={{
@@ -990,14 +1062,22 @@ export default function Calculator() {
                     padding: 16,
                     borderRadius: 'var(--radius-md)',
                     cursor: 'pointer',
-                    border: '1px solid var(--window-border)',
+                    border: `1px solid ${themeColors.borderAlpha}`,
                     transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = themeColors.hoverBg
+                    e.currentTarget.style.transform = 'translateX(4px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--color-surface)'
+                    e.currentTarget.style.transform = 'translateX(0)'
                   }}
                 >
                   <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 4 }}>{item.expression}</div>
-                  <div style={{ 
-                    color: 'var(--text-primary)', 
-                    fontSize: 20, 
+                  <div style={{
+                    color: 'var(--text-primary)',
+                    fontSize: 20,
                     fontWeight: 600,
                   }}>= {item.result}</div>
                 </div>
@@ -1010,11 +1090,11 @@ export default function Calculator() {
   }
 
   return (
-    <div className="app-container app-calculator" style={{ 
-      background: 'var(--window-bg)', 
-      padding: 16, 
-      height: '100%', 
-      overflowY: 'auto' 
+    <div ref={containerRef} className="app-container app-calculator" style={{
+      background: 'var(--window-bg)',
+      padding: 16,
+      height: '100%',
+      overflowY: 'auto'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <button
@@ -1073,7 +1153,7 @@ export default function Calculator() {
             background: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg)',
             padding: 20,
-            border: '1px solid var(--window-border)',
+            border: `1px solid ${themeColors.borderAlpha}`,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <label style={{ color: 'var(--text-secondary)', fontSize: 13 }}>源货币</label>
@@ -1087,7 +1167,7 @@ export default function Calculator() {
                 style={{
                   background: 'var(--window-bg)',
                   color: 'var(--text-primary)',
-                  border: '1px solid var(--window-border)',
+                  border: `1px solid ${themeColors.borderAlpha}`,
                   borderRadius: 'var(--radius-sm)',
                   padding: '6px 10px',
                   fontSize: 14,
@@ -1109,7 +1189,7 @@ export default function Calculator() {
                 background: 'transparent',
                 color: 'var(--text-primary)',
                 border: 'none',
-                borderBottom: '2px solid var(--window-border)',
+                borderBottom: `2px solid ${themeColors.borderAlpha}`,
                 fontSize: 32,
                 fontWeight: 300,
                 textAlign: 'right',
@@ -1131,7 +1211,7 @@ export default function Calculator() {
                 borderRadius: 'var(--radius-md)',
                 fontSize: 16,
                 cursor: 'pointer',
-                boxShadow: 'var(--shadow-elevation-2)',
+                boxShadow: `0 2px 8px ${themeColors.shadowColor}`,
                 transition: 'all 0.2s ease',
               }}
               onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.95)')}
@@ -1146,7 +1226,7 @@ export default function Calculator() {
             background: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg)',
             padding: 20,
-            border: '1px solid var(--window-border)',
+            border: `1px solid ${themeColors.borderAlpha}`,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <label style={{ color: 'var(--text-secondary)', fontSize: 13 }}>目标货币</label>
@@ -1156,7 +1236,7 @@ export default function Calculator() {
                 style={{
                   background: 'var(--window-bg)',
                   color: 'var(--text-primary)',
-                  border: '1px solid var(--window-border)',
+                  border: `1px solid ${themeColors.borderAlpha}`,
                   borderRadius: 'var(--radius-sm)',
                   padding: '6px 10px',
                   fontSize: 14,
@@ -1182,7 +1262,7 @@ export default function Calculator() {
 
           {exchangeError && (
             <div style={{
-              background: 'var(--error-bg)',
+              background: themeColors.errorBg,
               color: 'var(--error)',
               padding: '10px 14px',
               borderRadius: 'var(--radius-md)',
@@ -1201,7 +1281,7 @@ export default function Calculator() {
               borderRadius: 'var(--radius-md)',
               fontSize: 12,
               textAlign: 'center',
-              border: '1px solid var(--window-border)',
+              border: `1px solid ${themeColors.borderAlpha}`,
             }}>
               汇率基准：{exchangeData.base} · 更新于 {new Date(exchangeData.timestamp * 1000).toLocaleString()}
             </div>
@@ -1229,8 +1309,9 @@ export default function Calculator() {
 
       {mode === 'calc' && (
         <>
+      {/* 显示屏 */}
       <div className="app-calc-display" style={{
-        background: 'var(--color-surface)',
+        background: themeColors.displayBg,
         borderRadius: 'var(--radius-lg)',
         padding: '20px 16px',
         marginBottom: 12,
@@ -1239,18 +1320,44 @@ export default function Calculator() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
-        border: '1px solid var(--window-border)',
+        border: `1px solid ${themeColors.borderAlpha}`,
+        position: 'relative',
       }}>
+        {/* 记忆指示器 */}
+        {memory !== 0 && (
+          <div style={{
+            position: 'absolute',
+            top: 8,
+            left: 12,
+            fontSize: 11,
+            color: 'var(--accent)',
+            background: themeColors.memoryIndicator,
+            padding: '2px 8px',
+            borderRadius: 10,
+            fontWeight: 600,
+          }}>M</div>
+        )}
+        {/* 键盘提示 */}
+        <div style={{
+          position: 'absolute',
+          top: 8,
+          right: 12,
+          fontSize: 10,
+          color: 'var(--text-secondary)',
+          opacity: 0.5,
+        }}>⌨ 键盘可用</div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 14, minHeight: 22, wordBreak: 'break-all' }}>{expression}</div>
         <div style={{
-          color: 'var(--text-primary)',
-          fontSize: 40,
+          color: isDisplayError ? 'var(--error)' : 'var(--text-primary)',
+          fontSize: display.length > 12 ? 28 : display.length > 8 ? 34 : 40,
           fontWeight: 300,
           wordBreak: 'break-all',
           letterSpacing: '-1px',
+          transition: 'color 0.2s ease',
         }}>{display}</div>
       </div>
 
+      {/* 模式切换 */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
         <button
           style={{
@@ -1284,34 +1391,41 @@ export default function Calculator() {
       {calcMode === 'basic' && (
         <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.func} onClick={handleClear}>C</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleClear} dataKey="Escape">C</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleClearEntry}>CE</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace}>⌫</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')}>÷</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace} dataKey="Backspace">⌫</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')} dataKey="/">÷</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')}>7</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')}>8</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')}>9</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')}>×</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')} dataKey="7">7</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')} dataKey="8">8</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')} dataKey="9">9</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')} dataKey="*">×</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')}>4</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')}>5</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')}>6</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')}>−</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')} dataKey="4">4</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')} dataKey="5">5</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')} dataKey="6">6</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')} dataKey="-">−</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('1')}>1</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('2')}>2</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('3')}>3</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')}>+</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('1')} dataKey="1">1</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('2')} dataKey="2">2</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('3')} dataKey="3">3</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')} dataKey="+">+</InteractiveButton>
+      </div>
+      {/* 增加 % 和 √ 按钮到基本模式 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
+        <InteractiveButton style={buttonStyles.func} onClick={handlePercent} dataKey="%">%</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.sqrt)}>√</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={handleSign}>±</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')} dataKey="0">0</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={handleSign}>±</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')}>0</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal}>.</InteractiveButton>
-        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual}>=</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal} dataKey=".">.</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleConstant(String(Math.PI))}>π</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleConstant(String(Math.E))}>e</InteractiveButton>
+        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual} dataKey="Enter">=</InteractiveButton>
       </div>
         </>
       )}
@@ -1319,16 +1433,16 @@ export default function Calculator() {
       {calcMode === 'scientific' && (
         <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.func} onClick={handleClear}>C</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleClear} dataKey="Escape">C</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleClearEntry}>CE</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace}>⌫</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handlePercent}>%</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')}>÷</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace} dataKey="Backspace">⌫</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handlePercent} dataKey="%">%</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')} dataKey="/">÷</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => x * x)}>x²</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => x * x * x)}>x³</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={() => handleOperator('**')}>xⁿ</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={() => handleOperator('**')} dataKey="^">xⁿ</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.sqrt)}>√</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleCubeRoot}>∛</InteractiveButton>
       </div>
@@ -1340,45 +1454,45 @@ export default function Calculator() {
         <InteractiveButton style={buttonStyles.func} onClick={handleAcos}>cos⁻¹</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')}>7</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')}>8</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')}>9</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')} dataKey="7">7</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')} dataKey="8">8</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')} dataKey="9">9</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleAtan}>tan⁻¹</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')}>×</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')} dataKey="*">×</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')}>4</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')}>5</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')}>6</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')} dataKey="4">4</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')} dataKey="5">5</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')} dataKey="6">6</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleFactorial}>x!</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')}>−</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')} dataKey="-">−</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('1')}>1</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('2')}>2</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('3')}>3</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('1')} dataKey="1">1</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('2')} dataKey="2">2</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('3')} dataKey="3">3</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleAbs}>|x|</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')}>+</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')} dataKey="+">+</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         <InteractiveButton style={buttonStyles.btn} onClick={handleSign}>±</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')}>0</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal}>.</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')} dataKey="0">0</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal} dataKey=".">.</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleConstant(String(Math.PI))}>π</InteractiveButton>
-        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual}>=</InteractiveButton>
+        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual} dataKey="Enter">=</InteractiveButton>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8, marginTop: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.log)}>ln</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.log10)}>log</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleExp}>e^x</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handle10x}>10^x</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleExp}>eˣ</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handle10x}>10ˣ</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleReciprocal}>1/x</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={handleMemoryClear}>MC</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleMemoryRecall}>MR</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleMemoryAdd}>M+</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleMemorySubtract}>M-</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleMemorySubtract}>M−</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleSignMemory}>MS</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
@@ -1394,18 +1508,18 @@ export default function Calculator() {
       {calcMode === 'programming' && (
         <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.func} onClick={handleClear}>C</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleClear} dataKey="Escape">C</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleClearEntry}>CE</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace}>⌫</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleBackspace} dataKey="Backspace">⌫</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleMod}>MOD</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')}>÷</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('÷')} dataKey="/">÷</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={handleBinary}>BIN</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleOctal}>OCT</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleHex}>HEX</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleFromBase(16)}>FROM</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')}>×</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('×')} dataKey="*">×</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={handleLog2}>LOG2</InteractiveButton>
@@ -1415,34 +1529,34 @@ export default function Calculator() {
         <InteractiveButton style={buttonStyles.func} onClick={handleYx}>Y^X</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')}>7</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')}>8</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')}>9</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('7')} dataKey="7">7</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('8')} dataKey="8">8</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('9')} dataKey="9">9</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary((x) => x * x)}>x²</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')}>−</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('-')} dataKey="-">−</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')}>4</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')}>5</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')}>6</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('4')} dataKey="4">4</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('5')} dataKey="5">5</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('6')} dataKey="6">6</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={() => handleUnary(Math.sqrt)}>√</InteractiveButton>
-        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')}>+</InteractiveButton>
+        <InteractiveButton style={buttonStyles.op} onClick={() => handleOperator('+')} dataKey="+">+</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('1')}>1</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('2')}>2</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('3')}>3</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('1')} dataKey="1">1</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('2')} dataKey="2">2</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('3')} dataKey="3">3</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleReciprocal}>1/x</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleOpenParen}>(</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleOpenParen} dataKey="(">(</InteractiveButton>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         <InteractiveButton style={buttonStyles.btn} onClick={handleSign}>±</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')}>0</InteractiveButton>
-        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal}>.</InteractiveButton>
-        <InteractiveButton style={buttonStyles.func} onClick={handleCloseParen}>)</InteractiveButton>
-        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual}>=</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={() => handleNumber('0')} dataKey="0">0</InteractiveButton>
+        <InteractiveButton style={buttonStyles.btn} onClick={handleDecimal} dataKey=".">.</InteractiveButton>
+        <InteractiveButton style={buttonStyles.func} onClick={handleCloseParen} dataKey=")">)</InteractiveButton>
+        <InteractiveButton style={buttonStyles.eq} onClick={handleEqual} dataKey="Enter">=</InteractiveButton>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 8, marginTop: 8 }}>
         <InteractiveButton style={buttonStyles.func} onClick={handleSinh}>sinh</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleCosh}>cosh</InteractiveButton>
         <InteractiveButton style={buttonStyles.func} onClick={handleTanH}>tanh</InteractiveButton>

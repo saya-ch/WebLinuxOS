@@ -223,6 +223,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   OnlineCollabNotebook: () => import('../../apps/OnlineCollabNotebook'),
   OnlineProgrammingLab: () => import('../../apps/OnlineProgrammingLab'),
   OnlineResourceHub: () => import('../../apps/OnlineResourceHub'),
+  OnlineCompiler: () => import('../../apps/OnlineCompiler'),
   OnlineToolkit: () => import('../../apps/OnlineToolkit'),
   PackageManager: () => import('../../apps/PackageManager'),
   Paint: () => import('../../apps/Paint'),

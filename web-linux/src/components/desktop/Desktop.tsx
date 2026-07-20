@@ -55,23 +55,120 @@ const wallpapers = [
   'linear-gradient(135deg, #0f1a2a 0%, #1a2a3a 50%, #0a2a4a 100%)',
 ]
 
+/* ── Desktop Clock Widget ── */
+const DesktopClock = memo(function DesktopClock() {
+  const [time, setTime] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const hours = time.getHours()
+  const minutes = time.getMinutes()
+  const seconds = time.getSeconds()
+  const h12 = hours % 12 || 12
+  const ampm = hours < 12 ? 'AM' : 'PM'
+  const timeStr = `${h12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+  const secStr = seconds.toString().padStart(2, '0')
+  const dateStr = time.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  })
+
+  return (
+    <div className="desktop-clock-widget">
+      <div className="desktop-clock-time">
+        {timeStr}<span className="desktop-clock-seconds">:{secStr}</span>
+        <span className="desktop-clock-ampm">{ampm}</span>
+      </div>
+      <div className="desktop-clock-date">{dateStr}</div>
+    </div>
+  )
+})
+
+/* ── Draggable Desktop Icon ── */
 const DesktopIcon = memo(function DesktopIcon({ 
   icon, 
   selectedIconId, 
   onClick, 
-  onDoubleClick 
+  onDoubleClick,
+  index = 0,
+  booted,
+  onDragEnd,
 }: { 
   icon: { id: string; x: number; y: number; name: string; icon: React.ReactNode }
   selectedIconId: string | null
   onClick: (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => void
   onDoubleClick: (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => void
+  index?: number
+  booted: boolean
+  onDragEnd: (id: string, x: number, y: number) => void
 }) {
+  const [dragging, setDragging] = useState(false)
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  const dragStartRef = useRef<{ mx: number; my: number; ix: number; iy: number } | null>(null)
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return
+    e.preventDefault()
+    e.stopPropagation()
+    dragStartRef.current = {
+      mx: e.clientX,
+      my: e.clientY,
+      ix: icon.x,
+      iy: icon.y,
+    }
+    setDragging(true)
+  }, [icon.x, icon.y])
+
+  useEffect(() => {
+    if (!dragging) return
+    const handleMove = (e: MouseEvent) => {
+      const start = dragStartRef.current
+      if (!start) return
+      const dx = e.clientX - start.mx
+      const dy = e.clientY - start.my
+      setDragPos({ x: start.ix + dx, y: start.iy + dy })
+    }
+    const handleUp = (e: MouseEvent) => {
+      const start = dragStartRef.current
+      setDragging(false)
+      setDragPos(null)
+      dragStartRef.current = null
+      if (start) {
+        const dx = e.clientX - start.mx
+        const dy = e.clientY - start.my
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist > 5) {
+          onDragEnd(icon.id, start.ix + dx, start.iy + dy)
+        }
+      }
+    }
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleUp)
+    }
+  }, [dragging, icon.id, onDragEnd])
+
+  const currentX = dragPos ? dragPos.x : icon.x
+  const currentY = dragPos ? dragPos.y : icon.y
+  const bootedClass = booted ? 'desktop-icon-booted' : 'desktop-icon-booting'
+
   return (
     <div
-      className={`desktop-icon ${selectedIconId === icon.id ? 'selected' : ''}`}
-      style={{ left: icon.x, top: icon.y }}
+      className={`desktop-icon ${bootedClass} ${selectedIconId === icon.id ? 'selected' : ''} ${dragging ? 'desktop-icon-dragging' : ''}`}
+      style={{
+        left: currentX,
+        top: currentY,
+        '--boot-index': index,
+      } as React.CSSProperties}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
+      onMouseDown={handleMouseDown}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
@@ -90,6 +187,7 @@ const DesktopIcon = memo(function DesktopIcon({
       aria-label={`${icon.name} - 双击打开`}
       aria-pressed={selectedIconId === icon.id}
     >
+      <span className="desktop-icon-glass-bg" aria-hidden="true" />
       <span className="desktop-icon-icon" aria-hidden="true">{icon.icon}</span>
       <span className="desktop-icon-name">{icon.name}</span>
     </div>
@@ -117,9 +215,15 @@ const ContextMenu = memo(function ContextMenu({
   position: { x: number; y: number }
   onClose: () => void
 }) {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setVisible(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
   return (
     <div
-      className="context-menu"
+      className={`context-menu context-menu-enhanced ${visible ? 'context-menu-visible' : ''}`}
       style={{ left: position.x, top: position.y }}
       onClick={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
@@ -145,8 +249,8 @@ const ContextMenu = memo(function ContextMenu({
               }
             }}
           >
-            <span aria-hidden="true">{item.icon}</span>
-            <span>{item.label}</span>
+            <span className="context-menu-item-icon" aria-hidden="true">{item.icon}</span>
+            <span className="context-menu-item-label">{item.label}</span>
           </div>
         ),
       )}
@@ -166,9 +270,13 @@ const Desktop = memo(function Desktop() {
   const liveWallpaperEnabled = useStore((s) => s.liveWallpaperEnabled)
   const toggleLiveWallpaper = useStore((s) => s.toggleLiveWallpaper)
   const setLiveWallpaper = useStore((s) => s.setLiveWallpaper)
+  const minimizeWindow = useStore((s) => s.minimizeWindow)
+  const updateDesktopIconPosition = useStore((s) => s.updateDesktopIconPosition)
 
   const [selectedIconId, setSelectedIconId] = useState<string | null>(null)
   const [showSplash, setShowSplash] = useState(true)
+  // 开机动画：图标交错淡入
+  const [booted, setBooted] = useState(false)
   // 桌面小部件总开关与单项可见性，持久化到 localStorage
   const [widgetsVisible, setWidgetsVisible] = useState<boolean>(() =>
     loadFromStorage<boolean>('weblinux-widgets-on', true)
@@ -182,6 +290,9 @@ const Desktop = memo(function Desktop() {
   const mousePosRef = useRef({ x: 0, y: 0 })
   const liveWallpaperRef = useRef(liveWallpaper)
   const liveWallpaperEnabledRef = useRef(liveWallpaperEnabled)
+
+  // 显示桌面过渡效果
+  const [showDesktopEffect, setShowDesktopEffect] = useState(false)
 
   // 使用useMemo生成星星位置，避免每次渲染时重新生成
   const nebulaStars = useMemo(() =>
@@ -348,6 +459,13 @@ const Desktop = memo(function Desktop() {
     return () => clearTimeout(timer)
   }, [])
 
+  // 开机后延迟启动图标交错动画
+  useEffect(() => {
+    if (showSplash) return
+    const timer = setTimeout(() => setBooted(true), 100)
+    return () => clearTimeout(timer)
+  }, [showSplash])
+
   const handleIconClick = useCallback(
     (appId: string, iconId: string) => {
       const now = Date.now()
@@ -380,10 +498,28 @@ const Desktop = memo(function Desktop() {
     [showContextMenu],
   )
 
+  // 点击桌面区域 - 显示桌面过渡效果（最小化所有窗口）
   const handleDesktopClick = useCallback(() => {
     setSelectedIconId(null)
     hideContextMenu()
-  }, [hideContextMenu])
+    // 触发显示桌面过渡效果
+    const windows = useStore.getState().windows
+    const visibleWindows = windows.filter(w => !w.minimized)
+    if (visibleWindows.length > 0) {
+      setShowDesktopEffect(true)
+      // 依次最小化窗口，带延迟产生动画效果
+      visibleWindows.forEach((w, i) => {
+        setTimeout(() => {
+          minimizeWindow(w.id)
+        }, i * 60)
+      })
+      setTimeout(() => setShowDesktopEffect(false), visibleWindows.length * 60 + 400)
+    }
+  }, [hideContextMenu, minimizeWindow])
+
+  const handleIconDragEnd = useCallback((id: string, x: number, y: number) => {
+    updateDesktopIconPosition(id, x, y)
+  }, [updateDesktopIconPosition])
 
   useEffect(() => {
     const handleGlobalClick = () => hideContextMenu()
@@ -519,7 +655,7 @@ const Desktop = memo(function Desktop() {
 
   return (
     <div
-      className="desktop"
+      className={`desktop ${booted ? 'desktop-booted' : ''}`}
       onContextMenu={handleContextMenu}
       onClick={handleDesktopClick}
       onMouseMove={handleMouseMove}
@@ -536,6 +672,9 @@ const Desktop = memo(function Desktop() {
       
       {/* Aurora effect overlay */}
       <div className="desktop-aurora-effect" />
+
+      {/* Depth gradient overlay - 增加深度的微妙渐变层 */}
+      <div className="desktop-depth-gradient" />
       
       {/* Floating gradient orbs */}
       <div className="desktop-gradient-orb">
@@ -616,14 +755,20 @@ const Desktop = memo(function Desktop() {
         Web Linux 桌面环境 - 右键可打开上下文菜单
       </div>
 
+      {/* 桌面右上角时钟小部件 */}
+      <DesktopClock />
+
       {/* 桌面小部件系统：时钟 / 系统脉搏 / 天气 / 便签 / 专注计时器 */}
       <DesktopWidgets visible={widgetsVisible} />
 
-      {desktopIcons.map((icon) => (
+      {desktopIcons.map((icon, index) => (
         <DesktopIcon
           key={icon.id}
           icon={icon}
           selectedIconId={selectedIconId}
+          index={index}
+          booted={booted}
+          onDragEnd={handleIconDragEnd}
           onClick={(e) => {
             e.stopPropagation()
             handleIconClick(icon.appId, icon.id)
@@ -634,6 +779,11 @@ const Desktop = memo(function Desktop() {
           }}
         />
       ))}
+
+      {/* 显示桌面过渡效果 - 闪光波纹 */}
+      {showDesktopEffect && (
+        <div className="desktop-show-effect" />
+      )}
 
       {contextMenu.visible && (
         <ContextMenu

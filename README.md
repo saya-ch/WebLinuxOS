@@ -3,7 +3,7 @@
 **A complete Linux desktop environment that runs entirely in your browser.** No installation, no backend, no API keys.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-saya--ch.github.io-7c3aed?style=flat-square)](https://saya-ch.github.io/WebLinuxOS/)
-[![Version](https://img.shields.io/badge/Version-42.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/Version-44.0-0ea5e9?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org)
@@ -24,6 +24,100 @@ There are plenty of "operating system in the browser" experiments on the web. Mo
 - **Real public APIs** for AI chat, image generation, weather, news, crypto, exchange rates, GitHub trending, Wikipedia, and more — no keys required.
 
 The goal is to demonstrate that the modern web platform is good enough to host a productive desktop-class environment, while also being a useful tool in its own right.
+
+---
+
+## What's New in v44
+
+This release focuses on making core apps genuinely functional with real API integrations, enhanced UI/UX, and a new online code compiler.
+
+### Enhanced Calculator
+
+The calculator has been upgraded from a basic four-function tool to a full scientific calculator:
+
+- **Scientific mode** with sin, cos, tan, log, ln, sqrt, factorial, power, constants (pi, e)
+- **Keyboard input** — type numbers and operators directly, Enter for =, Escape for clear
+- **Calculation history** panel showing recent computations
+- **Error handling** for division by zero, overflow, domain errors (asin/acos), tangent singularities
+- **Memory functions** (M+, M-, MR, MC) and percentage/square-root buttons
+- **Adaptive display** — font size scales with result length, scientific notation for very large/small numbers
+
+### Real Weather Integration
+
+The weather app now uses the **Open-Meteo API** (free, no key required) for live data:
+
+- **City search with autocomplete** using Open-Meteo Geocoding API (400ms debounce)
+- **Current conditions**: temperature, feels-like, humidity, wind speed/direction, UV index, visibility, sunrise/sunset
+- **7-day forecast** with min/max temperatures and weather icons
+- **24-hour hourly forecast** with temperature trend sparkline
+- **Geolocation support** — one-click to use your current location
+- **10-minute cache** to reduce API calls, with manual refresh
+- **Temperature unit toggle** (Celsius / Fahrenheit)
+
+### Improved Markdown Previewer
+
+Replaced the regex-based renderer with the `marked` library for full GFM support:
+
+- **Split-pane layout** with resizable divider (editor + live preview)
+- **Toolbar** for bold, italic, headings, links, images, code, lists, quotes, tables, and horizontal rules
+- **Table of contents** auto-generated from headings
+- **Export**: copy HTML, download as .html, download as .md
+- **Keyboard shortcuts**: Ctrl+B bold, Ctrl+I italic, Ctrl+S save
+- **XSS sanitization** removing script tags and event handlers
+- **Auto-save** to localStorage with 500ms debounce
+
+### Online Code Compiler
+
+A new app that provides a real in-browser code execution environment:
+
+- **JavaScript execution** with console output capture (log, warn, error, info) and timing
+- **HTML/CSS live preview** in a sandboxed iframe
+- **Built-in examples**: Fibonacci, sorting algorithms, DOM manipulation patterns
+- **Auto-save** per language to localStorage
+- **Theme-aware** editor with monospace fonts and syntax-friendly colors
+
+### System Monitor Overhaul
+
+Now shows real browser performance data instead of simulated values:
+
+- **Real hardware info**: CPU cores, device memory, WebGL renderer, screen resolution/DPI
+- **Battery status** via navigator.getBattery()
+- **Network info** via navigator.connection (type, bandwidth, RTT)
+- **Live FPS counter** using requestAnimationFrame
+- **Memory usage trend** chart drawn on Canvas
+- **Process list** showing all open windows from the store
+- **Storage analysis** with localStorage usage breakdown and top-key ranking
+- **Performance benchmarks** (math, DOM, memory) with scores
+
+### File Manager Improvements
+
+- **Breadcrumb navigation** with back/forward history
+- **Context menu** with Open, Rename, Delete, Copy, Cut, Paste, New File/Folder
+- **Drag-and-drop** file moving between folders
+- **View modes**: List and Grid/Icon view
+- **Sort by** name, date, size, or type (ascending/descending)
+- **Multi-select** with Ctrl+Click and Shift+Click
+- **File type icons** — distinct icons for images, video, audio, code, JSON, archives, etc.
+- **Preview panel** showing file content for text files
+- **Keyboard shortcuts**: Delete, F2 rename, Ctrl+A/C/X/V, Ctrl+F search
+
+### Desktop UI Polish
+
+- **Boot animation** — desktop icons fade in with staggered timing and elastic easing
+- **Frosted glass** effect on desktop icons on hover
+- **Desktop clock widget** in the top-right corner (time + date)
+- **Enhanced context menus** with rounded corners, blur backdrop, and appear animation
+- **Depth gradient overlay** for spatial atmosphere
+- **Draggable desktop icons** with smooth animation and position persistence
+- **"Show Desktop" ripple** effect when clicking the desktop area
+
+### Taskbar Refinements
+
+- **Frosted glass** taskbar with 30px backdrop blur and saturation boost
+- **Custom tooltips** with glass morphism and fade-in animation
+- **Active window indicator** with pulsing glow line under focused app
+- **Slide-up animation** on first load
+- **Thumbnail previews** positioned relative to hovered button with viewport clamping
 
 ---
 

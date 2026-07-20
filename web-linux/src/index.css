@@ -7454,4 +7454,335 @@ a:hover {
   }
 }
 
+/* ============================================================
+   Desktop UI Enhancements - 开机动画 / 玻璃图标 / 时钟 / 菜单 / 拖拽 / 显示桌面
+   ============================================================ */
+
+/* ── Boot Animation - 开机交错淡入 ── */
+.desktop-icon-booting {
+  opacity: 0;
+  transform: translateY(20px) scale(0.85);
+  pointer-events: none;
+}
+
+.desktop-icon-booted {
+  animation: desktopIconBootIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(var(--boot-index, 0) * 80ms);
+}
+
+@keyframes desktopIconBootIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Glass/Frosted Background for Icons ── */
+.desktop-icon-glass-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(139, 124, 240, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.desktop-icon:hover .desktop-icon-glass-bg {
+  opacity: 1;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(139, 124, 240, 0.08) 100%
+  );
+  border-color: rgba(139, 124, 240, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.desktop-icon.selected .desktop-icon-glass-bg {
+  opacity: 1;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 124, 240, 0.15) 0%,
+    rgba(139, 124, 240, 0.08) 50%,
+    rgba(139, 124, 240, 0.12) 100%
+  );
+  border-color: rgba(139, 124, 240, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* ── Enhanced Icon Text Shadows ── */
+.desktop-icon-name {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+.desktop-icon:hover .desktop-icon-name {
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(139, 124, 240, 0.3);
+}
+
+/* ── Icon Dragging State ── */
+.desktop-icon-dragging {
+  z-index: 10001 !important;
+  opacity: 0.85;
+  transform: scale(1.12) !important;
+  cursor: grabbing !important;
+  filter: drop-shadow(0 0 20px rgba(139, 124, 240, 0.5));
+  transition: transform 0.1s ease, filter 0.1s ease !important;
+}
+
+.desktop-icon-dragging .desktop-icon-glass-bg {
+  opacity: 1;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 124, 240, 0.2) 0%,
+    rgba(139, 124, 240, 0.1) 50%,
+    rgba(139, 124, 240, 0.15) 100%
+  );
+  border-color: rgba(139, 124, 240, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ── Desktop Clock Widget ── */
+.desktop-clock-widget {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  padding: 14px 20px 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(20, 20, 40, 0.65) 0%,
+    rgba(16, 16, 32, 0.55) 100%
+  );
+  border: 1px solid rgba(139, 124, 240, 0.15);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  pointer-events: none;
+  user-select: none;
+  text-align: right;
+  animation: clockWidgetFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) 1.8s both;
+}
+
+@keyframes clockWidgetFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.desktop-clock-time {
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, #f0f0ff 0%, #c8c8e8 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.desktop-clock-seconds {
+  font-size: 18px;
+  font-weight: 400;
+  opacity: 0.55;
+}
+
+.desktop-clock-ampm {
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 6px;
+  opacity: 0.6;
+  vertical-align: super;
+}
+
+.desktop-clock-date {
+  font-size: 12px;
+  color: rgba(180, 180, 220, 0.75);
+  font-weight: 400;
+  margin-top: 4px;
+  letter-spacing: 0.2px;
+}
+
+/* ── Enhanced Context Menu ── */
+.context-menu-enhanced {
+  background: linear-gradient(
+    135deg,
+    rgba(22, 22, 42, 0.92) 0%,
+    rgba(18, 18, 36, 0.95) 100%
+  );
+  border: 1px solid rgba(139, 124, 240, 0.18);
+  border-radius: 14px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 0 40px rgba(139, 124, 240, 0.08);
+  padding: 6px;
+  min-width: 220px;
+  overflow: hidden;
+  /* Appear animation - initial state */
+  opacity: 0;
+  transform: scale(0.92) translateY(-8px);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.context-menu-enhanced.context-menu-visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.context-menu-enhanced .context-menu-separator {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(139, 124, 240, 0.15) 20%,
+    rgba(139, 124, 240, 0.2) 50%,
+    rgba(139, 124, 240, 0.15) 80%,
+    transparent 100%
+  );
+  margin: 5px 10px;
+}
+
+.context-menu-enhanced .context-menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.context-menu-enhanced .context-menu-item-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.context-menu-enhanced .context-menu-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  margin: 1px 4px;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.context-menu-enhanced .context-menu-item:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 124, 240, 0.18) 0%,
+    rgba(139, 124, 240, 0.1) 100%
+  );
+  transform: translateX(3px);
+}
+
+.context-menu-enhanced .context-menu-item:active {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 124, 240, 0.28) 0%,
+    rgba(139, 124, 240, 0.15) 100%
+  );
+  transform: translateX(1px);
+}
+
+/* ── Desktop Depth Gradient Overlay ── */
+.desktop-depth-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.06) 60%, rgba(0, 0, 0, 0.15) 100%),
+    radial-gradient(ellipse at 0% 50%, rgba(139, 124, 240, 0.02) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 50%, rgba(0, 206, 201, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: multiply;
+}
+
+/* ── Show Desktop Transition Effect ── */
+.desktop-show-effect {
+  position: absolute;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  animation: showDesktopRipple 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes showDesktopRipple {
+  0% {
+    background: radial-gradient(
+      circle at 50% 100%,
+      rgba(139, 124, 240, 0.12) 0%,
+      transparent 0%
+    );
+  }
+  40% {
+    background: radial-gradient(
+      circle at 50% 100%,
+      rgba(139, 124, 240, 0.08) 0%,
+      transparent 60%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(139, 124, 240, 0) 0%,
+      transparent 100%
+    );
+    opacity: 0;
+  }
+}
+
+/* ── Desktop Booted State (fade in desktop content) ── */
+.desktop-booted {
+  animation: desktopBootFadeIn 0.4s ease-out;
+}
+
+@keyframes desktopBootFadeIn {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 

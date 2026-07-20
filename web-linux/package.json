@@ -1,7 +1,7 @@
 {
   "name": "weblinuxos",
   "private": true,
-  "version": "43.0.0",
+  "version": "44.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,6 +19,7 @@
     "preinstall": "npx only-allow npm"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "lucide-react": "^1.23.0",
     "marked": "^18.0.5",
     "pyodide": "^0.26.1",
