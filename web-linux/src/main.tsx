@@ -1,7 +1,8 @@
-import { StrictMode, useEffect } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import BootAnimation from './components/BootAnimation'
 
 // 全局错误处理器：捕获未处理的 JavaScript 异常
 // 在开发环境下通过 console 详细记录，便于调试
@@ -110,6 +111,8 @@ function registerServiceWorker() {
 registerServiceWorker()
 
 function RootApp() {
+  const [bootComplete, setBootComplete] = useState(false)
+
   useEffect(() => {
     const tryRemove = () => {
       const preload =
@@ -141,7 +144,8 @@ function RootApp() {
 
   return (
     <StrictMode>
-      <App />
+      {!bootComplete && <BootAnimation onComplete={() => setBootComplete(true)} />}
+      {bootComplete && <App />}
     </StrictMode>
   )
 }

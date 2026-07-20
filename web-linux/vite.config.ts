@@ -125,9 +125,6 @@ export default defineConfig(({ mode }) => {
       include: ['react', 'react-dom', 'zustand', 'lucide-react', 'marked'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
-      esbuildOptions: {
-        target: 'es2022',
-      },
     },
     define: {
       __BUILD_TIME__: JSON.stringify(new Date().toISOString().replace('T', ' ').split('.')[0]),
