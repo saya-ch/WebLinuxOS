@@ -235,6 +235,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   PasswordStrength: () => import('../../apps/PasswordStrength'),
   PDFViewer: () => import('../../apps/PDFViewer'),
   PerformanceMonitor: () => import('../../apps/PerformanceMonitor'),
+  PerformanceDashboard: () => import('../../apps/PerformanceDashboard'),
   Pomodoro: () => import('../../apps/Pomodoro'),
   PomodoroPro: () => import('../../apps/PomodoroPro'),
   PomodoroStudio: () => import('../../apps/PomodoroStudio'),

@@ -95,6 +95,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'online-compiler', name: '在线代码编译器', icon: <TerminalIcon />, component: 'OnlineCompiler', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '在线代码编译运行器：JavaScript实时执行+HTML/CSS预览+控制台输出捕获+算法示例' },
   // QuickCapture 捕手（v44创新功能 — 碎片信息收集工作台：五类内容+智能识别+标签+导入导出+快捷键）
   { id: 'quick-capture', name: 'QuickCapture 捕手', icon: <LayersIcon />, component: 'QuickCapture', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 720, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '碎片信息收集工作台：五类内容(文本/代码/链接/待办/引用)+智能识别粘贴+多标签筛选+置顶收藏+导入导出+快捷键' },
+  // 性能监控面板（v44创新功能 — 实时性能监控+FPS/内存/存储分析+智能警告）
+  { id: 'performance-dashboard', name: '性能监控面板', icon: <ActivityIcon />, component: 'PerformanceDashboard', category: 'system', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时性能监控：FPS/内存/CPU/存储分析，智能性能警告，历史数据可视化，优化建议' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

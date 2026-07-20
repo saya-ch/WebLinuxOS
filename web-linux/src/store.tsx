@@ -170,6 +170,9 @@ let windowIdCounter = 0
 // 文件操作历史最大长度限制，防止无限增长导致内存膨胀
 const MAX_FILE_OPERATION_HISTORY = 100
 
+// 通知定时器管理：防止内存泄漏
+const notificationTimers = new Map<string, ReturnType<typeof setTimeout>>()
+
 // 初始化 windowsPerDesktop
 function initWindowsPerDesktop(total: number): Record<number, string[]> {
   const result: Record<number, string[]> = {}
@@ -223,6 +226,7 @@ export const useStore = create<Store>((set, get) => ({
   windowSnapshots: {},
 
   // 添加一条通知消息：对同一消息标题做去重限制，避免短时间内刷屏
+  // 改进：使用定时器管理器防止内存泄漏
   addNotification: (notification) => {
     try {
       const state = get()
@@ -245,15 +249,30 @@ export const useStore = create<Store>((set, get) => ({
           { ...notification, id, timestamp: new Date() },
         ],
       }))
-      setTimeout(() => {
+
+      // 清理旧定时器（如果存在）
+      if (notificationTimers.has(id)) {
+        clearTimeout(notificationTimers.get(id)!)
+        notificationTimers.delete(id)
+      }
+
+      // 设置新定时器并存储ID
+      const timerId = setTimeout(() => {
         get().removeNotification(id)
+        notificationTimers.delete(id)
       }, notification.duration || 5000)
+      notificationTimers.set(id, timerId)
     } catch (err) {
       console.warn('[store] 添加通知时出现异常：', err)
     }
   },
 
   removeNotification: (id) => {
+    // 清理对应的定时器
+    if (notificationTimers.has(id)) {
+      clearTimeout(notificationTimers.get(id)!)
+      notificationTimers.delete(id)
+    }
     set((s) => ({
       notifications: s.notifications.filter((n) => n.id !== id)
     }))
