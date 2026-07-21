@@ -123,9 +123,9 @@ WebLinuxOS/
 |----------|----------|
 | File Operations | ls, cd, pwd, mkdir, rm, cp, mv, cat, touch, grep, find, diff, chmod, history |
 | System | whoami, hostname, date, uname, uptime, ps, top, neofetch, sysinfo, clear, which |
-| Network/API | weather, weather-forecast, news, crypto, crypto-history, currency, ipinfo, search, wiki, space, curl, ping |
+| Network/API | weather, weather-forecast, news, crypto, crypto-history, currency, ipinfo, search, wiki, space, curl, ping, github-trending, timezone |
 | Utilities | translate, dictionary, calculator, calendar, time, battery, cpu, hash, base64, uuid, regex, jwt-decode |
-| Fun | quote, joke, chuck, advice, pokemon, numbers, nasa, cat-fact, dog-image, random-user, starwars |
+| Fun | quote, joke, chuck, advice, pokemon, numbers, nasa, cat-fact, dog-image, random-user, starwars, trivia, holiday |
 | Management | version, about, credits, shortcuts, help, help-all |
 
 ## Keyboard Shortcuts

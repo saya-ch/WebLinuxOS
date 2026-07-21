@@ -24,3 +24,6 @@ import './storageCommands'
 
 // 5. 扩展命令：历史记录、搜索、比较等实用功能
 import './extendedCommands'
+
+// 6. 增强API命令：集成公开API实现真实功能
+import './enhancedApiCommands'
