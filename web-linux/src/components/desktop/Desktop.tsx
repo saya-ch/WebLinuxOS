@@ -98,7 +98,7 @@ const DesktopIcon = memo(function DesktopIcon({
   booted,
   onDragEnd,
 }: { 
-  icon: { id: string; x: number; y: number; name: string; icon: React.ReactNode }
+  icon: { id: string; appId: string; x: number; y: number; name: string; icon: React.ReactNode }
   selectedIconId: string | null
   onClick: (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => void
   onDoubleClick: (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => void
@@ -186,6 +186,7 @@ const DesktopIcon = memo(function DesktopIcon({
       role="button"
       aria-label={`${icon.name} - 双击打开`}
       aria-pressed={selectedIconId === icon.id}
+      data-app-id={icon.appId}
     >
       <span className="desktop-icon-glass-bg" aria-hidden="true" />
       <span className="desktop-icon-icon" aria-hidden="true">{icon.icon}</span>

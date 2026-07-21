@@ -146,30 +146,6 @@ registerCommand('ifconfig', {
   examples: ['ifconfig']
 })
 
-registerCommand('netstat', {
-  handler: (): CommandResult => {
-    const output = [
-      'Active Internet connections (only servers)',
-      'Proto Recv-Q Send-Q Local Address           Foreign Address         State',
-      'tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN',
-      'tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN',
-      'tcp        0      0 127.0.0.1:3000          0.0.0.0:*               LISTEN',
-      'tcp        0      0 127.0.0.1:5173          0.0.0.0:*               LISTEN',
-      'udp        0      0 0.0.0.0:53              0.0.0.0:*',
-      '',
-      'Active UNIX domain sockets (only servers)',
-      'Proto RefCnt Flags       Type       State         I-Node   Path',
-      'unix  2      [ ACC ]     STREAM     LISTENING     1234     /run/systemd/private',
-      'unix  2      [ ACC ]     STREAM     LISTENING     5678     /var/run/dbus/system_bus_socket',
-    ]
-    
-    return { output: output.join('\n') }
-  },
-  description: '显示网络连接和端口状态',
-  usage: 'netstat',
-  examples: ['netstat']
-})
-
 registerCommand('curl', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context

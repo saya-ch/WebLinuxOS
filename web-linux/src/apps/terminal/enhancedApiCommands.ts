@@ -374,62 +374,6 @@ registerCommand('joke', {
   examples: ['joke']
 })
 
-registerCommand('advice', {
-  handler: async (): Promise<CommandResult> => {
-    const advice = await fetchJson<{ slip: { advice: string } }>('https://api.adviceslip.com/advice')
-
-    return {
-      output: [
-        '💡 每日建议',
-        '',
-        advice?.slip?.advice || '暂无建议',
-      ].join('\n')
-    }
-  },
-  description: '获取随机建议',
-  usage: 'advice',
-  examples: ['advice']
-})
-
-registerCommand('github-trending', {
-  handler: async (): Promise<CommandResult> => {
-    const trending = await fetchJson<{
-      items: Array<{
-        full_name: string
-        stargazers_count: number
-        language: string
-        description: string
-      }>
-    }>('https://api.github.com/search/repositories?q=created:>2024-01-01&sort=stars&order=desc&per_page=10')
-
-    if (!trending?.items || trending.items.length === 0) {
-      return {
-        output: [
-          'GitHub 热门仓库',
-          '',
-          '无法获取数据',
-        ].join('\n')
-      }
-    }
-
-    const output = ['GitHub 热门仓库', '', '='.repeat(70), '']
-    
-    trending.items.slice(0, 10).forEach((repo, index) => {
-      output.push(`${index + 1}. ${repo.full_name}`)
-      output.push(`   ⭐ ${repo.stargazers_count?.toLocaleString()} | 📦 ${repo.language || 'Unknown'}`)
-      output.push(`   ${repo.description || ''}`)
-      output.push('')
-    })
-    
-    output.push('='.repeat(70))
-
-    return { output: output.join('\n') }
-  },
-  description: '查看GitHub热门仓库',
-  usage: 'github-trending',
-  examples: ['github-trending']
-})
-
 registerCommand('timezone', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
