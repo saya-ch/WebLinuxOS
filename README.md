@@ -42,6 +42,7 @@ Covering development, productivity, networking, media, system, tools, and games.
 - Markdown editor with real-time bidirectional preview, tables, formulas, code blocks, HTML export
 - API Testing Tool with real API calls, preset templates for GitHub/NASA/exchange rates and other public APIs, request history, favorites management, response formatting
 - Developer Shortcuts Reference covering VS Code/Chrome/macOS/Terminal/Git/Vim shortcuts with search, categories, one-click copy, custom additions
+- **DevLab**: One-stop developer toolbox with 12+ tools — JSON formatter, Base64 encoder/decoder, hash generator (MD5/SHA-1/SHA-256/SHA-512), UUID generator, password generator, color tools, timestamp converter, URL encoder/decoder, and more
 
 **Productivity:**
 - JSONForge: Formatting / Compression / YAML / CSV / Schema / Diff in one tool

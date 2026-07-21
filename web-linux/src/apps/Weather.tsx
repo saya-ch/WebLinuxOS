@@ -94,7 +94,7 @@ const CACHE_TTL = 10 * 60 * 1000 // 10 分钟缓存
 const weatherCache = new Map<string, CachedData>()
 
 function getCacheKey(lat: number, lon: number): string {
-  return `${lat.toFixed(3)},${lon.toFixed(3)}}`
+  return `${lat.toFixed(3)},${lon.toFixed(3)}`
 }
 
 function getCache(lat: number, lon: number): CachedData | null {

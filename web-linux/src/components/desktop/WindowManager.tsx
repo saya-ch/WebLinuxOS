@@ -364,6 +364,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   QuickCapture: () => import('../../apps/QuickCapture'),
   APITesterUltra: () => import('../../apps/APITesterUltra'),
   DevShortcuts: () => import('../../apps/DevShortcuts'),
+  DevLab: () => import('../../apps/DevLab'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

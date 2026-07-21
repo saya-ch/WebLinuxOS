@@ -30,6 +30,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // DevLab 开发者实验室（v45创新功能 — 12+开发工具集成，一站式开发工具箱）
+  { id: 'dev-lab', name: 'DevLab 开发者实验室', icon: <SparklesIcon />, component: 'DevLab', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '一站式开发者工具箱：JSON格式化、Base64编解码、哈希生成、UUID生成、密码生成、颜色工具、时间戳转换等12+实用开发工具' },
   // 云剪贴板（v40 创新功能 — 基于 GitHub Gist 的真实跨设备同步）
   { id: 'cloud-clipboard', name: '云剪贴板', icon: <BackupIcon />, component: 'CloudClipboard', category: 'utilities', defaultWidth: 1000, defaultHeight: 720, minWidth: 720, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 GitHub Gist 的跨设备云剪贴板：本地存储 + Gist 同步 + 分享链接 + 语法检测' },
   // 工作区管理器（v38.2创新功能）
