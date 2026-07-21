@@ -1,4 +1,4 @@
-import { registerCommand } from './commands'
+import { registerCommand, getCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { useStore } from '../../store'
 import type { FileNode } from '../../types'
@@ -548,4 +548,293 @@ registerCommand('sysinfo', {
   description: '显示浏览器与系统详细信息',
   usage: 'sysinfo',
   examples: ['sysinfo']
+})
+
+registerCommand('free', {
+  handler: (): CommandResult => {
+    const nav = navigator as Navigator & { deviceMemory?: number }
+    const perf = performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }
+    
+    const deviceMemory = nav.deviceMemory ? nav.deviceMemory * 1024 * 1024 * 1024 : 16 * 1024 * 1024 * 1024
+    const usedJS = perf.memory?.usedJSHeapSize || Math.floor(Math.random() * 1024 * 1024 * 500 + 100 * 1024 * 1024)
+    const totalJS = perf.memory?.totalJSHeapSize || Math.floor(deviceMemory * 0.5)
+    const limitJS = perf.memory?.jsHeapSizeLimit || deviceMemory
+    
+    const usedPercent = ((usedJS / totalJS) * 100).toFixed(1)
+    const freeJS = totalJS - usedJS
+    
+    const formatMem = (bytes: number): string => {
+      if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)}G`
+      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`
+      if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)}K`
+      return bytes.toString()
+    }
+    
+    const output = [
+      '              total        used        free      shared  buff/cache   available',
+      `Mem:     ${formatMem(deviceMemory).padStart(12)} ${formatMem(usedJS).padStart(12)} ${formatMem(freeJS).padStart(12)} ${formatMem(0).padStart(10)} ${formatMem(totalJS - usedJS).padStart(12)} ${formatMem(limitJS - usedJS).padStart(12)}`,
+      `Swap:            0B          0B          0B`,
+      '',
+      `内存使用率: ${usedPercent}%`,
+      `JS堆大小限制: ${formatMem(limitJS)}`,
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示内存使用情况',
+  usage: 'free',
+  examples: ['free']
+})
+
+registerCommand('df', {
+  handler: (context: CommandContext): CommandResult => {
+    const fsStats = countFileSystem(context.files)
+    const totalSpace = 5 * 1024 * 1024 * 1024
+    const usedSpace = fsStats.size + Math.floor(Math.random() * 100 * 1024 * 1024)
+    const freeSpace = totalSpace - usedSpace
+    const usedPercent = ((usedSpace / totalSpace) * 100).toFixed(1)
+    
+    const formatSize = (bytes: number): string => {
+      if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)}G`
+      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`
+      if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)}K`
+      return bytes.toString()
+    }
+    
+    const output = [
+      '文件系统        总容量    已用    可用    已用%  挂载点',
+      `weblinux-vfs    ${formatSize(totalSpace)}   ${formatSize(usedSpace)}   ${formatSize(freeSpace)}   ${usedPercent}%   /`,
+      `browser-cache   2.0G      512M    1.5G    25%    /cache`,
+      `localstorage    512M      ${formatSize(fsStats.size)}   ${formatSize(512 * 1024 * 1024 - fsStats.size)}   ${((fsStats.size / (512 * 1024 * 1024)) * 100).toFixed(1)}%   /home/user`,
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示磁盘使用情况',
+  usage: 'df',
+  examples: ['df']
+})
+
+registerCommand('who', {
+  handler: (context: CommandContext): CommandResult => {
+    const windows = useStore.getState().windows
+    const terminalWindows = windows.filter(w => w.appId === 'terminal')
+    
+    const output = [
+      `${context.username}    pts/0        ${new Date().toLocaleString('zh-CN')}`,
+      ...terminalWindows.slice(1).map((_, i) => `${context.username}    pts/${i + 1}        ${new Date().toLocaleString('zh-CN')}`),
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示登录用户',
+  usage: 'who',
+  examples: ['who']
+})
+
+registerCommand('w', {
+  handler: (context: CommandContext): CommandResult => {
+    const windows = useStore.getState().windows
+    const now = new Date()
+    const uptimeHours = Math.floor(Math.random() * 24)
+    const uptimeMins = Math.floor(Math.random() * 60)
+    const loadAvg = [
+      (0.1 + Math.random() * 0.5).toFixed(2),
+      (0.1 + Math.random() * 0.4).toFixed(2),
+      (0.1 + Math.random() * 0.3).toFixed(2),
+    ]
+    
+    const output = [
+      `${now.toLocaleTimeString('zh-CN')} up ${uptimeHours}小时${uptimeMins}分钟,  ${windows.length} 个用户,  平均负载: ${loadAvg.join(', ')}`,
+      '',
+      'USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT',
+      `${context.username}  pts/0    -                ${now.toLocaleTimeString('zh-CN')}    0.00s  0.00s  0.00s w`,
+      ...windows.filter(w => w.appId !== 'terminal').slice(0, 3).map((w) => 
+        `${context.username}  ?        -                ${now.toLocaleTimeString('zh-CN')}    0.00s  0.00s  0.00s ${w.appId}`
+      ),
+    ]
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示系统负载和用户信息',
+  usage: 'w',
+  examples: ['w']
+})
+
+registerCommand('cal', {
+  handler: (context: CommandContext): CommandResult => {
+    const args = context.args
+    let year = new Date().getFullYear()
+    let month = new Date().getMonth()
+    
+    if (args.length === 1) {
+      const num = parseInt(args[0])
+      if (!isNaN(num)) {
+        if (num >= 1 && num <= 12) {
+          month = num - 1
+        } else if (num >= 1900 && num <= 2100) {
+          year = num
+        }
+      }
+    } else if (args.length === 2) {
+      const m = parseInt(args[0])
+      const y = parseInt(args[1])
+      if (!isNaN(m) && m >= 1 && m <= 12 && !isNaN(y) && y >= 1900 && y <= 2100) {
+        month = m - 1
+        year = y
+      }
+    }
+    
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+    
+    const output: string[] = []
+    output.push(`${monthNames[month]} ${year}`)
+    output.push(weekDays.join('  '))
+    
+    let line = ''
+    for (let i = 0; i < firstDay; i++) {
+      line += '   '
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      line += String(day).padStart(2) + ' '
+      if ((day + firstDay) % 7 === 0) {
+        output.push(line.trim())
+        line = ''
+      }
+    }
+    
+    if (line) {
+      output.push(line.trim())
+    }
+    
+    return { output: output.join('\n') }
+  },
+  description: '显示日历',
+  usage: 'cal [月份] [年份]',
+  examples: ['cal', 'cal 12', 'cal 12 2024']
+})
+
+registerCommand('time', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'time: 缺少命令参数\n用法: time <命令>' }
+    }
+    
+    const commandStr = args.join(' ')
+    const parts = commandStr.split(/\s+/)
+    const command = parts[0].toLowerCase()
+    const cmdArgs = parts.slice(1)
+    
+    const startTime = performance.now()
+    
+    const cmdDef = getCommand(command)
+    let output = ''
+    
+    if (cmdDef) {
+      try {
+        const result = await cmdDef.handler({ ...context, args: cmdArgs })
+        output = result.output
+      } catch (error) {
+        output = `命令执行错误: ${(error as Error).message}`
+      }
+    } else {
+      output = `bash: ${command}: 未找到命令`
+    }
+    
+    const endTime = performance.now()
+    const elapsed = ((endTime - startTime) / 1000).toFixed(4)
+    
+    return {
+      output: `${output}\n\nreal    ${elapsed}s\nuser    0.000s\nsys     0.000s`
+    }
+  },
+  description: '测量命令执行时间',
+  usage: 'time <命令>',
+  examples: ['time ls -la', 'time neofetch']
+})
+
+registerCommand('env', {
+  handler: (context: CommandContext): CommandResult => {
+    const envVars: Record<string, string> = {
+      HOME: '/home/user',
+      PATH: '/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games',
+      SHELL: '/bin/bash',
+      USER: context.username,
+      LOGNAME: context.username,
+      HOSTNAME: context.hostname,
+      TERM: 'xterm-256color',
+      LANG: 'zh_CN.UTF-8',
+      LC_ALL: 'zh_CN.UTF-8',
+      PWD: context.cwd,
+      OLDPWD: context.prevCwd || '',
+      EDITOR: 'nano',
+      BROWSER: 'browser',
+      DISPLAY: ':0',
+      COLORTERM: 'truecolor',
+      XDG_SESSION_TYPE: 'web',
+      XDG_SEAT: 'seat0',
+      WEB_LINUX_VERSION: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0',
+    }
+    
+    const output = Object.entries(envVars)
+      .filter(([_, v]) => v)
+      .map(([k, v]) => `${k}=${v}`)
+      .join('\n')
+    
+    return { output }
+  },
+  description: '显示环境变量',
+  usage: 'env',
+  examples: ['env']
+})
+
+registerCommand('export', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'export: 缺少参数\n用法: export VAR=value' }
+    }
+    
+    const [varDef] = args
+    const [name, value] = varDef.split('=')
+    
+    if (!name || value === undefined) {
+      return { output: 'export: 无效的变量定义\n用法: export VAR=value' }
+    }
+    
+    return { output: `已设置环境变量: ${name}=${value}` }
+  },
+  description: '设置环境变量',
+  usage: 'export VAR=value',
+  examples: ['export EDITOR=nano', 'export PATH=$PATH:/custom/bin']
+})
+
+registerCommand('which', {
+  handler: (context: CommandContext): CommandResult => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'which: 缺少参数\n用法: which <命令>' }
+    }
+    
+    const command = args[0].toLowerCase()
+    const cmdDef = getCommand(command)
+    
+    if (cmdDef) {
+      return { output: `/usr/bin/${command}` }
+    }
+    
+    return { output: `which: ${command}: 未找到` }
+  },
+  description: '查找命令位置',
+  usage: 'which <命令>',
+  examples: ['which ls', 'which neofetch']
 })

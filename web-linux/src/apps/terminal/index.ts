@@ -16,17 +16,11 @@ import './toolCommands'        // 工具命令（echo/base64/hash/uuid/calc/sort
 import './networkCommands'     // 网络命令（ping/curl/ifconfig 等）
 import './creativeCommands'    // 创意命令（nasa/wikipedia/github-trending - 含错误回退数据）
 
-// 4. 扩展命令：以下文件包含部分重复定义，会被自动跳过，保留上面的权威实现
-import './apiCommands'         // API 命令（部分与 creativeCommands 重复）
-import './onlineCommands'      // 在线命令（neofetch 等与 systemCommands 重复）
-import './utilityCommands'     // 实用命令（echo/whoami/hostname 等重复定义）
-import './enhancedCommands'    // 增强命令（wikipedia 等重复定义）
-
-// 5. 独立功能模块：不与上述命令冲突
+// 4. 独立功能模块：不与上述命令冲突
 import './funCommands'
 import './aiCommands'
 import './advancedCommands'
 import './storageCommands'
 
-// 6. 扩展命令：历史记录、搜索、比较等实用功能
+// 5. 扩展命令：历史记录、搜索、比较等实用功能
 import './extendedCommands'

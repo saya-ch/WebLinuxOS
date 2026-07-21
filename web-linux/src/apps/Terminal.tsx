@@ -173,7 +173,7 @@ export default function Terminal() {
     if (command === 'help' || command === '?') {
       const categorizedCommands: Record<string, string[]> = {
         '文件操作': ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'tee', 'append', 'grep', 'find', 'chmod', 'gzip', 'gunzip', 'file', 'sort', 'uniq', 'cut', 'paste', 'nl', 'expand', 'tr', 'split'],
-        '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'credits', 'time', 'worldtime', 'env'],
+        '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'credits', 'time', 'worldtime', 'env', 'export', 'which', 'who', 'w'],
         '系统监控': ['ps', 'top', 'cpu-info', 'memory-info', 'disk-usage', 'network-stats', 'process-list'],
         '网络工具': ['ping', 'weather', 'news', 'crypto', 'translate', 'ipinfo'],
         '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'json-pretty', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'file-type', 'json-to-csv', 'csv-to-json', 'encode', 'decode', 'converter'],
