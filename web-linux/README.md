@@ -51,9 +51,9 @@ Everything runs in the browser. No backend, no account, no telemetry.
 - **Online code runner** for JavaScript, TypeScript, SQL, Bash, HTML, Markdown
 - **Python REPL** via Pyodide with package support
 - **Terminal** with 100+ commands including:
-  - File ops: `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `grep`, `find`
-  - System: `top`, `ps`, `neofetch`, `free`, `df`, `uptime`
-  - Network: `ping`, `curl`, `weather`, `news`, `crypto`, `translate`
+  - File ops: `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `grep`, `find`, `diff`, `chmod`, `history`
+  - System: `top`, `ps`, `neofetch`, `free`, `df`, `uptime`, `clear`, `which`
+  - Network: `ping`, `curl`, `weather`, `news`, `crypto`, `translate`, `ipinfo`, `wiki`, `space`
   - Dev: `calc`, `hash`, `base64`, `uuid`, `regex`, `jwt-decode`
 - **REST API tester** with request builder and JSON preview
 - **JSON tools** — formatter, validator, YAML converter, diff, schema

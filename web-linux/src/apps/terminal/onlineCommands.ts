@@ -3,6 +3,397 @@ import type { CommandContext, CommandResult } from './commands'
 import { API_CONFIG, fetchWithTimeout, handleApiError } from '../../config/apiConfig'
 import { getCityInfo, weatherDescriptions } from './cityMap'
 
+registerCommand('dictionary', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          '📖 词典查询',
+          '',
+          '用法: dictionary <单词>',
+          '',
+          '示例:',
+          '  dictionary hello',
+          '  dictionary computer',
+          '  dictionary beautiful',
+          '',
+          '数据来源: DictionaryAPI (免费公开API)',
+        ].join('\n')
+      }
+    }
+    
+    const word = args.join(' ')
+    
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.dictionaryApi.baseUrl}/entries/en/${encodeURIComponent(word)}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data || data.length === 0) {
+        return { output: `dictionary: 未找到单词 '${word}'` }
+      }
+      
+      const entry = data[0]
+      const output: string[] = []
+      
+      output.push(`📖 ${entry.word}${entry.phonetic ? ` [${entry.phonetic}]` : ''}`)
+      output.push('')
+      
+      if (entry.meanings) {
+        entry.meanings.forEach((meaning: { partOfSpeech: string; definitions: any[] }) => {
+          output.push(`${meaning.partOfSpeech || 'unknown'}:`)
+          meaning.definitions.forEach((def: { definition: string; example?: string }, index: number) => {
+            output.push(`  ${index + 1}. ${def.definition}`)
+            if (def.example) {
+              output.push(`     示例: "${def.example}"`)
+            }
+          })
+          output.push('')
+        })
+      }
+      
+      output.push('数据来源: DictionaryAPI')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      const fallbackDict: Record<string, { pos: string; definitions: { def: string; example?: string }[] }> = {
+        'hello': { pos: 'interjection', definitions: [{ def: '用于问候或引起注意', example: 'Hello, how are you?' }] },
+        'computer': { pos: 'noun', definitions: [{ def: '能够存储和处理数据的电子设备', example: 'I use my computer every day.' }] },
+        'code': { pos: 'noun', definitions: [{ def: '编程中使用的指令集合', example: 'Writing code is fun.' }] },
+        'program': { pos: 'noun', definitions: [{ def: '计算机执行的一组指令', example: 'This program helps with productivity.' }] },
+        'internet': { pos: 'noun', definitions: [{ def: '连接全球计算机的网络', example: 'I surf the internet daily.' }] },
+        'web': { pos: 'noun', definitions: [{ def: '万维网，互联网上的信息系统', example: 'The web has transformed how we live.' }] },
+        'developer': { pos: 'noun', definitions: [{ def: '编写软件和应用程序的人', example: 'She is a skilled developer.' }] },
+        'software': { pos: 'noun', definitions: [{ def: '计算机运行的程序和数据', example: 'Good software improves productivity.' }] },
+      }
+      
+      const fallback = fallbackDict[word.toLowerCase()]
+      
+      if (fallback) {
+        const output: string[] = []
+        output.push(`📖 ${word}`)
+        output.push('')
+        output.push(`${fallback.pos}:`)
+        fallback.definitions.forEach((def, index) => {
+          output.push(`  ${index + 1}. ${def.def}`)
+          if (def.example) {
+            output.push(`     示例: "${def.example}"`)
+          }
+        })
+        output.push('')
+        output.push('提示: 使用本地词典')
+        return { output: output.join('\n') }
+      }
+      
+      return {
+        output: [
+          '📖 词典查询',
+          '',
+          handleApiError(error, '词典API'),
+          '',
+          '用法: dictionary <单词>',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询英语单词释义',
+  usage: 'dictionary <单词>',
+  examples: ['dictionary hello', 'dictionary computer']
+})
+
+registerCommand('weather-forecast', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const city = args.join(' ') || 'Beijing'
+    const cityInfo = getCityInfo(city)
+    
+    try {
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.openMeteo.baseUrl}/forecast?latitude=${cityInfo.lat}&longitude=${cityInfo.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=Asia/Shanghai&forecast_days=7`
+      )
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      const output: string[] = []
+      output.push(`🌤️  ${cityInfo.name} 7天天气预报`)
+      output.push('')
+      
+      const days = ['今天', '明天', '后天', '第三天', '第四天', '第五天', '第六天']
+      
+      if (data.daily) {
+        for (let i = 0; i < Math.min(7, data.daily.temperature_2m_max.length); i++) {
+          const weatherCode = data.daily.weather_code[i] || 0
+          const weatherDesc = weatherDescriptions[weatherCode] || '未知'
+          const maxTemp = data.daily.temperature_2m_max[i]
+          const minTemp = data.daily.temperature_2m_min[i]
+          
+          output.push(`${days[i]}:`)
+          output.push(`  天气: ${weatherDesc}`)
+          output.push(`  温度: ${minTemp}°C ~ ${maxTemp}°C`)
+          
+          if (data.daily.sunrise && data.daily.sunset) {
+            const sunrise = new Date(data.daily.sunrise[i]).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+            const sunset = new Date(data.daily.sunset[i]).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+            output.push(`  日出: ${sunrise} | 日落: ${sunset}`)
+          }
+          output.push('')
+        }
+      }
+      
+      output.push('数据来源: Open-Meteo')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return {
+        output: [
+          `🌤️  ${cityInfo.name} 7天天气预报`,
+          '',
+          handleApiError(error, '天气预报'),
+          '',
+          '提示: 使用 weather 命令查看当前天气',
+          '',
+          '用法: weather-forecast [城市]',
+          '示例: weather-forecast Beijing, weather-forecast Shanghai',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询7天天气预报',
+  usage: 'weather-forecast [城市]',
+  examples: ['weather-forecast', 'weather-forecast Beijing']
+})
+
+registerCommand('crypto-history', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const coin = args[0]?.toLowerCase() || 'bitcoin'
+    
+    const coinMap: Record<string, string> = {
+      'btc': 'bitcoin',
+      'eth': 'ethereum',
+      'sol': 'solana',
+      'bnb': 'binancecoin',
+      'xrp': 'ripple',
+    }
+    
+    const coinId = coinMap[coin] || coin
+    
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.coinGecko.baseUrl}/coins/${coinId}/market_chart?vs_currency=usd&days=7`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.prices || data.prices.length === 0) {
+        return { output: `crypto-history: 未找到币种 '${coin}'` }
+      }
+      
+      const output: string[] = []
+      output.push(`📈 ${coinId.charAt(0).toUpperCase() + coinId.slice(1)} 7天价格走势`)
+      output.push('')
+      
+      const sortedPrices = data.prices.sort((a: number[], b: number[]) => a[0] - b[0])
+      const latestPrice = sortedPrices[sortedPrices.length - 1][1]
+      const firstPrice = sortedPrices[0][1]
+      const change = ((latestPrice - firstPrice) / firstPrice * 100)
+      const changeStr = change.toFixed(2)
+      
+      output.push(`当前价格: $${latestPrice.toLocaleString()}`)
+      output.push(`7天涨跌: ${change >= 0 ? '+' : ''}${changeStr}%`)
+      output.push('')
+      
+      output.push('每日价格:')
+      for (let i = 0; i < sortedPrices.length; i += Math.ceil(sortedPrices.length / 7)) {
+        const date = new Date(sortedPrices[i][0])
+        const price = sortedPrices[i][1]
+        output.push(`  ${date.getMonth() + 1}/${date.getDate()}: $${price.toLocaleString()}`)
+      }
+      
+      output.push('')
+      output.push('数据来源: CoinGecko')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return {
+        output: [
+          `📈 ${coin} 7天价格走势`,
+          '',
+          handleApiError(error, '加密货币历史'),
+          '',
+          '提示: 使用 crypto 命令查看实时行情',
+          '',
+          '用法: crypto-history <币种>',
+          '示例: crypto-history btc, crypto-history eth',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查看加密货币7天价格走势',
+  usage: 'crypto-history <币种>',
+  examples: ['crypto-history btc', 'crypto-history eth']
+})
+
+registerCommand('wiki', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const query = args.join(' ')
+    
+    if (!query) {
+      return {
+        output: [
+          '📚 Wikipedia 搜索',
+          '',
+          '用法: wiki <关键词>',
+          '',
+          '示例:',
+          '  wiki Linux',
+          '  wiki Artificial Intelligence',
+          '  wiki Python (programming language)',
+          '',
+          '数据来源: Wikipedia API',
+        ].join('\n')
+      }
+    }
+    
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.wikipedia.baseUrl}/search/title?q=${encodeURIComponent(query)}&limit=5&format=json`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.pages || data.pages.length === 0) {
+        return { output: `wiki: 未找到关于 '${query}' 的结果` }
+      }
+      
+      const output: string[] = []
+      output.push('📚 Wikipedia 搜索结果')
+      output.push('')
+      
+      data.pages.forEach((page: { title: string; description: string; thumbnail?: { source: string } }, index: number) => {
+        output.push(`${index + 1}. ${page.title}`)
+        if (page.description) {
+          output.push(`   ${page.description}`)
+        }
+        output.push('')
+      })
+      
+      output.push('提示: 这是摘要结果，完整内容请访问 Wikipedia')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      const fallbackResults: Record<string, { title: string; desc: string }[]> = {
+        'linux': [{ title: 'Linux', desc: 'Linux 是一种开源的类 Unix 操作系统内核，由 Linus Torvalds 创建于 1991 年。' }],
+        'python': [{ title: 'Python (programming language)', desc: 'Python 是一种高级、通用、解释型的编程语言，以简洁的语法和强大的库生态系统著称。' }],
+        'javascript': [{ title: 'JavaScript', desc: 'JavaScript 是一种轻量级的脚本语言，主要用于 Web 开发，支持面向对象、函数式和事件驱动编程。' }],
+        'react': [{ title: 'React', desc: 'React 是由 Facebook 开发的用于构建用户界面的 JavaScript 库，采用组件化和虚拟 DOM 技术。' }],
+        'github': [{ title: 'GitHub', desc: 'GitHub 是一个基于 Git 的代码托管平台，提供版本控制、协作和 CI/CD 功能。' }],
+      }
+      
+      const key = Object.keys(fallbackResults).find(k => query.toLowerCase().includes(k))
+      const results = key ? fallbackResults[key] : [{ title: query, desc: '暂无摘要信息，请访问 Wikipedia 获取更多内容。' }]
+      
+      const output: string[] = []
+      output.push('📚 Wikipedia 搜索结果')
+      output.push('')
+      results.forEach((r, i) => {
+        output.push(`${i + 1}. ${r.title}`)
+        output.push(`   ${r.desc}`)
+        output.push('')
+      })
+      output.push('提示: 使用离线数据')
+      
+      return { output: output.join('\n') }
+    }
+  },
+  description: 'Wikipedia 搜索',
+  usage: 'wiki <关键词>',
+  examples: ['wiki Linux', 'wiki Python']
+})
+
+registerCommand('space', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetchWithTimeout(`${API_CONFIG.spaceflightNews.baseUrl}/articles?_limit=5`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      const output: string[] = []
+      output.push('🚀 太空新闻')
+      output.push('')
+      output.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      output.push('')
+      
+      data.forEach((article: { title: string; summary: string; publishedAt: string; url: string }, index: number) => {
+        output.push(`${index + 1}. ${article.title}`)
+        if (article.summary) {
+          const shortSummary = article.summary.length > 100 ? article.summary.substring(0, 100) + '...' : article.summary
+          output.push(`   ${shortSummary}`)
+        }
+        if (article.publishedAt) {
+          output.push(`   发布: ${new Date(article.publishedAt).toLocaleDateString('zh-CN')}`)
+        }
+        output.push('')
+      })
+      
+      output.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      output.push('')
+      output.push('数据来源: Spaceflight News API')
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      const fallbackNews = [
+        { title: 'NASA 发布最新火星影像', summary: '火星探测器传回了令人惊叹的新图像，展示了红色星球的壮丽景观。', date: '2024-01-15' },
+        { title: 'SpaceX 完成星舰试飞', summary: 'SpaceX 的星舰原型成功完成了又一次试飞任务，向火星殖民迈出重要一步。', date: '2024-01-14' },
+        { title: '中国空间站新进展', summary: '中国空间站完成了多项科学实验，取得了重要成果。', date: '2024-01-13' },
+        { title: '韦伯望远镜发现新星系', summary: '詹姆斯·韦伯太空望远镜发现了一个距离地球数十亿光年的古老星系。', date: '2024-01-12' },
+      ]
+      
+      const output: string[] = []
+      output.push('🚀 太空新闻')
+      output.push('')
+      output.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      output.push('')
+      
+      fallbackNews.forEach((news, index) => {
+        output.push(`${index + 1}. ${news.title}`)
+        output.push(`   ${news.summary}`)
+        output.push(`   发布: ${news.date}`)
+        output.push('')
+      })
+      
+      output.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      output.push('')
+      output.push(handleApiError(error, '太空新闻'))
+      output.push('提示: 使用离线数据')
+      
+      return { output: output.join('\n') }
+    }
+  },
+  description: '查看太空探索新闻',
+  usage: 'space',
+  examples: ['space']
+})
+
 registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
