@@ -45,10 +45,15 @@ Covering development, productivity, networking, media, system, tools, and games.
 - **DevLab**: One-stop developer toolbox with 12+ tools — JSON formatter, Base64 encoder/decoder, hash generator (MD5/SHA-1/SHA-256/SHA-512), UUID generator, password generator, color tools, timestamp converter, URL encoder/decoder, and more
 
 **Productivity:**
+- **Smart Dashboard**: All-in-one dashboard with real-time weather, system monitoring, quick tool access, daily motivational quotes, and todo list management — glass morphism design
 - JSONForge: Formatting / Compression / YAML / CSV / Schema / Diff in one tool
 - CronLab: Visual Cron expression builder with next 5 execution predictions
 - PrivacyGuard: Local PII detection identifying 17 categories of sensitive information (email/phone/ID/API Key/JWT, etc.)
 - WorldPulse: Global weather, exchange rates, earthquakes, news aggregation based on public APIs
+
+**Network & Development Tools:**
+- **Network Toolkit Pro**: Professional network toolkit — IP info lookup, DNS lookup, URL encode/decode, network status monitoring, HTTP status code reference, port scanner
+- **Pro Terminal Commands**: 12+ new utility commands — quote (motivational quotes), joke (programmer jokes), ipinfo (IP geolocation), uuidgen (batch UUID), timestamp (time conversion), base64-encode/decode, url-encode/decode, random number generator, password generator, color converter, dictionary, tech news
 
 **Online Services:**
 - Weather, news, cryptocurrency, exchange rates, IP info, translation, dictionary

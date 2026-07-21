@@ -30,6 +30,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 智能仪表板（v46创新功能 — 一站式信息聚合中心：天气+系统监控+快捷工具+每日名言+待办事项）
+  { id: 'smart-dashboard', name: '智能仪表板', icon: <DashboardIcon />, component: 'SmartDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '一站式智能仪表板：实时天气+系统监控+快捷工具入口+每日励志名言+待办事项管理，玻璃拟态设计' },
+  // 网络工具箱专业版（v46创新功能 — IP查询+DNS+URL编解码+网络监控+HTTP状态码+端口扫描，六大网络工具）
+  { id: 'network-toolkit-pro', name: '网络工具箱 Pro', icon: <CustomGlobeIcon />, component: 'NetworkToolkitPro', category: 'internet', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业网络工具箱：IP信息查询+DNS查找+URL编解码+网络状态监控+HTTP状态码查询+端口扫描器' },
   // DevLab 开发者实验室（v45创新功能 — 12+开发工具集成，一站式开发工具箱）
   { id: 'dev-lab', name: 'DevLab 开发者实验室', icon: <SparklesIcon />, component: 'DevLab', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '一站式开发者工具箱：JSON格式化、Base64编解码、哈希生成、UUID生成、密码生成、颜色工具、时间戳转换等12+实用开发工具' },
   // 云剪贴板（v40 创新功能 — 基于 GitHub Gist 的真实跨设备同步）
