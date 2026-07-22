@@ -30,6 +30,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 实时代码协作平台（v47创新功能 — 多语言支持+实时协作+代码执行）
+  { id: 'realtime-code-collab', name: '实时代码协作', icon: <UserIcon />, component: 'RealTimeCodeCollab', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时代码协作平台：支持JavaScript/TypeScript/Python/Java/C++/Go/Rust/HTML/CSS，模拟协作者光标，代码实时执行，会话分享' },
+  // AI智能代码分析器（v47创新功能 — 代码质量分析+改进建议+实时反馈）
+  { id: 'ai-code-analyzer-pro', name: 'AI代码分析器 Pro', icon: <SparklesIcon />, component: 'AICodeAnalyzerPro', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '智能代码质量分析：代码复杂度评估+重复代码检测+魔法数字识别+长行警告+改进建议生成，支持7种编程语言' },
   { id: 'audio-viz', name: 'AudioViz 音乐可视化', icon: <AudioVizIcon />, component: 'AudioViz', category: 'multimedia', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '实时音频可视化器：频谱柱状图/波形图/圆形频谱/粒子效果/脉冲圆环，支持麦克风/文件/演示模式' },
   { id: 'pulse-board', name: 'PulseBoard 实时仪表盘', icon: <PulseIcon />, component: 'PulseBoard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时信息仪表盘：系统监控+天气+新闻+加密货币+多时区时钟，数据实时刷新' },
   { id: 'knowledge-vine', name: 'KnowledgeVine 知识花园', icon: <VineIcon />, component: 'KnowledgeVine', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '可视化知识管理：知识树+思维导图+笔记卡片，让你的想法像植物一样生长' },

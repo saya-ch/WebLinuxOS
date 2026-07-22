@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v45.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v47.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -43,6 +43,8 @@ Multi-window environment with 4 virtual desktops, draggable and resizable window
 
 Pushing the boundaries of what a web OS can do:
 
+- **Real-Time Code Collaboration** — Multi-language collaborative coding platform with real-time cursor tracking, JavaScript execution, session sharing, and support for 9 programming languages (JavaScript, TypeScript, Python, Java, C++, Go, Rust, HTML, CSS)
+- **AI Code Analyzer Pro** — Intelligent code quality analyzer with complexity assessment, duplicate code detection, magic number identification, long line warnings, and actionable improvement suggestions for 7 languages
 - **DevPortal** — Unified developer toolbox with 7 categories: dashboard, code tools, text tools, color tools, time tools, network tools, and data visualization
 - **FlowBoard** — Visual workflow builder with drag-and-drop nodes for conditions, API calls, data processing, delays, and notifications. Includes preset templates for common automation patterns
 - **NeoTerminal** — Next-generation terminal with tabbed interface, AI commands, bookmarks, code snippets, and 4 themes (Dark, Light, Cyberpunk, Matrix)
