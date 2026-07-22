@@ -294,6 +294,8 @@ const Desktop = memo(function Desktop() {
 
   // 显示桌面过渡效果
   const [showDesktopEffect, setShowDesktopEffect] = useState(false)
+  // 窗口拖拽桌面反馈
+  const [isWindowDragging, setIsWindowDragging] = useState(false)
 
   // 使用useMemo生成星星位置，避免每次渲染时重新生成
   const nebulaStars = useMemo(() =>
@@ -539,6 +541,17 @@ const Desktop = memo(function Desktop() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [hideContextMenu])
 
+  useEffect(() => {
+    const handleDragStart = () => setIsWindowDragging(true)
+    const handleDragEnd = () => setIsWindowDragging(false)
+    window.addEventListener('window-drag-start', handleDragStart)
+    window.addEventListener('window-drag-end', handleDragEnd)
+    return () => {
+      window.removeEventListener('window-drag-start', handleDragStart)
+      window.removeEventListener('window-drag-end', handleDragEnd)
+    }
+  }, [])
+
   const handleWallpaperChange = useCallback(() => {
     const idx = wallpapers.indexOf(wallpaper)
     const next = wallpapers[(idx + 1) % wallpapers.length]
@@ -676,6 +689,11 @@ const Desktop = memo(function Desktop() {
 
       {/* Depth gradient overlay - 增加深度的微妙渐变层 */}
       <div className="desktop-depth-gradient" />
+      
+      {/* 窗口拖拽桌面反馈效果 */}
+      <div className={`desktop-drag-feedback ${isWindowDragging ? 'active' : ''}`}>
+        <div className="desktop-drag-feedback-grid" />
+      </div>
       
       {/* Floating gradient orbs */}
       <div className="desktop-gradient-orb">

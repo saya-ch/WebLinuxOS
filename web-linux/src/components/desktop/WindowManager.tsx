@@ -21,6 +21,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ActivityHeatmap: () => import('../../apps/ActivityHeatmap'),
   ActivityTracker: () => import('../../apps/ActivityTracker'),
   AdvancedDataViz: () => import('../../apps/AdvancedDataViz'),
+  AudioViz: () => import('../../apps/AudioViz'),
   AIAssistant: () => import('../../apps/AIAssistant'),
   AIAssistantEnhanced: () => import('../../apps/AIAssistantEnhanced'),
   AIAssistantPro: () => import('../../apps/AIAssistantPro'),
@@ -236,6 +237,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   PDFViewer: () => import('../../apps/PDFViewer'),
   PerformanceMonitor: () => import('../../apps/PerformanceMonitor'),
   PerformanceDashboard: () => import('../../apps/PerformanceDashboard'),
+  PulseBoard: () => import('../../apps/PulseBoard'),
   Pomodoro: () => import('../../apps/Pomodoro'),
   PomodoroPro: () => import('../../apps/PomodoroPro'),
   PomodoroStudio: () => import('../../apps/PomodoroStudio'),
@@ -316,6 +318,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   TaskManagerPlus: () => import('../../apps/TaskManagerPlus'),
   TaskManagerPro: () => import('../../apps/TaskManagerPro'),
   Terminal: () => import('../../apps/Terminal'),
+  NeoTerminal: () => import('../../apps/NeoTerminal'),
   TextDiffViewer: () => import('../../apps/TextDiffViewer'),
   TextEditor: () => import('../../apps/TextEditor'),
   TextFormatter: () => import('../../apps/TextFormatter'),
@@ -365,6 +368,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   APITesterUltra: () => import('../../apps/APITesterUltra'),
   DevShortcuts: () => import('../../apps/DevShortcuts'),
   DevLab: () => import('../../apps/DevLab'),
+  DevPortal: () => import('../../apps/DevPortal'),
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

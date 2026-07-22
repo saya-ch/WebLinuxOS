@@ -134,15 +134,18 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       setDragOpacity(0.85)
       document.body.style.setProperty('cursor', 'grabbing', 'important')
       document.body.style.userSelect = 'none'
+      window.dispatchEvent(new CustomEvent('window-drag-start'))
     } else if (!resizing) {
       setDragOpacity(1)
       document.body.style.setProperty('cursor', '')
       document.body.style.userSelect = ''
+      window.dispatchEvent(new CustomEvent('window-drag-end'))
     }
     return () => {
       if (!resizing) {
         document.body.style.setProperty('cursor', '')
         document.body.style.userSelect = ''
+        window.dispatchEvent(new CustomEvent('window-drag-end'))
       }
     }
   }, [dragging, resizing])

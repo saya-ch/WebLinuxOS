@@ -30,6 +30,12 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  { id: 'audio-viz', name: 'AudioViz 音乐可视化', icon: <AudioVizIcon />, component: 'AudioViz', category: 'multimedia', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '实时音频可视化器：频谱柱状图/波形图/圆形频谱/粒子效果/脉冲圆环，支持麦克风/文件/演示模式' },
+  { id: 'pulse-board', name: 'PulseBoard 实时仪表盘', icon: <PulseIcon />, component: 'PulseBoard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时信息仪表盘：系统监控+天气+新闻+加密货币+多时区时钟，数据实时刷新' },
+  { id: 'knowledge-vine', name: 'KnowledgeVine 知识花园', icon: <VineIcon />, component: 'KnowledgeVine', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '可视化知识管理：知识树+思维导图+笔记卡片，让你的想法像植物一样生长' },
+  { id: 'neo-terminal', name: 'NeoTerminal 增强终端', icon: <TerminalIcon />, component: 'NeoTerminal', category: 'system', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: true, isNew: true, description: 'AI增强的现代化终端：自然语言转命令、智能建议、命令解释、多标签页、主题切换' },
+  // DevPortal 开发者门户（v46创新功能 — 一站式开发者工作台：7大模块30+实用开发工具）
+  { id: 'dev-portal', name: 'DevPortal 开发者门户', icon: <DevPortalIcon />, component: 'DevPortal', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '一站式开发者门户：代码工具+文本工具+颜色工具+时间工具+网络工具，30+实用开发工具集成' },
   // 智能仪表板（v46创新功能 — 一站式信息聚合中心：天气+系统监控+快捷工具+每日名言+待办事项）
   { id: 'smart-dashboard', name: '智能仪表板', icon: <DashboardIcon />, component: 'SmartDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '一站式智能仪表板：实时天气+系统监控+快捷工具入口+每日励志名言+待办事项管理，玻璃拟态设计' },
   // 网络工具箱专业版（v46创新功能 — IP查询+DNS+URL编解码+网络监控+HTTP状态码+端口扫描，六大网络工具）
@@ -107,6 +113,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'api-tester-ultra', name: 'API测试终结者', icon: <ApiLabIcon />, component: 'APITesterUltra', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业API测试工具：真实API调用、预设模板库(GitHub/NASA/汇率等)、请求历史、收藏管理、响应格式化、一键复制/下载' },
   // 开发者快捷键大全（v45创新功能 — VS Code/Chrome/macOS/Terminal/Git/Vim快捷键速查）
   { id: 'dev-shortcuts', name: '开发者快捷键大全', icon: <CommandIcon />, component: 'DevShortcuts', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '开发者必备快捷键速查表：覆盖VS Code/Chrome/macOS/Terminal/Git/Vim/Web开发，支持搜索、分类筛选、一键复制、自定义添加、收藏管理' },
+  // FlowBoard 可视化工作流编辑器
+  { id: 'flowboard', name: 'FlowBoard 工作流', icon: <WorkflowIcon />, component: 'FlowBoard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '可视化工作流编辑器：拖拽式节点编辑、条件分支、模拟执行、导出JSON' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -118,6 +126,56 @@ export function registerApps(extras: AppDefinition[]) {
       existingIds.add(app.id)
     }
   }
+}
+
+function AudioVizIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12h2l2-5 3 10 3-8 2 3 2-5 2 5h2" />
+      <circle cx="12" cy="12" r="9" strokeDasharray="2 3" opacity="0.5" />
+    </svg>
+  )
+}
+
+function PulseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12h3l2-6 3 12 3-8 2 4h5" />
+      <circle cx="22" cy="12" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function VineIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22V12" />
+      <path d="M12 12C12 8 10 6 6 6" />
+      <path d="M12 12C12 8 14 6 18 6" />
+      <path d="M6 6C6 4 5 2 3 2" />
+      <path d="M18 6C18 4 19 2 21 2" />
+      <circle cx="3" cy="2" r="1" fill="currentColor" stroke="none" />
+      <circle cx="21" cy="2" r="1" fill="currentColor" stroke="none" />
+      <path d="M12 22C12 18 10 16 6 16" />
+      <path d="M12 22C12 18 14 16 18 16" />
+      <path d="M6 16C6 14 5 12 3 12" />
+      <path d="M18 16C18 14 19 12 21 12" />
+      <circle cx="3" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="21" cy="12" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function DevPortalIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <path d="M17.5 14L14 17.5L17.5 21" />
+      <path d="M21 17.5H14" />
+    </svg>
+  )
 }
 
 function SmartNotesIcon() {
@@ -1085,6 +1143,18 @@ function QuickNotesProIcon() {
       <line x1="16" y1="17" x2="8" y2="17" />
       <line x1="10" y1="9" x2="8" y2="9" />
       <circle cx="18" cy="18" r="3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function WorkflowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="5" cy="6" r="2" />
+      <circle cx="5" cy="18" r="2" />
+      <circle cx="19" cy="12" r="2" />
+      <path d="M7 6h4a3 3 0 0 1 3 3v0a3 3 0 0 0 3 3h2" />
+      <path d="M7 18h4a3 3 0 0 0 3-3v0a3 3 0 0 1 3-3h2" />
     </svg>
   )
 }

@@ -1,317 +1,361 @@
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import {
-  Search, Plus, Trash2, BookOpen, Network,
-  LayoutGrid, Link2, FileText,
-  Save, ArrowLeft
+  Plus, Trash2, Search, ZoomIn, ZoomOut,
+  TreePine, Network, List, LayoutGrid,
+  Tag, Link2, Sparkles, Leaf, Sprout, TreeDeciduous,
+  Download, Upload, Settings, X, Edit3, Save,
+  Clock, Star, ChevronRight, Info
 } from 'lucide-react'
-import './KnowledgeVine.css'
 
-/* ============================================================
-   Knowledge Vine - 第二大脑 / 知识藤蔓
-   ============================================================
-   - 卡片盒笔记法(Zettelkasten): 每张卡片是一个独立概念
-   - 双向链接: 用 [[卡片名]] 创建笔记之间的网络
-   - 知识图谱: 力导向布局可视化所有笔记之间的关联
-   - 全文搜索: 即时搜索所有卡片
-   - 标签系统: 多维度分类与检索
-   - 类别管理: 主题/项目/资源/灵感
-   - 全部本地存储, 隐私安全
-   ============================================================ */
+type GrowthStage = 'seed' | 'sprout' | 'growing' | 'mature'
+type ViewMode = 'tree' | 'mindmap' | 'list' | 'card'
 
-interface Note {
+interface NoteNode {
   id: string
   title: string
   content: string
-  category: string
   tags: string[]
   links: string[]
+  parentId: string | null
+  x: number
+  y: number
+  growth: GrowthStage
+  lastVisited: number
   createdAt: number
   updatedAt: number
-  pinned?: boolean
+  color: string
 }
 
-interface Category {
+interface Tag {
   id: string
   name: string
   color: string
-  icon: string
 }
 
-const STORAGE_KEY = 'knowledge-vine-v1'
+interface KnowledgeVineState {
+  nodes: NoteNode[]
+  tags: Tag[]
+  selectedId: string | null
+  view: ViewMode
+  zoom: number
+  pan: { x: number; y: number }
+  activeTag: string | null
+  searchQuery: string
+}
 
-const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'all', name: '全部笔记', color: '#4ade80', icon: '◉' },
-  { id: 'concept', name: '概念', color: '#4ade80', icon: '◐' },
-  { id: 'project', name: '项目', color: '#fbbf24', icon: '◆' },
-  { id: 'resource', name: '资源', color: '#67e8f9', icon: '◇' },
-  { id: 'insight', name: '灵感', color: '#c4b5fd', icon: '✦' },
-  { id: 'question', name: '问题', color: '#f87171', icon: '?' },
+const STORAGE_KEY = 'knowledge-vine-garden-v1'
+
+const GROWTH_CONFIG: Record<GrowthStage, { label: string; icon: typeof Leaf; days: number }> = {
+  seed: { label: '种子', icon: Sparkles, days: 0 },
+  sprout: { label: '幼苗', icon: Sprout, days: 3 },
+  growing: { label: '成长', icon: Leaf, days: 7 },
+  mature: { label: '成熟', icon: TreeDeciduous, days: 14 },
+}
+
+const NODE_COLORS = [
+  '#4ade80', '#22d3ee', '#a78bfa', '#fb923c',
+  '#f472b6', '#facc15', '#60a5fa', '#34d399',
 ]
 
-const SEED_NOTES: Note[] = [
-  {
-    id: 'n-welcome',
-    title: '欢迎来到知识藤蔓',
-    content: `# 欢迎来到知识藤蔓
-
-这是你的第二大脑。
-
-## 核心理念
-
-> "信息是噪音，知识是连接。" — David Perrell
-
-## 如何使用
-
-- **创建笔记**：点击右上角的新建按钮
-- **双向链接**：用 [[笔记名]] 引用其他笔记，系统会自动建立关联
-- **标签**：使用 #标签 为笔记添加多维度分类
-- **图谱视图**：点击图谱按钮可视化你的知识网络
-
-## 提示
-
-试试创建一张笔记，比如"费曼学习法"，然后用 [[费曼学习法]] 引用它。`,
-    category: 'concept',
-    tags: ['入门', '方法论'],
-    links: [],
-    createdAt: Date.now() - 86400000,
-    updatedAt: Date.now() - 3600000,
-    pinned: true,
-  },
-  {
-    id: 'n-feynman',
-    title: '费曼学习法',
-    content: `# 费曼学习法
-
-诺贝尔奖得主理查德·费曼提出的学习框架，核心是"以教促学"。
-
-## 四步法则
-
-1. **选择概念**：选择要学习的概念，写在纸上
-2. **假装教授**：向一个完全不懂的人讲解这个概念
-3. **识别盲点**：卡住的地方就是知识漏洞
-4. **简化语言**：用最简单的话重新组织
-
-## 应用场景
-
-- 学习新技术栈
-- 准备技术分享
-- 整理复杂的系统设计
-
-## 相关
-
-- [[刻意练习]]`,
-    category: 'concept',
-    tags: ['学习', '方法论'],
-    links: ['n-deliberate'],
-    createdAt: Date.now() - 7200000,
-    updatedAt: Date.now() - 3600000,
-  },
-  {
-    id: 'n-deliberate',
-    title: '刻意练习',
-    content: `# 刻意练习
-
-安德斯·艾利克森提出的训练理论。
-
-## 核心原则
-
-- 专注：100% 投入的训练
-- 反馈：实时纠正偏差
-- 突破：持续挑战舒适区边缘
-- 重复：高频次的刻意训练
-
-## 与费曼学习法的结合
-
-- 用 [[费曼学习法]] 检验理解
-- 在反馈循环中不断调整
-- 通过教学巩固薄弱环节`,
-    category: 'concept',
-    tags: ['学习', '训练'],
-    links: ['n-feynman'],
-    createdAt: Date.now() - 3600000,
-    updatedAt: Date.now() - 1800000,
-  },
-  {
-    id: 'n-zettel',
-    title: '卡片盒笔记法',
-    content: `# 卡片盒笔记法 (Zettelkasten)
-
-德国社会学家 Niklas Luhmann 实践的笔记方法。
-
-## 核心思想
-
-每张卡片只记录一个独立的概念，通过编号与链接建立网络。
-
-## 卡片类型
-
-- **闪念卡 (Fleeting)**：随时记录的想法
-- **文献卡 (Literature)**：阅读时摘录
-- **永久卡 (Permanent)**：经过思考的概念
-- **项目卡 (Project)**：与具体项目相关
-
-## 工具
-
-- Obsidian
-- Roam Research
-- Logseq
-- 本知识藤蔓 :)`,
-    category: 'concept',
-    tags: ['笔记', '方法论', 'PKM'],
-    links: [],
-    createdAt: Date.now() - 1800000,
-    updatedAt: Date.now() - 600000,
-  },
+const DEFAULT_TAGS: Tag[] = [
+  { id: 't-idea', name: '灵感', color: '#fbbf24' },
+  { id: 't-learn', name: '学习', color: '#60a5fa' },
+  { id: 't-work', name: '工作', color: '#34d399' },
+  { id: 't-life', name: '生活', color: '#f472b6' },
+  { id: 't-ref', name: '参考', color: '#a78bfa' },
 ]
 
-function detectLinks(content: string, allNotes: Note[]): string[] {
-  const matches = content.match(/\[\[([^\]]+)\]\]/g) || []
-  const linked = new Set<string>()
-  for (const m of matches) {
-    const title = m.slice(2, -2).trim()
-    const target = allNotes.find(n => n.title === title)
-    if (target) linked.add(target.id)
+function generateId(): string {
+  return 'n_' + Math.random().toString(36).slice(2, 10)
+}
+
+function calcGrowth(createdAt: number, updatedAt: number): GrowthStage {
+  const age = Date.now() - Math.max(createdAt, updatedAt)
+  const days = age / (1000 * 60 * 60 * 24)
+  if (days >= 14) return 'mature'
+  if (days >= 7) return 'growing'
+  if (days >= 3) return 'sprout'
+  return 'seed'
+}
+
+function createSeedData(): KnowledgeVineState {
+  const now = Date.now()
+  const rootId = generateId()
+  const child1 = generateId()
+  const child2 = generateId()
+  const child3 = generateId()
+  const grand1 = generateId()
+  const grand2 = generateId()
+
+  const nodes: NoteNode[] = [
+    {
+      id: rootId,
+      title: '我的知识花园',
+      content: '欢迎来到知识花园！\n\n这是你的知识树根节点。\n\n点击子节点探索，或创建新的想法。',
+      tags: ['t-idea'],
+      links: [child1, child2, child3],
+      parentId: null,
+      x: 400,
+      y: 250,
+      growth: 'mature',
+      lastVisited: now,
+      createdAt: now - 30 * 86400000,
+      updatedAt: now - 86400000,
+      color: NODE_COLORS[0],
+    },
+    {
+      id: child1,
+      title: '学习笔记',
+      content: '记录学习过程中的重要知识点\n\n## 主题\n- 技术学习\n- 读书心得\n- 课程笔记',
+      tags: ['t-learn'],
+      links: [grand1, grand2],
+      parentId: rootId,
+      x: 150,
+      y: 150,
+      growth: 'growing',
+      lastVisited: now - 3600000,
+      createdAt: now - 10 * 86400000,
+      updatedAt: now - 2 * 86400000,
+      color: NODE_COLORS[1],
+    },
+    {
+      id: child2,
+      title: '项目想法',
+      content: '收集各种项目创意\n\n待做的项目清单：\n1. 个人博客\n2. 开源工具\n3. 副业项目',
+      tags: ['t-work', 't-idea'],
+      links: [],
+      parentId: rootId,
+      x: 150,
+      y: 350,
+      growth: 'sprout',
+      lastVisited: now - 86400000,
+      createdAt: now - 5 * 86400000,
+      updatedAt: now - 3 * 86400000,
+      color: NODE_COLORS[2],
+    },
+    {
+      id: child3,
+      title: '生活感悟',
+      content: '记录生活中的点滴思考\n\n- 每日反思\n- 读书笔记\n- 灵感闪现',
+      tags: ['t-life'],
+      links: [],
+      parentId: rootId,
+      x: 650,
+      y: 150,
+      growth: 'seed',
+      lastVisited: now - 2 * 86400000,
+      createdAt: now - 2 * 86400000,
+      updatedAt: now - 2 * 86400000,
+      color: NODE_COLORS[3],
+    },
+    {
+      id: grand1,
+      title: 'React 深入',
+      content: 'React 核心概念学习笔记\n\n- Hooks 原理\n- Fiber 架构\n- 状态管理',
+      tags: ['t-learn', 't-work'],
+      links: [],
+      parentId: child1,
+      x: -50,
+      y: 80,
+      growth: 'growing',
+      lastVisited: now,
+      createdAt: now - 8 * 86400000,
+      updatedAt: now - 86400000,
+      color: NODE_COLORS[5],
+    },
+    {
+      id: grand2,
+      title: '设计模式',
+      content: '常见设计模式总结\n\n## 创建型\n- 单例、工厂、建造者\n\n## 结构型\n- 适配器、装饰器、代理\n\n## 行为型\n- 观察者、策略、命令',
+      tags: ['t-learn'],
+      links: [],
+      parentId: child1,
+      x: -50,
+      y: 220,
+      growth: 'mature',
+      lastVisited: now - 7200000,
+      createdAt: now - 20 * 86400000,
+      updatedAt: now - 15 * 86400000,
+      color: NODE_COLORS[6],
+    },
+  ]
+
+  return {
+    nodes,
+    tags: DEFAULT_TAGS,
+    selectedId: null,
+    view: 'tree',
+    zoom: 1,
+    pan: { x: 0, y: 0 },
+    activeTag: null,
+    searchQuery: '',
   }
-  return Array.from(linked)
 }
 
-function extractTags(content: string): string[] {
-  const matches = content.match(/#[\u4e00-\u9fa5a-zA-Z0-9_\-]+/g) || []
-  return matches.map(m => m.slice(1))
+function loadState(): KnowledgeVineState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed.nodes && Array.isArray(parsed.nodes)) {
+        return parsed
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return createSeedData()
 }
 
-type ViewMode = 'grid' | 'graph'
+function saveState(state: KnowledgeVineState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch {
+    // ignore quota
+  }
+}
 
 const KnowledgeVine = memo(function KnowledgeVine() {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [activeCategory, setActiveCategory] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [view, setView] = useState<ViewMode>('grid')
+  const [state, setState] = useState<KnowledgeVineState>(() => loadState())
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [editDraft, setEditDraft] = useState<{ title: string; content: string; tags: string[] }>({ title: '', content: '', tags: [] })
+  const [showSettings, setShowSettings] = useState(false)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const isPanning = useRef(false)
+  const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 })
+  const dragNode = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null)
   const initialized = useRef(false)
 
   useEffect(() => {
-    if (initialized.current) return
-    initialized.current = true
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const data = JSON.parse(raw)
-        if (Array.isArray(data.notes) && data.notes.length > 0) {
-          setNotes(data.notes)
-        } else {
-          setNotes(SEED_NOTES)
-        }
-      } else {
-        setNotes(SEED_NOTES)
-      }
-    } catch {
-      setNotes(SEED_NOTES)
+    if (!initialized.current) {
+      initialized.current = true
+      return
     }
-  }, [])
-
-  useEffect(() => {
-    if (!initialized.current) return
-    const timer = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ notes }))
-      } catch {
-        // ignore quota
-      }
-    }, 300)
+    const timer = setTimeout(() => saveState(state), 300)
     return () => clearTimeout(timer)
-  }, [notes])
+  }, [state])
 
-  const notesWithLinks = useMemo(() => {
-    return notes.map(n => ({
-      ...n,
-      links: detectLinks(n.content, notes),
-      tags: Array.from(new Set([...n.tags, ...extractTags(n.content)])),
-    }))
-  }, [notes])
+  const { nodes, tags, selectedId, view, zoom, pan, activeTag, searchQuery } = state
 
-  const filteredNotes = useMemo(() => {
-    let result = notesWithLinks
-    if (activeCategory !== 'all') {
-      result = result.filter(n => n.category === activeCategory)
+  const selectedNode = useMemo(() => nodes.find(n => n.id === selectedId) || null, [nodes, selectedId])
+
+  const filteredNodes = useMemo(() => {
+    let result = nodes
+    if (activeTag) {
+      result = result.filter(n => n.tags.includes(activeTag))
     }
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       result = result.filter(n =>
         n.title.toLowerCase().includes(q) ||
-        n.content.toLowerCase().includes(q) ||
-        n.tags.some(t => t.toLowerCase().includes(q))
+        n.content.toLowerCase().includes(q)
       )
     }
-    return [...result].sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1
-      if (!a.pinned && b.pinned) return 1
-      return b.updatedAt - a.updatedAt
+    return result
+  }, [nodes, activeTag, searchQuery])
+
+  const nodesWithGrowth = useMemo(() =>
+    filteredNodes.map(n => ({ ...n, growth: calcGrowth(n.createdAt, n.updatedAt) })),
+    [filteredNodes]
+  )
+
+  const recentlyVisitedIds = useMemo(() => {
+    return [...nodes]
+      .sort((a, b) => b.lastVisited - a.lastVisited)
+      .slice(0, 5)
+      .map(n => n.id)
+  }, [nodes])
+
+  const needsReviewIds = useMemo(() => {
+    const now = Date.now()
+    return nodes.filter(n => {
+      const daysSinceVisit = (now - n.lastVisited) / 86400000
+      const stage = GROWTH_CONFIG[n.growth]
+      return daysSinceVisit >= stage.days && n.growth !== 'seed'
+    }).map(n => n.id)
+  }, [nodes])
+
+  const selectNode = useCallback((id: string | null) => {
+    setState(prev => {
+      if (!id) return { ...prev, selectedId: null }
+      return {
+        ...prev,
+        selectedId: id,
+        nodes: prev.nodes.map(n =>
+          n.id === id ? { ...n, lastVisited: Date.now() } : n
+        ),
+      }
     })
-  }, [notesWithLinks, activeCategory, searchQuery])
-
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: notesWithLinks.length }
-    for (const cat of DEFAULT_CATEGORIES) {
-      if (cat.id === 'all') continue
-      counts[cat.id] = notesWithLinks.filter(n => n.category === cat.id).length
-    }
-    return counts
-  }, [notesWithLinks])
-
-  const editingNote = useMemo(() => {
-    if (!editingId) return null
-    return notesWithLinks.find(n => n.id === editingId)
-  }, [editingId, notesWithLinks])
-
-  const allTags = useMemo(() => {
-    const set = new Set<string>()
-    notesWithLinks.forEach(n => n.tags.forEach(t => set.add(t)))
-    return Array.from(set).sort()
-  }, [notesWithLinks])
-
-  const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
-    setToast({ msg, type })
-    setTimeout(() => setToast(null), 2500)
+    setEditingId(null)
   }, [])
 
-  const createNote = useCallback((category = 'concept') => {
-    const newNote: Note = {
-      id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      title: '新笔记',
+  const createNode = useCallback((parentId: string | null = null) => {
+    const parent = parentId ? nodes.find(n => n.id === parentId) : null
+    const newId = generateId()
+    const newNode: NoteNode = {
+      id: newId,
+      title: '新想法',
       content: '',
-      category,
-      tags: [],
+      tags: parent?.tags.slice(0, 1) || [],
       links: [],
+      parentId,
+      x: parent ? parent.x + 120 : 400,
+      y: parent ? parent.y + 80 + Math.random() * 40 : 300,
+      growth: 'seed',
+      lastVisited: Date.now(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      color: NODE_COLORS[Math.floor(Math.random() * NODE_COLORS.length)],
     }
-    setNotes(prev => [newNote, ...prev])
-    setEditingId(newNote.id)
+    setState(prev => ({
+      ...prev,
+      nodes: [...prev.nodes, newNode],
+      selectedId: newId,
+    }))
+    setEditingId(newId)
+    setEditDraft({ title: '新想法', content: '', tags: newNode.tags })
+  }, [nodes])
+
+  const deleteNode = useCallback((id: string) => {
+    if (!confirm('确定删除这个节点及其所有子节点吗？')) return
+    const toDelete = new Set<string>()
+    const collectChildren = (parentId: string) => {
+      toDelete.add(parentId)
+      nodes.filter(n => n.parentId === parentId).forEach(n => collectChildren(n.id))
+    }
+    collectChildren(id)
+    setState(prev => ({
+      ...prev,
+      nodes: prev.nodes.filter(n => !toDelete.has(n.id)),
+      selectedId: prev.selectedId === id ? null : prev.selectedId,
+    }))
+    setEditingId(null)
+  }, [nodes])
+
+  const startEdit = useCallback((node: NoteNode) => {
+    setEditingId(node.id)
+    setEditDraft({ title: node.title, content: node.content, tags: [...node.tags] })
   }, [])
 
-  const deleteNote = useCallback((id: string) => {
-    if (!confirm('确定删除这张笔记？')) return
-    setNotes(prev => prev.filter(n => n.id !== id))
-    if (editingId === id) setEditingId(null)
-    showToast('已删除', 'error')
-  }, [editingId, showToast])
+  const saveEdit = useCallback(() => {
+    if (!editingId) return
+    setState(prev => ({
+      ...prev,
+      nodes: prev.nodes.map(n =>
+        n.id === editingId
+          ? { ...n, ...editDraft, updatedAt: Date.now() }
+          : n
+      ),
+    }))
+    setEditingId(null)
+  }, [editingId, editDraft])
 
-  const updateNote = useCallback((id: string, patch: Partial<Note>) => {
-    setNotes(prev => prev.map(n => n.id === id ? { ...n, ...patch, updatedAt: Date.now() } : n))
+  const cancelEdit = useCallback(() => {
+    setEditingId(null)
   }, [])
-
-  const navigateToNote = useCallback((title: string) => {
-    const target = notesWithLinks.find(n => n.title === title)
-    if (target) {
-      setEditingId(target.id)
-    } else {
-      showToast(`未找到笔记: ${title}`, 'error')
-    }
-  }, [notesWithLinks, showToast])
 
   const exportData = useCallback(() => {
-    const data = JSON.stringify({ notes, exportedAt: new Date().toISOString() }, null, 2)
+    const data = JSON.stringify(state, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -319,529 +363,1408 @@ const KnowledgeVine = memo(function KnowledgeVine() {
     a.download = `knowledge-vine-${Date.now()}.json`
     a.click()
     URL.revokeObjectURL(url)
-    showToast('已导出', 'success')
-  }, [notes, showToast])
+  }, [state])
 
-  if (editingNote) {
-    return (
-      <div className="kv-root">
-        <div className="kv-editor">
-          <div className="kv-editor-header">
-            <button className="kv-btn" onClick={() => setEditingId(null)}>
-              <ArrowLeft size={12} /> 返回
-            </button>
-            <input
-              className="kv-editor-title"
-              value={editingNote.title}
-              onChange={(e) => updateNote(editingNote.id, { title: e.target.value })}
-              placeholder="笔记标题..."
+  const importData = useCallback(() => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result as string)
+          if (data.nodes && Array.isArray(data.nodes)) {
+            setState(prev => ({ ...prev, ...data }))
+          }
+        } catch {
+          alert('导入失败：文件格式错误')
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
+  }, [])
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (view !== 'tree' && view !== 'mindmap') return
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? 0.9 : 1.1
+    setState(prev => ({
+      ...prev,
+      zoom: Math.max(0.3, Math.min(2.5, prev.zoom * delta)),
+    }))
+  }, [view])
+
+  const handleCanvasMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return
+    const target = e.target as HTMLElement
+    if (target.closest('.kv-node')) return
+    isPanning.current = true
+    panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
+  }, [pan])
+
+  const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
+    if (dragNode.current && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect()
+      const x = (e.clientX - rect.left - pan.x - dragNode.current.offsetX) / zoom
+      const y = (e.clientY - rect.top - pan.y - dragNode.current.offsetY) / zoom
+      setState(prev => ({
+        ...prev,
+        nodes: prev.nodes.map(n =>
+          n.id === dragNode.current!.id ? { ...n, x, y } : n
+        ),
+      }))
+      return
+    }
+    if (isPanning.current) {
+      const dx = e.clientX - panStart.current.x
+      const dy = e.clientY - panStart.current.y
+      setState(prev => ({
+        ...prev,
+        pan: {
+          x: panStart.current.panX + dx,
+          y: panStart.current.panY + dy,
+        },
+      }))
+    }
+  }, [pan, zoom])
+
+  const handleCanvasMouseUp = useCallback(() => {
+    isPanning.current = false
+    dragNode.current = null
+  }, [])
+
+  const handleNodeMouseDown = useCallback((e: React.MouseEvent, node: NoteNode) => {
+    e.stopPropagation()
+    if (editingId) return
+    const target = e.target as HTMLElement
+    if (target.closest('button')) return
+    dragNode.current = {
+      id: node.id,
+      offsetX: e.nativeEvent.offsetX,
+      offsetY: e.nativeEvent.offsetY,
+    }
+    selectNode(node.id)
+  }, [editingId, selectNode])
+
+  const toggleTag = useCallback((_nodeId: string, tagId: string) => {
+    setEditDraft(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tagId)
+        ? prev.tags.filter(t => t !== tagId)
+        : [...prev.tags, tagId]
+    }))
+  }, [])
+
+  const renderTreeView = () => (
+    <div
+      className="kv-canvas"
+      ref={canvasRef}
+      onWheel={handleWheel}
+      onMouseDown={handleCanvasMouseDown}
+      onMouseMove={handleCanvasMouseMove}
+      onMouseUp={handleCanvasMouseUp}
+      onMouseLeave={handleCanvasMouseUp}
+      style={{ cursor: isPanning.current ? 'grabbing' : 'grab' }}
+    >
+      <svg
+        className="kv-svg"
+        style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transformOrigin: '0 0',
+        }}
+      >
+        <defs>
+          {nodesWithGrowth.map(n => (
+            <linearGradient key={n.id} id={`grad-${n.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={n.color} stopOpacity="0.9" />
+              <stop offset="100%" stopColor={n.color} stopOpacity="0.6" />
+            </linearGradient>
+          ))}
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {nodesWithGrowth.map(node => {
+          if (!node.parentId) return null
+          const parent = nodes.find(n => n.id === node.parentId)
+          if (!parent) return null
+          const isRecent = recentlyVisitedIds.includes(node.id)
+          return (
+            <path
+              key={`edge-${node.id}`}
+              d={`M ${parent.x} ${parent.y} Q ${(parent.x + node.x) / 2} ${parent.y} ${node.x} ${node.y}`}
+              fill="none"
+              stroke={isRecent ? node.color : 'rgba(255,255,255,0.2)'}
+              strokeWidth={isRecent ? 2 : 1.5}
+              strokeDasharray={isRecent ? 'none' : '4 4'}
+              opacity={isRecent ? 0.8 : 0.4}
             />
-            <button className="kv-icon-btn" onClick={() => deleteNote(editingNote.id)} title="删除">
-              <Trash2 size={14} color="#f87171" />
-            </button>
-          </div>
-
-          <div className="kv-editor-body">
-            <div className="kv-editor-content">
-              <textarea
-                className="kv-editor-textarea"
-                value={editingNote.content}
-                onChange={(e) => updateNote(editingNote.id, { content: e.target.value })}
-                placeholder={`开始书写你的想法...
-
-使用 [[笔记名]] 创建双向链接
-使用 #标签 添加多维度分类`}
-              />
-            </div>
-
-            <aside className="kv-editor-aside">
-              <div className="kv-aside-section">
-                <h4>分类</h4>
-                <select
-                  className="kv-btn"
-                  style={{ width: '100%' }}
-                  value={editingNote.category}
-                  onChange={(e) => updateNote(editingNote.id, { category: e.target.value })}
-                >
-                  {DEFAULT_CATEGORIES.filter(c => c.id !== 'all').map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+          )
+        })}
+      </svg>
+      <div
+        className="kv-nodes-container"
+        style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transformOrigin: '0 0',
+        }}
+      >
+        {nodesWithGrowth.map(node => {
+          const GrowthIcon = GROWTH_CONFIG[node.growth].icon
+          const isSelected = selectedId === node.id
+          const isRecent = recentlyVisitedIds.includes(node.id)
+          const needsReview = needsReviewIds.includes(node.id)
+          return (
+            <div
+              key={node.id}
+              className={`kv-node ${isSelected ? 'selected' : ''} ${isRecent ? 'recent' : ''} ${needsReview ? 'needs-review' : ''}`}
+              style={{
+                left: node.x,
+                top: node.y,
+                '--node-color': node.color,
+              } as React.CSSProperties}
+              onMouseDown={(e) => handleNodeMouseDown(e, node)}
+              onDoubleClick={() => startEdit(node)}
+            >
+              <div className="kv-node-glow" />
+              <div className="kv-node-header">
+                <GrowthIcon size={12} />
+                <span className="kv-node-title">{node.title}</span>
               </div>
-
-              <div className="kv-aside-section">
-                <h4>反向链接 ({editingNote.links.length})</h4>
-                {editingNote.links.length === 0 ? (
-                  <div style={{ fontSize: 12, color: 'var(--kv-text-muted)' }}>暂无关联</div>
-                ) : (
-                  <div className="kv-link-list">
-                    {editingNote.links.map(id => {
-                      const linked = notesWithLinks.find(n => n.id === id)
-                      if (!linked) return null
-                      return (
-                        <div key={id} className="kv-link-item" onClick={() => navigateToNote(linked.title)}>
-                          <Link2 size={12} />
-                          <span>{linked.title}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <div className="kv-aside-section">
-                <h4>提到的笔记</h4>
-                {(() => {
-                  const mentions = editingNote.content.match(/\[\[([^\]]+)\]\]/g) || []
-                  const unique = Array.from(new Set(mentions.map(m => m.slice(2, -2).trim())))
-                  if (unique.length === 0) {
-                    return <div style={{ fontSize: 12, color: 'var(--kv-text-muted)' }}>用 [[笔记名]] 引用</div>
-                  }
-                  return (
-                    <div className="kv-link-list">
-                      {unique.map((title, i) => {
-                        const exists = notesWithLinks.find(n => n.title === title)
-                        return (
-                          <div
-                            key={i}
-                            className="kv-link-item"
-                            style={{ opacity: exists ? 1 : 0.6 }}
-                            onClick={() => exists && navigateToNote(title)}
-                          >
-                            <FileText size={12} />
-                            <span>{title}</span>
-                            {!exists && <span style={{ color: 'var(--kv-rose)', marginLeft: 4, fontSize: 10 }}>未找到</span>}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {editingNote.tags.length > 0 && (
-                <div className="kv-aside-section">
-                  <h4>标签</h4>
-                  <div className="kv-related">
-                    {editingNote.tags.map(tag => (
-                      <span key={tag} className="kv-related-tag">#{tag}</span>
-                    ))}
-                  </div>
+              {node.tags.length > 0 && (
+                <div className="kv-node-tags">
+                  {node.tags.slice(0, 2).map(tid => {
+                    const t = tags.find(x => x.id === tid)
+                    return t ? <span key={tid} className="kv-mini-tag" style={{ background: t.color + '30', color: t.color }}>{t.name}</span> : null
+                  })}
                 </div>
               )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 
-              <div className="kv-aside-section">
-                <h4>统计</h4>
-                <div style={{ fontSize: 12, color: 'var(--kv-text-dim)', lineHeight: 1.7 }}>
-                  <div>字数：{editingNote.content.length}</div>
-                  <div>创建：{new Date(editingNote.createdAt).toLocaleDateString()}</div>
-                </div>
-              </div>
-            </aside>
+  const renderListView = () => (
+    <div className="kv-list">
+      {nodesWithGrowth.map(node => {
+        const GrowthIcon = GROWTH_CONFIG[node.growth].icon
+        return (
+          <div
+            key={node.id}
+            className={`kv-list-item ${selectedId === node.id ? 'selected' : ''}`}
+            onClick={() => selectNode(node.id)}
+            onDoubleClick={() => startEdit(node)}
+          >
+            <div className="kv-list-icon" style={{ color: node.color }}>
+              <GrowthIcon size={16} />
+            </div>
+            <div className="kv-list-content">
+              <div className="kv-list-title">{node.title}</div>
+              <div className="kv-list-preview">{node.content.slice(0, 80).replace(/\n/g, ' ')}</div>
+            </div>
+            <div className="kv-list-tags">
+              {node.tags.slice(0, 2).map(tid => {
+                const t = tags.find(x => x.id === tid)
+                return t ? <span key={tid} className="kv-mini-tag" style={{ background: t.color + '30', color: t.color }}>{t.name}</span> : null
+              })}
+            </div>
           </div>
+        )
+      })}
+    </div>
+  )
+
+  const renderCardView = () => (
+    <div className="kv-cards">
+      {nodesWithGrowth.map(node => {
+        const GrowthIcon = GROWTH_CONFIG[node.growth].icon
+        return (
+          <div
+            key={node.id}
+            className={`kv-card-item ${selectedId === node.id ? 'selected' : ''}`}
+            style={{ borderColor: node.color + '40' }}
+            onClick={() => selectNode(node.id)}
+            onDoubleClick={() => startEdit(node)}
+          >
+            <div className="kv-card-header" style={{ background: `linear-gradient(135deg, ${node.color}20, transparent)` }}>
+              <GrowthIcon size={18} style={{ color: node.color }} />
+              <span className="kv-card-growth">{GROWTH_CONFIG[node.growth].label}</span>
+            </div>
+            <div className="kv-card-body">
+              <h3>{node.title}</h3>
+              <p>{node.content.slice(0, 100).replace(/\n/g, ' ')}</p>
+            </div>
+            <div className="kv-card-footer">
+              {node.tags.slice(0, 3).map(tid => {
+                const t = tags.find(x => x.id === tid)
+                return t ? <span key={tid} className="kv-mini-tag" style={{ background: t.color + '30', color: t.color }}>{t.name}</span> : null
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const renderMindMapView = () => {
+    return (
+      <div
+        className="kv-canvas"
+        ref={canvasRef}
+        onWheel={handleWheel}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+        onMouseLeave={handleCanvasMouseUp}
+        style={{ cursor: isPanning.current ? 'grabbing' : 'grab' }}
+      >
+        <svg
+          className="kv-svg"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: '0 0',
+          }}
+        >
+          <defs>
+            <filter id="glow-mind">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          {nodesWithGrowth.map(node => {
+            if (!node.parentId) return null
+            const parent = nodes.find(n => n.id === node.parentId)
+            if (!parent) return null
+            return (
+              <path
+                key={`mind-edge-${node.id}`}
+                d={`M ${parent.x + 80} ${parent.y} C ${parent.x + 140} ${parent.y}, ${node.x - 60} ${node.y}, ${node.x} ${node.y}`}
+                fill="none"
+                stroke={node.color}
+                strokeWidth={2}
+                opacity={0.5}
+              />
+            )
+          })}
+        </svg>
+        <div
+          className="kv-nodes-container"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: '0 0',
+          }}
+        >
+          {nodesWithGrowth.map(node => {
+            const GrowthIcon = GROWTH_CONFIG[node.growth].icon
+            const isSelected = selectedId === node.id
+            const isRoot = !node.parentId
+            return (
+              <div
+                key={node.id}
+                className={`kv-mind-node ${isRoot ? 'root' : ''} ${isSelected ? 'selected' : ''}`}
+                style={{
+                  left: node.x,
+                  top: node.y,
+                  '--node-color': node.color,
+                } as React.CSSProperties}
+                onMouseDown={(e) => handleNodeMouseDown(e, node)}
+                onDoubleClick={() => startEdit(node)}
+              >
+                <GrowthIcon size={14} />
+                <span>{node.title}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="kv-root">
+    <div className="kv-app">
+      <style>{`
+        .kv-app {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(135deg, #0a0f1a 0%, #0d1424 50%, #0a1020 100%);
+          color: #e2e8f0;
+          font-family: 'Inter', system-ui, sans-serif;
+          overflow: hidden;
+          position: relative;
+        }
+        .kv-app::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: 
+            radial-gradient(ellipse at 20% 20%, rgba(74, 222, 128, 0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(167, 139, 250, 0.08) 0%, transparent 50%);
+          pointer-events: none;
+        }
+        .kv-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 12px 20px;
+          background: rgba(15, 23, 42, 0.7);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          position: relative;
+          z-index: 10;
+        }
+        .kv-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 180px;
+        }
+        .kv-logo {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #4ade80, #22d3ee);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+        }
+        .kv-brand h1 {
+          font-size: 15px;
+          font-weight: 600;
+          margin: 0;
+          background: linear-gradient(135deg, #4ade80, #22d3ee);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .kv-brand small {
+          font-size: 10px;
+          color: #64748b;
+        }
+        .kv-search {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 8px;
+          padding: 6px 12px;
+          max-width: 400px;
+        }
+        .kv-search input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #e2e8f0;
+          font-size: 12px;
+        }
+        .kv-search svg { color: #64748b; }
+        .kv-view-switch {
+          display: flex;
+          background: rgba(255, 255, 255, 0.04);
+          border-radius: 8px;
+          padding: 3px;
+          gap: 2px;
+        }
+        .kv-view-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 10px;
+          border-radius: 6px;
+          border: none;
+          background: transparent;
+          color: #64748b;
+          cursor: pointer;
+          font-size: 11px;
+          transition: all 0.2s;
+        }
+        .kv-view-btn:hover { color: #94a3b8; }
+        .kv-view-btn.active {
+          background: rgba(74, 222, 128, 0.15);
+          color: #4ade80;
+        }
+        .kv-header-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .kv-icon-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.04);
+          color: #94a3b8;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        .kv-icon-btn:hover {
+          background: rgba(74, 222, 128, 0.1);
+          color: #4ade80;
+          border-color: rgba(74, 222, 128, 0.3);
+        }
+        .kv-btn-primary {
+          padding: 6px 14px;
+          border-radius: 8px;
+          border: none;
+          background: linear-gradient(135deg, #4ade80, #22d3ee);
+          color: #0a0f1a;
+          font-weight: 600;
+          font-size: 12px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+          box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
+        }
+        .kv-btn-primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 24px rgba(74, 222, 128, 0.4);
+        }
+        .kv-body {
+          flex: 1;
+          display: flex;
+          overflow: hidden;
+          position: relative;
+        }
+        .kv-sidebar {
+          width: 220px;
+          border-right: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(15, 23, 42, 0.4);
+          backdrop-filter: blur(10px);
+          padding: 16px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .kv-sidebar-section h3 {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #64748b;
+          margin: 0 0 10px 0;
+          font-weight: 600;
+        }
+        .kv-tag-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .kv-tag-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+          color: #94a3b8;
+          transition: all 0.15s;
+        }
+        .kv-tag-item:hover {
+          background: rgba(255, 255, 255, 0.04);
+          color: #e2e8f0;
+        }
+        .kv-tag-item.active {
+          background: rgba(74, 222, 128, 0.1);
+          color: #4ade80;
+        }
+        .kv-tag-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+        .kv-growth-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .kv-growth-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 11px;
+          color: #94a3b8;
+        }
+        .kv-stat-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        .kv-stat-card {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 8px;
+          padding: 10px;
+          text-align: center;
+        }
+        .kv-stat-num {
+          font-size: 18px;
+          font-weight: 700;
+          background: linear-gradient(135deg, #4ade80, #22d3ee);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .kv-stat-label {
+          font-size: 10px;
+          color: #64748b;
+          margin-top: 2px;
+        }
+        .kv-main {
+          flex: 1;
+          position: relative;
+          overflow: hidden;
+        }
+        .kv-canvas {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          overflow: hidden;
+        }
+        .kv-svg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+        .kv-nodes-container {
+          position: absolute;
+          inset: 0;
+        }
+        .kv-node {
+          position: absolute;
+          min-width: 120px;
+          max-width: 180px;
+          transform: translate(-50%, -50%);
+          cursor: grab;
+          user-select: none;
+        }
+        .kv-node:active { cursor: grabbing; }
+        .kv-node-glow {
+          position: absolute;
+          inset: -12px;
+          background: radial-gradient(ellipse at center, var(--node-color) 0%, transparent 70%);
+          opacity: 0.15;
+          filter: blur(8px);
+          transition: opacity 0.3s;
+          pointer-events: none;
+        }
+        .kv-node.recent .kv-node-glow { opacity: 0.35; animation: pulse 2s ease-in-out infinite; }
+        .kv-node.needs-review .kv-node-glow { opacity: 0.5; animation: pulse 1.5s ease-in-out infinite; }
+        .kv-node.selected .kv-node-glow { opacity: 0.5; }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.6; }
+        }
+        .kv-node-header {
+          background: rgba(15, 23, 42, 0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          padding: 8px 12px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          position: relative;
+          z-index: 1;
+          transition: all 0.2s;
+        }
+        .kv-node.selected .kv-node-header {
+          border-color: var(--node-color);
+          box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
+        }
+        .kv-node-title {
+          font-size: 12px;
+          font-weight: 500;
+          color: #e2e8f0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .kv-node-tags {
+          display: flex;
+          gap: 4px;
+          margin-top: 4px;
+          padding: 0 4px;
+          flex-wrap: wrap;
+        }
+        .kv-mini-tag {
+          font-size: 9px;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 500;
+        }
+        .kv-mind-node {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          padding: 10px 16px;
+          background: rgba(15, 23, 42, 0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid var(--node-color);
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: grab;
+          white-space: nowrap;
+          box-shadow: 0 0 20px color-mix(in srgb, var(--node-color) 30%, transparent);
+          transition: all 0.2s;
+        }
+        .kv-mind-node.root {
+          padding: 14px 24px;
+          font-size: 14px;
+          font-weight: 700;
+          background: linear-gradient(135deg, var(--node-color), var(--node-color)80);
+          color: #0a0f1a;
+          box-shadow: 0 0 30px color-mix(in srgb, var(--node-color) 50%, transparent);
+        }
+        .kv-mind-node.selected {
+          transform: translate(-50%, -50%) scale(1.05);
+        }
+        .kv-list {
+          padding: 16px;
+          overflow-y: auto;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .kv-list-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .kv-list-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+        .kv-list-item.selected {
+          background: rgba(74, 222, 128, 0.08);
+          border-color: rgba(74, 222, 128, 0.3);
+        }
+        .kv-list-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .kv-list-content {
+          flex: 1;
+          min-width: 0;
+        }
+        .kv-list-title {
+          font-size: 13px;
+          font-weight: 500;
+          color: #e2e8f0;
+          margin-bottom: 2px;
+        }
+        .kv-list-preview {
+          font-size: 11px;
+          color: #64748b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .kv-list-tags {
+          display: flex;
+          gap: 4px;
+        }
+        .kv-cards {
+          padding: 20px;
+          overflow-y: auto;
+          height: 100%;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 16px;
+          align-content: start;
+        }
+        .kv-card-item {
+          background: rgba(15, 23, 42, 0.7);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 12px;
+          overflow: hidden;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .kv-card-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .kv-card-item.selected {
+          border-color: #4ade80;
+          box-shadow: 0 0 20px rgba(74, 222, 128, 0.15);
+        }
+        .kv-card-header {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .kv-card-growth {
+          font-size: 10px;
+          color: #64748b;
+          font-weight: 500;
+        }
+        .kv-card-body {
+          padding: 14px 16px;
+        }
+        .kv-card-body h3 {
+          margin: 0 0 6px 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #e2e8f0;
+        }
+        .kv-card-body p {
+          margin: 0;
+          font-size: 12px;
+          color: #64748b;
+          line-height: 1.5;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .kv-card-footer {
+          padding: 10px 16px;
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .kv-detail {
+          width: 300px;
+          border-left: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(15, 23, 42, 0.4);
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .kv-detail-header {
+          padding: 16px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .kv-detail-header h2 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #e2e8f0;
+        }
+        .kv-detail-actions {
+          display: flex;
+          gap: 4px;
+        }
+        .kv-detail-body {
+          flex: 1;
+          overflow-y: auto;
+          padding: 16px;
+        }
+        .kv-detail-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          color: #64748b;
+          text-align: center;
+          gap: 12px;
+        }
+        .kv-detail-empty p {
+          font-size: 12px;
+          margin: 0;
+        }
+        .kv-title-input {
+          width: 100%;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 10px 12px;
+          color: #e2e8f0;
+          font-size: 14px;
+          font-weight: 600;
+          outline: none;
+          margin-bottom: 12px;
+        }
+        .kv-title-input:focus {
+          border-color: #4ade80;
+          box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+        }
+        .kv-content-textarea {
+          width: 100%;
+          min-height: 200px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 10px 12px;
+          color: #e2e8f0;
+          font-size: 12px;
+          font-family: inherit;
+          line-height: 1.6;
+          outline: none;
+          resize: vertical;
+          margin-bottom: 12px;
+        }
+        .kv-content-textarea:focus {
+          border-color: #4ade80;
+          box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+        }
+        .kv-view-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #e2e8f0;
+          margin: 0 0 12px 0;
+        }
+        .kv-view-content {
+          font-size: 12px;
+          color: #94a3b8;
+          line-height: 1.7;
+          white-space: pre-wrap;
+        }
+        .kv-meta {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .kv-meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 11px;
+          color: #64748b;
+          margin-bottom: 8px;
+        }
+        .kv-tags-editor {
+          margin-bottom: 12px;
+        }
+        .kv-tags-label {
+          font-size: 11px;
+          color: #64748b;
+          margin-bottom: 6px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .kv-tags-picker {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .kv-tag-pick {
+          padding: 4px 10px;
+          border-radius: 12px;
+          font-size: 11px;
+          cursor: pointer;
+          border: 1px solid transparent;
+          transition: all 0.15s;
+        }
+        .kv-tag-pick.selected {
+          border-color: currentColor;
+        }
+        .kv-edit-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 16px;
+        }
+        .kv-edit-btn {
+          flex: 1;
+          padding: 8px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          color: #94a3b8;
+          cursor: pointer;
+          font-size: 12px;
+          transition: all 0.15s;
+        }
+        .kv-edit-btn:hover {
+          color: #e2e8f0;
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+        .kv-edit-btn.primary {
+          background: linear-gradient(135deg, #4ade80, #22d3ee);
+          color: #0a0f1a;
+          border-color: transparent;
+          font-weight: 600;
+        }
+        .kv-edit-btn.primary:hover {
+          box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
+        }
+        .kv-zoom-controls {
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          z-index: 5;
+        }
+        .kv-zoom-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(15, 23, 42, 0.8);
+          backdrop-filter: blur(10px);
+          color: #94a3b8;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+        }
+        .kv-zoom-btn:hover {
+          color: #4ade80;
+          border-color: rgba(74, 222, 128, 0.3);
+        }
+        .kv-zoom-val {
+          text-align: center;
+          font-size: 10px;
+          color: #64748b;
+          padding: 4px 0;
+        }
+        .kv-hint {
+          position: absolute;
+          bottom: 20px;
+          right: 20px;
+          font-size: 10px;
+          color: #475569;
+          background: rgba(15, 23, 42, 0.7);
+          backdrop-filter: blur(10px);
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .kv-settings-panel {
+          position: absolute;
+          top: 60px;
+          right: 20px;
+          width: 240px;
+          background: rgba(15, 23, 42, 0.95);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          padding: 16px;
+          z-index: 20;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .kv-settings-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 16px;
+        }
+        .kv-settings-header h3 {
+          margin: 0;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .kv-settings-row {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-bottom: 16px;
+        }
+        .kv-settings-row button {
+          width: 100%;
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          color: #94a3b8;
+          cursor: pointer;
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.15s;
+        }
+        .kv-settings-row button:hover {
+          background: rgba(74, 222, 128, 0.1);
+          color: #4ade80;
+          border-color: rgba(74, 222, 128, 0.3);
+        }
+      `}</style>
+
       <header className="kv-header">
         <div className="kv-brand">
           <div className="kv-logo">
-            <BookOpen size={20} color="#0d0f0a" strokeWidth={2.5} />
+            <TreePine size={18} color="#0a0f1a" />
           </div>
-          <div className="kv-title">
-            <h1>Knowledge Vine</h1>
-            <small>第二大脑 · 知识藤蔓</small>
+          <div>
+            <h1>KnowledgeVine</h1>
+            <small>知识花园</small>
           </div>
         </div>
 
         <div className="kv-search">
           <Search size={14} />
           <input
-            placeholder="搜索笔记、标签、内容..."
+            placeholder="搜索知识节点..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
           />
         </div>
 
-        <div className="kv-header-actions">
-          <button className="kv-icon-btn" onClick={exportData} title="导出数据">
-            <Save size={14} />
+        <div className="kv-view-switch">
+          <button
+            className={`kv-view-btn ${view === 'tree' ? 'active' : ''}`}
+            onClick={() => setState(prev => ({ ...prev, view: 'tree' }))}
+          >
+            <TreePine size={13} /> 树状
           </button>
-          <button className="kv-btn primary" onClick={() => createNote(activeCategory === 'all' ? 'concept' : activeCategory)}>
-            <Plus size={12} /> 新笔记
+          <button
+            className={`kv-view-btn ${view === 'mindmap' ? 'active' : ''}`}
+            onClick={() => setState(prev => ({ ...prev, view: 'mindmap' }))}
+          >
+            <Network size={13} /> 导图
+          </button>
+          <button
+            className={`kv-view-btn ${view === 'list' ? 'active' : ''}`}
+            onClick={() => setState(prev => ({ ...prev, view: 'list' }))}
+          >
+            <List size={13} /> 列表
+          </button>
+          <button
+            className={`kv-view-btn ${view === 'card' ? 'active' : ''}`}
+            onClick={() => setState(prev => ({ ...prev, view: 'card' }))}
+          >
+            <LayoutGrid size={13} /> 卡片
+          </button>
+        </div>
+
+        <div className="kv-header-actions">
+          <button className="kv-icon-btn" onClick={() => setShowSettings(s => !s)} title="设置">
+            <Settings size={14} />
+          </button>
+          <button className="kv-btn-primary" onClick={() => createNode(selectedId)}>
+            <Plus size={13} /> 新节点
           </button>
         </div>
       </header>
 
+      {showSettings && (
+        <div className="kv-settings-panel">
+          <div className="kv-settings-header">
+            <h3>设置</h3>
+            <button className="kv-icon-btn" style={{ width: 24, height: 24 }} onClick={() => setShowSettings(false)}>
+              <X size={12} />
+            </button>
+          </div>
+          <div className="kv-settings-row">
+            <button onClick={exportData}><Download size={14} /> 导出 JSON</button>
+            <button onClick={importData}><Upload size={14} /> 导入 JSON</button>
+          </div>
+        </div>
+      )}
+
       <div className="kv-body">
         <aside className="kv-sidebar">
-          <div className="kv-section">
-            <h3 className="kv-section-title">分类</h3>
-            <div className="kv-cat-list">
-              {DEFAULT_CATEGORIES.map(cat => (
+          <div className="kv-sidebar-section">
+            <h3>标签</h3>
+            <div className="kv-tag-list">
+              <div
+                className={`kv-tag-item ${!activeTag ? 'active' : ''}`}
+                onClick={() => setState(prev => ({ ...prev, activeTag: null }))}
+              >
+                <span className="kv-tag-dot" style={{ background: '#64748b' }} />
+                全部节点
+                <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.7 }}>{nodes.length}</span>
+              </div>
+              {tags.map(tag => (
                 <div
-                  key={cat.id}
-                  className={`kv-cat ${activeCategory === cat.id ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(cat.id)}
+                  key={tag.id}
+                  className={`kv-tag-item ${activeTag === tag.id ? 'active' : ''}`}
+                  onClick={() => setState(prev => ({ ...prev, activeTag: tag.id }))}
                 >
-                  <span className="kv-cat-dot" style={{ background: cat.color }} />
-                  <span style={{ flex: 1 }}>{cat.name}</span>
-                  <span className="kv-cat-count">{categoryCounts[cat.id] || 0}</span>
+                  <span className="kv-tag-dot" style={{ background: tag.color }} />
+                  {tag.name}
+                  <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.7 }}>
+                    {nodes.filter(n => n.tags.includes(tag.id)).length}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          {allTags.length > 0 && (
-            <div className="kv-section">
-              <h3 className="kv-section-title">标签云</h3>
-              <div className="kv-related">
-                {allTags.slice(0, 30).map(tag => (
-                  <span
-                    key={tag}
-                    className="kv-related-tag"
-                    onClick={() => setSearchQuery(tag)}
+          <div className="kv-sidebar-section">
+            <h3>成长状态</h3>
+            <div className="kv-growth-list">
+              {(Object.keys(GROWTH_CONFIG) as GrowthStage[]).map(stage => {
+                const config = GROWTH_CONFIG[stage]
+                const Icon = config.icon
+                const count = nodesWithGrowth.filter(n => n.growth === stage).length
+                return (
+                  <div key={stage} className="kv-growth-item">
+                    <Icon size={14} />
+                    <span style={{ flex: 1 }}>{config.label}</span>
+                    <span style={{ opacity: 0.7 }}>{count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {needsReviewIds.length > 0 && (
+            <div className="kv-sidebar-section">
+              <h3>待复习</h3>
+              <div className="kv-tag-list">
+                {nodes.filter(n => needsReviewIds.includes(n.id)).slice(0, 5).map(n => (
+                  <div
+                    key={n.id}
+                    className="kv-tag-item"
+                    onClick={() => selectNode(n.id)}
                   >
-                    #{tag}
-                  </span>
+                    <Star size={12} style={{ color: '#fbbf24' }} />
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</span>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="kv-section" style={{ flex: 1 }}>
-            <h3 className="kv-section-title">统计</h3>
-            <div style={{ fontSize: 12, color: 'var(--kv-text-dim)', lineHeight: 1.8 }}>
-              <div>📚 总笔记：{notesWithLinks.length}</div>
-              <div>🔗 双向链接：{notesWithLinks.reduce((sum, n) => sum + n.links.length, 0)}</div>
-              <div>🏷️ 标签数：{allTags.length}</div>
+          <div className="kv-sidebar-section" style={{ marginTop: 'auto' }}>
+            <div className="kv-stat-grid">
+              <div className="kv-stat-card">
+                <div className="kv-stat-num">{nodes.length}</div>
+                <div className="kv-stat-label">总节点</div>
+              </div>
+              <div className="kv-stat-card">
+                <div className="kv-stat-num">{tags.length}</div>
+                <div className="kv-stat-label">标签</div>
+              </div>
             </div>
           </div>
         </aside>
 
         <main className="kv-main">
-          <div className="kv-toolbar">
-            <div className="kv-toolbar-left">
-              <span>{filteredNotes.length} 张笔记</span>
-            </div>
+          {view === 'tree' && renderTreeView()}
+          {view === 'mindmap' && renderMindMapView()}
+          {view === 'list' && renderListView()}
+          {view === 'card' && renderCardView()}
 
-            <div className="kv-view-toggle">
-              <button
-                className={`kv-view-btn ${view === 'grid' ? 'active' : ''}`}
-                onClick={() => setView('grid')}
-              >
-                <LayoutGrid size={12} /> 卡片
-              </button>
-              <button
-                className={`kv-view-btn ${view === 'graph' ? 'active' : ''}`}
-                onClick={() => setView('graph')}
-              >
-                <Network size={12} /> 图谱
-              </button>
-            </div>
-          </div>
-
-          {view === 'graph' ? (
-            <GraphView notes={notesWithLinks} onSelect={setEditingId} />
-          ) : filteredNotes.length === 0 ? (
-            <div className="kv-empty">
-              <BookOpen size={48} color="var(--kv-text-muted)" />
-              <h2>这里还很安静</h2>
-              <p>
-                {searchQuery ? '没有找到匹配的笔记，试试其他关键词' : '创建你的第一张笔记，开始构建知识网络'}
-              </p>
-              <button className="kv-btn primary" onClick={() => createNote()}>
-                <Plus size={12} /> 创建笔记
-              </button>
-              {!searchQuery && (
-                <div className="kv-empty-stats">
-                  <div>
-                    <div className="kv-empty-stat-num">{notesWithLinks.length}</div>
-                    <div className="kv-empty-stat-label">已有笔记</div>
-                  </div>
-                  <div>
-                    <div className="kv-empty-stat-num">{allTags.length}</div>
-                    <div className="kv-empty-stat-label">不同标签</div>
-                  </div>
-                  <div>
-                    <div className="kv-empty-stat-num">{notesWithLinks.reduce((s, n) => s + n.links.length, 0)}</div>
-                    <div className="kv-empty-stat-label">建立的连接</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="kv-grid">
-              {filteredNotes.map(note => (
-                <div
-                  key={note.id}
-                  className="kv-card"
-                  onClick={() => setEditingId(note.id)}
+          {(view === 'tree' || view === 'mindmap') && (
+            <>
+              <div className="kv-zoom-controls">
+                <button
+                  className="kv-zoom-btn"
+                  onClick={() => setState(prev => ({ ...prev, zoom: Math.min(2.5, prev.zoom * 1.2) }))}
                 >
-                  <div className="kv-card-title">{note.title}</div>
-                  <div className="kv-card-content">{stripMarkdown(note.content).slice(0, 200)}</div>
-                  <div className="kv-card-footer">
-                    <span className="kv-card-tag" style={{
-                      color: DEFAULT_CATEGORIES.find(c => c.id === note.category)?.color,
-                    }}>
-                      {DEFAULT_CATEGORIES.find(c => c.id === note.category)?.name || '未分类'}
-                    </span>
-                    {note.links.length > 0 && (
-                      <span className="kv-card-tag kv-card-link">
-                        <Link2 size={9} /> {note.links.length}
-                      </span>
-                    )}
-                    {note.tags.slice(0, 2).map(tag => (
-                      <span key={tag} className="kv-card-tag">#{tag}</span>
-                    ))}
-                    <span style={{ marginLeft: 'auto' }}>{formatRelative(note.updatedAt)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  <ZoomIn size={16} />
+                </button>
+                <div className="kv-zoom-val">{Math.round(zoom * 100)}%</div>
+                <button
+                  className="kv-zoom-btn"
+                  onClick={() => setState(prev => ({ ...prev, zoom: Math.max(0.3, prev.zoom * 0.8) }))}
+                >
+                  <ZoomOut size={16} />
+                </button>
+              </div>
+              <div className="kv-hint">
+                拖拽画布平移 · 滚轮缩放 · 双击编辑
+              </div>
+            </>
           )}
         </main>
-      </div>
 
-      {toast && (
-        <div className={`kv-toast ${toast.type}`}>
-          {toast.type === 'success' ? '✓' : '✕'} {toast.msg}
-        </div>
-      )}
+        <aside className="kv-detail">
+          <div className="kv-detail-header">
+            <h2>{selectedNode ? (editingId ? '编辑节点' : '节点详情') : '节点详情'}</h2>
+            {selectedNode && !editingId && (
+              <div className="kv-detail-actions">
+                <button className="kv-icon-btn" onClick={() => startEdit(selectedNode)} title="编辑">
+                  <Edit3 size={13} />
+                </button>
+                <button className="kv-icon-btn" onClick={() => createNode(selectedNode.id)} title="添加子节点">
+                  <Plus size={13} />
+                </button>
+                <button className="kv-icon-btn" onClick={() => deleteNode(selectedNode.id)} title="删除">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="kv-detail-body">
+            {!selectedNode ? (
+              <div className="kv-detail-empty">
+                <Info size={32} style={{ opacity: 0.3 }} />
+                <p>选择一个节点查看详情<br />或创建新的知识节点</p>
+              </div>
+            ) : editingId ? (
+              <>
+                <input
+                  className="kv-title-input"
+                  value={editDraft.title}
+                  onChange={(e) => setEditDraft(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="节点标题"
+                  autoFocus
+                />
+                <textarea
+                  className="kv-content-textarea"
+                  value={editDraft.content}
+                  onChange={(e) => setEditDraft(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="记录你的想法..."
+                />
+                <div className="kv-tags-editor">
+                  <div className="kv-tags-label">
+                    <Tag size={11} /> 标签
+                  </div>
+                  <div className="kv-tags-picker">
+                    {tags.map(tag => (
+                      <div
+                        key={tag.id}
+                        className={`kv-tag-pick ${editDraft.tags.includes(tag.id) ? 'selected' : ''}`}
+                        style={{ background: tag.color + '20', color: tag.color }}
+                        onClick={() => toggleTag(editingId, tag.id)}
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="kv-edit-actions">
+                  <button className="kv-edit-btn" onClick={cancelEdit}>取消</button>
+                  <button className="kv-edit-btn primary" onClick={saveEdit}>
+                    <Save size={12} /> 保存
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="kv-view-title" style={{ color: selectedNode.color }}>
+                  {selectedNode.title}
+                </h2>
+                <div className="kv-view-content">{selectedNode.content || '(暂无内容)'}</div>
+
+                {selectedNode.tags.length > 0 && (
+                  <div className="kv-meta">
+                    <div className="kv-tags-label" style={{ marginBottom: 8 }}>
+                      <Tag size={11} /> 标签
+                    </div>
+                    <div className="kv-tags-picker">
+                      {selectedNode.tags.map(tid => {
+                        const t = tags.find(x => x.id === tid)
+                        return t ? (
+                          <span key={tid} className="kv-tag-pick selected" style={{ background: t.color + '20', color: t.color }}>
+                            {t.name}
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="kv-meta">
+                  <div className="kv-meta-row">
+                    <span><Leaf size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> 成长阶段</span>
+                    <span style={{ color: selectedNode.color }}>{GROWTH_CONFIG[selectedNode.growth].label}</span>
+                  </div>
+                  <div className="kv-meta-row">
+                    <span><Clock size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> 上次访问</span>
+                    <span>{formatTime(selectedNode.lastVisited)}</span>
+                  </div>
+                  <div className="kv-meta-row">
+                    <span><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> 创建时间</span>
+                    <span>{formatDate(selectedNode.createdAt)}</span>
+                  </div>
+                </div>
+
+                {selectedNode.parentId && (
+                  <div className="kv-meta">
+                    <div className="kv-tags-label" style={{ marginBottom: 8 }}>
+                      <Link2 size={11} /> 父节点
+                    </div>
+                    {(() => {
+                      const parent = nodes.find(n => n.id === selectedNode.parentId)
+                      if (!parent) return null
+                      return (
+                        <div
+                          className="kv-tag-pick"
+                          style={{ background: parent.color + '20', color: parent.color, cursor: 'pointer' }}
+                          onClick={() => selectNode(parent.id)}
+                        >
+                          <ChevronRight size={11} /> {parent.title}
+                        </div>
+                      )
+                    })()}
+                  </div>
+                )}
+
+                {(() => {
+                  const children = nodes.filter(n => n.parentId === selectedNode.id)
+                  if (children.length === 0) return null
+                  return (
+                    <div className="kv-meta">
+                      <div className="kv-tags-label" style={{ marginBottom: 8 }}>
+                        <TreeDeciduous size={11} /> 子节点 ({children.length})
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {children.map(child => (
+                          <div
+                            key={child.id}
+                            className="kv-tag-pick"
+                            style={{ background: child.color + '15', color: child.color, cursor: 'pointer', justifyContent: 'flex-start' }}
+                            onClick={() => selectNode(child.id)}
+                          >
+                            <ChevronRight size={11} /> {child.title}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+              </>
+            )}
+          </div>
+        </aside>
+      </div>
     </div>
   )
 })
 
-function GraphView({ notes, onSelect }: { notes: Note[]; onSelect: (id: string) => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [hovered, setHovered] = useState<string | null>(null)
-  const animFrameRef = useRef<number | null>(null)
-  const positionsRef = useRef<Map<string, { x: number; y: number; vx: number; vy: number }>>(new Map())
-  const draggedRef = useRef<string | null>(null)
-  const dragOffsetRef = useRef({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const container = containerRef.current
-    if (!canvas || !container) return
-
-    const resize = () => {
-      const rect = container.getBoundingClientRect()
-      canvas.width = rect.width
-      canvas.height = rect.height
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    // Initialize positions for new notes only
-    const existingIds = new Set(Array.from(positionsRef.current.keys()))
-    const centerX = canvas.width / 2
-    const centerY = canvas.height / 2
-    const radius = Math.min(canvas.width, canvas.height) * 0.3
-    notes.forEach((n, i) => {
-      if (!existingIds.has(n.id)) {
-        const angle = (i / Math.max(notes.length, 1)) * Math.PI * 2
-        positionsRef.current.set(n.id, {
-          x: centerX + Math.cos(angle) * radius,
-          y: centerY + Math.sin(angle) * radius,
-          vx: 0,
-          vy: 0,
-        })
-      }
-    })
-    // Remove deleted
-    const currentIds = new Set(notes.map(n => n.id))
-    for (const id of Array.from(positionsRef.current.keys())) {
-      if (!currentIds.has(id)) positionsRef.current.delete(id)
-    }
-
-    const draw = () => {
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      const w = canvas.width
-      const h = canvas.height
-      ctx.fillStyle = 'rgba(13, 15, 10, 0.95)'
-      ctx.fillRect(0, 0, w, h)
-
-      const positions = positionsRef.current
-
-      // Repulsion between nodes
-      for (let i = 0; i < notes.length; i++) {
-        const a = notes[i]
-        const pa = positions.get(a.id)
-        if (!pa) continue
-        for (let j = i + 1; j < notes.length; j++) {
-          const b = notes[j]
-          const pb = positions.get(b.id)
-          if (!pb) continue
-          const dx = pb.x - pa.x
-          const dy = pb.y - pa.y
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1
-          const force = 8000 / (dist * dist)
-          const fx = (dx / dist) * force
-          const fy = (dy / dist) * force
-          pa.vx += fx
-          pa.vy += fy
-          pb.vx -= fx
-          pb.vy -= fy
-        }
-      }
-
-      // Center attraction
-      for (const [, p] of positions) {
-        const dx = w / 2 - p.x
-        const dy = h / 2 - p.y
-        p.vx += dx * 0.001
-        p.vy += dy * 0.001
-      }
-
-      // Apply
-      for (const [id, p] of positions) {
-        if (id === draggedRef.current) continue
-        p.vx *= 0.85
-        p.vy *= 0.85
-        p.x += p.vx
-        p.y += p.vy
-        p.x = Math.max(50, Math.min(w - 50, p.x))
-        p.y = Math.max(50, Math.min(h - 50, p.y))
-      }
-
-      // Draw links
-      for (const n of notes) {
-        const pa = positions.get(n.id)
-        if (!pa) continue
-        for (const linkedId of n.links) {
-          const pb = positions.get(linkedId)
-          if (!pb) continue
-          const isHovered = hovered === n.id || hovered === linkedId
-          ctx.strokeStyle = isHovered ? 'rgba(74, 222, 128, 0.6)' : 'rgba(74, 222, 128, 0.15)'
-          ctx.lineWidth = isHovered ? 2 : 1
-          ctx.beginPath()
-          ctx.moveTo(pa.x, pa.y)
-          ctx.lineTo(pb.x, pb.y)
-          ctx.stroke()
-        }
-      }
-
-      // Draw nodes
-      for (const n of notes) {
-        const p = positions.get(n.id)
-        if (!p) continue
-        const cat = DEFAULT_CATEGORIES.find(c => c.id === n.category)
-        const color = cat?.color || '#4ade80'
-        const isHovered = hovered === n.id
-        const radius = isHovered ? 10 : 7
-
-        if (isHovered) {
-          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 30)
-          grad.addColorStop(0, color + '40')
-          grad.addColorStop(1, 'transparent')
-          ctx.fillStyle = grad
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, 30, 0, Math.PI * 2)
-          ctx.fill()
-        }
-
-        ctx.fillStyle = color
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2)
-        ctx.fill()
-
-        ctx.fillStyle = isHovered ? '#f0ebd8' : 'rgba(240, 235, 216, 0.7)'
-        ctx.font = `${isHovered ? '13' : '11'}px 'Geist', sans-serif`
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'top'
-        const title = n.title.length > 18 ? n.title.slice(0, 16) + '..' : n.title
-        ctx.fillText(title, p.x, p.y + radius + 4)
-      }
-
-      animFrameRef.current = requestAnimationFrame(draw)
-    }
-
-    draw()
-
-    return () => {
-      window.removeEventListener('resize', resize)
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
-    }
-  }, [notes, hovered])
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const mx = e.clientX - rect.left
-    const my = e.clientY - rect.top
-    for (const [id, p] of positionsRef.current) {
-      const dx = p.x - mx
-      const dy = p.y - my
-      if (dx * dx + dy * dy < 100) {
-        draggedRef.current = id
-        dragOffsetRef.current = { x: dx, y: dy }
-        break
-      }
-    }
-  }
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const mx = e.clientX - rect.left
-    const my = e.clientY - rect.top
-    if (draggedRef.current) {
-      const p = positionsRef.current.get(draggedRef.current)
-      if (p) {
-        p.x = mx + dragOffsetRef.current.x
-        p.y = my + dragOffsetRef.current.y
-      }
-    } else {
-      let found: string | null = null
-      for (const [id, p] of positionsRef.current) {
-        const dx = p.x - mx
-        const dy = p.y - my
-        if (dx * dx + dy * dy < 100) {
-          found = id
-          break
-        }
-      }
-      setHovered(found)
-    }
-  }
-
-  const handleMouseUp = () => {
-    if (draggedRef.current) {
-      draggedRef.current = null
-    } else if (hovered) {
-      onSelect(hovered)
-    }
-  }
-
-  return (
-    <div className="kv-graph" ref={containerRef}>
-      <canvas
-        ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={() => { draggedRef.current = null; setHovered(null) }}
-        style={{ cursor: hovered ? 'pointer' : 'grab' }}
-      />
-      <div className="kv-graph-hint">
-        <strong>知识图谱</strong>
-        节点颜色 = 分类<br />
-        连线 = 双向链接<br />
-        拖动节点 · 点击打开
-      </div>
-    </div>
-  )
-}
-
-function formatRelative(ts: number): string {
+function formatTime(ts: number): string {
   const diff = Date.now() - ts
   if (diff < 60000) return '刚刚'
   if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
@@ -850,14 +1773,8 @@ function formatRelative(ts: number): string {
   return new Date(ts).toLocaleDateString()
 }
 
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/^#+\s+/gm, '')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\[\[([^\]]+)\]\]/g, '$1')
-    .replace(/#([\u4e00-\u9fa5a-zA-Z0-9_\-]+)/g, '')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/^>\s+/gm, '')
+function formatDate(ts: number): string {
+  return new Date(ts).toLocaleDateString('zh-CN')
 }
 
 export default KnowledgeVine
