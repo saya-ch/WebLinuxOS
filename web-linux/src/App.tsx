@@ -6,6 +6,7 @@ import WindowManager from './components/desktop/WindowManager'
 import Taskbar from './components/desktop/Taskbar'
 import StartMenu from './components/desktop/StartMenu'
 import ErrorBoundary from './components/ErrorBoundary'
+import QuickActionCenter from './components/QuickActionCenter'
 const GlobalSearch = lazy(() => import('./apps/GlobalSearch'))
 import CommandPalette from './components/CommandPalette'
 import ShortcutPanel from './components/ShortcutPanel'
@@ -64,6 +65,7 @@ const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }
   'lock-screen': { config: { mod: true, key: 'l' }, action: 'lock-screen' },
   'notification-center': { config: { mod: true, key: 'n' }, action: 'notification-center' },
   'shortcuts': { config: { mod: true, shift: true, key: '?' }, action: 'shortcuts' },
+  'quick-action-center': { config: { mod: true, key: 'a' }, action: 'quick-action-center' },
 }
 
 const App = memo(function App() {
@@ -77,6 +79,11 @@ const App = memo(function App() {
   const theme = useStore((s) => s.theme)
   const windows = useStore((s) => s.windows)
   const launcherOpen = useStore((s) => s.launcherOpen)
+  const refreshSystemStats = useStore((s) => s.refreshSystemStats)
+  const setSystemStatus = useStore((s) => s.setSystemStatus)
+  const quickActionCenterOpen = useStore((s) => s.quickActionCenterOpen)
+  const toggleQuickActionCenter = useStore((s) => s.toggleQuickActionCenter)
+  const closeQuickActionCenter = useStore((s) => s.closeQuickActionCenter)
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
@@ -107,6 +114,23 @@ const App = memo(function App() {
       document.documentElement.classList.remove('light')
     }
   }, [theme])
+
+  useEffect(() => {
+    refreshSystemStats()
+    const interval = setInterval(refreshSystemStats, 5000)
+    return () => clearInterval(interval)
+  }, [refreshSystemStats])
+
+  useEffect(() => {
+    const handleOnline = () => setSystemStatus('online')
+    const handleOffline = () => setSystemStatus('offline')
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [setSystemStatus])
 
   const cycleWindows = useCallback((reverse = false) => {
     if (windows.length <= 1) return
@@ -168,8 +192,11 @@ const App = memo(function App() {
       case 'shortcuts':
         setShortcutPanelOpen(true)
         break
+      case 'quick-action-center':
+        toggleQuickActionCenter()
+        break
     }
-  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows])
+  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows, toggleQuickActionCenter])
 
   const matchesShortcut = useCallback((config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
     if (config.mod !== undefined && config.mod !== isMod) return false
@@ -372,6 +399,7 @@ const App = memo(function App() {
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
       <ShortcutPanel isOpen={shortcutPanelOpen} onClose={() => setShortcutPanelOpen(false)} />
       <SmartCommandCenter isOpen={smartCommandOpen} onClose={() => setSmartCommandOpen(false)} />
+      <QuickActionCenter isOpen={quickActionCenterOpen} onClose={closeQuickActionCenter} />
     </ErrorBoundary>
   )
 })

@@ -17,7 +17,7 @@ const APP_VERSION = readAppVersion()
 
 export default defineConfig(({ mode }) => {
   const outDir = process.env.OUTPUT_DIR || '../dist'
-  const basePath = '/WebLinuxOS/'
+  const basePath = process.env.VITE_BASE_PATH || '/WebLinuxOS/'
 
   const targetPublicDir = resolve(__dirname, outDir)
 
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
       modulePreload: {
         polyfill: false,
         resolveDependencies: (_filename, deps) => {
-          const criticalModules = ['vendor-react', 'vendor-zustand']
+          const criticalModules = ['vendor-react', 'vendor-zustand', 'vendor-lucide']
           return deps.filter(dep => criticalModules.some(m => dep.includes(m)))
         },
       },
@@ -112,6 +112,51 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/CodeEditor') || id.includes('src/apps/CodeForge')) {
               return 'app-codeeditor'
             }
+            if (id.includes('src/apps/FileManager')) {
+              return 'app-filemanager'
+            }
+            if (id.includes('src/apps/Browser')) {
+              return 'app-browser'
+            }
+            if (id.includes('src/apps/Email')) {
+              return 'app-email'
+            }
+            if (id.includes('src/apps/Calendar')) {
+              return 'app-calendar'
+            }
+            if (id.includes('src/apps/Calculator')) {
+              return 'app-calculator'
+            }
+            if (id.includes('src/apps/Clock')) {
+              return 'app-clock'
+            }
+            if (id.includes('src/apps/MusicPlayer') || id.includes('src/apps/MusicStudio')) {
+              return 'app-music'
+            }
+            if (id.includes('src/apps/VideoPlayer')) {
+              return 'app-video'
+            }
+            if (id.includes('src/apps/Paint')) {
+              return 'app-paint'
+            }
+            if (id.includes('src/apps/Notepad')) {
+              return 'app-notepad'
+            }
+            if (id.includes('src/apps/Weather')) {
+              return 'app-weather'
+            }
+            if (id.includes('src/apps/Game')) {
+              return 'app-games'
+            }
+            if (id.includes('src/apps/DevTools')) {
+              return 'app-devtools'
+            }
+            if (id.includes('src/apps/SystemDashboard')) {
+              return 'app-dashboard'
+            }
+            if (id.includes('src/components')) {
+              return 'components-shared'
+            }
             return undefined
           },
           entryFileNames: 'assets/[name]-[hash].js',
@@ -124,15 +169,25 @@ export default defineConfig(({ mode }) => {
       include: ['react', 'react-dom', 'zustand', 'lucide-react', 'marked'],
       exclude: ['pyodide'],
       prebuildNotifications: false,
+      esbuildOptions: {
+        target: 'es2022',
+      },
     },
     define: {
       __BUILD_TIME__: JSON.stringify(new Date().toISOString().replace('T', ' ').split('.')[0]),
       __APP_VERSION__: JSON.stringify(APP_VERSION),
+      __PUBLIC_URL__: JSON.stringify(basePath),
     },
     resolve: {
       conditions: ['es2022'],
       alias: {
         '@': resolve(__dirname, 'src'),
+        '@components': resolve(__dirname, 'src/components'),
+        '@apps': resolve(__dirname, 'src/apps'),
+        '@store': resolve(__dirname, 'src/store'),
+        '@utils': resolve(__dirname, 'src/utils'),
+        '@hooks': resolve(__dirname, 'src/hooks'),
+        '@types': resolve(__dirname, 'src/types'),
       },
     },
     server: {
@@ -151,6 +206,7 @@ export default defineConfig(({ mode }) => {
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
       },
     },
     preview: {
@@ -158,7 +214,11 @@ export default defineConfig(({ mode }) => {
       open: false,
       headers: {
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
       },
     },
+    cacheDir: '.vite',
   }
 })

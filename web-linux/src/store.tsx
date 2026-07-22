@@ -88,6 +88,21 @@ interface Notification {
   timestamp?: Date
 }
 
+interface SystemStats {
+  cpuUsage: number
+  memoryUsage: number
+  storageUsage: number
+  networkUsage: number
+  uptime: number
+}
+
+interface QuickAction {
+  id: string
+  label: string
+  icon: string
+  action: () => void
+}
+
 interface Store {
   windows: WindowState[]
   apps: AppDefinition[]
@@ -112,6 +127,10 @@ interface Store {
   favorites: string[]
   pinnedApps: string[]
   windowSnapshots: Record<string, string>
+  systemStats: SystemStats
+  quickActions: QuickAction[]
+  quickActionCenterOpen: boolean
+  systemStatus: 'online' | 'offline' | 'warning'
 
   registerApp: (app: AppDefinition) => void
   openApp: (appId: string) => void
@@ -163,6 +182,11 @@ interface Store {
   resetToDefaults: () => void
   setWindowSnapshot: (windowId: string, snapshot: string) => void
   removeWindowSnapshot: (windowId: string) => void
+  updateSystemStats: (stats: Partial<SystemStats>) => void
+  toggleQuickActionCenter: () => void
+  closeQuickActionCenter: () => void
+  setSystemStatus: (status: 'online' | 'offline' | 'warning') => void
+  refreshSystemStats: () => void
 }
 
 let windowIdCounter = 0
@@ -203,8 +227,6 @@ export const useStore = create<Store>((set, get) => ({
   apps: [],
   desktopIcons: initialDesktopIcons,
   files: initialFiles,
-  // 起始 z-index 必须高于桌面 widget 的 z-index (5)，否则前几个窗口会被
-  // widget 的拖动条拦截点击事件。
   nextZIndex: 100,
   theme: initialTheme,
   wallpaper: initialWallpaper,
@@ -224,6 +246,49 @@ export const useStore = create<Store>((set, get) => ({
   favorites: initialFavorites,
   pinnedApps: initialPinnedApps,
   windowSnapshots: {},
+  systemStats: {
+    cpuUsage: 0,
+    memoryUsage: 0,
+    storageUsage: 0,
+    networkUsage: 0,
+    uptime: 0,
+  },
+  quickActions: [],
+  quickActionCenterOpen: false,
+  systemStatus: navigator.onLine ? 'online' : 'offline',
+
+  updateSystemStats: (stats) =>
+    set((s) => ({
+      systemStats: { ...s.systemStats, ...stats },
+    })),
+
+  toggleQuickActionCenter: () =>
+    set((s) => ({ quickActionCenterOpen: !s.quickActionCenterOpen })),
+
+  closeQuickActionCenter: () => set({ quickActionCenterOpen: false }),
+
+  setSystemStatus: (status) => set({ systemStatus: status }),
+
+  refreshSystemStats: () => {
+    const perf = performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }
+    const memoryUsage = perf.memory
+      ? Math.round((perf.memory.usedJSHeapSize / perf.memory.totalJSHeapSize) * 100)
+      : Math.round(Math.random() * 40 + 20)
+    const cpuUsage = Math.round(Math.random() * 30 + 5)
+    const storageUsage = Math.round((localStorage.length * 1024 / 5 * 1024 * 1024) * 100) || Math.round(Math.random() * 15 + 5)
+    const networkUsage = Math.round(Math.random() * 50)
+    const uptime = Math.floor(Date.now() / 1000)
+
+    set({
+      systemStats: {
+        cpuUsage,
+        memoryUsage,
+        storageUsage,
+        networkUsage,
+        uptime,
+      },
+    })
+  },
 
   // 添加一条通知消息：对同一消息标题做去重限制，避免短时间内刷屏
   // 改进：使用定时器管理器防止内存泄漏

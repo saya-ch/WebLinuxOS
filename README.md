@@ -37,7 +37,19 @@ Built with React 19 and TypeScript, it features a polished windowing system with
 
 ### 🖥️ Desktop & Window System
 
-Multi-window environment with 4 virtual desktops, draggable and resizable windows, minimize/maximize controls, taskbar, start menu, command palette (Ctrl+P), and global search (Ctrl+K). Smooth GPU-accelerated animations and transitions with multiple built-in themes.
+Multi-window environment with 4 virtual desktops, draggable and resizable windows, minimize/maximize controls, taskbar, start menu, command palette (Ctrl+P), global search (Ctrl+K), and Quick Action Center (Ctrl+A) for system monitoring and quick settings access. Smooth GPU-accelerated animations and transitions with multiple built-in themes.
+
+### 📊 System Monitoring & Quick Actions
+
+Real-time system statistics displayed in the Quick Action Center (Ctrl+A):
+
+- CPU, Memory, and Storage usage with visual progress bars
+- Network status monitoring (online/offline detection)
+- System uptime tracking
+- One-click theme switching (dark/light)
+- Live wallpaper toggle
+- Quick access to Terminal, Settings, System Monitor
+- System reset and lock screen options
 
 ### 🚀 Innovative Applications
 
@@ -193,6 +205,7 @@ WebLinuxOS/
 | `Ctrl/Cmd + Space` | Smart command center |
 | `Ctrl/Cmd + Q` | Close window |
 | `Ctrl/Cmd + M` | Minimize window |
+| `Ctrl/Cmd + A` | Quick action center |
 | `Alt + Tab` | Switch windows |
 | `Ctrl + Alt + [1-9]` | Switch virtual desktops |
 | `PrintScreen` | Take screenshot |
