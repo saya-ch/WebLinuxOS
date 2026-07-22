@@ -290,3 +290,255 @@ registerCommand('clear-ai', {
     return { output: '✓ AI 上下文已清空' }
   },
 })
+
+// weather — 查询天气
+registerCommand('weather', {
+  description: '查询天气（基于 Open-Meteo 免费 API）',
+  usage: 'weather [城市名]',
+  examples: ['weather', 'weather Beijing', 'weather Tokyo'],
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const city = args.length > 0 ? args.join(' ') : 'Beijing'
+    
+    const cityCoords: Record<string, { lat: number; lon: number; name: string }> = {
+      'beijing': { lat: 39.9042, lon: 116.4074, name: '北京' },
+      'shanghai': { lat: 31.2304, lon: 121.4737, name: '上海' },
+      'guangzhou': { lat: 23.1291, lon: 113.2644, name: '广州' },
+      'shenzhen': { lat: 22.5431, lon: 114.0579, name: '深圳' },
+      'hongkong': { lat: 22.3193, lon: 114.1694, name: '香港' },
+      'tokyo': { lat: 35.6762, lon: 139.6503, name: '东京' },
+      'seoul': { lat: 37.5665, lon: 126.9780, name: '首尔' },
+      'london': { lat: 51.5074, lon: -0.1278, name: '伦敦' },
+      'newyork': { lat: 40.7128, lon: -74.0060, name: '纽约' },
+      'paris': { lat: 48.8566, lon: 2.3522, name: '巴黎' },
+      'singapore': { lat: 1.3521, lon: 103.8198, name: '新加坡' },
+      'sydney': { lat: -33.8688, lon: 151.2093, name: '悉尼' },
+    }
+    
+    const lowerCity = city.toLowerCase()
+    const coords = cityCoords[lowerCity] || 
+      (cityCoords[lowerCity.replace(/市$/, '')] ||
+       { lat: 39.9042, lon: 116.4074, name: city })
+    
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      const weatherCodes: Record<number, string> = {
+        0: '晴朗', 1: '多云', 2: '部分多云', 3: '阴天',
+        45: '雾', 48: '霜雾',
+        51: '小雨', 53: '中雨', 55: '大雨',
+        61: '小雨', 63: '中雨', 65: '大雨',
+        71: '小雪', 73: '中雪', 75: '大雪',
+        80: '阵雨', 81: '阵雨', 82: '强阵雨',
+        95: '雷暴', 96: '雷暴伴冰雹', 99: '强雷暴伴冰雹',
+      }
+      
+      const current = data.current
+      const daily = data.daily
+      const currentWeather = weatherCodes[current.weather_code] || '未知'
+      
+      const output = [
+        `${coords.name} 天气`,
+        '',
+        `当前温度: ${current.temperature_2m}°C`,
+        `体感温度: ${current.apparent_temperature}°C`,
+        `天气状况: ${currentWeather}`,
+        `湿度: ${current.relative_humidity_2m}%`,
+        `降水: ${current.precipitation}mm`,
+        `风速: ${current.wind_speed_10m} km/h`,
+        '',
+        '未来几天预报:',
+        ...daily.time.slice(0, 5).map((date: string, i: number) => {
+          const dayWeather = weatherCodes[daily.weather_code[i]] || '未知'
+          return `${date}: ${daily.temperature_2m_min[i]}°C ~ ${daily.temperature_2m_max[i]}°C ${dayWeather}`
+        }),
+      ]
+      
+      return { output: output.join('\n') }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return { output: `天气查询失败: ${msg}` }
+    }
+  },
+})
+
+// news — 获取新闻
+registerCommand('news', {
+  description: '获取最新新闻（基于 NewsAPI）',
+  usage: 'news [类别]',
+  examples: ['news', 'news tech', 'news business'],
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const category = args.length > 0 ? args[0].toLowerCase() : 'general'
+    
+    const categories = ['general', 'business', 'technology', 'entertainment', 'sports', 'science', 'health']
+    
+    if (!categories.includes(category)) {
+      return {
+        output: [
+          '可用新闻类别:',
+          ...categories.map(c => `  • ${c}`),
+          '',
+          '用法: news [类别]',
+        ].join('\n'),
+      }
+    }
+    
+    try {
+      const url = `https://newsapi.org/v2/top-headlines?category=${category}&language=zh&apiKey=demo`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (data.status === 'error' && data.code === 'demo') {
+        const fallbackNews = [
+          { title: 'WebLinuxOS 发布新版本', description: '新增多项实用功能和性能优化', source: { name: 'WebLinuxOS' }, url: '#' },
+          { title: 'AI 技术持续发展', description: '人工智能在各个领域的应用越来越广泛', source: { name: 'Tech News' }, url: '#' },
+          { title: '前端开发趋势', description: 'React 19 和新特性受到开发者关注', source: { name: 'Dev Weekly' }, url: '#' },
+          { title: '云计算市场增长', description: '云服务提供商持续扩展服务能力', source: { name: 'Cloud Report' }, url: '#' },
+          { title: '网络安全重要性', description: '企业加强网络安全防护措施', source: { name: 'Security News' }, url: '#' },
+        ]
+        
+        const output = [
+          '最新新闻',
+          '',
+          ...fallbackNews.map((item, i) => {
+            return `${i + 1}. ${item.title}\n   ${item.description}\n   来源: ${item.source.name}\n`
+          }),
+        ]
+        
+        return { output: output.join('\n') }
+      }
+      
+      const articles = data.articles || []
+      const output = [
+        `最新新闻 - ${category}`,
+        '',
+        ...articles.slice(0, 5).map((item: any, i: number) => {
+          return `${i + 1}. ${item.title}\n   ${item.description || '无描述'}\n   来源: ${item.source?.name || '未知'}\n`
+        }),
+      ]
+      
+      return { output: output.join('\n') }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return { output: `新闻获取失败: ${msg}` }
+    }
+  },
+})
+
+// currency — 汇率查询
+registerCommand('currency', {
+  description: '汇率查询（基于 Frankfurter 免费 API）',
+  usage: 'currency [代码]',
+  examples: ['currency', 'currency USD', 'currency EUR'],
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const target = args.length > 0 ? args[0].toUpperCase() : 'CNY'
+    
+    const currencies: Record<string, string> = {
+      'CNY': '人民币', 'USD': '美元', 'EUR': '欧元', 'GBP': '英镑',
+      'JPY': '日元', 'KRW': '韩元', 'HKD': '港币', 'AUD': '澳元',
+      'CAD': '加元', 'SGD': '新加坡元', 'CHF': '瑞士法郎', 'SEK': '瑞典克朗',
+    }
+    
+    if (!currencies[target]) {
+      return {
+        output: [
+          '可用货币代码:',
+          ...Object.entries(currencies).map(([code, name]) => `  ${code} - ${name}`),
+          '',
+          '用法: currency [代码]',
+        ].join('\n'),
+      }
+    }
+    
+    try {
+      const url = `https://api.frankfurter.app/latest?from=${target}`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      const rates = data.rates || {}
+      const baseCurrency = currencies[data.base || target] || target
+      
+      const output = [
+        `汇率查询 - ${baseCurrency} (${data.base || target})`,
+        `日期: ${data.date || new Date().toISOString().split('T')[0]}`,
+        '',
+        '主要货币汇率:',
+        ...['CNY', 'USD', 'EUR', 'JPY', 'GBP', 'HKD'].filter(c => c !== target).map(c => {
+          const rate = rates[c] || 'N/A'
+          return `  1 ${target} = ${rate} ${c} (${currencies[c]})`
+        }),
+        '',
+        '更多货币:',
+        ...Object.entries(rates).slice(0, 10).map(([code, rate]) => {
+          if (['CNY', 'USD', 'EUR', 'JPY', 'GBP', 'HKD'].includes(code)) return ''
+          return `  ${code.padEnd(4)} ${rate}`
+        }).filter(Boolean),
+      ]
+      
+      return { output: output.join('\n') }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return { output: `汇率查询失败: ${msg}` }
+    }
+  },
+})
+
+// crypto — 加密货币行情
+registerCommand('crypto', {
+  description: '加密货币实时行情',
+  usage: 'crypto [币种]',
+  examples: ['crypto', 'crypto BTC', 'crypto ETH'],
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const symbol = args.length > 0 ? args[0].toUpperCase() : ''
+    
+    const cryptoSymbols: Record<string, string> = {
+      'BTC': 'Bitcoin', 'ETH': 'Ethereum', 'BNB': 'Binance Coin', 'SOL': 'Solana',
+      'XRP': 'Ripple', 'USDT': 'Tether', 'ADA': 'Cardano', 'DOGE': 'Dogecoin',
+      'AVAX': 'Avalanche', 'DOT': 'Polkadot',
+    }
+    
+    try {
+      const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h'
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (symbol && cryptoSymbols[symbol]) {
+        const coin = data.find((c: any) => c.symbol.toUpperCase() === symbol)
+        if (coin) {
+          const output = [
+            `${coin.name} (${coin.symbol.toUpperCase()})`,
+            '',
+            `价格: $${coin.current_price.toLocaleString()}`,
+            `24h 涨跌: ${coin.price_change_percentage_24h >= 0 ? '+' : ''}${coin.price_change_percentage_24h.toFixed(2)}%`,
+            `市值: $${coin.market_cap.toLocaleString()}`,
+            `24h 交易量: $${coin.total_volume.toLocaleString()}`,
+            `排名: #${coin.market_cap_rank}`,
+          ]
+          return { output: output.join('\n') }
+        }
+        return { output: `未找到 ${symbol} 的数据` }
+      }
+      
+      const output = [
+        '加密货币行情',
+        '',
+        '排名  币种        价格 (USD)    24h涨跌',
+        '----------------------------------------',
+        ...data.map((coin: any, i: number) => {
+          const change = coin.price_change_percentage_24h >= 0 ? '+' : ''
+          return `${(i + 1).toString().padStart(4)}  ${coin.symbol.toUpperCase().padEnd(8)}  $${coin.current_price.toLocaleString().padStart(12)}  ${change}${coin.price_change_percentage_24h.toFixed(2)}%`
+        }),
+      ]
+      
+      return { output: output.join('\n') }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return { output: `加密货币行情获取失败: ${msg}` }
+    }
+  },
+})

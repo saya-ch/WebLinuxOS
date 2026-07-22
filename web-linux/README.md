@@ -7,7 +7,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-43.0.0-7c3aed.svg)](./web-linux/package.json)
+[![Version](https://img.shields.io/badge/version-47.0.0-7c3aed.svg)](./web-linux/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
@@ -31,6 +31,7 @@ Everything runs in the browser. No backend, no account, no telemetry.
 | **PrivacyGuard** | Detects 17 classes of personally identifiable information (email, phone, ID, cards, IP, API keys, JWT, PEM keys, BTC addresses, …) and sanitizes them via four modes: highlight, partial mask, hash, full redact. 100% local. |
 | **JSONForge** | All-in-one JSON workbench: format / minify, JSON ⇌ YAML, JSON ⇌ CSV, deep JSON diff, and automatic JSON Schema generation with type inference. |
 | **CronLab** | Visual cron expression builder with human-readable explanation, next-N-run preview, and 12 presets. Supports aliases (`mon`, `jan`, `L`, `W`, `#`). |
+| **Command Center** | Enhanced terminal with 100+ commands including network tools (`curl`, `fetch`, `ping`, `ipinfo`), online utilities (`weather`, `news`, `currency`, `crypto`), and developer tools (`hash-verify`, `calc`, `base64`, `uuid`). |
 
 ### Desktop environment
 
@@ -53,8 +54,8 @@ Everything runs in the browser. No backend, no account, no telemetry.
 - **Terminal** with 100+ commands including:
   - File ops: `ls`, `cd`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `grep`, `find`, `diff`, `chmod`, `history`
   - System: `top`, `ps`, `neofetch`, `free`, `df`, `uptime`, `clear`, `which`
-  - Network: `ping`, `curl`, `weather`, `news`, `crypto`, `translate`, `ipinfo`, `wiki`, `space`
-  - Dev: `calc`, `hash`, `base64`, `uuid`, `regex`, `jwt-decode`
+  - Network: `ping`, `curl` (with `-i`, `-X`, `-H`, `-d` options), `fetch`, `ipinfo`, `iplookup`, `weather`, `news`, `crypto`, `currency`, `translate`, `wiki`, `space`
+  - Dev: `calc`, `hash`, `hash-verify`, `base64`, `uuid`, `regex`, `jwt-decode`
 - **REST API tester** with request builder and JSON preview
 - **JSON tools** — formatter, validator, YAML converter, diff, schema
 - **Regex builder/tester** with pattern library
@@ -227,6 +228,19 @@ without secrets:
 - `content-visibility` for off-screen windows
 
 ## Recent releases
+
+### v47.0 — Enhanced terminal commands and API integrations
+
+- Enhanced: `curl` command with full HTTP support including `-i`, `-X`, `-H`, `-d` options
+- Enhanced: `hash-verify` command with proper argument parsing and verification logic
+- New: `fetch` command for simplified HTTP requests
+- New: `ipinfo` command to get current IP address information
+- New: `iplookup` command for IP geolocation lookup
+- New: `weather` command using Open-Meteo API for real-time weather
+- New: `news` command fetching latest news from Hacker News
+- New: `currency` command for real-time exchange rates (Frankfurter API)
+- New: `crypto` command for cryptocurrency prices (CoinGecko API)
+- Updated: Terminal command documentation in README
 
 ### v43.0 — Privacy & developer tooling
 

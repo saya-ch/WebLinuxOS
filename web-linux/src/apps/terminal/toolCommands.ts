@@ -1151,23 +1151,24 @@ registerCommand('hash-verify', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
     
-    if (args.length < 2) {
+    if (args.length < 3) {
       return {
         output: [
           'Hash 验证工具',
           '',
-          '用法: hash-verify <算法> <哈希> <文本>',
+          '用法: hash-verify <算法> <期望哈希> <文本>',
           '',
           '支持的算法: md5, sha1, sha256, sha512',
           '',
           '示例:',
-          '  hash-verify sha256 myhash Hello',
+          '  hash-verify sha256 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 Hello',
         ].join('\n')
       }
     }
     
-    const [algorithm, , ...textParts] = args
-    const text = textParts.join(' ')
+    const algorithm = args[0]
+    const expectedHash = args[1]
+    const text = args.slice(2).join(' ')
     
     const computeHash = async (input: string, algo: string): Promise<string> => {
       const encoder = new TextEncoder()
@@ -1182,13 +1183,17 @@ registerCommand('hash-verify', {
     
     try {
       const computedHash = await computeHash(text, algorithm)
+      const match = computedHash.toLowerCase() === expectedHash.toLowerCase()
       return {
         output: [
           'Hash 验证结果',
           '',
           `算法: ${algorithm.toUpperCase()}`,
           `原文: ${text}`,
-          `计算值: ${computedHash}`,
+          `期望: ${expectedHash}`,
+          `计算: ${computedHash}`,
+          '',
+          match ? '✅ 验证通过' : '❌ 验证失败',
         ].join('\n')
       }
     } catch {
@@ -1196,8 +1201,8 @@ registerCommand('hash-verify', {
     }
   },
   description: '验证文本Hash',
-  usage: 'hash-verify <算法> <哈希> <文本>',
-  examples: ['hash-verify sha256 myhash Hello']
+  usage: 'hash-verify <算法> <期望哈希> <文本>',
+  examples: ['hash-verify sha256 abc123 Hello']
 })
 
 registerCommand('find', {

@@ -151,22 +151,196 @@ registerCommand('curl', {
     const { args } = context
     
     if (args.length === 0) {
-      return { output: 'curl: 缺少URL\n用法: curl <URL>' }
+      return {
+        output: [
+          'curl - 获取URL内容',
+          '',
+          '用法: curl <URL> [-i] [-X <方法>] [-H <头>] [-d <数据>] [-s]',
+          '',
+          '选项:',
+          '  -i    显示响应头',
+          '  -s    静默模式（不显示进度）',
+          '  -X    指定HTTP方法 (GET/POST/PUT/DELETE等)',
+          '  -H    添加HTTP请求头',
+          '  -d    发送POST数据',
+          '',
+          '示例:',
+          '  curl https://api.github.com',
+          '  curl -i https://example.com',
+          '  curl -X POST -d "key=value" https://api.example.com',
+        ].join('\n')
+      }
     }
     
-    const url = args[0]
+    const showHeaders = args.includes('-i')
+    const silent = args.includes('-s')
+    const methodIndex = args.indexOf('-X')
+    const method = methodIndex !== -1 ? args[methodIndex + 1].toUpperCase() : 'GET'
+    const headersIndex = args.indexOf('-H')
+    const headers: Record<string, string> = {}
+    if (headersIndex !== -1 && args[headersIndex + 1]) {
+      const [key, value] = args[headersIndex + 1].split(':')
+      if (key && value) headers[key.trim()] = value.trim()
+    }
+    const dataIndex = args.indexOf('-d')
+    const body = dataIndex !== -1 ? args.slice(dataIndex + 1).join(' ') : undefined
+    
+    const urlArg = args.find(arg => arg.startsWith('http')) || args[0]
     
     try {
-      const response = await fetch(url)
+      const requestHeaders: Record<string, string> = { ...headers }
+      if (body) {
+        requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
+      const response = await fetch(urlArg, {
+        method,
+        headers: Object.keys(requestHeaders).length > 0 ? requestHeaders : undefined,
+        body,
+      })
+      
+      const output: string[] = []
+      
+      if (showHeaders) {
+        output.push(`HTTP/${response.type === 'cors' ? '2.0' : '1.1'} ${response.status} ${response.statusText}`)
+        response.headers.forEach((value, key) => {
+          output.push(`${key}: ${value}`)
+        })
+        output.push('')
+      }
+      
       const text = await response.text()
-      return { output: text.substring(0, 2000) }
-    } catch {
-      return { output: `curl: 无法连接到 '${url}'\n请检查网络连接或URL是否正确` }
+      output.push(text.substring(0, 5000))
+      
+      if (!silent && text.length > 5000) {
+        output.push(`\n(内容已截断，显示前5000字符)`)
+      }
+      
+      return { output: output.join('\n') }
+    } catch (error) {
+      return { output: `curl: 无法连接到 '${urlArg}'\n错误: ${(error as Error).message}` }
     }
   },
   description: '获取URL内容',
-  usage: 'curl <URL>',
-  examples: ['curl https://api.example.com']
+  usage: 'curl <URL> [-i] [-X <方法>] [-H <头>] [-d <数据>]',
+  examples: ['curl https://api.github.com', 'curl -i https://example.com']
+})
+
+registerCommand('fetch', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return {
+        output: [
+          'fetch - 获取JSON数据',
+          '',
+          '用法: fetch <URL> [-p]',
+          '',
+          '选项:',
+          '  -p    格式化输出（pretty print）',
+          '',
+          '示例:',
+          '  fetch https://api.github.com/users/octocat',
+          '  fetch https://api.github.com/users/octocat -p',
+        ].join('\n')
+      }
+    }
+    
+    const pretty = args.includes('-p')
+    const url = args.find(arg => arg.startsWith('http')) || args[0]
+    
+    try {
+      const response = await fetch(url)
+      const json = await response.json()
+      
+      const output = pretty 
+        ? JSON.stringify(json, null, 2)
+        : JSON.stringify(json)
+      
+      return { output: output.substring(0, 5000) }
+    } catch (error) {
+      return { output: `fetch: 无法获取 '${url}'\n错误: ${(error as Error).message}` }
+    }
+  },
+  description: '获取JSON数据',
+  usage: 'fetch <URL> [-p]',
+  examples: ['fetch https://api.github.com/users/octocat']
+})
+
+registerCommand('ipinfo', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetch('https://ipinfo.io/json')
+      const data = await response.json()
+      
+      const output = [
+        '当前IP信息',
+        '',
+        `IP地址:   ${data.ip || '未知'}`,
+        `城市:     ${data.city || '未知'}`,
+        `地区:     ${data.region || '未知'}`,
+        `国家:     ${data.country || '未知'}`,
+        `经纬度:   ${data.loc || '未知'}`,
+        `ISP:      ${data.org || '未知'}`,
+        `时区:     ${data.timezone || '未知'}`,
+        `邮编:     ${data.postal || '未知'}`,
+      ]
+      
+      return { output: output.join('\n') }
+    } catch {
+      return {
+        output: [
+          '无法获取IP信息',
+          '',
+          '当前网络状态:',
+          `  在线: ${navigator.onLine ? '是' : '否'}`,
+          `  用户代理: ${navigator.userAgent.substring(0, 100)}...`,
+        ].join('\n')
+      }
+    }
+  },
+  description: '显示当前IP地址信息',
+  usage: 'ipinfo',
+  examples: ['ipinfo']
+})
+
+registerCommand('iplookup', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length === 0) {
+      return { output: 'iplookup: 缺少IP地址\n用法: iplookup <IP地址>' }
+    }
+    
+    const ip = args[0]
+    
+    try {
+      const response = await fetch(`https://ipinfo.io/${ip}/json`)
+      const data = await response.json()
+      
+      if (data.bogon) {
+        return { output: `iplookup: ${ip} 是保留IP地址` }
+      }
+      
+      const output = [
+        `IP地址: ${ip}`,
+        '',
+        `城市:   ${data.city || '未知'}`,
+        `地区:   ${data.region || '未知'}`,
+        `国家:   ${data.country || '未知'}`,
+        `经纬度: ${data.loc || '未知'}`,
+        `ISP:    ${data.org || '未知'}`,
+        `时区:   ${data.timezone || '未知'}`,
+      ]
+      
+      return { output: output.join('\n') }
+    } catch {
+      return { output: `iplookup: 无法查询 IP '${ip}'` }
+    }
+  },
+  description: '查询IP地址信息',
+  usage: 'iplookup <IP地址>',
+  examples: ['iplookup 8.8.8.8', 'iplookup 1.1.1.1']
 })
 
 registerCommand('dig', {
