@@ -373,83 +373,144 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevPortal: () => import('../../apps/DevPortal'),
 }
 
+const COMPONENT_LOAD_TIMEOUT = 30000
+const MAX_RETRY_ATTEMPTS = 2
+const MAX_CACHE_SIZE = 100
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentCache: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {}
 const preloadedComponents = new Set<string>()
 const loadingStates = new Map<string, 'loading' | 'loaded' | 'error'>()
+const retryCounts = new Map<string, number>()
+const cacheAccessTimes = new Map<string, number>()
+
+function createErrorFallback(name: string): React.ComponentType {
+  return () => (
+    <div
+      style={{
+        padding: 40,
+        color: 'var(--text-secondary)',
+        textAlign: 'center',
+        fontSize: 14,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        flexDirection: 'column',
+        gap: 12,
+      }}
+    >
+      <span style={{ fontSize: 48 }}>⚠️</span>
+      <div>
+        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{name}</span>
+        {' '}
+        - 应用加载失败
+      </div>
+      <div style={{ fontSize: 12, opacity: 0.7 }}>
+        组件文件可能缺失或已重命名，请检查应用配置。
+      </div>
+      <button
+        onClick={() => {
+          delete componentCache[name]
+          loadingStates.delete(name)
+          retryCounts.delete(name)
+          window.location.reload()
+        }}
+        style={{
+          padding: '8px 16px',
+          borderRadius: 6,
+          border: 'none',
+          background: 'var(--accent)',
+          color: '#fff',
+          cursor: 'pointer',
+          fontSize: 12,
+          transition: 'background 0.2s',
+        }}
+      >
+        重新加载页面
+      </button>
+    </div>
+  )
+}
+
+function timeoutPromise<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Timeout')), ms)
+    promise.then(
+      (res) => { clearTimeout(timer); resolve(res) },
+      (err) => { clearTimeout(timer); reject(err) }
+    )
+  })
+}
+
+function trimCache() {
+  if (Object.keys(componentCache).length <= MAX_CACHE_SIZE) return
+  
+  const sortedEntries = Array.from(cacheAccessTimes.entries())
+    .sort((a, b) => a[1] - b[1])
+  
+  const toRemove = sortedEntries.slice(0, sortedEntries.length - MAX_CACHE_SIZE)
+  toRemove.forEach(([name]) => {
+    delete componentCache[name]
+    loadingStates.delete(name)
+    retryCounts.delete(name)
+    cacheAccessTimes.delete(name)
+    preloadedComponents.delete(name)
+  })
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loadComponent(name: string): React.LazyExoticComponent<React.ComponentType<any>> {
   if (componentCache[name]) {
+    cacheAccessTimes.set(name, Date.now())
     return componentCache[name]
   }
 
-  if (componentMap[name]) {
-    loadingStates.set(name, 'loading')
-    const importPromise = componentMap[name]()
-    importPromise.then(() => {
-      loadingStates.set(name, 'loaded')
-    }).catch(() => {
-      loadingStates.set(name, 'error')
-    })
-    componentCache[name] = lazy(() => importPromise)
+  trimCache()
+
+  const retryCount = retryCounts.get(name) || 0
+  
+  if (retryCount >= MAX_RETRY_ATTEMPTS) {
+    loadingStates.set(name, 'error')
+    componentCache[name] = lazy(() => Promise.resolve({ default: createErrorFallback(name) }))
     return componentCache[name]
   }
 
   loadingStates.set(name, 'loading')
-  componentCache[name] = lazy(() =>
-    import(`../../apps/${name}.tsx`)
-      .then((module) => {
+
+  const doImport = async () => {
+    if (componentMap[name]) {
+      try {
+        const module = await timeoutPromise(componentMap[name](), COMPONENT_LOAD_TIMEOUT)
         loadingStates.set(name, 'loaded')
+        cacheAccessTimes.set(name, Date.now())
         return { default: module.default }
-      })
-      .catch(() => {
+      } catch (error) {
+        retryCounts.set(name, retryCount + 1)
         loadingStates.set(name, 'error')
-        return {
-          default: () => (
-            <div
-              style={{
-                padding: 40,
-                color: 'var(--text-secondary)',
-                textAlign: 'center',
-                fontSize: 14,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                flexDirection: 'column',
-                gap: 12,
-              }}
-            >
-              <span style={{ fontSize: 48 }}>⚠️</span>
-              <div>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{name}</span>
-                {' '}
-                - 应用加载失败
-              </div>
-              <div style={{ fontSize: 12, opacity: 0.7 }}>
-                组件文件可能缺失或已重命名，请检查应用配置。
-              </div>
-              <button
-                onClick={() => window.location.reload()}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  transition: 'background 0.2s',
-                }}
-              >
-                重新加载页面
-              </button>
-            </div>
-          ),
+        if (retryCount + 1 < MAX_RETRY_ATTEMPTS) {
+          return doImport()
         }
-      }),
-  )
+        return { default: createErrorFallback(name) }
+      }
+    }
+
+    try {
+      const module = await timeoutPromise(import(`../../apps/${name}.tsx`), COMPONENT_LOAD_TIMEOUT)
+      loadingStates.set(name, 'loaded')
+      cacheAccessTimes.set(name, Date.now())
+      return { default: module.default }
+    } catch (error) {
+      retryCounts.set(name, retryCount + 1)
+      loadingStates.set(name, 'error')
+      if (retryCount + 1 < MAX_RETRY_ATTEMPTS) {
+        return doImport()
+      }
+      return { default: createErrorFallback(name) }
+    }
+  }
+
+  componentCache[name] = lazy(doImport)
   return componentCache[name]
 }
 

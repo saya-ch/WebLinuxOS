@@ -8,7 +8,7 @@ import {
   SortAsc, SortDesc, RefreshCw, ArrowLeft, ArrowRight,
   AlertTriangle, CheckCircle, ChevronUp,
   Columns, FileSpreadsheet, FileCode2, FileType,
-  Braces, HardDrive
+  Braces, HardDrive, Filter
 } from 'lucide-react';
 import { useStore, findNodeById, validateFileName } from '../store';
 import type { FileNode } from '../types';
@@ -184,6 +184,7 @@ function getAppIdForFile(name: string): string {
 type SortField = 'name' | 'type' | 'size' | 'date';
 type SortOrder = 'asc' | 'desc';
 type ViewMode = 'list' | 'grid';
+type FilterCategory = 'all' | FileCategory;
 
 interface ClipboardItem {
   fileIds: string[];
@@ -241,6 +242,7 @@ export default function FileManager() {
   const [showPreview, setShowPreview] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['root']));
+  const [filterCategory, setFilterCategory] = useState<FilterCategory>('all');
 
   // 交互状态
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
@@ -278,6 +280,14 @@ export default function FileManager() {
   const displayFiles = useMemo(() => {
     let result = currentChildren;
 
+    // 文件类型过滤
+    if (filterCategory !== 'all') {
+      result = result.filter(f => {
+        if (f.type === 'folder') return true;
+        return getFileCategory(f.name) === filterCategory;
+      });
+    }
+
     // 搜索过滤
     if (searchQuery.trim()) {
       const lowerQuery = searchQuery.toLowerCase();
@@ -306,7 +316,7 @@ export default function FileManager() {
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [currentChildren, searchQuery, sortField, sortOrder]);
+  }, [currentChildren, searchQuery, sortField, sortOrder, filterCategory]);
 
   // 统计信息
   const stats = useMemo(() => {
@@ -1388,6 +1398,30 @@ export default function FileManager() {
               <X size={10} />
             </button>
           )}
+        </div>
+
+        <span className="app-toolbar-separator" />
+
+        {/* 文件类型筛选器 */}
+        <div className="app-toolbar-filter">
+          <Filter size={12} className="app-filter-icon" />
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value as FilterCategory)}
+            className="app-input app-filter-select"
+            title="筛选文件类型"
+          >
+            <option value="all">全部类型</option>
+            <option value="image">图片</option>
+            <option value="video">视频</option>
+            <option value="audio">音频</option>
+            <option value="code">代码</option>
+            <option value="json">JSON</option>
+            <option value="markdown">Markdown</option>
+            <option value="document">文档</option>
+            <option value="archive">压缩包</option>
+            <option value="text">文本</option>
+          </select>
         </div>
 
         <span className="app-toolbar-separator" />

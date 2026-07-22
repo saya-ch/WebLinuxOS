@@ -174,13 +174,12 @@ export default function Terminal() {
       const categorizedCommands: Record<string, string[]> = {
         '文件操作': ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'tee', 'append', 'grep', 'find', 'chmod', 'gzip', 'gunzip', 'file', 'sort', 'uniq', 'cut', 'paste', 'nl', 'expand', 'tr', 'split'],
         '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'credits', 'time', 'worldtime', 'env', 'export', 'which', 'who', 'w'],
-        '系统监控': ['ps', 'top', 'cpu-info', 'memory-info', 'disk-usage', 'network-stats', 'process-list'],
-        '网络工具': ['ping', 'weather', 'news', 'crypto', 'translate', 'ipinfo'],
-        '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'json-pretty', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'file-type', 'json-to-csv', 'csv-to-json', 'encode', 'decode', 'converter'],
-        '创新工具': ['code-highlight', 'leetcode', 'color', 'http-status', 'regex-gen', 'ascii-table', 'progress', 'base-convert', 'url-parse', 'encode-url'],
-        '开发参考': ['markdown', 'css-reference', 'js-reference'],
-        '趣味命令': ['cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'banner', 'lolcat', 'starwars', 'matrix', 'asciiart', 'joke', 'advice', 'flip', 'rps'],
-        '其他': ['search', 'alias', 'history', 'welcome', 'open', 'app'],
+        '系统监控': ['ps', 'top', 'sysinfo'],
+        '网络工具': ['ping', 'curl', 'fetch', 'ifconfig', 'ipinfo', 'iplookup', 'dig', 'nslookup', 'ip', 'weather', 'weather-forecast', 'news', 'crypto', 'translate', 'currency'],
+        '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'converter', 'ascii-table'],
+        '开发工具': ['code-highlight', 'color', 'http-status', 'base-convert', 'url-parse', 'markdown', 'dict', 'wikipedia'],
+        '趣味命令': ['cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'banner', 'matrix', 'joke', 'advice', 'flip', 'rps', 'fact', 'emoji', 'nasa', 'randomuser', 'github-trending'],
+        '其他': ['search', 'alias', 'history', 'welcome', 'open', 'app', 'motd', 'timer'],
       }
 
       const helpOutput = [

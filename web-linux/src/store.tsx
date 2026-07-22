@@ -275,7 +275,29 @@ export const useStore = create<Store>((set, get) => ({
       ? Math.round((perf.memory.usedJSHeapSize / perf.memory.totalJSHeapSize) * 100)
       : Math.round(Math.random() * 40 + 20)
     const cpuUsage = Math.round(Math.random() * 30 + 5)
-    const storageUsage = Math.round((localStorage.length * 1024 / 5 * 1024 * 1024) * 100) || Math.round(Math.random() * 15 + 5)
+    
+    const localStorageSize = (() => {
+      try {
+        let total = 0
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key) {
+            const value = localStorage.getItem(key)
+            if (value) {
+              total += key.length + value.length
+            }
+          }
+        }
+        return total
+      } catch {
+        return 0
+      }
+    })()
+    const STORAGE_LIMIT_BYTES = 5 * 1024 * 1024
+    const storageUsage = localStorageSize > 0
+      ? Math.min(100, Math.round((localStorageSize / STORAGE_LIMIT_BYTES) * 100))
+      : Math.round(Math.random() * 15 + 5)
+      
     const networkUsage = Math.round(Math.random() * 50)
     const uptime = Math.floor(Date.now() / 1000)
 
