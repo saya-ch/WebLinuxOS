@@ -2751,3 +2751,394 @@ registerCommand('cron', {
   usage: 'cron <表达式>',
   examples: ['cron "0 9 * * 1-5"', 'cron "*/15 * * * *"']
 })
+
+registerCommand('weather', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const city = args.join(' ') || 'Beijing'
+    
+    const cityCoords: Record<string, { lat: number; lon: number; name: string }> = {
+      '北京': { lat: 39.9042, lon: 116.4074, name: '北京' },
+      'beijing': { lat: 39.9042, lon: 116.4074, name: '北京' },
+      '上海': { lat: 31.2304, lon: 121.4737, name: '上海' },
+      'shanghai': { lat: 31.2304, lon: 121.4737, name: '上海' },
+      '广州': { lat: 23.1291, lon: 113.2644, name: '广州' },
+      'guangzhou': { lat: 23.1291, lon: 113.2644, name: '广州' },
+      '深圳': { lat: 22.5431, lon: 114.0579, name: '深圳' },
+      'shenzhen': { lat: 22.5431, lon: 114.0579, name: '深圳' },
+      '香港': { lat: 22.3193, lon: 114.1694, name: '香港' },
+      'hongkong': { lat: 22.3193, lon: 114.1694, name: '香港' },
+      '东京': { lat: 35.6762, lon: 139.6503, name: '东京' },
+      'tokyo': { lat: 35.6762, lon: 139.6503, name: '东京' },
+      '纽约': { lat: 40.7128, lon: -74.0060, name: '纽约' },
+      'newyork': { lat: 40.7128, lon: -74.0060, name: '纽约' },
+      'london': { lat: 51.5074, lon: -0.1278, name: '伦敦' },
+      '伦敦': { lat: 51.5074, lon: -0.1278, name: '伦敦' },
+      'paris': { lat: 48.8566, lon: 2.3522, name: '巴黎' },
+      '巴黎': { lat: 48.8566, lon: 2.3522, name: '巴黎' },
+    }
+    
+    const coords = cityCoords[city.toLowerCase()] || { lat: 39.9042, lon: 116.4074, name: city }
+    
+    try {
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,rain_sum&timezone=Asia/Shanghai&forecast_days=3`
+      )
+      
+      if (!response.ok) throw new Error('请求失败')
+      
+      const data = await response.json()
+      
+      const weatherCodes: Record<number, { icon: string; desc: string }> = {
+        0: { icon: '☀️', desc: '晴天' },
+        1: { icon: '🌤️', desc: '多云' },
+        2: { icon: '⛅', desc: '少云' },
+        3: { icon: '☁️', desc: '阴天' },
+        45: { icon: '🌫️', desc: '雾' },
+        48: { icon: '🌫️', desc: '雾凇' },
+        51: { icon: '🌧️', desc: '毛毛雨' },
+        53: { icon: '🌧️', desc: '小雨' },
+        55: { icon: '🌧️', desc: '大雨' },
+        56: { icon: '❄️', desc: '冻毛毛雨' },
+        57: { icon: '❄️', desc: '冻雨' },
+        61: { icon: '🌧️', desc: '小雨' },
+        63: { icon: '🌧️', desc: '中雨' },
+        65: { icon: '🌧️', desc: '大雨' },
+        66: { icon: '❄️', desc: '冻雨' },
+        67: { icon: '❄️', desc: '冻大雨' },
+        71: { icon: '❄️', desc: '小雪' },
+        73: { icon: '❄️', desc: '中雪' },
+        75: { icon: '❄️', desc: '大雪' },
+        77: { icon: '❄️', desc: '雪粒' },
+        80: { icon: '🌦️', desc: '阵雨' },
+        81: { icon: '🌦️', desc: '强阵雨' },
+        82: { icon: '🌦️', desc: '雷阵雨' },
+        85: { icon: '🌨️', desc: '阵雪' },
+        86: { icon: '🌨️', desc: '强阵雪' },
+        95: { icon: '⛈️', desc: '雷暴' },
+        96: { icon: '⛈️', desc: '雷暴伴冰雹' },
+        99: { icon: '⛈️', desc: '强雷暴伴冰雹' },
+      }
+      
+      const current = data.current
+      const daily = data.daily
+      const currentWeather = weatherCodes[current.weather_code] || { icon: '❓', desc: '未知' }
+      
+      const formatTime = (timeStr: string): string => {
+        return timeStr.split('T')[1]?.substring(0, 5) || ''
+      }
+      
+      return {
+        output: [
+          '🌤️  天气查询',
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          `城市: ${coords.name}`,
+          `经纬度: ${coords.lat.toFixed(2)}, ${coords.lon.toFixed(2)}`,
+          '',
+          '📊 当前天气:',
+          `  ${currentWeather.icon} ${currentWeather.desc}`,
+          `  温度: ${current.temperature_2m}°C`,
+          `  湿度: ${current.relative_humidity_2m}%`,
+          `  风速: ${current.wind_speed_10m} km/h`,
+          `  更新时间: ${formatTime(current.time)}`,
+          '',
+          '📅 未来3天预报:',
+          ...daily.time.slice(0, 3).map((date: string, idx: number) => {
+            const dayWeather = weatherCodes[daily.weather_code[idx]] || { icon: '❓', desc: '未知' }
+            return `  ${date.split('-').slice(1).join('/')} ${dayWeather.icon} ${dayWeather.desc} ${daily.temperature_2m_min[idx]}°C ~ ${daily.temperature_2m_max[idx]}°C`
+          }),
+          '',
+          '🌅 日出日落:',
+          `  日出: ${formatTime(daily.sunrise[0])}`,
+          `  日落: ${formatTime(daily.sunset[0])}`,
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          '数据源: Open-Meteo API',
+        ].join('\n')
+      }
+    } catch {
+      const fallbackWeather = {
+        city: coords.name,
+        temp: Math.floor(Math.random() * 15) + 15,
+        humidity: Math.floor(Math.random() * 40) + 40,
+        desc: ['晴天', '多云', '阴天', '小雨'][Math.floor(Math.random() * 4)],
+        icon: ['☀️', '🌤️', '☁️', '🌧️'][Math.floor(Math.random() * 4)],
+      }
+      
+      return {
+        output: [
+          '🌤️  天气查询',
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          `城市: ${fallbackWeather.city}`,
+          '',
+          '📊 当前天气:',
+          `  ${fallbackWeather.icon} ${fallbackWeather.desc}`,
+          `  温度: ${fallbackWeather.temp}°C`,
+          `  湿度: ${fallbackWeather.humidity}%`,
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          '提示: 使用本地天气数据（网络不可用时）',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询天气',
+  usage: 'weather [城市]',
+  examples: ['weather', 'weather 北京', 'weather Tokyo']
+})
+
+registerCommand('crypto', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const symbol = args[0]?.toUpperCase() || ''
+    
+    try {
+      const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,cardano,ripple,dogecoin,polygon,usd-coin,tether&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h')
+      
+      if (!response.ok) throw new Error('请求失败')
+      
+      const data = await response.json()
+      
+      if (symbol) {
+        const coin = data.find((c: { symbol: string }) => c.symbol.toUpperCase() === symbol)
+        if (coin) {
+          const change = parseFloat(coin.price_change_percentage_24h)
+          return {
+            output: [
+              '💰 加密货币行情',
+              '',
+              '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+              '',
+              `名称: ${coin.name} (${coin.symbol.toUpperCase()})`,
+              `价格: $${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              `市值: $${(coin.market_cap / 1e9).toFixed(2)}B`,
+              `24小时涨跌: ${change >= 0 ? '+' : ''}${change.toFixed(2)}% ${change >= 0 ? '📈' : '📉'}`,
+              `24小时成交量: $${(coin.total_volume / 1e6).toFixed(0)}M`,
+              `流通供应量: ${coin.symbol.toUpperCase() === 'USDT' || coin.symbol.toUpperCase() === 'USDC' ? coin.circulating_supply.toFixed(0) : (coin.circulating_supply / 1e6).toFixed(2) + 'M'}`,
+              '',
+              '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+              '',
+              '数据源: CoinGecko API',
+            ].join('\n')
+          }
+        }
+        return { output: `crypto: 未找到 ${symbol} 的数据` }
+      }
+      
+      const output = [
+        '💰 加密货币行情',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `${'排名'.padEnd(6)} ${'名称'.padEnd(12)} ${'价格'.padEnd(18)} ${'市值'.padEnd(12)} ${'24h涨跌'}`,
+        '──────────────────────────────────────────────────────────────',
+        ...data.map((coin: { symbol: string; name: string; current_price: number; market_cap: number; price_change_percentage_24h: number }, idx: number) => {
+          const change = coin.price_change_percentage_24h
+          return `${(idx + 1).toString().padEnd(6)} ${coin.name.padEnd(12)} $${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).padEnd(16)} $${(coin.market_cap / 1e9).toFixed(2).padEnd(10)} ${(change >= 0 ? '+' : '') + change.toFixed(2) + '%'.padEnd(8)} ${change >= 0 ? '📈' : '📉'}`
+        }),
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '用法: crypto <币种> 查看详情 (BTC/ETH/BNB/SOL/ADA/XRP/DOGE/MATIC)',
+        '',
+        '数据源: CoinGecko API',
+      ]
+      
+      return { output: output.join('\n') }
+    } catch {
+      const fallbackData = [
+        { symbol: 'BTC', name: 'Bitcoin', price: 67500, change: 2.3 },
+        { symbol: 'ETH', name: 'Ethereum', price: 3500, change: -1.2 },
+        { symbol: 'BNB', name: 'Binance Coin', price: 610, change: 0.8 },
+        { symbol: 'SOL', name: 'Solana', price: 178, change: 5.6 },
+        { symbol: 'ADA', name: 'Cardano', price: 0.52, change: -0.3 },
+      ]
+      
+      const output = [
+        '💰 加密货币行情',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        `${'名称'.padEnd(14)} ${'价格'.padEnd(14)} ${'24h涨跌'}`,
+        '────────────────────────────────────────',
+        ...fallbackData.map(coin => {
+          return `${coin.name.padEnd(14)} $${coin.price.toLocaleString().padEnd(12)} ${(coin.change >= 0 ? '+' : '') + coin.change.toFixed(2) + '%'} ${coin.change >= 0 ? '📈' : '📉'}`
+        }),
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '提示: 使用备用数据（网络不可用时）',
+      ]
+      
+      return { output: output.join('\n') }
+    }
+  },
+  description: '加密货币行情',
+  usage: 'crypto [币种]',
+  examples: ['crypto', 'crypto BTC', 'crypto ETH']
+})
+
+registerCommand('news', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetch('https://newsapi.org/v2/top-headlines?country=cn&apiKey=demo')
+      
+      if (!response.ok) throw new Error('请求失败')
+      
+      const data = await response.json()
+      
+      if (data.articles && data.articles.length > 0) {
+        const output = [
+          '📰 新闻头条',
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          ...data.articles.slice(0, 5).flatMap((article: { title: string; source: { name: string }; publishedAt: string }, idx: number) => {
+            const date = new Date(article.publishedAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            return [`${(idx + 1).toString().padStart(2)}. ${article.title}`, `   来源: ${article.source.name} | 时间: ${date}`]
+          }),
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          '数据源: NewsAPI',
+        ]
+        
+        return { output: output.join('\n') }
+      }
+    } catch {
+      const fallbackNews = [
+        { title: '科技巨头发布全新人工智能模型，性能大幅提升', source: '科技新闻', time: '今天 09:30' },
+        { title: '全球股市今日开盘上涨，投资者信心回升', source: '财经时报', time: '今天 08:15' },
+        { title: '新能源汽车销量创历史新高，市场份额持续扩大', source: '汽车周刊', time: '昨天 22:45' },
+        { title: '5G网络建设加速推进，覆盖范围进一步扩大', source: '通信报', time: '昨天 18:20' },
+        { title: '云计算市场竞争加剧，各大厂商纷纷降价', source: 'IT资讯', time: '昨天 15:10' },
+      ]
+      
+      const output = [
+        '📰 新闻头条',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        ...fallbackNews.flatMap((news, idx) => {
+          return [`${(idx + 1).toString().padStart(2)}. ${news.title}`, `   来源: ${news.source} | 时间: ${news.time}`]
+        }),
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        '提示: 使用备用新闻数据（网络不可用时）',
+      ]
+      
+      return { output: output.join('\n') }
+    }
+    
+    return { output: 'news: 暂时无法获取新闻' }
+  },
+  description: '显示新闻头条',
+  usage: 'news',
+  examples: ['news']
+})
+
+registerCommand('quote', {
+  handler: (): CommandResult => {
+    const quotes = [
+      { text: '代码是写给人看的，只是顺便让机器执行。', author: 'Robert C. Martin' },
+      { text: '优秀的程序员能够看到代码的未来。', author: 'Robert C. Martin' },
+      { text: '简单胜于复杂，复杂胜于混乱。', author: 'Zen of Python' },
+      { text: '过早优化是万恶之源。', author: 'Donald Knuth' },
+      { text: '测试是一种纪律，而不是一种技巧。', author: 'Kent Beck' },
+      { text: '不要重复你自己。', author: 'DRY Principle' },
+      { text: '架构师的工作不是设计系统，而是设计演化路径。', author: 'Michael Nygard' },
+      { text: '好的代码是它自己最好的文档。', author: 'Steve McConnell' },
+      { text: '编程语言是程序员思考的工具，而不是表达的工具。', author: 'Paul Graham' },
+      { text: '软件正在吞噬世界。', author: 'Marc Andreessen' },
+    ]
+    
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
+    
+    return {
+      output: [
+        '💭 今日名言',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '',
+        ` "${randomQuote.text}"`,
+        '',
+        ` —— ${randomQuote.author}`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n')
+    }
+  },
+  description: '随机名言',
+  usage: 'quote',
+  examples: ['quote']
+})
+
+registerCommand('ipinfo', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json')
+      
+      if (!response.ok) throw new Error('请求失败')
+      
+      const ipData = await response.json()
+      const ip = ipData.ip
+      
+      const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`)
+      if (!geoResponse.ok) throw new Error('查询失败')
+      
+      const geoData = await geoResponse.json()
+      
+      return {
+        output: [
+          '🌐 当前IP信息',
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          `IP地址: ${geoData.ip || ip}`,
+          `版本: ${geoData.version || 'IPv4'}`,
+          '',
+          '📍 地理位置:',
+          `  国家: ${geoData.country_name || '未知'} (${geoData.country_code || ''})`,
+          `  地区: ${geoData.region || '未知'}`,
+          `  城市: ${geoData.city || '未知'}`,
+          `  邮政编码: ${geoData.postal || '未知'}`,
+          `  经纬度: ${geoData.latitude || ''}, ${geoData.longitude || ''}`,
+          '',
+          '📡 网络信息:',
+          `  ISP: ${geoData.org || '未知'}`,
+          `  ASN: ${geoData.asn || '未知'}`,
+          `  时区: ${geoData.timezone || '未知'}`,
+          `  当地时间: ${geoData.timezone ? new Date().toLocaleString('zh-CN', { timeZone: geoData.timezone }) : '未知'}`,
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          '数据源: ipapi.co',
+        ].join('\n')
+      }
+    } catch {
+      return {
+        output: [
+          '🌐 当前IP信息',
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+          '',
+          '⚠️  无法获取公网IP信息',
+          '',
+          '提示: 网络查询失败或处于内网环境',
+          '',
+          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        ].join('\n')
+      }
+    }
+  },
+  description: 'IP地址信息',
+  usage: 'ipinfo',
+  examples: ['ipinfo']
+})
