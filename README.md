@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v47.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v48.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,7 +21,7 @@
 
 WebLinuxOS is a full-featured Linux desktop environment that runs entirely in your browser. Unlike OS simulators that only look the part, every application here delivers real functionality — the terminal executes actual commands, the code editor writes real code, the API testing tool makes genuine network requests, and privacy tools detect real sensitive information locally.
 
-With **240+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
+With **242+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
 
 Built with React 19 and TypeScript, it features a polished windowing system with virtual desktops, multiple themes (Cyberpunk, Quantum, Glass Morphism, Classic Light), smooth GPU-accelerated animations, and a boot animation that makes every startup feel like an event.
 
@@ -55,6 +55,8 @@ Real-time system statistics displayed in the Quick Action Center (Ctrl+A):
 
 Pushing the boundaries of what a web OS can do:
 
+- **Real-Time System Monitor (v48)** — Live system metrics using real browser APIs: JavaScript heap memory, network status (type/speed/latency), FPS measurement, page performance timing, local storage usage, and CPU core count. All data is real, not simulated.
+- **Clipboard History Manager (v48)** — Persistent clipboard history with search, filtering, favorites, and local storage. Save up to 100 entries with automatic deduplication and timestamp tracking.
 - **Real-Time Code Collaboration** — Multi-language collaborative coding platform with real-time cursor tracking, JavaScript execution, session sharing, and support for 9 programming languages (JavaScript, TypeScript, Python, Java, C++, Go, Rust, HTML, CSS)
 - **AI Code Analyzer Pro** — Intelligent code quality analyzer with complexity assessment, duplicate code detection, magic number identification, long line warnings, and actionable improvement suggestions for 7 languages
 - **DevPortal** — Unified developer toolbox with 7 categories: dashboard, code tools, text tools, color tools, time tools, network tools, and data visualization
@@ -106,7 +108,7 @@ Classic games including 2048, Snake, Tetris, Breakout, Memory, and more — all 
 | **System Tools** | 30+ | File Manager, System Monitor, Performance Dashboard, Settings, Terminal |
 | **Network** | 25+ | Network Toolkit Pro, Web Browser, WorldPulse, Weather, News, IP Lookup |
 | **Media & Creative** | 20+ | AudioViz, Music Player, Image Viewer, Paint, Whiteboard, Camera |
-| **Utilities** | 35+ | PrivacyGuard, DevShortcuts, Password Generator, Hash Tools, Unit Converter |
+| **Utilities** | 37+ | PrivacyGuard, DevShortcuts, Password Generator, Hash Tools, Unit Converter, Real System Monitor, Clipboard History |
 | **Games** | 10+ | 2048, Snake, Tetris, Breakout, Memory, Virtual Pet |
 | **AI Tools** | 20+ | AI Assistant, Code Assistant, Prompt Library, AI Workbench, AI Learning |
 

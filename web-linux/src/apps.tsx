@@ -12,7 +12,7 @@ import {
   LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
-  LayersIcon
+  LayersIcon, ClipboardIcon
 } from './icons'
 
 
@@ -30,6 +30,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 实时系统监控（v48创新功能 — 真实系统数据监控）
+  { id: 'real-system-monitor', name: '实时系统监控', icon: <ActivityIcon />, component: 'RealSystemMonitor', category: 'utilities', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '真实系统监控：JavaScript堆内存+网络状态+FPS+页面性能+本地存储，所有数据来自浏览器API' },
+  // 剪贴板历史管理器（v48创新功能 — 剪贴板历史管理）
+  { id: 'real-clipboard-history', name: '剪贴板历史', icon: <ClipboardIcon />, component: 'RealClipboardHistory', category: 'utilities', defaultWidth: 800, defaultHeight: 600, minWidth: 600, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '剪贴板历史管理：保存剪贴板历史+搜索过滤+收藏功能+自动保存到本地' },
   // 实时代码协作平台（v47创新功能 — 多语言支持+实时协作+代码执行）
   { id: 'realtime-code-collab', name: '实时代码协作', icon: <UserIcon />, component: 'RealTimeCodeCollab', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时代码协作平台：支持JavaScript/TypeScript/Python/Java/C++/Go/Rust/HTML/CSS，模拟协作者光标，代码实时执行，会话分享' },
   // AI智能代码分析器（v47创新功能 — 代码质量分析+改进建议+实时反馈）
