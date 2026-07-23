@@ -62,6 +62,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'quantum-calculator', name: '量子计算器', icon: <CalculatorIcon />, component: 'QuantumCalculator', category: 'utilities', defaultWidth: 400, defaultHeight: 600, minWidth: 350, minHeight: 500, resizable: true, multiple: false },
   // 欢迎中心（v37.0新增）
   { id: 'welcome-hub', name: '欢迎中心', icon: <SparklesIcon />, component: 'WelcomeHub', category: 'system', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
+  // BookFinder 书海检索（v50创新功能 — 接入 Open Library 公开 API 的真实图书发现工具）
+  { id: 'book-finder', name: '书海检索', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h7"/></svg>, component: 'BookFinder', category: 'internet', defaultWidth: 1100, defaultHeight: 760, minWidth: 720, minHeight: 520, resizable: true, multiple: false, isNew: true, description: '基于 Open Library 公开 API 的真实图书发现：搜索数百万册图书、封面预览、作品详情、ISBN/评分、主题筛选、本地收藏' },
   // 新增WebIDE Pro在线编程环境（v36.0核心创新）
   { id: 'web-ide-pro', name: 'WebIDE Pro 在线编程', icon: <Code2Icon />, component: 'WebIDEPro', category: 'development', defaultWidth: 1300, defaultHeight: 850, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   // 新增在线编程实验室（v35.0核心创新）
@@ -882,18 +884,6 @@ function DataVizDashboardIcon() {
   )
 }
 
-function WorkspaceManagerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <path d="M14 17h7" />
-      <path d="M17.5 14v7" />
-    </svg>
-  )
-}
-
 function CustomClipboardIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1244,7 +1234,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'whiteboard-pro', name: '专业白板', icon: <WhiteboardProIcon />, component: 'WhiteboardPro', category: 'office', defaultWidth: 1200, defaultHeight: 900, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'news-hub', name: '新闻聚合中心', icon: <NewsHubIcon />, component: 'NewsHub', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'data-viz-dashboard', name: '数据可视化仪表盘', icon: <DataVizDashboardIcon />, component: 'DataVizDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'workspace-manager', name: '工作空间管理器', icon: <WorkspaceManagerIcon />, component: 'WorkspaceManager', category: 'system', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  // 注：workspace-manager 已在 APP_REGISTRY_EXTRAS 中注册，此处移除重复条目以避免启动器出现重复图标
   { id: 'github-explorer', name: 'GitHub 探索器', icon: <GitHubExplorerIcon />, component: 'GitHubExplorer', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'ai-code-tutor', name: 'AI 编程导师', icon: <AICodeTutorIcon />, component: 'AICodeTutor', category: 'development', defaultWidth: 1400, defaultHeight: 900, minWidth: 1000, minHeight: 600, resizable: true, multiple: false },
   { id: 'component-sandbox', name: '组件开发沙盒', icon: <ComponentSandboxIcon />, component: 'ComponentSandbox', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
@@ -1286,7 +1276,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'password-generator', name: '密码生成器', icon: <LockIcon />, component: 'PasswordGenerator', category: 'utilities', defaultWidth: 500, defaultHeight: 800, minWidth: 400, minHeight: 600, resizable: true, multiple: false },
   { id: 'text-diff', name: '文本比较工具', icon: <DiffIcon />, component: 'TextDiffViewer', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'timer-app', name: '定时器', icon: <ClockIcon />, component: 'TimerApp', category: 'utilities', defaultWidth: 600, defaultHeight: 700, minWidth: 500, minHeight: 500, resizable: true, multiple: false },
-  { id: 'smart-dashboard', name: '智能仪表盘', icon: <DashboardIcon />, component: 'SmartDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
+  // 注：smart-dashboard 已在 APP_REGISTRY_EXTRAS 中注册，此处移除重复条目
   { id: 'autoflow', name: 'AutoFlow 工作流', icon: <AutoFlowIcon />, component: 'AutoFlow', category: 'utilities', defaultWidth: 1300, defaultHeight: 800, minWidth: 1000, minHeight: 600, resizable: true, multiple: false },
   { id: 'focus-mode', name: '专注模式', icon: <FocusIcon />, component: 'FocusMode', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'task-board', name: '任务看板', icon: <BoardIcon />, component: 'TaskBoard', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
@@ -1550,7 +1540,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'live-data-hub', name: '实时数据中心', icon: <ActivityIcon />, component: 'LiveDataHub', category: 'internet', defaultWidth: 950, defaultHeight: 780, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   // === v36.0 全新一代创新应用：AI Workbench / Knowledge Vine / CodeForge ===
   { id: 'ai-workbench', name: 'AI Workbench 智能工作台', icon: <SparklesIcon />, component: 'AIWorkbench', category: 'utilities', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  { id: 'knowledge-vine', name: 'Knowledge Vine 知识藤蔓', icon: <SmartNotesIcon />, component: 'KnowledgeVine', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
+  // 注：knowledge-vine 已在 APP_REGISTRY_EXTRAS 中注册，此处移除重复条目
   { id: 'code-forge', name: 'CodeForge 开发者工具集', icon: <Code2Icon />, component: 'CodeForge', category: 'development', defaultWidth: 1280, defaultHeight: 820, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'weather-app', name: '天气查询', icon: <CloudRainIcon />, component: 'WeatherApp', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'github-trending-app', name: 'GitHub 趋势', icon: <GitHubIcon />, component: 'GitHubTrendingApp', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
@@ -1559,7 +1549,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'css-gradient', name: 'CSS 渐变工作室', icon: <PaletteIcon />, component: 'CssGradientStudio', category: 'development', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
   { id: 'git-cheatsheet', name: 'Git 命令速查', icon: <Code2Icon />, component: 'GitCheatsheet', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'pomodoro-studio', name: 'Pomodoro Studio', icon: <PomodoroIcon />, component: 'PomodoroStudio', category: 'office', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
-  { id: 'api-health', name: 'API 健康监控', icon: <ActivityIcon />, component: 'APIHealthMonitor', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // 注：APIHealthMonitor 已以 api-health-monitor 注册（utilities），此处移除重复的 api-health 条目
   { id: 'activity-heatmap', name: '活动热力图', icon: <ActivityIcon />, component: 'ActivityHeatmap', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
   // === v39.0 全新创新应用 - Snap Studio 浏览器原生图片工坊 ===

@@ -115,8 +115,11 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/FileManager')) {
               return 'app-filemanager'
             }
-            if (id.includes('src/apps/Browser')) {
+            if (id.includes('src/apps/WebBrowser') || id.includes('src/apps/Browser')) {
               return 'app-browser'
+            }
+            if (id.includes('src/apps/BookFinder')) {
+              return 'app-bookfinder'
             }
             if (id.includes('src/apps/Email')) {
               return 'app-email'

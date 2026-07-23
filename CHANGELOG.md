@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **BookFinder 书海检索 (v50)** — 基于 Open Library 公开 API 的真实图书发现
+  应用，无需 API Key、CORS 友好：
+  - 按书名/作者/主题检索数百万册图书，展示前 24 条结果。
+  - 卡片网格：封面缩略图（`covers.openlibrary.org`）、标题、作者、首版年份、
+    评分（5 星制）、收藏标记。
+  - 详情抽屉：拉取 `https://openlibrary.org{key}.json` 展示简介、主题标签、
+    ISBN、页数、评分，提供 Open Library 原文链接。
+  - 主题快捷筛选（fiction/science/history 等 10 个）+ 最近搜索记录
+    （localStorage，最多 8 条）。
+  - 收藏夹：本地保存最多 80 本，按收藏时间倒序，支持一键移除。
+  - 编辑/杂志风格 UI：Fraunces 衬线显示字体 + Sora 正文 + 纸张色调，
+    卡片错峰入场动画、骨架屏、空状态、网络错误优雅提示。
+  - 独立 chunk 分包（`app-bookfinder`），按需懒加载。
 - **Global Insights 全球洞察 (v49)** — 一站式全球信息聚合应用，集成
   8 个真实公开 API，无需任何后端即可使用：
   - **世界新闻**：NewsAPI 公共代理 (`saurav.tech/NewsAPI`)，展示 20 条
@@ -25,14 +38,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     动画；优雅的错误处理与重试；统一渐变卡片 + 活动指示器 + 微动画。
 
 ### Changed
-- **Global Insights UI 视觉升级** — 加入径向渐变背景、激活 Tab 渐变
-  + 底部高亮条、源 Tab 颜色编码、卡片悬停浮起 + 阴影增强、新闻
-  缩略图暗化渐变蒙层、模态详情弹窗（淡入 + 滑入动画）。统一 CSS 变量
-  接入主题，浅色/深色模式自动适配。
-- **README.md** — 更新版本号至 v49，应用总数 242 → 245，并在创新
-  应用章节新增 Global Insights 详细介绍。
+- **版本号统一至 v50** — `package.json` 升至 50.0.0；`index.html` 启动提示
+  与日志（原 v44）、`public/sw.js` 缓存名（原 v41）同步至 v50，避免用户
+  认知错乱与潜在旧缓存问题。
+- **启动日志应用数量文案** — `index.html` 启动日志由 "200+" 统一为 "350+"，
+  与 meta description 对齐。
+- **README.md** — 更新版本号至 v50，应用总数 245 → 350+，并在创新应用
+  章节新增 BookFinder 详细介绍。
 
 ### Fixed
+- **`apps.tsx` 重复应用 id 注册** — 移除 4 处重复条目：
+  `workspace-manager`（行 1247，与 APP_REGISTRY_EXTRAS 冲突）、
+  `smart-dashboard`（行 1289）、`knowledge-vine`（行 1553）、
+  `api-health`（行 1562，与 `api-health-monitor` 指向同一组件）。
+  此前重复 id 导致启动器出现重复图标且 `apps.find()` 总返回首项，
+  使 EXTRAS 中带 `isNew`/`description` 的更好元数据被遮蔽。同时清理
+  因删除而未使用的 `WorkspaceManagerIcon` 组件定义（`noUnusedLocals`）。
+- **`vite.config.ts` manualChunks 规则失效** — `src/apps/Browser` 规则
+  无法匹配实际文件 `src/apps/WebBrowser.tsx`（前者非后者子串），导致
+  WebBrowser 无法独立分块。补充 `src/apps/WebBrowser` 匹配，并为新增
+  BookFinder 添加 `app-bookfinder` 分包规则。
 - **`apps.tsx` 中 `GlobeIcon` 引用未定义错误** — 添加了本地 `GlobeInsightsIcon`
   SVG 组件（与已有 `WorkflowIcon` 风格保持一致），保证 `GlobalInsights`
   应用图标正确渲染。

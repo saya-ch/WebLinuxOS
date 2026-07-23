@@ -20,6 +20,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   RealSystemMonitor: () => import('../../apps/RealSystemMonitor'),
   RealClipboardHistory: () => import('../../apps/RealClipboardHistory'),
   About: () => import('../../apps/About'),
+  BookFinder: () => import('../../apps/BookFinder'),
   ActivityHeatmap: () => import('../../apps/ActivityHeatmap'),
   ActivityTracker: () => import('../../apps/ActivityTracker'),
   AdvancedDataViz: () => import('../../apps/AdvancedDataViz'),

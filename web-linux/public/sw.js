@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weblinuxos-v41'
+const CACHE_NAME = 'weblinuxos-v50'
 const CACHE_ASSETS = [
   '/WebLinuxOS/',
   '/WebLinuxOS/index.html',
