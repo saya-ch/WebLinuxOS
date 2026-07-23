@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v48.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v49.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,7 +21,7 @@
 
 WebLinuxOS is a full-featured Linux desktop environment that runs entirely in your browser. Unlike OS simulators that only look the part, every application here delivers real functionality — the terminal executes actual commands, the code editor writes real code, the API testing tool makes genuine network requests, and privacy tools detect real sensitive information locally.
 
-With **242+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
+With **245+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
 
 Built with React 19 and TypeScript, it features a polished windowing system with virtual desktops, multiple themes (Cyberpunk, Quantum, Glass Morphism, Classic Light), smooth GPU-accelerated animations, and a boot animation that makes every startup feel like an event.
 
@@ -55,6 +55,7 @@ Real-time system statistics displayed in the Quick Action Center (Ctrl+A):
 
 Pushing the boundaries of what a web OS can do:
 
+- **Global Insights 全球洞察 (v49)** — One-stop global information aggregator that integrates 8 real public APIs: World News (NewsAPI), Countries Encyclopedia (REST Countries), Daily Quotes (Quotable), Jokes (Official Joke API), Random User Generator (RandomUser.me), NASA Astronomy Picture of the Day, Currency Exchange Rates (Open Exchange Rates), and GitHub Trending Repositories. All data is real, not simulated. Features include local cache (10 min TTL), source tab navigation, full-text search for news and countries, country detail modal with capital/population/languages/timezones/borders, real-time sync indicator, and graceful error handling.
 - **Real-Time System Monitor (v48)** — Live system metrics using real browser APIs: JavaScript heap memory, network status (type/speed/latency), FPS measurement, page performance timing, local storage usage, and CPU core count. All data is real, not simulated.
 - **Clipboard History Manager (v48)** — Persistent clipboard history with search, filtering, favorites, and local storage. Save up to 100 entries with automatic deduplication and timestamp tracking.
 - **Real-Time Code Collaboration** — Multi-language collaborative coding platform with real-time cursor tracking, JavaScript execution, session sharing, and support for 9 programming languages (JavaScript, TypeScript, Python, Java, C++, Go, Rust, HTML, CSS)

@@ -123,6 +123,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'dev-shortcuts', name: '开发者快捷键大全', icon: <CommandIcon />, component: 'DevShortcuts', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '开发者必备快捷键速查表：覆盖VS Code/Chrome/macOS/Terminal/Git/Vim/Web开发，支持搜索、分类筛选、一键复制、自定义添加、收藏管理' },
   // FlowBoard 可视化工作流编辑器
   { id: 'flowboard', name: 'FlowBoard 工作流', icon: <WorkflowIcon />, component: 'FlowBoard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '可视化工作流编辑器：拖拽式节点编辑、条件分支、模拟执行、导出JSON' },
+  // === v49.0 新增 Global Insights 全球洞察 - 集成多个真实公开 API ===
+  { id: 'global-insights', name: 'Global Insights 全球洞察', icon: <GlobeInsightsIcon />, component: 'GlobalInsights', category: 'internet', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '一站式全球信息聚合：新闻、国家、每日箴言、趣味冷知识、虚拟用户、NASA 每日图、汇率、GitHub 趋势 - 全部基于真实公开 API' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1167,6 +1169,16 @@ function WorkflowIcon() {
   )
 }
 
+function GlobeInsightsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  )
+}
+
 function ChinesePoetryIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1547,7 +1559,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'css-gradient', name: 'CSS 渐变工作室', icon: <PaletteIcon />, component: 'CssGradientStudio', category: 'development', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
   { id: 'git-cheatsheet', name: 'Git 命令速查', icon: <Code2Icon />, component: 'GitCheatsheet', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'pomodoro-studio', name: 'Pomodoro Studio', icon: <PomodoroIcon />, component: 'PomodoroStudio', category: 'office', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
-  { id: 'api-health', name: 'API 健康监控', icon: <ActivityIcon />, component: 'ApiHealthMonitor', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  { id: 'api-health', name: 'API 健康监控', icon: <ActivityIcon />, component: 'APIHealthMonitor', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'activity-heatmap', name: '活动热力图', icon: <ActivityIcon />, component: 'ActivityHeatmap', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
   // === v39.0 全新创新应用 - Snap Studio 浏览器原生图片工坊 ===

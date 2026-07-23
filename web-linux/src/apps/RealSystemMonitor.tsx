@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Activity, Cpu, HardDrive, Wifi, Battery, Clock, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
+import { Activity, HardDrive, Wifi, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
 
 interface SystemMetric {
   name: string
@@ -75,7 +75,6 @@ export default function RealSystemMonitor() {
           rtt: connection.rtt || 0
         })
 
-        const speedScore = connection.downlink > 10 ? 1 : connection.downlink > 5 ? 0.7 : 0.4
         newMetrics.push({
           name: '网络速度',
           value: connection.downlink || 0,
