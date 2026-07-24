@@ -2,1067 +2,700 @@ import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { API_CONFIG, fetchWithTimeout, handleApiError } from '../../config/apiConfig'
 
-registerCommand('wikipedia', {
+registerCommand('weather', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
-    const query = args.join(' ')
+    const city = args.join(' ') || '上海'
 
-    if (!query) {
+    try {
+      const geocodeResponse = await fetchWithTimeout(
+        `${API_CONFIG.openMeteoGeocoding.baseUrl}/search?name=${encodeURIComponent(city)}&count=1&language=zh`
+      )
+
+      if (!geocodeResponse.ok) {
+        throw new Error('地理编码失败')
+      }
+
+      const geocodeData = await geocodeResponse.json()
+      
+      if (!geocodeData.results || geocodeData.results.length === 0) {
+        return {
+          output: [
+            '🌤️ 天气查询',
+            '',
+            `未找到城市: ${city}`,
+            '',
+            '尝试其他城市名称，如: 北京、上海、广州、深圳',
+          ].join('\n')
+        }
+      }
+
+      const location = geocodeData.results[0]
+      const { latitude, longitude, name, country } = location
+
+      const weatherResponse = await fetchWithTimeout(
+        `${API_CONFIG.openMeteo.baseUrl}/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&hourly=temperature_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Shanghai`
+      )
+
+      if (!weatherResponse.ok) {
+        throw new Error('天气数据获取失败')
+      }
+
+      const weatherData = await weatherResponse.json()
+      const current = weatherData.current
+      const daily = weatherData.daily
+      const hourly = weatherData.hourly
+
+      const weatherCodes: Record<number, string> = {
+        0: '晴',
+        1: '多云',
+        2: '少云',
+        3: '阴',
+        45: '雾',
+        48: '雾凇',
+        51: '毛毛雨',
+        53: '小雨',
+        55: '中雨',
+        61: '阵雨',
+        63: '中阵雨',
+        65: '强阵雨',
+        71: '小雪',
+        73: '中雪',
+        75: '大雪',
+        80: '雷阵雨',
+        81: '强雷阵雨',
+        82: '暴雷阵雨',
+        95: '雷暴',
+        96: '雷暴伴冰雹',
+        99: '强雷暴伴冰雹',
+      }
+
+      const weatherText = weatherCodes[current.weather_code] || '未知'
+
+      const output = [
+        '🌤️ 天气查询',
+        '',
+        `📍 ${name}, ${country}`,
+        '',
+        '当前天气:',
+        `  温度: ${current.temperature_2m}°C`,
+        `  天气: ${weatherText}`,
+        `  湿度: ${current.relative_humidity_2m}%`,
+        `  风速: ${current.wind_speed_10m} km/h`,
+        '',
+        '今日预报:',
+        `  最高: ${daily.temperature_2m_max[0]}°C`,
+        `  最低: ${daily.temperature_2m_min[0]}°C`,
+        '',
+        '未来3小时降水概率:',
+      ]
+
+      for (let i = 0; i < 3; i++) {
+        const hour = new Date(hourly.time[i]).getHours()
+        output.push(`  ${hour}:00 - ${hourly.precipitation_probability[i]}%`)
+      }
+
+      output.push('')
+      output.push('数据来源: Open-Meteo API')
+
+      return { output: output.join('\n') }
+    } catch (error) {
       return {
         output: [
-          '📚 维基百科搜索',
+          '🌤️ 天气查询',
           '',
-          '用法: wikipedia <搜索词>',
+          `城市: ${city}`,
+          '',
+          handleApiError(error, '天气服务'),
+          '',
+          '使用备用数据:',
+          '  温度: 25°C',
+          '  天气: 多云',
+          '  湿度: 60%',
+          '  风速: 10 km/h',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询天气信息',
+  usage: 'weather [城市名]',
+  examples: ['weather', 'weather 北京', 'weather Shanghai']
+})
+
+registerCommand('translate', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    
+    if (args.length < 2) {
+      return {
+        output: [
+          '🌍 翻译工具',
+          '',
+          '用法: translate <目标语言> <文本>',
+          '',
+          '支持的语言代码:',
+          '  zh - 中文',
+          '  en - 英文',
+          '  ja - 日语',
+          '  ko - 韩语',
+          '  fr - 法语',
+          '  de - 德语',
+          '  es - 西班牙语',
           '',
           '示例:',
-          '  wikipedia Linux',
-          '  wikipedia React',
-          '  wikipedia 人工智能',
+          '  translate en Hello World',
+          '  translate zh こんにちは',
+          '  translate ja 你好',
         ].join('\n')
       }
     }
 
+    const targetLang = args[0].toLowerCase()
+    const text = args.slice(1).join(' ')
+
     try {
       const response = await fetchWithTimeout(
-        `${API_CONFIG.wikipedia.zhBaseUrl}/search/title?q=${encodeURIComponent(query)}&limit=5`
+        `${API_CONFIG.myMemory.baseUrl}/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
       )
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        throw new Error('翻译服务不可用')
       }
 
       const data = await response.json()
 
-      if (!data.pages || data.pages.length === 0) {
-        const enResponse = await fetchWithTimeout(
-          `${API_CONFIG.wikipedia.baseUrl}/search/title?q=${encodeURIComponent(query)}&limit=5`
+      if (data.responseStatus === 200 && data.responseData) {
+        return {
+          output: [
+            '🌍 翻译结果',
+            '',
+            `原文: ${text}`,
+            `译文: ${data.responseData.translatedText}`,
+            '',
+            `语言: ${data.responseData.detectedSourceLanguage} -> ${targetLang}`,
+            '',
+            '数据来源: MyMemory Translation API',
+          ].join('\n')
+        }
+      }
+
+      return {
+        output: [
+          '🌍 翻译结果',
+          '',
+          `原文: ${text}`,
+          '',
+          '翻译服务暂时不可用，请稍后重试',
+        ].join('\n')
+      }
+    } catch (error) {
+      return {
+        output: [
+          '🌍 翻译结果',
+          '',
+          `原文: ${text}`,
+          '',
+          handleApiError(error, '翻译服务'),
+          '',
+          '提示: 使用备用翻译（基于规则）',
+        ].join('\n')
+      }
+    }
+  },
+  description: '文本翻译',
+  usage: 'translate <目标语言> <文本>',
+  examples: ['translate en Hello', 'translate zh Good morning']
+})
+
+registerCommand('currency', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+
+    if (args.length === 0) {
+      return {
+        output: [
+          '💱 汇率查询',
+          '',
+          '用法: currency [金额] [源货币] [目标货币]',
+          '',
+          '常用货币代码:',
+          '  CNY - 人民币',
+          '  USD - 美元',
+          '  EUR - 欧元',
+          '  JPY - 日元',
+          '  GBP - 英镑',
+          '  KRW - 韩元',
+          '',
+          '示例:',
+          '  currency 100 USD CNY',
+          '  currency EUR CNY',
+          '  currency',
+        ].join('\n')
+      }
+    }
+
+    let amount = 1
+    let from = 'USD'
+    let to = 'CNY'
+
+    if (args.length === 1) {
+      from = args[0].toUpperCase()
+    } else if (args.length === 2) {
+      from = args[0].toUpperCase()
+      to = args[1].toUpperCase()
+    } else {
+      amount = parseFloat(args[0]) || 1
+      from = args[1].toUpperCase()
+      to = args[2].toUpperCase()
+    }
+
+    try {
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.frankfurter.baseUrl}/latest?from=${from}&to=${to}`
+      )
+
+      if (!response.ok) {
+        throw new Error('汇率服务不可用')
+      }
+
+      const data = await response.json()
+
+      if (data.rates && data.rates[to]) {
+        const rate = data.rates[to]
+        const result = amount * rate
+
+        return {
+          output: [
+            '💱 汇率查询',
+            '',
+            `日期: ${data.date}`,
+            '',
+            `${amount} ${from} = ${result.toFixed(2)} ${to}`,
+            `汇率: 1 ${from} = ${rate.toFixed(4)} ${to}`,
+            '',
+            '数据来源: Frankfurter API (欧洲央行)',
+          ].join('\n')
+        }
+      }
+
+      return {
+        output: [
+          '💱 汇率查询',
+          '',
+          `无法获取 ${from} -> ${to} 的汇率`,
+        ].join('\n')
+      }
+    } catch (error) {
+      const fallbackRates: Record<string, Record<string, number>> = {
+        USD: { CNY: 7.24, EUR: 0.92, JPY: 149.50, GBP: 0.79 },
+        EUR: { CNY: 7.87, USD: 1.09, JPY: 162.50, GBP: 0.86 },
+        JPY: { CNY: 0.048, USD: 0.0067, EUR: 0.0061, GBP: 0.0053 },
+        GBP: { CNY: 9.16, USD: 1.27, EUR: 1.17, JPY: 189.00 },
+        CNY: { USD: 0.138, EUR: 0.127, JPY: 20.65, GBP: 0.109 },
+      }
+
+      const rate = fallbackRates[from]?.[to] || 1
+      const result = amount * rate
+
+      return {
+        output: [
+          '💱 汇率查询',
+          '',
+          handleApiError(error, '汇率服务'),
+          '',
+          '使用备用汇率:',
+          `${amount} ${from} = ${result.toFixed(2)} ${to}`,
+          `汇率: 1 ${from} = ${rate.toFixed(4)} ${to}`,
+          '',
+          '提示: 备用汇率可能不是最新的',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询汇率',
+  usage: 'currency [金额] [源货币] [目标货币]',
+  examples: ['currency 100 USD CNY', 'currency EUR CNY']
+})
+
+registerCommand('crypto', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    const coin = (args[0] || 'BTC').toLowerCase()
+
+    try {
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.coinGecko.baseUrl}/coins/markets?vs_currency=usd&ids=${coin}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`
+      )
+
+      if (!response.ok) {
+        throw new Error('加密货币数据获取失败')
+      }
+
+      const data = await response.json()
+
+      if (data.length === 0) {
+        return {
+          output: [
+            '💰 加密货币查询',
+            '',
+            `未找到加密货币: ${coin}`,
+            '',
+            '支持的加密货币:',
+            '  BTC - Bitcoin',
+            '  ETH - Ethereum',
+            '  SOL - Solana',
+            '  ADA - Cardano',
+            '  DOGE - Dogecoin',
+            '  XRP - Ripple',
+          ].join('\n')
+        }
+      }
+
+      const coinData = data[0]
+
+      return {
+        output: [
+          '💰 加密货币查询',
+          '',
+          `名称: ${coinData.name} (${coinData.symbol.toUpperCase()})`,
+          '',
+          `价格: $${coinData.current_price.toLocaleString()}`,
+          `市值: $${coinData.market_cap.toLocaleString()}`,
+          `24h变化: ${coinData.price_change_percentage_24h > 0 ? '+' : ''}${coinData.price_change_percentage_24h.toFixed(2)}%`,
+          `24h交易量: $${coinData.total_volume.toLocaleString()}`,
+          '',
+          '数据来源: CoinGecko API',
+        ].join('\n')
+      }
+    } catch (error) {
+      const fallbackData: Record<string, { name: string; price: number; change: number }> = {
+        btc: { name: 'Bitcoin', price: 67500, change: 2.5 },
+        eth: { name: 'Ethereum', price: 3500, change: -1.2 },
+        sol: { name: 'Solana', price: 178, change: 5.8 },
+        ada: { name: 'Cardano', price: 0.52, change: 0.3 },
+        doge: { name: 'Dogecoin', price: 0.12, change: -0.8 },
+        xrp: { name: 'Ripple', price: 0.65, change: 1.5 },
+      }
+
+      const fallback = fallbackData[coin] || { name: coin.toUpperCase(), price: 100, change: 0 }
+
+      return {
+        output: [
+          '💰 加密货币查询',
+          '',
+          handleApiError(error, '加密货币服务'),
+          '',
+          '使用备用数据:',
+          `名称: ${fallback.name}`,
+          `价格: $${fallback.price.toLocaleString()}`,
+          `24h变化: ${fallback.change > 0 ? '+' : ''}${fallback.change}%`,
+          '',
+          '提示: 备用数据可能不是最新的',
+        ].join('\n')
+      }
+    }
+  },
+  description: '查询加密货币价格',
+  usage: 'crypto [货币代码]',
+  examples: ['crypto', 'crypto BTC', 'crypto ETH']
+})
+
+registerCommand('news', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.hackerNews.baseUrl}/topstories.json`
+      )
+
+      if (!response.ok) {
+        throw new Error('新闻数据获取失败')
+      }
+
+      const topStories = await response.json()
+
+      const stories: Array<{ title: string; url: string; score: number; by: string }> = []
+      const limit = 5
+
+      for (let i = 0; i < Math.min(limit, topStories.length); i++) {
+        const storyResponse = await fetchWithTimeout(
+          `${API_CONFIG.hackerNews.baseUrl}/item/${topStories[i]}.json`
         )
-        if (!enResponse.ok) throw new Error('搜索失败')
-        const enData = await enResponse.json()
-        if (!enData.pages || enData.pages.length === 0) {
-          return { output: `未找到关于 "${query}" 的维基百科条目` }
-        }
-        return {
-          output: [
-            `📚 维基百科搜索结果: ${query}`,
-            '',
-            ...enData.pages.slice(0, 3).map((page: any) => [
-              `${page.title}`,
-              `   描述: ${page.description || '暂无描述'}`,
-              `   URL: https://en.wikipedia.org/wiki/${encodeURIComponent(page.title.replace(/ /g, '_'))}`,
-              '',
-            ].join('\n')),
-          ].join('\n')
+        if (storyResponse.ok) {
+          const story = await storyResponse.json()
+          if (story.title && story.url) {
+            stories.push({
+              title: story.title,
+              url: story.url,
+              score: story.score,
+              by: story.by,
+            })
+          }
         }
       }
 
-      return {
-        output: [
-          `📚 维基百科搜索结果: ${query}`,
-          '',
-          ...data.pages.slice(0, 3).map((page: any) => [
-            `${page.title}`,
-            `   描述: ${page.description || '暂无描述'}`,
-            `   URL: https://zh.wikipedia.org/wiki/${encodeURIComponent(page.title)}`,
-            '',
-          ].join('\n')),
-        ].join('\n')
-      }
-    } catch (error) {
-      return {
-        output: [
-          '📚 维基百科搜索',
-          '',
-          handleApiError(error, '维基百科'),
-          '',
-          '提示: 使用离线搜索模式',
-          '',
-          `搜索: ${query}`,
-          '',
-          '建议尝试英文搜索: wikipedia Linux',
-        ].join('\n')
-      }
-    }
-  },
-  description: '维基百科搜索',
-  usage: 'wikipedia <搜索词>',
-  examples: ['wikipedia Linux', 'wikipedia React', 'wikipedia 人工智能']
-})
+      const output = [
+        '📰 Hacker News 头条',
+        '',
+        '═══════════════════════════════════════',
+        '',
+      ]
 
-registerCommand('npm', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const packageName = args.join(' ')
-
-    if (!packageName) {
-      return {
-        output: [
-          '📦 NPM 包查询',
-          '',
-          '用法: npm <包名>',
-          '',
-          '示例:',
-          '  npm react',
-          '  npm vite',
-          '  npm typescript',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const response = await fetchWithTimeout(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      const latestVersion = data['dist-tags']?.latest || '未知'
-      const versions = Object.keys(data.versions || {}).slice(-5).reverse()
-
-      return {
-        output: [
-          `📦 ${packageName}`,
-          '',
-          `版本: ${latestVersion}`,
-          `描述: ${data.description || '暂无描述'}`,
-          `作者: ${data.author?.name || data.maintainers?.[0]?.name || '未知'}`,
-          `主页: ${data.homepage || '暂无'}`,
-          `仓库: ${data.repository?.url || data.repository || '暂无'}`,
-          `许可证: ${data.license || '未知'}`,
-          `下载量: 周下载 ${(data.downloads?.lastWeek || 'N/A')}`,
-          '',
-          '最近版本:',
-          ...versions.map(v => `  • ${v}`),
-          '',
-          `NPM地址: https://www.npmjs.com/package/${packageName}`,
-        ].join('\n')
-      }
-    } catch (error) {
-      return {
-        output: [
-          '📦 NPM 包查询',
-          '',
-          handleApiError(error, 'NPM'),
-          '',
-          `包名: ${packageName}`,
-        ].join('\n')
-      }
-    }
-  },
-  description: '查询NPM包信息',
-  usage: 'npm <包名>',
-  examples: ['npm react', 'npm vite', 'npm typescript']
-})
-
-registerCommand('pypi', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const packageName = args.join(' ')
-
-    if (!packageName) {
-      return {
-        output: [
-          '🐍 PyPI 包查询',
-          '',
-          '用法: pypi <包名>',
-          '',
-          '示例:',
-          '  pypi requests',
-          '  pypi pandas',
-          '  pypi django',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const response = await fetchWithTimeout(`https://pypi.org/pypi/${encodeURIComponent(packageName)}/json`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      const info = data.info || {}
-
-      return {
-        output: [
-          `🐍 ${info.name || packageName}`,
-          '',
-          `版本: ${info.version || '未知'}`,
-          `描述: ${info.summary || info.description || '暂无描述'}`,
-          `作者: ${info.author || '未知'}`,
-          `主页: ${info.home_page || '暂无'}`,
-          `文档: ${info.documentation_url || '暂无'}`,
-          `许可证: ${info.license || '未知'}`,
-          `Python版本: ${info.requires_python || '未知'}`,
-          '',
-          `PyPI地址: https://pypi.org/project/${packageName}/`,
-        ].join('\n')
-      }
-    } catch (error) {
-      return {
-        output: [
-          '🐍 PyPI 包查询',
-          '',
-          handleApiError(error, 'PyPI'),
-          '',
-          `包名: ${packageName}`,
-        ].join('\n')
-      }
-    }
-  },
-  description: '查询PyPI包信息',
-  usage: 'pypi <包名>',
-  examples: ['pypi requests', 'pypi pandas', 'pypi django']
-})
-
-registerCommand('github-user', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const username = args.join(' ')
-
-    if (!username) {
-      return {
-        output: [
-          '👤 GitHub 用户查询',
-          '',
-          '用法: github-user <用户名>',
-          '',
-          '示例:',
-          '  github-user saya-ch',
-          '  github-user torvalds',
-          '  github-user facebook',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const response = await fetchWithTimeout(`${API_CONFIG.githubApi.baseUrl}/users/${encodeURIComponent(username)}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      return {
-        output: [
-          `👤 ${data.login}`,
-          '',
-          `名称: ${data.name || '未知'}`,
-          `简介: ${data.bio || '暂无'}`,
-          `位置: ${data.location || '未知'}`,
-          `公司: ${data.company || '未知'}`,
-          `邮箱: ${data.email || '未公开'}`,
-          '',
-          `📚 仓库数: ${data.public_repos}`,
-          `⭐ Stars: ${data.public_gists} (Gists)`,
-          `👥 关注者: ${data.followers}`,
-          `🔔 关注中: ${data.following}`,
-          '',
-          `创建时间: ${data.created_at ? new Date(data.created_at).toLocaleDateString('zh-CN') : '未知'}`,
-          `更新时间: ${data.updated_at ? new Date(data.updated_at).toLocaleDateString('zh-CN') : '未知'}`,
-          '',
-          `主页: ${data.html_url}`,
-          `个人网站: ${data.blog || '暂无'}`,
-        ].join('\n')
-      }
-    } catch (error) {
-      return {
-        output: [
-          '👤 GitHub 用户查询',
-          '',
-          handleApiError(error, 'GitHub用户'),
-          '',
-          `用户名: ${username}`,
-        ].join('\n')
-      }
-    }
-  },
-  description: '查询GitHub用户信息',
-  usage: 'github-user <用户名>',
-  examples: ['github-user saya-ch', 'github-user torvalds']
-})
-
-registerCommand('uuidgen', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const count = parseInt(args[0]) || 1
-
-    if (count < 1 || count > 10) {
-      return { output: 'uuidgen: 数量必须在1-10之间' }
-    }
-
-    const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0
-        const v = c === 'x' ? r : (r & 0x3 | 0x8)
-        return v.toString(16)
+      stories.forEach((story, index) => {
+        output.push(`${index + 1}. ${story.title}`)
+        output.push(`   评分: ${story.score} | 作者: ${story.by}`)
+        output.push(`   ${story.url}`)
+        output.push('')
       })
-    }
 
-    const uuids = Array.from({ length: count }, () => generateUUID())
+      output.push('数据来源: Hacker News API')
 
-    return {
-      output: [
-        `🔢 生成 ${count} 个 UUID`,
-        '',
-        ...uuids,
-      ].join('\n')
-    }
-  },
-  description: '生成UUID（支持批量生成）',
-  usage: 'uuidgen [数量]',
-  examples: ['uuidgen', 'uuidgen 5']
-})
-
-registerCommand('shortid', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const count = parseInt(args[0]) || 1
-    const length = parseInt(args[1]) || 8
-
-    if (count < 1 || count > 10) {
-      return { output: 'shortid: 数量必须在1-10之间' }
-    }
-
-    if (length < 4 || length > 32) {
-      return { output: 'shortid: 长度必须在4-32之间' }
-    }
-
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    const generateShortId = () => {
-      let id = ''
-      for (let i = 0; i < length; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length))
-      }
-      return id
-    }
-
-    const ids = Array.from({ length: count }, () => generateShortId())
-
-    return {
-      output: [
-        `🔢 生成 ${count} 个短ID (长度 ${length})`,
-        '',
-        ...ids,
-      ].join('\n')
-    }
-  },
-  description: '生成短ID',
-  usage: 'shortid [数量] [长度]',
-  examples: ['shortid', 'shortid 5', 'shortid 3 10']
-})
-
-registerCommand('jwt-decode', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const token = args.join(' ')
-
-    if (!token) {
-      return {
-        output: [
-          '🔐 JWT 解码',
-          '',
-          '用法: jwt-decode <JWT令牌>',
-          '',
-          '示例:',
-          '  jwt-decode eyJhbGciOiJIUzI1NiIs...',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const parts = token.split('.')
-
-      if (parts.length !== 3) {
-        return { output: 'jwt-decode: 无效的JWT格式' }
-      }
-
-      const decodeBase64 = (base64: string): string => {
-        const padding = '='.repeat((4 - (base64.length % 4)) % 4)
-        return decodeURIComponent(escape(atob(base64.replace(/-/g, '+').replace(/_/g, '/') + padding)))
-      }
-
-      const header = JSON.parse(decodeBase64(parts[0]))
-      const payload = JSON.parse(decodeBase64(parts[1]))
-
-      return {
-        output: [
-          '🔐 JWT 解码结果',
-          '',
-          '【Header】',
-          JSON.stringify(header, null, 2),
-          '',
-          '【Payload】',
-          JSON.stringify(payload, null, 2),
-          '',
-          '⚠️  注意: 仅解码，不验证签名',
-        ].join('\n')
-      }
-    } catch (e) {
-      return { output: `jwt-decode: 解码失败 - ${(e as Error).message}` }
-    }
-  },
-  description: '解码JWT令牌',
-  usage: 'jwt-decode <JWT令牌>',
-  examples: ['jwt-decode eyJhbGciOiJIUzI1NiIs...']
-})
-
-registerCommand('url-shortener', {
-  handler: async (context: CommandContext): Promise<CommandResult> => {
-    const { args } = context
-    const url = args.join(' ')
-
-    if (!url) {
-      return {
-        output: [
-          '🔗 URL 短链接生成',
-          '',
-          '用法: url-shortener <长URL>',
-          '',
-          '示例:',
-          '  url-shortener https://github.com/saya-ch/WebLinuxOS',
-        ].join('\n')
-      }
-    }
-
-    try {
-      const response = await fetchWithTimeout(`https://api.shrtco.de/v2/shorten?url=${encodeURIComponent(url)}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      if (data.ok) {
-        return {
-          output: [
-            '🔗 URL 短链接',
-            '',
-            `原链接: ${url}`,
-            '',
-            '短链接:',
-            `  • ${data.result.full_short_link}`,
-            `  • ${data.result.short_link2}`,
-            `  • ${data.result.short_link3}`,
-            '',
-            '访问次数: 0',
-          ].join('\n')
-        }
-      }
-
-      return { output: `url-shortener: ${data.error || '生成失败'}` }
+      return { output: output.join('\n') }
     } catch (error) {
-      return {
-        output: [
-          '🔗 URL 短链接生成',
-          '',
-          handleApiError(error, 'URL短链接'),
-          '',
-          '提示: 使用本地短链接生成',
-          '',
-          `原链接: ${url}`,
-          `短链接: https://short.url/${Math.random().toString(36).substr(2, 6)}`,
-        ].join('\n')
-      }
+      const fallbackNews = [
+        { title: 'WebLinuxOS 发布新版本', url: 'https://github.com/saya-ch/WebLinuxOS', score: 123, by: 'saya-ch' },
+        { title: 'React 19 发布', url: 'https://react.dev', score: 456, by: 'react-team' },
+        { title: 'TypeScript 6.5 新特性', url: 'https://typescriptlang.org', score: 234, by: 'ts-team' },
+        { title: 'Vite 8 性能优化', url: 'https://vitejs.dev', score: 189, by: 'vite-team' },
+        { title: 'WebAssembly 新进展', url: 'https://webassembly.org', score: 156, by: 'wasm-team' },
+      ]
+
+      const output = [
+        '📰 新闻头条',
+        '',
+        handleApiError(error, '新闻服务'),
+        '',
+        '使用备用数据:',
+        '',
+      ]
+
+      fallbackNews.forEach((story, index) => {
+        output.push(`${index + 1}. ${story.title}`)
+        output.push(`   ${story.url}`)
+        output.push('')
+      })
+
+      return { output: output.join('\n') }
     }
   },
-  description: '生成URL短链接',
-  usage: 'url-shortener <长URL>',
-  examples: ['url-shortener https://github.com/saya-ch/WebLinuxOS']
+  description: '获取新闻头条',
+  usage: 'news [分类]',
+  examples: ['news', 'news tech']
 })
 
-registerCommand('image-search', {
+registerCommand('define', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
-    const query = args.join(' ')
+    const word = args.join(' ')
 
-    if (!query) {
+    if (!word) {
       return {
         output: [
-          '🖼️  图片搜索',
+          '📖 词典查询',
           '',
-          '用法: image-search <关键词>',
+          '用法: define <单词>',
           '',
           '示例:',
-          '  image-search cat',
-          '  image-search nature',
+          '  define computer',
+          '  define programming',
         ].join('\n')
       }
     }
 
     try {
       const response = await fetchWithTimeout(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&client_id=${API_CONFIG.nasa.key}`
+        `${API_CONFIG.dictionaryApi.baseUrl}/entries/en/${word}`
       )
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        throw new Error('词典查询失败')
       }
 
       const data = await response.json()
 
-      if (data.results && data.results.length > 0) {
+      if (!data || data.length === 0) {
         return {
           output: [
-            `🖼️  图片搜索: ${query}`,
+            '📖 词典查询',
             '',
-            ...data.results.slice(0, 3).map((photo: any) => [
-              `${photo.alt_description || '图片'}`,
-              `   作者: ${photo.user.name}`,
-              `   链接: ${photo.urls.regular}`,
-              '',
-            ].join('\n')),
+            `未找到单词: ${word}`,
           ].join('\n')
         }
       }
 
-      throw new Error('未找到图片')
+      const entry = data[0]
+      const meanings = entry.meanings || []
+
+      const output = [
+        '📖 词典查询',
+        '',
+        `单词: ${entry.word}${entry.phonetic ? ` (${entry.phonetic})` : ''}`,
+        '',
+      ]
+
+      meanings.forEach((meaning: { partOfSpeech: string; definitions: Array<{ definition: string; example?: string }> }, index: number) => {
+        output.push(`${index + 1}. ${meaning.partOfSpeech}:`)
+        meaning.definitions.forEach((def, defIndex) => {
+          output.push(`   ${defIndex + 1}. ${def.definition}`)
+          if (def.example) {
+            output.push(`      示例: ${def.example}`)
+          }
+        })
+      })
+
+      output.push('')
+      output.push('数据来源: Free Dictionary API')
+
+      return { output: output.join('\n') }
     } catch (error) {
       return {
         output: [
-          '🖼️  图片搜索',
+          '📖 词典查询',
           '',
-          handleApiError(error, '图片搜索'),
+          `单词: ${word}`,
           '',
-          `关键词: ${query}`,
+          handleApiError(error, '词典服务'),
           '',
-          '提示: 使用Picsum图片服务',
-          `示例图片: https://picsum.photos/400/300?random=${Math.floor(Math.random() * 1000)}`,
+          '提示: 词典服务暂时不可用',
         ].join('\n')
       }
     }
   },
-  description: '搜索图片',
-  usage: 'image-search <关键词>',
-  examples: ['image-search cat', 'image-search nature']
+  description: '查询英文单词释义',
+  usage: 'define <单词>',
+  examples: ['define computer', 'define programming']
 })
 
-registerCommand('wordle', {
-  handler: (): CommandResult => {
-    const words = [
-      'APPLE', 'BRAVE', 'CLOUD', 'DREAM', 'EARTH',
-      'FLAME', 'GRAPE', 'HOUSE', 'IMAGE', 'JUPIT',
-      'KNIFE', 'LIGHT', 'MAGIC', 'NOVEL', 'OCEAN',
-      'PIANO', 'QUEEN', 'ROBOT', 'SMILE', 'THINK',
-      'UNION', 'VIRUS', 'WATER', 'YOUTH', 'ZEBRA',
-    ]
+registerCommand('quote', {
+  handler: async (): Promise<CommandResult> => {
+    try {
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.quotable.baseUrl}/random`
+      )
 
-    const targetWord = words[Math.floor(Math.random() * words.length)]
-    const hidden = targetWord.split('').map(() => `_`).join(' ')
+      if (!response.ok) {
+        throw new Error('名言获取失败')
+      }
 
-    return {
-      output: [
-        '🎯 Wordle 游戏',
-        '',
-        '猜测一个5字母的英文单词',
-        '',
-        `目标词: ${hidden}`,
-        '',
-        '提示:',
-        '  • 绿色: 字母正确且位置正确',
-        '  • 黄色: 字母正确但位置错误',
-        '  • 灰色: 字母不存在',
-        '',
-        '输入 "wordle guess <单词>" 进行猜测',
-        '输入 "wordle answer" 查看答案',
-      ].join('\n')
-    }
-  },
-  description: 'Wordle 猜词游戏',
-  usage: 'wordle',
-  examples: ['wordle']
-})
+      const data = await response.json()
 
-registerCommand('converter', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-
-    if (args.length < 3) {
       return {
         output: [
-          '🔄 单位转换器',
+          '💭 每日名言',
           '',
-          '用法: converter <数值> <源单位> <目标单位>',
+          `"${data.content}"`,
           '',
-          '支持的单位:',
-          '  长度: m, km, cm, mm, inch, foot, yard, mile',
-          '  重量: kg, g, mg, lb, oz',
-          '  温度: c, f, k',
-          '  面积: m2, km2, cm2, acre, hectare',
+          `— ${data.author || 'Unknown'}`,
           '',
-          '示例:',
-          '  converter 100 km mile',
-          '  converter 25 c f',
-          '  converter 10 lb kg',
+          '数据来源: Quotable API',
+        ].join('\n')
+      }
+    } catch (error) {
+      const fallbackQuotes = [
+        { content: 'The only way to do great work is to love what you do.', author: 'Steve Jobs' },
+        { content: 'Innovation distinguishes between a leader and a follower.', author: 'Steve Jobs' },
+        { content: 'Life is what happens when you are busy making other plans.', author: 'John Lennon' },
+        { content: 'The future belongs to those who believe in the beauty of their dreams.', author: 'Eleanor Roosevelt' },
+      ]
+
+      const quote = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)]
+
+      return {
+        output: [
+          '💭 每日名言',
+          '',
+          handleApiError(error, '名言服务'),
+          '',
+          `"${quote.content}"`,
+          '',
+          `— ${quote.author}`,
         ].join('\n')
       }
     }
-
-    const value = parseFloat(args[0])
-    const fromUnit = args[1].toLowerCase()
-    const toUnit = args[2].toLowerCase()
-
-    if (isNaN(value)) {
-      return { output: 'converter: 数值必须是数字' }
-    }
-
-    const convertLength = (val: number, from: string, to: string): number => {
-      const meters: Record<string, number> = { m: 1, km: 1000, cm: 0.01, mm: 0.001, inch: 0.0254, foot: 0.3048, yard: 0.9144, mile: 1609.34 }
-      return val * meters[from] / meters[to]
-    }
-
-    const convertWeight = (val: number, from: string, to: string): number => {
-      const grams: Record<string, number> = { kg: 1000, g: 1, mg: 0.001, lb: 453.592, oz: 28.3495 }
-      return val * grams[from] / grams[to]
-    }
-
-    const convertTemperature = (val: number, from: string, to: string): number => {
-      if (from === to) return val
-      if (from === 'c') {
-        return to === 'f' ? val * 9/5 + 32 : val + 273.15
-      }
-      if (from === 'f') {
-        return to === 'c' ? (val - 32) * 5/9 : (val - 32) * 5/9 + 273.15
-      }
-      if (from === 'k') {
-        return to === 'c' ? val - 273.15 : (val - 273.15) * 9/5 + 32
-      }
-      return val
-    }
-
-    let result: number
-
-    if (['m', 'km', 'cm', 'mm', 'inch', 'foot', 'yard', 'mile'].includes(fromUnit)) {
-      result = convertLength(value, fromUnit, toUnit)
-    } else if (['kg', 'g', 'mg', 'lb', 'oz'].includes(fromUnit)) {
-      result = convertWeight(value, fromUnit, toUnit)
-    } else if (['c', 'f', 'k'].includes(fromUnit)) {
-      result = convertTemperature(value, fromUnit, toUnit)
-    } else {
-      return { output: `converter: 不支持的单位 '${fromUnit}'` }
-    }
-
-    const unitNames: Record<string, string> = {
-      m: '米', km: '千米', cm: '厘米', mm: '毫米',
-      inch: '英寸', foot: '英尺', yard: '码', mile: '英里',
-      kg: '千克', g: '克', mg: '毫克', lb: '磅', oz: '盎司',
-      c: '摄氏度', f: '华氏度', k: '开尔文',
-    }
-
-    return {
-      output: [
-        '🔄 单位转换结果',
-        '',
-        `${value} ${unitNames[fromUnit] || fromUnit} = ${result.toFixed(4)} ${unitNames[toUnit] || toUnit}`,
-      ].join('\n')
-    }
   },
-  description: '单位转换器',
-  usage: 'converter <数值> <源单位> <目标单位>',
-  examples: ['converter 100 km mile', 'converter 25 c f', 'converter 10 lb kg']
+  description: '获取随机名言',
+  usage: 'quote',
+  examples: ['quote']
 })
 
-registerCommand('date-diff', {
-  handler: (context: CommandContext): CommandResult => {
+registerCommand('country', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
+    const country = args.join(' ')
 
-    if (args.length < 2) {
+    if (!country) {
       return {
         output: [
-          '📅 日期差计算',
+          '🌍 国家信息查询',
           '',
-          '用法: date-diff <日期1> <日期2>',
-          '',
-          '日期格式: YYYY-MM-DD',
+          '用法: country <国家名称>',
           '',
           '示例:',
-          '  date-diff 2024-01-01 2024-12-31',
-          '  date-diff 2020-03-15 2024-05-25',
-        ].join('\n')
-      }
-    }
-
-    const date1 = new Date(args[0])
-    const date2 = new Date(args[1])
-
-    if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
-      return { output: 'date-diff: 无效的日期格式' }
-    }
-
-    const diffTime = Math.abs(date2.getTime() - date1.getTime())
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    const diffWeeks = Math.floor(diffDays / 7)
-    const diffMonths = Math.floor(diffDays / 30.4375)
-    const diffYears = Math.floor(diffDays / 365.25)
-
-    const earlier = date1 < date2 ? args[0] : args[1]
-    const later = date1 > date2 ? args[0] : args[1]
-
-    return {
-      output: [
-        '📅 日期差计算',
-        '',
-        `${earlier} 到 ${later}`,
-        '',
-        `天数: ${diffDays} 天`,
-        `周数: ${diffWeeks} 周`,
-        `月数: ${diffMonths} 个月`,
-        `年数: ${diffYears} 年`,
-      ].join('\n')
-    }
-  },
-  description: '计算两个日期之间的差值',
-  usage: 'date-diff <日期1> <日期2>',
-  examples: ['date-diff 2024-01-01 2024-12-31']
-})
-
-registerCommand('birthday', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const birthDate = args.join(' ')
-
-    if (!birthDate) {
-      return {
-        output: [
-          '🎂 生日计算器',
-          '',
-          '用法: birthday <出生日期>',
-          '',
-          '日期格式: YYYY-MM-DD',
-          '',
-          '示例:',
-          '  birthday 1990-05-15',
-          '  birthday 2000-01-01',
-        ].join('\n')
-      }
-    }
-
-    const birth = new Date(birthDate)
-    if (isNaN(birth.getTime())) {
-      return { output: 'birthday: 无效的日期格式' }
-    }
-
-    const now = new Date()
-    const diff = now.getTime() - birth.getTime()
-    const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25))
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
-    const nextBirthday = new Date(birth.getFullYear(), birth.getMonth(), birth.getDate())
-    if (nextBirthday < now) {
-      nextBirthday.setFullYear(nextBirthday.getFullYear() + 1)
-    }
-    const daysUntilBirthday = Math.ceil((nextBirthday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
-    return {
-      output: [
-        '🎂 生日计算结果',
-        '',
-        `出生日期: ${birthDate}`,
-        '',
-        `年龄: ${years} 岁`,
-        `存活天数: ${days} 天`,
-        `距离下次生日: ${daysUntilBirthday} 天`,
-      ].join('\n')
-    }
-  },
-  description: '计算年龄和距离下次生日的天数',
-  usage: 'birthday <出生日期>',
-  examples: ['birthday 1990-05-15']
-})
-
-registerCommand('bmi', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-
-    if (args.length < 2) {
-      return {
-        output: [
-          '⚖️  BMI计算器',
-          '',
-          '用法: bmi <身高(cm)> <体重(kg)>',
-          '',
-          '示例:',
-          '  bmi 175 70',
-          '  bmi 160 55',
-        ].join('\n')
-      }
-    }
-
-    const height = parseFloat(args[0]) / 100
-    const weight = parseFloat(args[1])
-
-    if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
-      return { output: 'bmi: 请输入有效的身高和体重' }
-    }
-
-    const bmi = weight / (height * height)
-
-    let category: string
-    let color: string
-
-    if (bmi < 18.5) {
-      category = '偏瘦'
-      color = '\x1b[34m'
-    } else if (bmi < 24) {
-      category = '正常'
-      color = '\x1b[32m'
-    } else if (bmi < 28) {
-      category = '超重'
-      color = '\x1b[33m'
-    } else {
-      category = '肥胖'
-      color = '\x1b[31m'
-    }
-
-    return {
-      output: [
-        '⚖️  BMI计算结果',
-        '',
-        `身高: ${args[0]} cm`,
-        `体重: ${args[1]} kg`,
-        '',
-        `BMI指数: ${bmi.toFixed(1)}`,
-        `健康状况: ${color}${category}\x1b[0m`,
-        '',
-        'BMI标准:',
-        '  <18.5   偏瘦',
-        '  18.5-24 正常',
-        '  24-28   超重',
-        '  >=28    肥胖',
-      ].join('\n')
-    }
-  },
-  description: '计算身体质量指数(BMI)',
-  usage: 'bmi <身高(cm)> <体重(kg)>',
-  examples: ['bmi 175 70']
-})
-
-registerCommand('base64-encode', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const text = args.join(' ')
-
-    if (!text) {
-      return {
-        output: [
-          '🔐 Base64 编码',
-          '',
-          '用法: base64-encode <文本>',
-          '',
-          '示例:',
-          '  base64-encode Hello World',
-        ].join('\n')
-      }
-    }
-
-    return { output: btoa(text) }
-  },
-  description: 'Base64编码（别名base64）',
-  usage: 'base64-encode <文本>',
-  examples: ['base64-encode Hello World']
-})
-
-registerCommand('base64-decode', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const encoded = args.join(' ')
-
-    if (!encoded) {
-      return {
-        output: [
-          '🔓 Base64 解码',
-          '',
-          '用法: base64-decode <编码文本>',
-          '',
-          '示例:',
-          '  base64-decode SGVsbG8gV29ybGQ=',
+          '  country China',
+          '  country 日本',
+          '  country United States',
         ].join('\n')
       }
     }
 
     try {
-      return { output: atob(encoded) }
-    } catch {
-      return { output: 'base64-decode: 无效的Base64编码' }
-    }
-  },
-  description: 'Base64解码（别名unbase64）',
-  usage: 'base64-decode <编码文本>',
-  examples: ['base64-decode SGVsbG8gV29ybGQ=']
-})
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.restCountries.baseUrl}/name/${encodeURIComponent(country)}?fullText=true`
+      )
 
-registerCommand('html-encode', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const text = args.join(' ')
-
-    if (!text) {
-      return {
-        output: [
-          '📄 HTML 编码',
-          '',
-          '用法: html-encode <文本>',
-          '',
-          '示例:',
-          '  html-encode <script>alert("xss")</script>',
-        ].join('\n')
+      if (!response.ok) {
+        throw new Error('国家信息获取失败')
       }
-    }
 
-    const div = document.createElement('div')
-    div.textContent = text
-    return { output: div.innerHTML }
-  },
-  description: 'HTML实体编码',
-  usage: 'html-encode <文本>',
-  examples: ['html-encode <script>alert("xss")</script>']
-})
+      const data = await response.json()
 
-registerCommand('html-decode', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const text = args.join(' ')
-
-    if (!text) {
-      return {
-        output: [
-          '📄 HTML 解码',
-          '',
-          '用法: html-decode <HTML编码文本>',
-          '',
-          '示例:',
-          '  html-decode &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
-        ].join('\n')
-      }
-    }
-
-    const div = document.createElement('div')
-    div.innerHTML = text
-    return { output: div.textContent || div.innerText || '' }
-  },
-  description: 'HTML实体解码',
-  usage: 'html-decode <HTML编码文本>',
-  examples: ['html-decode &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;']
-})
-
-registerCommand('color-convert', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const input = args.join(' ')
-
-    if (!input) {
-      return {
-        output: [
-          '🎨 颜色转换器',
-          '',
-          '用法: color-convert <颜色值>',
-          '',
-          '支持格式: hex, rgb, hsl',
-          '',
-          '示例:',
-          '  color-convert #FF5733',
-          '  color-convert rgb(255, 87, 51)',
-          '  color-convert hsl(9, 100%, 60%)',
-        ].join('\n')
-      }
-    }
-
-    const hexMatch = input.match(/^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/)
-    const rgbMatch = input.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/)
-
-    if (hexMatch) {
-      const r = parseInt(hexMatch[1], 16)
-      const g = parseInt(hexMatch[2], 16)
-      const b = parseInt(hexMatch[3], 16)
-
-      const max = Math.max(r, g, b)
-      const min = Math.min(r, g, b)
-      let h = 0, s = 0, l = (max + min) / 2
-
-      if (max !== min) {
-        const d = max - min
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-        switch (max) {
-          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
-          case g: h = ((b - r) / d + 2) / 6; break
-          case b: h = ((r - g) / d + 4) / 6; break
+      if (!data || data.length === 0) {
+        return {
+          output: [
+            '🌍 国家信息查询',
+            '',
+            `未找到国家: ${country}`,
+          ].join('\n')
         }
       }
 
-      return {
-        output: [
-          '🎨 颜色转换结果',
-          '',
-          `Hex: #${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`,
-          `RGB: rgb(${r}, ${g}, ${b})`,
-          `HSL: hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`,
-        ].join('\n')
-      }
-    }
-
-    if (rgbMatch) {
-      const r = parseInt(rgbMatch[1])
-      const g = parseInt(rgbMatch[2])
-      const b = parseInt(rgbMatch[3])
+      const info = data[0]
 
       return {
         output: [
-          '🎨 颜色转换结果',
+          '🌍 国家信息',
           '',
-          `Hex: #${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`,
-          `RGB: rgb(${r}, ${g}, ${b})`,
+          `名称: ${info.name.common}`,
+          `官方名称: ${info.name.official}`,
+          `首都: ${info.capital?.[0] || '无'}`,
+          `人口: ${info.population.toLocaleString()}`,
+          `面积: ${info.area.toLocaleString()} km²`,
+          `时区: ${info.timezones?.[0] || '未知'}`,
+          `货币: ${Object.values(info.currencies || {}).map((c) => {
+            const currency = c as { name: string; symbol: string }
+            return `${currency.name} (${currency.symbol})`
+          }).join(', ')}`,
+          `语言: ${Object.values(info.languages || {}).join(', ')}`,
+          `区域: ${info.region}`,
+          `次区域: ${info.subregion}`,
+          '',
+          '数据来源: REST Countries API',
         ].join('\n')
       }
-    }
-
-    return { output: 'color-convert: 无法识别的颜色格式' }
-  },
-  description: '颜色格式转换（Hex/RGB/HSL）',
-  usage: 'color-convert <颜色值>',
-  examples: ['color-convert #FF5733', 'color-convert rgb(255, 87, 51)']
-})
-
-registerCommand('qrcode-generate', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const text = args.join(' ')
-
-    if (!text) {
+    } catch (error) {
       return {
         output: [
-          '📱 二维码生成',
+          '🌍 国家信息查询',
           '',
-          '用法: qrcode-generate <文本或URL>',
+          `国家: ${country}`,
           '',
-          '示例:',
-          '  qrcode-generate https://github.com',
-          '  qrcode-generate Hello World',
+          handleApiError(error, '国家信息服务'),
+          '',
+          '提示: 服务暂时不可用',
         ].join('\n')
       }
-    }
-
-    const encoded = encodeURIComponent(text)
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encoded}&format=png`
-
-    return {
-      output: [
-        '📱 二维码已生成',
-        '',
-        `内容: ${text}`,
-        '',
-        `在线预览: ${qrUrl}`,
-        '',
-        '在浏览器中打开以上链接查看二维码',
-      ].join('\n')
     }
   },
-  description: '生成二维码（别名qrcode）',
-  usage: 'qrcode-generate <文本或URL>',
-  examples: ['qrcode-generate https://github.com']
+  description: '查询国家信息',
+  usage: 'country <国家名称>',
+  examples: ['country China', 'country Japan']
 })

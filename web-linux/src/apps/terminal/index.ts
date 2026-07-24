@@ -27,6 +27,7 @@ import './extendedCommands'
 
 // 6. 增强API命令：集成公开API实现真实功能
 import './enhancedApiCommands'
+import './enhancedCommands'
 
 // 7. Pro命令集：更多实用工具和API集成
 import './proCommands'

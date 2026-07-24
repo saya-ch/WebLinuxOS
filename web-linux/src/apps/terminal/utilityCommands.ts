@@ -1456,26 +1456,8 @@ registerCommand('help', {
   examples: ['help']
 })
 
-registerCommand('whoami', {
-  handler: (context: CommandContext): CommandResult => {
-    return { output: context.username }
-  },
-  description: '显示当前用户名',
-  usage: 'whoami',
-  examples: ['whoami']
-})
-
-registerCommand('hostname', {
-  handler: (context: CommandContext): CommandResult => {
-    return { output: context.hostname }
-  },
-  description: '显示主机名',
-  usage: 'hostname',
-  examples: ['hostname']
-})
-
-// 注意：date / uname 命令的完整实现位于 systemCommands.ts（支持 +%Y 格式化、-a/-r/-s/-n/-m 等参数）
-// 此处不再重复注册，避免简化版覆盖完整版造成功能丢失。
+// whoami, hostname, env, which 命令已在 systemCommands.ts 中注册
+// 此处不再重复注册，避免简化版覆盖完整版造成功能丢失
 
 registerCommand('history', {
   handler: (): CommandResult => {
@@ -1493,63 +1475,6 @@ registerCommand('history', {
   description: '显示命令历史',
   usage: 'history',
   examples: ['history']
-})
-
-registerCommand('env', {
-  handler: (context: CommandContext): CommandResult => {
-    const env = {
-      USER: context.username,
-      HOSTNAME: context.hostname,
-      PWD: context.cwd,
-      HOME: '/home/user',
-      SHELL: 'webshell',
-      PATH: '/bin:/usr/bin:/usr/local/bin',
-      TERM: 'weblinux-terminal',
-      LANG: 'zh_CN.UTF-8',
-      VERSION: '38.0.0',
-    }
-    
-    const output = [
-      '🌐 环境变量',
-      '',
-      ...Object.entries(env).map(([key, value]) => `${key}=${value}`),
-    ]
-    
-    return { output: output.join('\n') }
-  },
-  description: '显示环境变量',
-  usage: 'env',
-  examples: ['env']
-})
-
-registerCommand('which', {
-  handler: (context: CommandContext): CommandResult => {
-    const { args } = context
-    const cmd = args[0]
-    
-    if (!cmd) {
-      return {
-        output: [
-          '🔍 which - 查找命令位置',
-          '',
-          '用法: which <命令>',
-          '',
-          '示例:',
-          '  which ls',
-          '  which weather',
-        ].join('\n')
-      }
-    }
-    
-    if (COMMANDS[cmd.toLowerCase()]) {
-      return { output: `/usr/bin/${cmd}` }
-    }
-    
-    return { output: `${cmd}: 未找到命令` }
-  },
-  description: '查找命令位置',
-  usage: 'which <命令>',
-  examples: ['which ls', 'which weather']
 })
 
 registerCommand('reboot', {

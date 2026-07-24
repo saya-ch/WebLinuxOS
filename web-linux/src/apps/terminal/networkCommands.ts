@@ -34,20 +34,49 @@ registerCommand('ping', {
     
     let resolvedIp = ''
     let dnsResolved = false
-    try {
-      const url = target.startsWith('http') ? target : `https://${target}`
-      const testUrl = url.replace(/^https?:\/\//, '').split('/')[0]
-
-      const dnsData = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(testUrl)}&type=A`, { mode: 'cors' })
-      if (dnsData.ok) {
-        const json = await dnsData.json()
-        if (json.Answer && json.Answer[0] && json.Answer[0].data) {
-          resolvedIp = json.Answer[0].data
-          dnsResolved = true
+    
+    const isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(target)
+    const isIpv6 = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(target)
+    
+    if (isIpv4 || isIpv6) {
+      resolvedIp = target
+      dnsResolved = true
+    } else {
+      try {
+        const url = target.startsWith('http') ? target : `https://${target}`
+        const testUrl = url.replace(/^https?:\/\//, '').split('/')[0]
+        
+        const dnsProviders = [
+          `https://dns.google/resolve?name=${encodeURIComponent(testUrl)}&type=A`,
+          `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(testUrl)}&type=A`,
+        ]
+        
+        for (const dnsUrl of dnsProviders) {
+          try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 2000)
+            const dnsData = await fetch(dnsUrl, { 
+              mode: 'cors',
+              signal: controller.signal,
+              headers: dnsUrl.includes('cloudflare') ? { 'accept': 'application/dns-json' } : {}
+            })
+            clearTimeout(timeoutId)
+            
+            if (dnsData.ok) {
+              const json = await dnsData.json()
+              if (json.Answer && json.Answer[0] && json.Answer[0].data) {
+                resolvedIp = json.Answer[0].data
+                dnsResolved = true
+                break
+              }
+            }
+          } catch {
+            continue
+          }
         }
+      } catch {
+        // DNS 解析失败
       }
-    } catch {
-      // DNS 解析失败时不伪造 IP，保留 resolvedIp 为空
     }
 
     if (!dnsResolved) {
@@ -58,6 +87,9 @@ registerCommand('ping', {
           '提示：浏览器环境无法直接进行 ICMP ping，',
           '本命令通过 DNS-over-HTTPS 解析主机，并用 HTTP HEAD 请求测量延迟。',
           '若主机名无效或 DNS 解析失败，将无法继续。',
+          '',
+          '建议尝试的主机名:',
+          '  google.com, github.com, example.com',
         ].join('\n')
       }
     }
