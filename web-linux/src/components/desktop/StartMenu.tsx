@@ -1,6 +1,6 @@
-import { useState, useMemo, memo } from 'react'
+import { useState, useMemo, memo, useCallback } from 'react'
 import { useStore } from '../../store'
-import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, GamepadIcon } from '../../icons'
+import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, GamepadIcon, StarIcon, StarOffIcon, ClockIcon, GridIcon } from '../../icons'
 
 interface CategoryDef {
   id: string
@@ -10,6 +10,7 @@ interface CategoryDef {
 
 const categories: CategoryDef[] = [
   { id: 'pinned', name: '已固定', icon: <PinIcon size={16} /> },
+  { id: 'favorites', name: '收藏', icon: <StarIcon size={16} /> },
   { id: 'all', name: '全部应用', icon: <ListTodoIcon size={16} /> },
   { id: 'system', name: '系统', icon: <SettingsIcon size={16} /> },
   { id: 'office', name: '办公', icon: <FileTextIcon size={16} /> },
@@ -19,6 +20,65 @@ const categories: CategoryDef[] = [
   { id: 'development', name: '开发', icon: <CodeIcon size={16} /> },
   { id: 'games', name: '游戏', icon: <GamepadIcon size={16} /> },
 ]
+
+// 本地存储键
+const SEARCH_HISTORY_KEY = 'weblinux-start-search-history'
+const APP_USAGE_KEY = 'weblinux-app-usage-count'
+const FAVORITE_APPS_KEY = 'weblinux-favorite-apps'
+const MAX_SEARCH_HISTORY = 6
+
+function loadSearchHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(SEARCH_HISTORY_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed.slice(0, MAX_SEARCH_HISTORY)
+    }
+  } catch { /* 忽略 */ }
+  return []
+}
+
+function saveSearchHistory(history: string[]) {
+  try {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, MAX_SEARCH_HISTORY)))
+  } catch { /* 忽略 */ }
+}
+
+function loadAppUsage(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(APP_USAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === 'object') return parsed
+    }
+  } catch { /* 忽略 */ }
+  return {}
+}
+
+function saveAppUsage(usage: Record<string, number>) {
+  try {
+    localStorage.setItem(APP_USAGE_KEY, JSON.stringify(usage))
+  } catch { /* 忽略 */ }
+}
+
+function loadFavoriteApps(): string[] {
+  try {
+    const raw = localStorage.getItem(FAVORITE_APPS_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch { /* 忽略 */ }
+  return []
+}
+
+function saveFavoriteApps(favorites: string[]) {
+  try {
+    localStorage.setItem(FAVORITE_APPS_KEY, JSON.stringify(favorites))
+  } catch { /* 忽略 */ }
+}
+
+type SortMode = 'default' | 'frequency'
 
 const StartMenu = memo(function StartMenu() {
   const apps = useStore((s) => s.apps)
@@ -31,6 +91,11 @@ const StartMenu = memo(function StartMenu() {
   const [activeCategory, setActiveCategory] = useState('pinned')
   const [search, setSearch] = useState('')
   const [hoveredApp, setHoveredApp] = useState<string | null>(null)
+  const [searchHistory, setSearchHistory] = useState<string[]>(loadSearchHistory)
+  const [appUsage, setAppUsage] = useState<Record<string, number>>(loadAppUsage)
+  const [favoriteApps, setFavoriteApps] = useState<string[]>(loadFavoriteApps)
+  const [sortMode, setSortMode] = useState<SortMode>('default')
+  const [useGridLayout, setUseGridLayout] = useState(false)
 
   const pinnedAppObjects = useMemo(
     () =>
@@ -40,12 +105,22 @@ const StartMenu = memo(function StartMenu() {
     [apps, pinnedApps],
   )
 
+  const favoriteAppObjects = useMemo(
+    () =>
+      favoriteApps
+        .map((appId) => apps.find((a) => a.id === appId))
+        .filter((a): a is (typeof apps)[number] => Boolean(a)),
+    [apps, favoriteApps],
+  )
+
   const filteredApps = useMemo(() => {
-    let list: (typeof apps)
+    let list: typeof apps
     if (search) {
       list = apps
     } else if (activeCategory === 'pinned') {
       list = pinnedAppObjects
+    } else if (activeCategory === 'favorites') {
+      list = favoriteAppObjects
     } else if (activeCategory === 'all') {
       list = apps
     } else {
@@ -61,13 +136,63 @@ const StartMenu = memo(function StartMenu() {
           (typeof a.component === 'string' && a.component.toLowerCase().includes(q)),
       )
     }
-    return list
-  }, [apps, activeCategory, search, pinnedAppObjects])
 
-  const handleAppClick = (appId: string) => {
+    // 频率排序
+    if (sortMode === 'frequency' && !search) {
+      list = [...list].sort((a, b) => {
+        const aUsage = appUsage[a.id] || 0
+        const bUsage = appUsage[b.id] || 0
+        if (bUsage !== aUsage) return bUsage - aUsage
+        return a.name.localeCompare(b.name)
+      })
+    }
+
+    return list
+  }, [apps, activeCategory, search, pinnedAppObjects, favoriteAppObjects, sortMode, appUsage])
+
+  const handleAppClick = useCallback((appId: string) => {
     openApp(appId)
     closeLauncher()
-  }
+    // 记录使用频率
+    setAppUsage(prev => {
+      const next = { ...prev, [appId]: (prev[appId] || 0) + 1 }
+      saveAppUsage(next)
+      return next
+    })
+    // 记录搜索历史
+    if (search.trim()) {
+      setSearchHistory(prev => {
+        const next = [search.trim(), ...prev.filter(h => h !== search.trim())].slice(0, MAX_SEARCH_HISTORY)
+        saveSearchHistory(next)
+        return next
+      })
+    }
+  }, [openApp, closeLauncher, search])
+
+  const toggleFavorite = useCallback((appId: string) => {
+    setFavoriteApps(prev => {
+      const next = prev.includes(appId)
+        ? prev.filter(id => id !== appId)
+        : [...prev, appId]
+      saveFavoriteApps(next)
+      return next
+    })
+  }, [])
+
+  const handleSearchHistoryClick = useCallback((term: string) => {
+    setSearch(term)
+  }, [])
+
+  const clearSearchHistory = useCallback(() => {
+    setSearchHistory([])
+    saveSearchHistory([])
+  }, [])
+
+  // 获取最大使用次数，用于使用频率进度条
+  const maxUsage = useMemo(() => {
+    const values = Object.values(appUsage)
+    return values.length > 0 ? Math.max(...values) : 1
+  }, [appUsage])
 
   if (!launcherOpen) return null
 
@@ -181,6 +306,30 @@ const StartMenu = memo(function StartMenu() {
             )}
           </div>
 
+          {/* 搜索历史 */}
+          {!search && searchHistory.length > 0 && (activeCategory === 'all' || activeCategory === 'pinned') && (
+            <div className="start-menu-search-history">
+              <ClockIcon size={11} style={{ color: 'var(--text-secondary)', marginRight: 2 }} />
+              {searchHistory.map((term) => (
+                <span
+                  key={term}
+                  className="start-menu-search-history-item"
+                  onClick={() => handleSearchHistoryClick(term)}
+                >
+                  {term}
+                </span>
+              ))}
+              <span
+                className="start-menu-search-history-item"
+                onClick={clearSearchHistory}
+                style={{ color: 'var(--error)', borderColor: 'var(--error-bg)' }}
+              >
+                清除
+              </span>
+            </div>
+          )}
+
+          {/* 分类标题和排序/布局控制 */}
           {activeCategory === 'pinned' && !search && (
             <div
               style={{
@@ -202,9 +351,64 @@ const StartMenu = memo(function StartMenu() {
             </div>
           )}
 
-          <div className="launcher-app-list">
+          {activeCategory === 'favorites' && !search && (
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-secondary)',
+                marginBottom: '8px',
+                padding: '0 4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <StarIcon size={12} /> 收藏应用（{favoriteAppObjects.length}）
+              </span>
+              {favoriteAppObjects.length === 0 && (
+                <span style={{ fontSize: '10px' }}>点击应用的星标可收藏</span>
+              )}
+            </div>
+          )}
+
+          {/* 排序和布局切换 */}
+          {(activeCategory === 'all' || search) && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '8px',
+                padding: '0 4px',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  className={`start-menu-sort-toggle ${sortMode === 'frequency' ? 'active' : ''}`}
+                  onClick={() => setSortMode(prev => prev === 'frequency' ? 'default' : 'frequency')}
+                >
+                  <ClockIcon size={10} />
+                  {sortMode === 'frequency' ? '频率排序' : '默认排序'}
+                </button>
+              </div>
+              <button
+                className="start-menu-sort-toggle"
+                onClick={() => setUseGridLayout(prev => !prev)}
+                title={useGridLayout ? '列表视图' : '网格视图'}
+              >
+                <GridIcon size={10} />
+                {useGridLayout ? '网格' : '列表'}
+              </button>
+            </div>
+          )}
+
+          <div className={useGridLayout && (activeCategory === 'all' || search) ? 'start-menu-grid-layout launcher-app-list' : 'launcher-app-list'}>
             {filteredApps.map((app) => {
               const isPinned = pinnedApps.includes(app.id)
+              const isFavorite = favoriteApps.includes(app.id)
+              const usageCount = appUsage[app.id] || 0
+              const usagePercent = maxUsage > 0 ? (usageCount / maxUsage) * 100 : 0
               return (
                 <div
                   key={app.id}
@@ -247,6 +451,7 @@ const StartMenu = memo(function StartMenu() {
                     </span>
                   )}
 
+                  {/* 固定按钮（右上角） */}
                   <span
                     onClick={(e) => {
                       e.stopPropagation()
@@ -267,6 +472,27 @@ const StartMenu = memo(function StartMenu() {
                   >
                     {isPinned ? <PinIcon size={12} /> : <PinOffIcon size={12} />}
                   </span>
+
+                  {/* 收藏按钮（右下角） */}
+                  <span
+                    className={`start-menu-favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleFavorite(app.id)
+                    }}
+                    title={isFavorite ? '取消收藏' : '收藏此应用'}
+                  >
+                    {isFavorite ? <StarIcon size={12} /> : <StarOffIcon size={12} />}
+                  </span>
+
+                  {/* 使用频率进度条 */}
+                  {sortMode === 'frequency' && usageCount > 0 && (
+                    <div
+                      className="start-menu-usage-bar"
+                      style={{ width: `${Math.max(usagePercent, 8)}%` }}
+                      title={`使用 ${usageCount} 次`}
+                    />
+                  )}
                 </div>
               )
             })}
@@ -287,7 +513,11 @@ const StartMenu = memo(function StartMenu() {
               >
                 <SearchIcon size={32} />
                 <span>
-                  {activeCategory === 'pinned' ? '暂无固定应用' : '未找到匹配的应用'}
+                  {activeCategory === 'pinned'
+                    ? '暂无固定应用'
+                    : activeCategory === 'favorites'
+                    ? '暂无收藏应用'
+                    : '未找到匹配的应用'}
                 </span>
                 {search && (
                   <span style={{ fontSize: '11px', opacity: 0.8 }}>

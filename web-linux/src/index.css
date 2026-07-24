@@ -10763,4 +10763,383 @@ a:hover {
   }
 }
 
+/* ================================================================
+   UX Enhancement Styles — 追加于文件末尾，不修改已有样式
+   ================================================================ */
+
+/* ── App Root Smooth Entry ── */
+.app-root-entering {
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-root-ready {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── a. Window Drag Particle Trail ── */
+.window-drag-particle {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: dragParticle 0.6s ease-out forwards;
+}
+
+@keyframes dragParticle {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+/* ── b. App Launch Ripple Effect ── */
+.app-launch-ripple {
+  position: fixed;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  animation: launchRipple 0.8s ease-out forwards;
+}
+
+@keyframes launchRipple {
+  0% { width: 0; height: 0; opacity: 1; }
+  100% { width: 200px; height: 200px; opacity: 0; }
+}
+
+/* ── c. Refined Scrollbar Styles ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* ── d. Focus Ring Enhancement (Keyboard Navigation Accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+  transition: outline-color 0.15s ease, outline-offset 0.15s ease;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Custom focus ring for interactive elements */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--accent-subtle);
+}
+
+/* ── e. Selection Highlight Animation ── */
+::selection {
+  background: var(--accent-bg);
+  color: var(--text-primary);
+}
+
+::-moz-selection {
+  background: var(--accent-bg);
+  color: var(--text-primary);
+}
+
+.desktop-icon.selected {
+  animation: selectionPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes selectionPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--desktop-icon-selected); }
+  50% { box-shadow: 0 0 0 3px var(--desktop-icon-selected); }
+}
+
+/* ── f. Window Minimize/Restore Transition Enhancement ── */
+.window-minimizing {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform: scale(0.4) translateY(80vh) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.window-restoring {
+  animation: windowRestore 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes windowRestore {
+  from {
+    transform: scale(0.4) translateY(80vh);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── g. Notification Popup Animation ── */
+.notification-popup-enter {
+  animation: notificationSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.notification-popup-exit {
+  animation: notificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes notificationSlideIn {
+  from {
+    transform: translateX(120%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes notificationSlideOut {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(120%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* ── h. Button Press Effect ── */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
+
+.launcher-app-item:active {
+  transform: scale(0.95) !important;
+  transition: transform 0.08s ease !important;
+}
+
+/* ── Command Palette Enhancement Styles ── */
+.command-palette-category-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.command-palette-category-app {
+  background: rgba(139, 124, 240, 0.15);
+  color: var(--accent);
+}
+
+.command-palette-category-system {
+  background: rgba(0, 232, 150, 0.12);
+  color: var(--success);
+}
+
+.command-palette-category-desktop {
+  background: rgba(64, 169, 255, 0.12);
+  color: var(--info);
+}
+
+.command-palette-category-window {
+  background: rgba(255, 196, 0, 0.12);
+  color: var(--warning);
+}
+
+.command-palette-recent-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--accent-subtle);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.command-palette-shortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--window-border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Start Menu Enhancement Styles ── */
+.start-menu-search-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.start-menu-search-history-item {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.start-menu-search-history-item:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.start-menu-favorite-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.launcher-app-item:hover .start-menu-favorite-btn {
+  opacity: 0.6;
+}
+
+.start-menu-favorite-btn:hover {
+  opacity: 1 !important;
+  color: #ffc400;
+}
+
+.start-menu-favorite-btn.is-favorite {
+  opacity: 1;
+  color: #ffc400;
+}
+
+.start-menu-favorite-btn.is-favorite:hover {
+  opacity: 1;
+  color: var(--warning);
+}
+
+.start-menu-usage-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 8px 8px;
+  opacity: 0.4;
+  transition: width 0.3s ease;
+}
+
+.start-menu-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 6px;
+  padding: 4px;
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+}
+
+.start-menu-grid-layout .launcher-app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 6px 10px;
+  text-align: center;
+  gap: 6px;
+  min-height: 84px;
+}
+
+.start-menu-grid-layout .launcher-app-item-name {
+  font-size: 11px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.start-menu-grid-layout .launcher-app-item-icon {
+  font-size: 28px;
+}
+
+.start-menu-sort-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.start-menu-sort-toggle:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.start-menu-sort-toggle.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 

@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v50.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v51.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,7 +23,7 @@ WebLinuxOS is a full-featured Linux desktop environment that runs entirely in yo
 
 With **350+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
 
-Built with React 19 and TypeScript, it features a polished windowing system with virtual desktops, multiple themes (Cyberpunk, Quantum, Glass Morphism, Classic Light), smooth GPU-accelerated animations, and a boot animation that makes every startup feel like an event.
+Built with React 19 and TypeScript, it features a polished windowing system with virtual desktops, multiple themes (Cyberpunk, Quantum, Glass Morphism, Classic Light), smooth GPU-accelerated animations, and a boot animation that makes every startup feel like an event. The terminal supports Unix-style pipes, output redirection, and multi-command execution. Browser-native APIs power real functionality: Web Speech for text-to-speech, getDisplayMedia for screen recording, Web Crypto for cryptographic hashing, and Web Serial for hardware debugging.
 
 ## Why WebLinuxOS?
 
@@ -67,12 +67,16 @@ Pushing the boundaries of what a web OS can do:
 - **KnowledgeVine** — Knowledge garden with tree/mindmap/list/card views. Notes grow through stages (Seed → Sprout → Growing → Mature) based on engagement
 - **AudioViz** — Real-time audio visualizer with 5 visualization types (bars, wave, circle, particles, pulse), 5 themes, and support for microphone, file, demo, and system audio sources
 - **PulseBoard** — Customizable real-time dashboard with system metrics, weather, news, cryptocurrency prices, world clock, and more
+- **Voice Synth 语音合成阅读器 (v51)** — Text-to-speech reader powered by the Web Speech API. Select from all available browser voices, control speed/pitch/volume with sliders, and follow along with real-time word highlighting and progress tracking. Full Chinese and English support
+- **Screen Capture 屏幕录制 (v51)** — Screen recording tool using getDisplayMedia + MediaRecorder. Choose recording format (WebM/WebM VP9), pause/resume recording, preview playback after completion, and auto-download. Live recording indicator with elapsed time counter
+- **File Hash Calculator 文件哈希计算器 (v51)** — Cryptographic hash calculator powered by the Web Crypto API. Drag-and-drop files or paste text, compute SHA-1/SHA-256/SHA-384/SHA-512 simultaneously, one-click copy of results, and hash comparison mode to verify integrity
+- **Web Serial Terminal (v51)** — Hardware debugging terminal using the Web Serial API. Configure baud rate (9600-921600), data bits, stop bits, and parity; switch between HEX and ASCII display modes; real-time TX/RX with timestamp and color coding. Requires Chrome/Edge with Experimental Web Platform Features enabled
 
 ### 💻 Development Tools
 
 Professional-grade development environment in your browser:
 
-- Terminal with **70+ commands** — file system browsing, text processing, network diagnostics, Cron simulation, Git simulation
+- Terminal with **80+ commands** — file system browsing, text processing, network diagnostics, Cron simulation, Git simulation, Unix pipes (`|`), output redirection (`>` / `>>`), multi-command (`;`), hash tools (sha256sum, md5sum, sha512sum), and command aliasing
 - Code editor powered by Monaco Editor with syntax highlighting, multi-language support, and auto-completion
 - Markdown editor with real-time bidirectional preview, tables, formulas, code blocks, and HTML export
 - API Testing Tool with real API calls, preset templates, request history, and favorites
@@ -239,7 +243,9 @@ For more detailed guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-- [ ] **PWA Support** — Install as a local desktop application
+- [x] **PWA Support** — Service Worker registration with auto-update and offline detection
+- [x] **Browser-Native Tools** — Web Speech API, getDisplayMedia, Web Crypto, Web Serial integration
+- [x] **Terminal Enhancements** — Pipes, redirection, multi-command, hash tools, aliasing
 - [ ] **File Sync** — Cross-device file system sync via WebDAV / GitHub Gist
 - [ ] **Collaboration Mode** — CRDT-based multi-user shared workspace
 - [ ] **Mobile Optimization** — Touch-friendly interface for phones and tablets

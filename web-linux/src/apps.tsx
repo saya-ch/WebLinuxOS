@@ -127,6 +127,11 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'flowboard', name: 'FlowBoard 工作流', icon: <WorkflowIcon />, component: 'FlowBoard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '可视化工作流编辑器：拖拽式节点编辑、条件分支、模拟执行、导出JSON' },
   // === v49.0 新增 Global Insights 全球洞察 - 集成多个真实公开 API ===
   { id: 'global-insights', name: 'Global Insights 全球洞察', icon: <GlobeInsightsIcon />, component: 'GlobalInsights', category: 'internet', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '一站式全球信息聚合：新闻、国家、每日箴言、趣味冷知识、虚拟用户、NASA 每日图、汇率、GitHub 趋势 - 全部基于真实公开 API' },
+  // === v51.0 新增创新实用工具 — 基于浏览器原生API的真实功能 ===
+  { id: 'web-speech-synth', name: '语音合成阅读器', icon: <MicIcon />, component: 'WebSpeechSynth', category: 'utilities', defaultWidth: 800, defaultHeight: 650, minWidth: 600, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 Web Speech API 的文本朗读工具：多语音选择、语速/音调/音量控制、进度高亮、支持中英文' },
+  { id: 'screen-capture', name: '屏幕录制工具', icon: <VideoRecorderIcon />, component: 'ScreenCapture', category: 'utilities', defaultWidth: 850, defaultHeight: 650, minWidth: 650, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 getDisplayMedia + MediaRecorder 的屏幕录制：格式选择、计时器、暂停/继续、录制预览与下载' },
+  { id: 'file-hash-calc', name: '文件哈希计算器', icon: <ShieldIcon />, component: 'FileHashCalc', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '基于 Web Crypto API 的哈希计算：文件拖拽/文本输入、SHA-1/256/384/512 多算法、一键复制、哈希对比' },
+  { id: 'web-serial-terminal', name: 'Web Serial 终端', icon: <HardDriveIcon />, component: 'WebSerialTerminal', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 Web Serial API 的串口终端：波特率/数据位/校验位配置、HEX/ASCII模式、实时收发、硬件调试' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

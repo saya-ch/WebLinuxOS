@@ -3,6 +3,7 @@ import { useStore } from '../store'
 import type { WindowState } from '../types'
 import { getCommand, getSuggestions } from './terminal'
 import type { CommandContext, CommandResult } from './terminal/commands'
+import { findNodeByPath, resolvePath } from '../store/fileUtils'
 
 function useLatest<T>(value: T): { current: T } {
   const ref = useRef<T>(value)
@@ -70,8 +71,6 @@ export default function Terminal() {
   const updateFileContent = useStore((s) => s.updateFileContent)
   const getWindows = useStore((s) => s.windows)
   const closeWindow = useStore((s) => s.closeWindow)
-  const openApp = useStore((s) => s.openApp)
-  const apps = useStore((s) => s.apps)
   const theme = useStore((s) => s.theme)
 
   const [cwd, setCwd] = useState('/home/user')
@@ -137,18 +136,239 @@ export default function Terminal() {
 
 
 
-  const executeCommand = useCallback(async (cmd: string) => {
-    let trimmed = cmd.trim()
-    
-    const aliasMatch = trimmed.match(/^(\S+)/)
-    if (aliasMatch && aliases[aliasMatch[1]]) {
-      trimmed = trimmed.replace(/^\S+/, aliases[aliasMatch[1]])
+  // 解析重定向：从命令字符串中提取 > 或 >> 以及目标文件路径
+  const parseRedirect = (cmdStr: string): { cmd: string; redirectFile: string | null; append: boolean } => {
+    const appendMatch = cmdStr.match(/^(.+?)\s*>>\s*(\S+)\s*$/)
+    if (appendMatch) {
+      return { cmd: appendMatch[1].trim(), redirectFile: appendMatch[2], append: true }
     }
-    
-    const parts = trimmed.split(/\s+/)
-    const command = parts[0].toLowerCase()
-    const args = parts.slice(1)
+    const overwriteMatch = cmdStr.match(/^(.+?)\s*(?!>)>(?!\>)\s*(\S+)\s*$/)
+    if (overwriteMatch) {
+      return { cmd: overwriteMatch[1].trim(), redirectFile: overwriteMatch[2], append: false }
+    }
+    return { cmd: cmdStr, redirectFile: null, append: false }
+  }
 
+  // 将输出写入虚拟文件系统
+  const writeOutputToFile = useCallback((filePath: string, content: string, append: boolean): string | null => {
+    const resolvedPath = resolvePath(cwd, filePath)
+    const dirPath = resolvedPath.substring(0, resolvedPath.lastIndexOf('/')) || '/'
+    const fileName = resolvedPath.substring(resolvedPath.lastIndexOf('/') + 1)
+
+    if (!fileName) return `重定向错误: 无效的文件名`
+
+    const dirNode = findNodeByPath(files, dirPath)
+    if (!dirNode || dirNode.type !== 'folder') {
+      return `重定向错误: 目录 '${dirPath}' 不存在`
+    }
+
+    const existingFile = dirNode.children?.find(c => c.name === fileName && c.type === 'file')
+    if (existingFile) {
+      if (append) {
+        const newContent = (existingFile.content || '') + content
+        updateFileContent(existingFile.id, newContent)
+      } else {
+        updateFileContent(existingFile.id, content)
+      }
+    } else {
+      addFile(dirNode.id, fileName, 'file')
+      const newFiles = useStore.getState().files
+      const newDirNode = findNodeByPath(newFiles, dirPath)
+      const newFile = newDirNode?.children?.find(c => c.name === fileName && c.type === 'file')
+      if (newFile) {
+        updateFileContent(newFile.id, content)
+      }
+    }
+    return null
+  }, [cwd, files, addFile, updateFileContent])
+
+  // 解析管道：按 | 分割命令，但排除被引号包裹的 |
+  const splitPipes = (cmdStr: string): string[] => {
+    const parts: string[] = []
+    let current = ''
+    let inSingleQuote = false
+    let inDoubleQuote = false
+    for (let i = 0; i < cmdStr.length; i++) {
+      const ch = cmdStr[i]
+      if (ch === "'" && !inDoubleQuote) { inSingleQuote = !inSingleQuote; current += ch; continue }
+      if (ch === '"' && !inSingleQuote) { inDoubleQuote = !inDoubleQuote; current += ch; continue }
+      if (ch === '|' && !inSingleQuote && !inDoubleQuote) {
+        parts.push(current.trim())
+        current = ''
+        continue
+      }
+      current += ch
+    }
+    if (current.trim()) parts.push(current.trim())
+    return parts
+  }
+
+  // 解析多命令：按 ; 分割，但排除引号包裹的 ;
+  const splitSemicolons = (cmdStr: string): string[] => {
+    const parts: string[] = []
+    let current = ''
+    let inSingleQuote = false
+    let inDoubleQuote = false
+    for (let i = 0; i < cmdStr.length; i++) {
+      const ch = cmdStr[i]
+      if (ch === "'" && !inDoubleQuote) { inSingleQuote = !inSingleQuote; current += ch; continue }
+      if (ch === '"' && !inSingleQuote) { inDoubleQuote = !inDoubleQuote; current += ch; continue }
+      if (ch === ';' && !inSingleQuote && !inDoubleQuote) {
+        parts.push(current.trim())
+        current = ''
+        continue
+      }
+      current += ch
+    }
+    if (current.trim()) parts.push(current.trim())
+    return parts
+  }
+
+  // 执行单个命令（无管道/重定向），返回输出和 cwd 变更
+  const runSingleCommand = useCallback(async (command: string, args: string[], stdin?: string): Promise<{ output: string; newCwd?: string; newPrevCwd?: string | null }> => {
+    const cmdDef = getCommand(command)
+    if (cmdDef) {
+      const context: CommandContext = {
+        cwd,
+        files,
+        username,
+        hostname,
+        theme,
+        args,
+        prevCwd,
+        stdin,
+        addFile,
+        deleteFile,
+        updateFileContent,
+        renameFile,
+        copyFile,
+        moveFile,
+      }
+      const result: CommandResult = await cmdDef.handler(context)
+      return { output: result.output, newCwd: result.cwd, newPrevCwd: result.prevCwd }
+    }
+    return { output: `bash: ${command}: 未找到命令 (输入 'help' 查看可用命令)` }
+  }, [cwd, files, prevCwd, theme, addFile, deleteFile, updateFileContent, renameFile, copyFile, moveFile])
+
+  // 执行一条命令链（可能含管道），返回最终输出
+  const executePipeChain = useCallback(async (cmdStr: string): Promise<string> => {
+    const pipeParts = splitPipes(cmdStr)
+    let pipeOutput = ''
+
+    for (let i = 0; i < pipeParts.length; i++) {
+      let segment = pipeParts[i].trim()
+
+      // 别名替换
+      const aliasMatch = segment.match(/^(\S+)/)
+      if (aliasMatch && aliases[aliasMatch[1]]) {
+        segment = segment.replace(/^\S+/, aliases[aliasMatch[1]])
+      }
+
+      // 解析重定向
+      const { cmd: pureCmd, redirectFile, append } = parseRedirect(segment)
+
+      const parts = pureCmd.split(/\s+/)
+      const command = parts[0].toLowerCase()
+      const args = parts.slice(1)
+
+      // 内置命令处理
+      if (command === 'clear' || command === 'cls' || command === 'reset') {
+        setHistory([])
+        return ''
+      }
+
+      if (command === 'exit') {
+        const windows = getWindowsRef.current
+        const terminalWindow = windows.find((w: WindowState) => w.appId === 'terminal')
+        if (terminalWindow) {
+          closeWindowRef.current(terminalWindow.id)
+        }
+        return ''
+      }
+
+      if (command === 'history') {
+        return cmdHistory.map((c, idx) => `${idx + 1} ${c}`).join('\n')
+      }
+
+      if (command === 'alias') {
+        if (args.length === 0) {
+          return Object.entries(aliases).map(([k, v]) => `${k}='${v}'`).join('\n')
+        }
+        const [name, value] = args.join(' ').split('=')
+        if (name && value) {
+          setAliases(prev => ({ ...prev, [name]: value.replace(/['"]/g, '') }))
+          return ''
+        }
+        return 'alias: 无效的别名定义'
+      }
+
+      if (command === 'unalias') {
+        if (args.length === 0) {
+          return 'unalias: 缺少参数\n用法: unalias <别名名>\n  unalias -a  删除所有别名'
+        }
+        if (args[0] === '-a') {
+          setAliases({})
+          return ''
+        }
+        const name = args[0]
+        if (aliases[name]) {
+          setAliases(prev => {
+            const next = { ...prev }
+            delete next[name]
+            return next
+          })
+          return ''
+        }
+        return `unalias: ${name}: 未找到别名`
+      }
+
+      if (command === 'echo') {
+        let text = args.join(' ')
+        text = text.replace(/\$HOME/g, '/home/user')
+        text = text.replace(/\$USER/g, username)
+        text = text.replace(/\$HOSTNAME/g, hostname)
+        text = text.replace(/\$PWD/g, cwd)
+        text = text.replace(/\$SHELL/g, '/bin/bash')
+        text = text.replace(/\$PATH/g, '/usr/local/bin:/usr/bin:/bin')
+        text = text.replace(/\$LANG/g, 'zh_CN.UTF-8')
+        if (!text && pipeOutput) {
+          pipeOutput = pipeOutput
+          continue
+        }
+        pipeOutput = text
+        continue
+      }
+
+      // 通用命令执行
+      const stdinData = i > 0 ? pipeOutput : undefined
+      try {
+        const result = await runSingleCommand(command, args, stdinData)
+        if (result.newCwd !== undefined) {
+          setCwd(result.newCwd)
+        }
+        if (result.newPrevCwd !== undefined) {
+          setPrevCwd(result.newPrevCwd)
+        }
+        pipeOutput = result.output
+      } catch (error) {
+        pipeOutput = `命令执行错误: ${(error as Error).message}`
+      }
+
+      // 处理重定向
+      if (redirectFile && pipeOutput) {
+        const err = writeOutputToFile(redirectFile, pipeOutput, append)
+        if (err) {
+          pipeOutput = err
+        } else {
+          pipeOutput = ''
+        }
+      }
+    }
+
+    return pipeOutput
+  }, [cwd, files, prevCwd, aliases, cmdHistory, runSingleCommand, writeOutputToFile])
+
+  const executeCommand = useCallback(async (cmd: string) => {
     if (!cmd.trim()) {
       setHistory(prev => [...prev, { input: cmd, output: '' }])
       return
@@ -156,30 +376,19 @@ export default function Terminal() {
 
     setCmdHistory(prev => [...prev, cmd])
 
-    if (command === 'clear' || command === 'cls' || command === 'reset') {
-      setHistory([])
-      return
-    }
-
-    if (command === 'exit') {
-      const windows = getWindowsRef.current
-      const terminalWindow = windows.find((w: WindowState) => w.appId === 'terminal')
-      if (terminalWindow) {
-        closeWindowRef.current(terminalWindow.id)
-      }
-      return
-    }
-
-    if (command === 'help' || command === '?') {
+    // 帮助命令（特殊处理，不进入管道/多命令逻辑）
+    const firstWord = cmd.trim().split(/\s+/)[0].toLowerCase()
+    const resolvedFirstWord = aliases[firstWord] ? aliases[firstWord].split(/\s+/)[0].toLowerCase() : firstWord
+    if (resolvedFirstWord === 'help' || resolvedFirstWord === '?') {
       const categorizedCommands: Record<string, string[]> = {
         '文件操作': ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'tee', 'append', 'grep', 'find', 'chmod', 'gzip', 'gunzip', 'file', 'sort', 'uniq', 'cut', 'paste', 'nl', 'expand', 'tr', 'split'],
         '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'credits', 'time', 'worldtime', 'env', 'export', 'which', 'who', 'w'],
         '系统监控': ['ps', 'top', 'sysinfo'],
         '网络工具': ['ping', 'curl', 'fetch', 'ifconfig', 'ipinfo', 'iplookup', 'dig', 'nslookup', 'ip', 'weather', 'weather-forecast', 'news', 'crypto', 'translate', 'currency'],
-        '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'converter', 'ascii-table'],
+        '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'converter', 'ascii-table', 'md5sum', 'sha256sum', 'sha1sum', 'sha512sum', 'watch'],
         '开发工具': ['code-highlight', 'color', 'http-status', 'base-convert', 'url-parse', 'markdown', 'dict', 'wikipedia'],
         '趣味命令': ['cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'banner', 'matrix', 'joke', 'advice', 'flip', 'rps', 'fact', 'emoji', 'nasa', 'randomuser', 'github-trending'],
-        '其他': ['search', 'alias', 'history', 'welcome', 'open', 'app', 'motd', 'timer'],
+        '其他': ['search', 'alias', 'unalias', 'history', 'welcome', 'open', 'app', 'motd', 'timer'],
       }
 
       const helpOutput = [
@@ -188,6 +397,13 @@ export default function Terminal() {
         ...Object.entries(categorizedCommands).map(([category, cmds]) => {
           return `${category}:\n  ${cmds.join(', ')}`
         }),
+        '',
+        'Shell特性:',
+        '  管道: cmd1 | cmd2        将cmd1的输出作为cmd2的输入',
+        '  重定向: cmd > file       将输出写入文件(覆盖)',
+        '  追加: cmd >> file        将输出追加到文件',
+        '  多命令: cmd1; cmd2       依次执行多个命令',
+        '  别名: alias/unalias      管理命令别名',
         '',
         '快捷键:',
         '  Ctrl+Shift+L - 切换启动器',
@@ -204,108 +420,22 @@ export default function Terminal() {
       return
     }
 
-    if (command === 'history') {
-      const historyOutput = cmdHistory.map((c, i) => `${i + 1} ${c}`).join('\n')
-      setHistory(prev => [...prev, { input: cmd, output: historyOutput }])
-      return
+    // 多命令(; ) 分割
+    const multiCommands = splitSemicolons(cmd.trim())
+
+    if (multiCommands.length === 1) {
+      const output = await executePipeChain(multiCommands[0])
+      setHistory(prev => [...prev, { input: cmd, output }])
+    } else {
+      const outputs: string[] = []
+      for (const subCmd of multiCommands) {
+        if (!subCmd.trim()) continue
+        const output = await executePipeChain(subCmd)
+        if (output) outputs.push(output)
+      }
+      setHistory(prev => [...prev, { input: cmd, output: outputs.join('\n') }])
     }
-
-    if (command === 'alias') {
-      if (args.length === 0) {
-        const aliasOutput = Object.entries(aliases).map(([k, v]) => `${k}='${v}'`).join('\n')
-        setHistory(prev => [...prev, { input: cmd, output: aliasOutput }])
-      } else {
-        const [name, value] = args.join(' ').split('=')
-        if (name && value) {
-          setAliases(prev => ({ ...prev, [name]: value.replace(/['"]/g, '') }))
-          setHistory(prev => [...prev, { input: cmd, output: '' }])
-        } else {
-          setHistory(prev => [...prev, { input: cmd, output: 'alias: 无效的别名定义' }])
-        }
-      }
-      return
-    }
-
-    if (command === 'open' || command === 'app' || command === 'launch') {
-      if (args.length === 0) {
-        const appList = apps.slice(0, 30).map((a, i) => `${(i + 1).toString().padStart(2)}. ${a.id.padEnd(25)} ${a.name}`).join('\n')
-        const openOutput = [
-          '📱 应用启动器',
-          '═'.repeat(50),
-          '',
-          '用法: open <应用ID>',
-          '',
-          '可用应用 (前30个):',
-          appList,
-          '',
-          `共 ${apps.length} 个应用可用`,
-          '提示: 使用 "open list" 查看全部应用',
-        ].join('\n')
-        setHistory(prev => [...prev, { input: cmd, output: openOutput }])
-        return
-      }
-
-      if (args[0] === 'list' || args[0] === 'ls') {
-        const allApps = apps.map((a, i) => `${(i + 1).toString().padStart(3)}. ${a.id.padEnd(30)} ${a.name} [${a.category}]`).join('\n')
-        setHistory(prev => [...prev, { input: cmd, output: allApps }])
-        return
-      }
-
-      const appId = args[0]
-      const foundApp = apps.find(a => a.id === appId || a.name.toLowerCase().includes(appId.toLowerCase()))
-      
-      if (foundApp) {
-        openApp(foundApp.id)
-        setHistory(prev => [...prev, { input: cmd, output: `✅ 正在打开 ${foundApp.name}...` }])
-      } else {
-        const suggestions = apps.filter(a => a.id.includes(appId.toLowerCase()) || a.name.toLowerCase().includes(appId.toLowerCase())).slice(0, 5)
-        let output = `❌ 未找到应用 "${appId}"`
-        if (suggestions.length > 0) {
-          output += '\n\n你可能想找的应用:\n'
-          output += suggestions.map(a => `  ${a.id} - ${a.name}`).join('\n')
-        }
-        setHistory(prev => [...prev, { input: cmd, output }])
-      }
-      return
-    }
-
-    const cmdDef = getCommand(command)
-    if (cmdDef) {
-      const context: CommandContext = {
-        cwd,
-        files,
-        username,
-        hostname,
-        theme,
-        args,
-        prevCwd,
-        addFile,
-        deleteFile,
-        updateFileContent,
-        renameFile,
-        copyFile,
-        moveFile,
-      }
-
-      try {
-        const result: CommandResult = await cmdDef.handler(context)
-        
-        if (result.cwd !== undefined) {
-          setCwd(result.cwd)
-        }
-        if (result.prevCwd !== undefined) {
-          setPrevCwd(result.prevCwd)
-        }
-        
-        setHistory(prev => [...prev, { input: cmd, output: result.output }])
-      } catch (error) {
-        setHistory(prev => [...prev, { input: cmd, output: `命令执行错误: ${(error as Error).message}` }])
-      }
-      return
-    }
-
-    setHistory(prev => [...prev, { input: cmd, output: `bash: ${command}: 未找到命令 (输入 'help' 查看可用命令)` }])
-  }, [cwd, files, prevCwd, cmdHistory, aliases, theme])
+  }, [cwd, files, prevCwd, cmdHistory, aliases, theme, executePipeChain])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

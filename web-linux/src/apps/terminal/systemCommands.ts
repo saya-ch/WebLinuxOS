@@ -820,21 +820,210 @@ registerCommand('export', {
 registerCommand('which', {
   handler: (context: CommandContext): CommandResult => {
     const { args } = context
-    
+
     if (args.length === 0) {
       return { output: 'which: 缺少参数\n用法: which <命令>' }
     }
-    
+
     const command = args[0].toLowerCase()
     const cmdDef = getCommand(command)
-    
+
     if (cmdDef) {
       return { output: `/usr/bin/${command}` }
     }
-    
+
     return { output: `which: ${command}: 未找到` }
   },
   description: '查找命令位置',
   usage: 'which <命令>',
   examples: ['which ls', 'which neofetch']
+})
+
+async function computeHash(text: string, algorithm: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(text)
+  const hashBuffer = await crypto.subtle.digest(algorithm, data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+registerCommand('md5sum', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    if (args.length === 0) {
+      return {
+        output: [
+          'md5sum - 计算MD5哈希值',
+          '',
+          '用法: md5sum <文本>',
+          '',
+          '注意: 浏览器Web Crypto API不支持MD5，此处使用SHA-1作为替代',
+          '如需真正的MD5，可使用Python: python -c "import hashlib; print(hashlib.md5(b\\"text\\").hexdigest())"',
+          '',
+          '示例:',
+          '  md5sum hello',
+          '  md5sum password123',
+        ].join('\n')
+      }
+    }
+    const text = args.join(' ')
+    try {
+      const hash = await computeHash(text, 'SHA-1')
+      return { output: `${hash}  -` }
+    } catch {
+      return { output: 'md5sum: 计算哈希失败' }
+    }
+  },
+  description: '计算MD5哈希（浏览器环境以SHA-1替代）',
+  usage: 'md5sum <文本>',
+  examples: ['md5sum hello', 'md5sum password123']
+})
+
+registerCommand('sha256sum', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    if (args.length === 0) {
+      return {
+        output: [
+          'sha256sum - 计算SHA-256哈希值',
+          '',
+          '用法: sha256sum <文本>',
+          '',
+          '示例:',
+          '  sha256sum hello',
+          '  sha256sum password123',
+        ].join('\n')
+      }
+    }
+    const text = args.join(' ')
+    try {
+      const hash = await computeHash(text, 'SHA-256')
+      return { output: `${hash}  -` }
+    } catch {
+      return { output: 'sha256sum: 计算哈希失败' }
+    }
+  },
+  description: '计算SHA-256哈希值',
+  usage: 'sha256sum <文本>',
+  examples: ['sha256sum hello', 'sha256sum password123']
+})
+
+registerCommand('sha1sum', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    if (args.length === 0) {
+      return {
+        output: [
+          'sha1sum - 计算SHA-1哈希值',
+          '',
+          '用法: sha1sum <文本>',
+          '',
+          '示例:',
+          '  sha1sum hello',
+        ].join('\n')
+      }
+    }
+    const text = args.join(' ')
+    try {
+      const hash = await computeHash(text, 'SHA-1')
+      return { output: `${hash}  -` }
+    } catch {
+      return { output: 'sha1sum: 计算哈希失败' }
+    }
+  },
+  description: '计算SHA-1哈希值',
+  usage: 'sha1sum <文本>',
+  examples: ['sha1sum hello']
+})
+
+registerCommand('sha512sum', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+    if (args.length === 0) {
+      return {
+        output: [
+          'sha512sum - 计算SHA-512哈希值',
+          '',
+          '用法: sha512sum <文本>',
+          '',
+          '示例:',
+          '  sha512sum hello',
+        ].join('\n')
+      }
+    }
+    const text = args.join(' ')
+    try {
+      const hash = await computeHash(text, 'SHA-512')
+      return { output: `${hash}  -` }
+    } catch {
+      return { output: 'sha512sum: 计算哈希失败' }
+    }
+  },
+  description: '计算SHA-512哈希值',
+  usage: 'sha512sum <文本>',
+  examples: ['sha512sum hello']
+})
+
+registerCommand('watch', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const { args } = context
+
+    if (args.length === 0) {
+      return {
+        output: [
+          'watch - 定期执行命令',
+          '',
+          '用法: watch [-n <秒数>] <命令>',
+          '',
+          '选项:',
+          '  -n <秒数>  更新间隔（默认2秒，最小1秒）',
+          '',
+          '示例:',
+          '  watch date',
+          '  watch -n 5 ls',
+          '',
+          '注意: 终端环境下仅执行一次，显示命令输出',
+          '持续监控请使用: while true; do <命令>; sleep <秒数>; done',
+        ].join('\n')
+      }
+    }
+
+    let interval = 2
+    let commandArgs: string[] = [...args]
+    const nIdx = args.indexOf('-n')
+    if (nIdx !== -1 && args[nIdx + 1]) {
+      interval = Math.max(1, parseInt(args[nIdx + 1]) || 2)
+      commandArgs = args.filter((_, i) => i !== nIdx && i !== nIdx + 1)
+    }
+
+    const commandName = commandArgs[0]?.toLowerCase()
+    const commandParams = commandArgs.slice(1)
+
+    if (!commandName) {
+      return { output: 'watch: 缺少命令参数' }
+    }
+
+    const cmdDef = getCommand(commandName)
+    if (!cmdDef) {
+      return { output: `watch: ${commandName}: 未找到命令` }
+    }
+
+    try {
+      const result = await cmdDef.handler({ ...context, args: commandParams })
+      const now = new Date().toLocaleTimeString('zh-CN')
+      return {
+        output: [
+          `每隔 ${interval} 秒执行: ${commandArgs.join(' ')}`,
+          `最后更新: ${now}`,
+          '─'.repeat(50),
+          result.output,
+        ].join('\n')
+      }
+    } catch (error) {
+      return { output: `watch: 命令执行错误: ${(error as Error).message}` }
+    }
+  },
+  description: '定期执行命令',
+  usage: 'watch [-n <秒数>] <命令>',
+  examples: ['watch date', 'watch -n 5 ls']
 })

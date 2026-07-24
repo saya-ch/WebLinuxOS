@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useState } from 'react'
+import { StrictMode, useEffect, useState, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
@@ -88,7 +88,7 @@ function registerServiceWorker() {
       navigator.serviceWorker.register('/WebLinuxOS/sw.js')
         .then((registration) => {
           console.log('[WebLinuxOS] Service Worker 注册成功:', registration.scope)
-          
+
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing
             if (newWorker) {
@@ -100,18 +100,41 @@ function registerServiceWorker() {
               })
             }
           })
+
+          // 检查更新（每小时一次）
+          setInterval(() => {
+            registration.update().catch(() => { /* 静默忽略更新检查错误 */ })
+          }, 60 * 60 * 1000)
         })
         .catch((err) => {
           console.warn('[WebLinuxOS] Service Worker 注册失败:', err)
         })
     })
+
+    // 监听控制器变更，自动重载以应用新版本
+    let refreshing = false
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true
+        window.location.reload()
+      }
+    })
   }
+
+  // 离线/在线状态提示
+  window.addEventListener('online', () => {
+    console.log('[WebLinuxOS] 网络已恢复')
+  })
+  window.addEventListener('offline', () => {
+    console.log('[WebLinuxOS] 已离线，部分功能可能不可用')
+  })
 }
 
 registerServiceWorker()
 
 function RootApp() {
   const [bootComplete, setBootComplete] = useState(false)
+  const [appReady, setAppReady] = useState(false)
 
   useEffect(() => {
     const tryRemove = () => {
@@ -120,8 +143,9 @@ function RootApp() {
         document.querySelector('.preload') ||
         document.querySelector('[data-preload]')
       if (preload && preload.parentNode) {
-        preload.style.transition = 'opacity 0.5s ease'
+        preload.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
         preload.style.opacity = '0'
+        preload.style.pointerEvents = 'none'
         setTimeout(() => {
           try {
             if (preload.parentNode) {
@@ -130,7 +154,7 @@ function RootApp() {
           } catch (err) {
             console.warn('[WebLinuxOS] 移除 preload 元素失败：', err)
           }
-        }, 500)
+        }, 600)
       }
     }
 
@@ -142,10 +166,28 @@ function RootApp() {
     }
   }, [])
 
+  // 启动动画完成后，平滑过渡到主应用
+  const handleBootComplete = useCallback(() => {
+    setBootComplete(true)
+    // 使用 requestAnimationFrame 确保 DOM 更新后再触发过渡
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAppReady(true)
+      })
+    })
+  }, [])
+
   return (
     <StrictMode>
-      {!bootComplete && <BootAnimation onComplete={() => setBootComplete(true)} />}
-      {bootComplete && <App />}
+      {!bootComplete && <BootAnimation onComplete={handleBootComplete} />}
+      {bootComplete && (
+        <div
+          className={appReady ? 'app-root-ready' : 'app-root-entering'}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <App />
+        </div>
+      )}
     </StrictMode>
   )
 }
