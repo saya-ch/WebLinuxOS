@@ -30,6 +30,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 智能工作台（v52创新功能 — 统一工作入口，聚合常用工具与实时信息）
+  { id: 'smart-workbench', name: '智能工作台', icon: <RocketIcon />, component: 'SmartWorkbench', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '统一工作入口：快捷工具一键直达+系统状态实时监控+专注计时器+六大分类应用导航，玻璃拟态设计，启动即生产力' },
   // 实时系统监控（v48创新功能 — 真实系统数据监控）
   { id: 'real-system-monitor', name: '实时系统监控', icon: <ActivityIcon />, component: 'RealSystemMonitor', category: 'utilities', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '真实系统监控：JavaScript堆内存+网络状态+FPS+页面性能+本地存储，所有数据来自浏览器API' },
   // 剪贴板历史管理器（v48创新功能 — 剪贴板历史管理）

@@ -55,6 +55,7 @@ Real-time system statistics displayed in the Quick Action Center (Ctrl+A):
 
 Pushing the boundaries of what a web OS can do:
 
+- **Smart Workbench 智能工作台 (v52)** — Unified productivity hub designed to be your daily starting point. Features 8 one-tap quick tools (Terminal, Files, Browser, Calculator, Text Editor, Code Editor, Weather, Settings), real-time system status monitoring (CPU/memory/network/storage), built-in Pomodoro focus timer with session tracking, 6 application categories with 36+ curated apps, and motivational quotes that rotate every 30 minutes. Glass morphism design with staggered entrance animations and smooth hover interactions. Type `workbench` in the terminal for a quick guide.
 - **BookFinder 书海检索 (v50)** — A real book discovery tool powered by the Open Library public API (no API key required). Search millions of titles by name, author, or subject; browse cover thumbnails, ratings, ISBN, and page counts; open a detail drawer with full work metadata and subject tags; save favorites to localStorage with one click. Editorial/magazine aesthetic with Fraunces serif display type, paper-tone palette, and staggered card reveals. Graceful network-error handling and loading skeletons throughout.
 - **Global Insights 全球洞察 (v49)** — One-stop global information aggregator that integrates 8 real public APIs: World News (NewsAPI), Countries Encyclopedia (REST Countries), Daily Quotes (Quotable), Jokes (Official Joke API), Random User Generator (RandomUser.me), NASA Astronomy Picture of the Day, Currency Exchange Rates (Open Exchange Rates), and GitHub Trending Repositories. All data is real, not simulated. Features include local cache (10 min TTL), source tab navigation, full-text search for news and countries, country detail modal with capital/population/languages/timezones/borders, real-time sync indicator, and graceful error handling.
 - **Real-Time System Monitor (v48)** — Live system metrics using real browser APIs: JavaScript heap memory, network status (type/speed/latency), FPS measurement, page performance timing, local storage usage, and CPU core count. All data is real, not simulated.
@@ -76,7 +77,7 @@ Pushing the boundaries of what a web OS can do:
 
 Professional-grade development environment in your browser:
 
-- Terminal with **80+ commands** — file system browsing, text processing, network diagnostics, Cron simulation, Git simulation, Unix pipes (`|`), output redirection (`>` / `>>`), multi-command (`;`), hash tools (sha256sum, md5sum, sha512sum), and command aliasing
+- Terminal with **90+ commands** — file system browsing, text processing, network diagnostics, Cron simulation, Git simulation, Unix pipes (`|`), output redirection (`>` / `>>`), multi-command (`;`), hash tools (sha256sum, md5sum, sha512sum), command aliasing, and productivity tools (Pomodoro timer, weather CLI, scientific calculator, password generator, UUID generator, Base64, color info, system info)
 - Code editor powered by Monaco Editor with syntax highlighting, multi-language support, and auto-completion
 - Markdown editor with real-time bidirectional preview, tables, formulas, code blocks, and HTML export
 - API Testing Tool with real API calls, preset templates, request history, and favorites
@@ -115,7 +116,7 @@ Classic games including 2048, Snake, Tetris, Breakout, Memory, and more — all 
 | **System Tools** | 30+ | File Manager, System Monitor, Performance Dashboard, Settings, Terminal |
 | **Network** | 25+ | BookFinder, Network Toolkit Pro, Web Browser, WorldPulse, Weather, News, IP Lookup |
 | **Media & Creative** | 20+ | AudioViz, Music Player, Image Viewer, Paint, Whiteboard, Camera |
-| **Utilities** | 37+ | PrivacyGuard, DevShortcuts, Password Generator, Hash Tools, Unit Converter, Real System Monitor, Clipboard History |
+| **Utilities** | 40+ | **Smart Workbench**, PrivacyGuard, DevShortcuts, Password Generator, Hash Tools, Unit Converter, Real System Monitor, Clipboard History |
 | **Games** | 10+ | 2048, Snake, Tetris, Breakout, Memory, Virtual Pet |
 | **AI Tools** | 20+ | AI Assistant, Code Assistant, Prompt Library, AI Workbench, AI Learning |
 
@@ -176,13 +177,18 @@ WebLinuxOS/
 ├── web-linux/                  # Main application source
 │   ├── src/
 │   │   ├── apps/               # 240+ application implementations
+│   │   │   ├── SmartWorkbench.tsx # Unified productivity hub (Pomodoro + system stats + app navigation)
 │   │   │   ├── DevPortal.tsx   # Unified developer toolbox
 │   │   │   ├── FlowBoard.tsx   # Visual workflow builder
 │   │   │   ├── NeoTerminal.tsx # Next-gen terminal
 │   │   │   ├── KnowledgeVine.tsx # Knowledge garden
 │   │   │   ├── AudioViz.tsx    # Audio visualizer
 │   │   │   ├── PulseBoard.tsx  # Real-time dashboard
-│   │   │   └── terminal/       # Terminal command system
+│   │   │   └── terminal/       # Terminal command system (90+ commands)
+│   │   │       ├── index.ts    # Command registry
+│   │   │       ├── workbenchCommands.ts # Workbench & utility commands
+│   │   │       ├── powerCommands.ts
+│   │   │       └── ...
 │   │   ├── components/         # Core UI components
 │   │   │   └── desktop/        # Desktop, windows, taskbar, start menu
 │   │   ├── store/              # Zustand state management
@@ -246,6 +252,8 @@ For more detailed guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 - [x] **PWA Support** — Service Worker registration with auto-update and offline detection
 - [x] **Browser-Native Tools** — Web Speech API, getDisplayMedia, Web Crypto, Web Serial integration
 - [x] **Terminal Enhancements** — Pipes, redirection, multi-command, hash tools, aliasing
+- [x] **Smart Workbench** — Unified productivity hub with Pomodoro timer, system stats, and curated app navigation
+- [x] **BookFinder** — Real book search via Open Library public API with cover thumbnails and favorites
 - [ ] **File Sync** — Cross-device file system sync via WebDAV / GitHub Gist
 - [ ] **Collaboration Mode** — CRDT-based multi-user shared workspace
 - [ ] **Mobile Optimization** — Touch-friendly interface for phones and tablets

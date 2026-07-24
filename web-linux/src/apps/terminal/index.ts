@@ -34,3 +34,6 @@ import './proCommands'
 
 // 8. Power命令集：高级实用命令（gzip/gunzip/file/cut/paste/nl/expand/tr/split/timestamp/uuidv4/password-strength/regex-test/base64-url/cron-parse/url-info/converter/ascii-table/fortune/banner/cowsay/cowthink/dog/advice/flip/rps/matrix）
 import './powerCommands'
+
+// 9. Workbench命令集：智能工作台相关命令（workbench/now/focus/break/motivate/sysinfo/uuid-gen/password/b64/color/weather-cli/calc）
+import './workbenchCommands'
