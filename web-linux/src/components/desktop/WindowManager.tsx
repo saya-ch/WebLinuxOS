@@ -489,20 +489,25 @@ function loadComponent(name: string): React.LazyExoticComponent<React.ComponentT
 
   loadingStates.set(name, 'loading')
 
-  const doImport = async () => {
+  const doImport = async (): Promise<{ default: React.ComponentType<unknown> }> => {
+    // 在每次递归前重新读取最新的重试计数，避免闭包陈旧导致无限递归
+    const currentRetry = retryCounts.get(name) || 0
+
     if (componentMap[name]) {
       try {
         const module = await timeoutPromise(componentMap[name](), COMPONENT_LOAD_TIMEOUT)
         loadingStates.set(name, 'loaded')
         cacheAccessTimes.set(name, Date.now())
-        return { default: module.default }
+        return { default: module.default as React.ComponentType<unknown> }
       } catch (error) {
-        retryCounts.set(name, retryCount + 1)
-        loadingStates.set(name, 'error')
-        if (retryCount + 1 < MAX_RETRY_ATTEMPTS) {
+        const nextRetry = currentRetry + 1
+        retryCounts.set(name, nextRetry)
+        if (nextRetry < MAX_RETRY_ATTEMPTS) {
+          // 真正重试：递归调用前计数已更新，递归内会读取到最新值
           return doImport()
         }
-        return { default: createErrorFallback(name) }
+        loadingStates.set(name, 'error')
+        return { default: createErrorFallback(name) as React.ComponentType<unknown> }
       }
     }
 
@@ -510,14 +515,15 @@ function loadComponent(name: string): React.LazyExoticComponent<React.ComponentT
       const module = await timeoutPromise(import(`../../apps/${name}.tsx`), COMPONENT_LOAD_TIMEOUT)
       loadingStates.set(name, 'loaded')
       cacheAccessTimes.set(name, Date.now())
-      return { default: module.default }
+      return { default: module.default as React.ComponentType<unknown> }
     } catch (error) {
-      retryCounts.set(name, retryCount + 1)
-      loadingStates.set(name, 'error')
-      if (retryCount + 1 < MAX_RETRY_ATTEMPTS) {
+      const nextRetry = currentRetry + 1
+      retryCounts.set(name, nextRetry)
+      if (nextRetry < MAX_RETRY_ATTEMPTS) {
         return doImport()
       }
-      return { default: createErrorFallback(name) }
+      loadingStates.set(name, 'error')
+      return { default: createErrorFallback(name) as React.ComponentType<unknown> }
     }
   }
 
@@ -525,8 +531,8 @@ function loadComponent(name: string): React.LazyExoticComponent<React.ComponentT
   return componentCache[name]
 }
 
-function preloadComponents() {
-  if (typeof window === 'undefined') return
+function preloadComponents(): () => void {
+  if (typeof window === 'undefined') return () => {}
 
   const criticalComponents = [
     'Terminal',
@@ -586,6 +592,23 @@ function preloadComponents() {
   }
 
   loadWithPriority(criticalComponents, 500)
+
+  // visibilitychange 的回调：提前定义为具名函数，便于在卸载时移除
+  const onVisibilityChange = () => {
+    if (!document.hidden && preloadedComponents.size < 40) {
+      setTimeout(() => {
+        const additionalComponents = [
+          'TextEditor',
+          'Paint',
+          'Translator',
+          'ChatAI',
+          'MarkdownEditor',
+          'KanbanBoard',
+        ]
+        loadWithPriority(additionalComponents.filter(c => !preloadedComponents.has(c)), 0)
+      }, 1000)
+    }
+  }
   
   if ('requestIdleCallback' in window) {
     const idleCallback = (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback
@@ -600,21 +623,11 @@ function preloadComponents() {
     setTimeout(() => loadWithPriority(developmentComponents, 0), 3500)
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && preloadedComponents.size < 40) {
-      setTimeout(() => {
-        const additionalComponents = [
-          'TextEditor',
-          'Paint',
-          'Translator',
-          'ChatAI',
-          'MarkdownEditor',
-          'KanbanBoard',
-        ]
-        loadWithPriority(additionalComponents.filter(c => !preloadedComponents.has(c)), 0)
-      }, 1000)
-    }
-  })
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  // 返回 cleanup 函数，避免在 StrictMode / 重渲染中累积监听器导致内存泄漏
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+  }
 }
 
 const LoadingFallback = memo(function LoadingFallback() {
@@ -718,11 +731,19 @@ const WindowManager = memo(function WindowManager() {
   const windowsPerDesktop = useStore((s) => s.windowsPerDesktop)
 
   const preloadedRef = useRef(false)
+  const cleanupRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     if (!preloadedRef.current) {
-      preloadComponents()
+      cleanupRef.current = preloadComponents()
       preloadedRef.current = true
+    }
+    return () => {
+      // 组件卸载或 StrictMode 重渲染时移除 visibilitychange 监听器
+      if (cleanupRef.current) {
+        cleanupRef.current()
+        cleanupRef.current = null
+      }
     }
   }, [])
 

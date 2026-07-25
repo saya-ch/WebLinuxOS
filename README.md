@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v51.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v52.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,20 @@ Built with React 19 and TypeScript, it features a polished windowing system with
 - **Always up to date** — no installations, no updates, just refresh the page
 
 ## Core Features
+
+### 🛡️ Reliability & Quality (v52)
+
+A focused iteration on stability and correctness — every fix below addresses a real defect that affected daily use:
+
+- **Code Runner apps now actually run code** — CSP `script-src` now includes `'unsafe-eval'`, unblocking Monaco Editor, CodeRunner, OnlineCompiler, WebIDE and 10+ other in-browser code execution apps that previously failed silently with `EvalError`.
+- **No more "infinite recursion → browser tab crash"** — `WindowManager.loadComponent`'s retry path now reads the latest retry count from the module-level map on every recursion instead of capturing it in a stale closure, so a perpetually failing module no longer blows the stack.
+- **No more listener leaks across StrictMode / remounts** — `preloadComponents` now returns a cleanup function and the `useEffect` honors it; the `visibilitychange` listener is properly removed on unmount. The same pattern was applied to all three `setTimeout(addEventListener)` call sites in `Taskbar.tsx`.
+- **Storage truncation no longer writes a *larger* object** — `debouncedSaveToStorage` previously produced a "truncated" placeholder by spreading the original (huge) value, almost guaranteeing `QuotaExceededError`. It now writes a minimal `{_truncated, _originalSize, _truncatedAt}` placeholder, keeping state consistent when the user exceeds the localStorage budget.
+- **Service Worker path is no longer hardcoded** — `registerServiceWorker` now uses `import.meta.env.BASE_URL + 'sw.js'`, so PWA still works when deploying to a custom path or root domain.
+- **No more duplicate shortcut triggers** — `Ctrl+K`, `Ctrl+P`, `Ctrl+Space` were handled inline in `handleKeyDown` *and* re-listed in `systemShortcuts`, making the table pure dead code. The duplicate entries were removed; behavior is unchanged but maintainers can no longer desync the two paths.
+- **App registration is now O(n) instead of O(n²)** — `registerApps(apps[])` performs a single `set()` with a `Set`-based diff. With 350+ apps in the registry this noticeably shortens first-paint blocking time.
+- **Duplicate app names disambiguated** — "剪贴板历史" and "AI 聊天助手" each had two registry entries with identical display names. The legacy entries are now suffixed `（基础版）` so users can tell them apart in the launcher.
+- **Boot animation is skippable** — clicking or pressing any key during boot immediately dismisses the animation, and the version label now reflects the real `package.json` version instead of a hardcoded `v2.0`.
 
 ### 🖥️ Desktop & Window System
 

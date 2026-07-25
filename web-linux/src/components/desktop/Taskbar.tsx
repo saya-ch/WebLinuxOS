@@ -47,8 +47,17 @@ const WindowContextMenu = memo(function WindowContextMenu({
 
   useEffect(() => {
     const handleClickOutside = () => onClose()
-    setTimeout(() => document.addEventListener('click', handleClickOutside), 0)
-    return () => document.removeEventListener('click', handleClickOutside)
+    let timer: ReturnType<typeof setTimeout> | null = setTimeout(
+      () => document.addEventListener('click', handleClickOutside),
+      0
+    )
+    return () => {
+      if (timer) {
+        clearTimeout(timer)
+        timer = null
+      }
+      document.removeEventListener('click', handleClickOutside)
+    }
   }, [onClose])
 
   const style: React.CSSProperties = {
@@ -149,8 +158,17 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
 
   useEffect(() => {
     const handleClickOutside = () => onClose()
-    setTimeout(() => document.addEventListener('click', handleClickOutside), 0)
-    return () => document.removeEventListener('click', handleClickOutside)
+    let timer: ReturnType<typeof setTimeout> | null = setTimeout(
+      () => document.addEventListener('click', handleClickOutside),
+      0
+    )
+    return () => {
+      if (timer) {
+        clearTimeout(timer)
+        timer = null
+      }
+      document.removeEventListener('click', handleClickOutside)
+    }
   }, [onClose])
 
   const style: React.CSSProperties = {
@@ -241,8 +259,17 @@ const NotificationCenter = memo(function NotificationCenter({ onClose }: Notific
         onClose()
       }
     }
-    setTimeout(() => document.addEventListener('click', handleClickOutside), 0)
-    return () => document.removeEventListener('click', handleClickOutside)
+    let timer: ReturnType<typeof setTimeout> | null = setTimeout(
+      () => document.addEventListener('click', handleClickOutside),
+      0
+    )
+    return () => {
+      if (timer) {
+        clearTimeout(timer)
+        timer = null
+      }
+      document.removeEventListener('click', handleClickOutside)
+    }
   }, [onClose])
 
   return (

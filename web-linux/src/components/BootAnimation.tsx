@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 
+// 由 vite.config.ts 注入，对应 package.json 的 version
+declare const __APP_VERSION__: string
+
 interface BootAnimationProps {
   onComplete: () => void
 }
@@ -53,16 +56,30 @@ export default function BootAnimation({ onComplete }: BootAnimationProps) {
       })
     }, 100)
 
+    // 允许用户按任意键或点击跳过启动动画
+    const skip = () => {
+      clearInterval(progressInterval)
+      clearInterval(messageInterval)
+      setProgress(100)
+      setShowContent(false)
+      setTimeout(onComplete, 200)
+    }
+    window.addEventListener('keydown', skip, { once: true })
+
     return () => {
       clearInterval(progressInterval)
       clearInterval(messageInterval)
+      window.removeEventListener('keydown', skip)
     }
   }, [onComplete])
 
   if (!showContent) return null
 
   return (
-    <div className="boot-overlay">
+    <div className="boot-overlay" onClick={() => {
+      setShowContent(false)
+      setTimeout(onComplete, 200)
+    }}>
       <div className="boot-container">
         <div className="boot-logo">
           <div className="logo-ring"></div>
@@ -74,7 +91,7 @@ export default function BootAnimation({ onComplete }: BootAnimationProps) {
         
         <div className="boot-info">
           <div className="boot-title">WebLinuxOS</div>
-          <div className="boot-version">v2.0</div>
+          <div className="boot-version">v{__APP_VERSION__}</div>
         </div>
         
         <div className="boot-progress-container">

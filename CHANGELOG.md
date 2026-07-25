@@ -5,6 +5,65 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [52.0.0] - 2026-07-25
+
+### Fixed — Reliability & Quality pass
+
+A focused iteration on stability and correctness. Every fix below addresses a
+real defect that affected daily use; the app now boots, runs code, and recovers
+from errors more predictably.
+
+- **CSP no longer blocks `eval`** — added `'unsafe-eval'` to the `script-src`
+  directive. Code Runner, OnlineCompiler, WebIDE, CodeSandbox, CodePen Lite,
+  CodePlayground, CodeInterpreter and ~10 other in-browser code execution apps
+  previously failed silently with `EvalError`. (`main.tsx`)
+- **WindowManager `loadComponent` no longer recurses infinitely** — the retry
+  path captured `retryCount` in a closure and never re-read the latest value,
+  so a perpetually failing module would recurse until `RangeError: Maximum call
+  stack size exceeded` and crash the tab. The closure is now re-read on every
+  recursion. (`components/desktop/WindowManager.tsx`)
+- **No more `visibilitychange` listener leaks** — `preloadComponents()` now
+  returns a cleanup function and the `useEffect` honors it, so StrictMode /
+  remounts no longer accumulate listeners. (`WindowManager.tsx`)
+- **No more `setTimeout(addEventListener)` leaks in Taskbar** — all three
+  context-menu call sites now `clearTimeout` the pending timer in cleanup,
+  closing the race where a 0 ms `setTimeout` could `addEventListener` after the
+  component had already unmounted and removed its listener. (`Taskbar.tsx`)
+- **Storage truncation no longer writes a *larger* object** — when the
+  serialized value exceeded the localStorage budget, the previous code spread the
+  original (huge) value into a `{...value, _truncated: true}` placeholder,
+  almost guaranteeing `QuotaExceededError`. It now writes a minimal
+  `{_truncated, _originalSize, _truncatedAt}` placeholder. (`store/storageUtils.ts`)
+- **Service Worker URL is no longer hardcoded** — `registerServiceWorker` now
+  builds the URL from `import.meta.env.BASE_URL`, so PWA still works when
+  deploying to a custom path or root domain. (`main.tsx`)
+
+### Changed
+
+- **Removed duplicate system-shortcut entries** — `Ctrl+K`, `Ctrl+P`,
+  `Ctrl+Space` were already handled inline in `handleKeyDown` and the duplicate
+  entries in `systemShortcuts` were unreachable dead code; removed to prevent
+  future maintainers from desyncing the two paths. (`App.tsx`)
+- **App registration is now O(n) instead of O(n²)** — added `registerApps(apps[])`
+  which performs a single `set()` with a `Set`-based diff. With 350+ apps in the
+  registry this noticeably shortens first-paint blocking time. (`store.tsx`,
+  `App.tsx`)
+- **Disambiguated duplicate app display names** — "剪贴板历史" and "AI 聊天助手"
+  each had two registry entries with identical display names. The legacy entries
+  are now suffixed `（基础版）` so users can tell them apart in the launcher.
+  (`apps.tsx`)
+- **Boot animation is skippable** — clicking anywhere or pressing any key
+  during boot immediately dismisses the animation. The version label now
+  reflects the real `package.json` version instead of a hardcoded `v2.0`.
+  (`BootAnimation.tsx`)
+
+### Verified
+
+- Production build succeeds (`npm run build`) with no new TypeScript errors.
+- Playwright smoke test (load page → skip boot → open terminal → run
+  `echo hello-from-weblinux` → open global search → close windows) passes
+  with zero critical console errors. See `test-output/` for screenshots.
+
 ## [Unreleased]
 
 ### Added

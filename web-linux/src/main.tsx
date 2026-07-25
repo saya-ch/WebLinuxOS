@@ -55,14 +55,15 @@ if (typeof window !== 'undefined') {
   try {
     const cspMeta = document.createElement('meta')
     cspMeta.httpEquiv = 'Content-Security-Policy'
-    // 允许同域资源、内联样式与脚本；严格限制外部脚本与 unsafe-eval
-    // 注意：此处仅作为浏览器端策略提示；生产环境应主要依赖服务器响应头
-    // 对于 WebLinuxOS，需要：
+    // WebLinuxOS 内置多个代码运行器（CodeRunner / OnlineCompiler / WebIDE 等），
+    // 这些应用通过 new Function / eval 在浏览器内执行用户代码；同时也使用 Monaco
+    // 编辑器，需要 'unsafe-eval' 才能正常工作。这里在保留 'self' 与 'unsafe-inline'
+    // 的基础上放开 'unsafe-eval'，但仍禁止远程脚本注入。
     // - 允许 https: 连接，以便天气/新闻/汇率/AI 等应用调用合规公开 API
     // - 保留 data: 与 blob: 以便应用内可渲染内容
     cspMeta.content = [
       "default-src 'self' https:",
-      "script-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
@@ -84,8 +85,10 @@ if (typeof window !== 'undefined') {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
+    // 使用 import.meta.env.BASE_URL 适配 VITE_BASE_PATH 自定义部署
+    const swUrl = `${import.meta.env.BASE_URL}sw.js`
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/WebLinuxOS/sw.js')
+      navigator.serviceWorker.register(swUrl)
         .then((registration) => {
           console.log('[WebLinuxOS] Service Worker 注册成功:', registration.scope)
 

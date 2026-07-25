@@ -60,8 +60,8 @@ const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }
   'close-window': { config: { mod: true, key: 'q' }, action: 'close-window' },
   'minimize-window': { config: { mod: true, key: 'm' }, action: 'minimize-window' },
   'new-terminal': { config: { mod: true, shift: true, key: 'n' }, action: 'new-terminal' },
-  'global-search': { config: { mod: true, key: 'k' }, action: 'global-search' },
-  'command-palette': { config: { mod: true, key: 'p' }, action: 'command-palette' },
+  // 以下三个快捷键（global-search / command-palette / smart-command-center）
+  // 已在 handleKeyDown 中提前直接处理，不再放入 systemShortcuts，避免重复触发或死代码
   'lock-screen': { config: { mod: true, key: 'l' }, action: 'lock-screen' },
   'notification-center': { config: { mod: true, key: 'n' }, action: 'notification-center' },
   'shortcuts': { config: { mod: true, shift: true, key: '?' }, action: 'shortcuts' },
@@ -69,7 +69,7 @@ const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }
 }
 
 const App = memo(function App() {
-  const registerApp = useStore((s) => s.registerApp)
+  const registerApps = useStore((s) => s.registerApps)
   const openApp = useStore((s) => s.openApp)
   const toggleLauncher = useStore((s) => s.toggleLauncher)
   const focusWindow = useStore((s) => s.focusWindow)
@@ -102,10 +102,11 @@ const App = memo(function App() {
 
   useEffect(() => {
     if (!registeredRef.current) {
-      appRegistry.forEach((app) => registerApp(app))
+      // 批量注册，避免 350+ 个应用逐个调用 registerApp 触发的 O(n²) 性能问题
+      registerApps(appRegistry)
       registeredRef.current = true
     }
-  }, [registerApp])
+  }, [registerApps])
 
   useEffect(() => {
     if (theme === 'light') {

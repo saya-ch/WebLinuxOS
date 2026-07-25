@@ -188,11 +188,16 @@ export function debouncedSaveToStorage(key: string, value: unknown, delay: numbe
         const size = estimateSize(serialized)
         if (size > STORAGE_SIZE_LIMIT) {
           console.warn(
-            `[storage] 数据过大 (${Math.round(size / 1024)}KB)，无法保存到 localStorage [${key}]。`
+            `[storage] 数据过大 (${Math.round(size / 1024)}KB)，无法保存到 localStorage [${key}]，已写入最小占位对象。`
           )
-          // 截断到一个结构最小的占位对象以避免彻底失败
-          const truncated = JSON.stringify({ ...(value as Record<string, unknown>), _truncated: true })
-          safeSetItem(key, truncated)
+          // 真正写一个最小占位对象（含原始大小信息），避免 safeSetItem 因 QuotaExceeded 失败导致状态错乱
+          // 注意：之前实现会展开原 value 反而写入更大字符串，这里彻底替换为最小结构
+          const placeholder = JSON.stringify({
+            _truncated: true,
+            _originalSize: size,
+            _truncatedAt: new Date().toISOString(),
+          })
+          safeSetItem(key, placeholder)
         } else {
           safeSetItem(key, serialized)
         }
