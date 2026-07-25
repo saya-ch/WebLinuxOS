@@ -30,6 +30,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // InfoPulse 信息脉搏中心（v53创新功能 — 多源信息聚合+实时监控+个性化布局）
+  { id: 'info-pulse-center', name: 'InfoPulse 信息脉搏', icon: <ZapIcon />, component: 'InfoPulseCenter', category: 'utilities', defaultWidth: 1280, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false, isNew: true, description: '实时信息聚合中心：技术动态+天气状况+系统健康度+世界时钟+GitHub热门+加密货币，卡片化布局，数据实时刷新' },
   // 智能工作台（v52创新功能 — 统一工作入口，聚合常用工具与实时信息）
   { id: 'smart-workbench', name: '智能工作台', icon: <RocketIcon />, component: 'SmartWorkbench', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '统一工作入口：快捷工具一键直达+系统状态实时监控+专注计时器+六大分类应用导航，玻璃拟态设计，启动即生产力' },
   // 实时系统监控（v48创新功能 — 真实系统数据监控）

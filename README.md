@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v52.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v53.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,12 @@ Built with React 19 and TypeScript, it features a polished windowing system with
 - **Always up to date** — no installations, no updates, just refresh the page
 
 ## Core Features
+
+### ⚡ Innovation & Productivity (v53)
+
+WebLinuxOS evolves beyond simulation into a real productivity platform:
+
+- **InfoPulse 信息脉搏中心** — A revolutionary real-time information aggregation hub. Features a card-based layout with tech news, weather monitoring, system health scoring (with animated ring visualization), world clocks across 6 timezones, GitHub trending repositories, and cryptocurrency market data. Auto-refreshes every minute with manual refresh support. Glass morphism design with cyberpunk aesthetics. Type `infopulse` in the terminal for quick access.
 
 ### 🛡️ Reliability & Quality (v52)
 
