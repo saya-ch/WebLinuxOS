@@ -1,13 +1,12 @@
 # WebLinuxOS
 
-> A production-grade Linux desktop environment running entirely in the browser.
-> Built with React 19, TypeScript, Zustand, and Vite. 240+ applications, virtual file system, terminal emulator, and Python runtime — all client-side.
+A production-grade Linux desktop environment running entirely in the browser. Built with React 19, TypeScript, Zustand, and Vite. 240+ applications, virtual file system, terminal emulator, and Python runtime — all client-side.
 
 **Live Demo**: <https://saya-ch.github.io/WebLinuxOS/>
 
 [![Deploy to GitHub Pages](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-47.0.0-7c3aed.svg)](./web-linux/package.json)
+[![Version](https://img.shields.io/badge/version-52.0.0-7c3aed.svg)](./web-linux/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
@@ -24,14 +23,14 @@ Everything runs in the browser. No backend, no account, no telemetry.
 
 ## Highlights
 
-### Three new tools in v43
+### Enhanced terminal commands and API integrations
 
 | Tool | What it does |
 | --- | --- |
 | **PrivacyGuard** | Detects 17 classes of personally identifiable information (email, phone, ID, cards, IP, API keys, JWT, PEM keys, BTC addresses, …) and sanitizes them via four modes: highlight, partial mask, hash, full redact. 100% local. |
 | **JSONForge** | All-in-one JSON workbench: format / minify, JSON ⇌ YAML, JSON ⇌ CSV, deep JSON diff, and automatic JSON Schema generation with type inference. |
 | **CronLab** | Visual cron expression builder with human-readable explanation, next-N-run preview, and 12 presets. Supports aliases (`mon`, `jan`, `L`, `W`, `#`). |
-| **Command Center** | Enhanced terminal with 100+ commands including network tools (`curl`, `fetch`, `ping`, `ipinfo`), online utilities (`weather`, `news`, `currency`, `crypto`), and developer tools (`hash-verify`, `calc`, `base64`, `uuid`). |
+| **Command Center** | Enhanced terminal with 100+ commands including network tools (`curl`, `fetch`, `ping`, `ipinfo`, `dig`, `nslookup`), online utilities (`weather`, `news`, `currency`, `crypto`, `translate`, `trivia`, `joke`, `holiday`), and developer tools (`hash-verify`, `calc`, `base64`, `uuid`, `timestamp`, `url-encode`, `url-decode`). |
 
 ### Desktop environment
 
@@ -229,18 +228,19 @@ without secrets:
 
 ## Recent releases
 
-### v47.0 — Enhanced terminal commands and API integrations
+### v52.0 — Terminal command cleanup and UX improvements
 
-- Enhanced: `curl` command with full HTTP support including `-i`, `-X`, `-H`, `-d` options
-- Enhanced: `hash-verify` command with proper argument parsing and verification logic
-- New: `fetch` command for simplified HTTP requests
-- New: `ipinfo` command to get current IP address information
-- New: `iplookup` command for IP geolocation lookup
-- New: `weather` command using Open-Meteo API for real-time weather
-- New: `news` command fetching latest news from Hacker News
-- New: `currency` command for real-time exchange rates (Frankfurter API)
-- New: `crypto` command for cryptocurrency prices (CoinGecko API)
-- Updated: Terminal command documentation in README
+- Fixed: Removed duplicate terminal command registrations (joke, ipinfo, color, dict, news, uuid-gen, password, b64, weather-cli, calc) across multiple command files
+- Enhanced: Terminal command registration system now properly handles conflicts with clear warnings in DEV mode
+- Enhanced: Added new terminal commands: `trivia`, `holiday`, `timezone`, `base64-encode`, `base64-decode`, `url-encode`, `url-decode`, `password-gen`, `random`, `uuidgen`, `timestamp`
+- Enhanced: `dig` and `nslookup` commands for DNS query support
+- Enhanced: `weather-forecast` command for 7-day weather predictions
+- Enhanced: `wikipedia` command with fallback knowledge base for offline use
+- Enhanced: `github-trending` command with fallback repository data
+- Enhanced: `dict` command with English word lookup and local dictionary fallback
+- Enhanced: Desktop widget system with clock, weather, system monitor, and focus timer
+- Enhanced: Window snapping layouts with visual feedback and alignment guides
+- Updated: README documentation with complete terminal command reference
 
 ### v43.0 — Privacy & developer tooling
 

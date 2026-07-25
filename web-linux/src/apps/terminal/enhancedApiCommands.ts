@@ -205,40 +205,6 @@ registerCommand('translate', {
   examples: ['translate Hello World', 'translate 你好世界']
 })
 
-registerCommand('ipinfo', {
-  handler: async (): Promise<CommandResult> => {
-    const ipData = await fetchJson<{ ip: string }>('https://api.ipify.org?format=json')
-
-    const ip = ipData?.ip || '未知'
-    const geoData = await fetchJson<{
-      country_name: string
-      city: string
-      region: string
-      timezone: string
-      org: string
-      latitude: number
-      longitude: number
-    }>(`https://ipapi.co/${ip}/json/`)
-
-    return {
-      output: [
-        'IP地址信息',
-        '',
-        `IP地址: ${ip}`,
-        `国家: ${geoData?.country_name || '未知'}`,
-        `城市: ${geoData?.city || '未知'}`,
-        `地区: ${geoData?.region || '未知'}`,
-        `时区: ${geoData?.timezone || '未知'}`,
-        `ISP: ${geoData?.org || '未知'}`,
-        `经纬度: ${geoData?.latitude || 'N/A'}, ${geoData?.longitude || 'N/A'}`,
-      ].join('\n')
-    }
-  },
-  description: '查看当前IP地址信息',
-  usage: 'ipinfo',
-  examples: ['ipinfo']
-})
-
 registerCommand('currency', {
   handler: async (context: CommandContext): Promise<CommandResult> => {
     const { args } = context
