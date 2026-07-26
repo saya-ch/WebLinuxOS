@@ -247,4 +247,146 @@ registerCommand('infopulse', {
   examples: ['infopulse'],
 }, { source: 'workbenchCommands' })
 
+registerCommand('studio', {
+  handler: (): CommandResult => {
+    const output = `
+╔══════════════════════════════════════════════════════════════╗
+║              ✨ Studio Suite 创意工作室                       ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  设计师与前端开发者的一站式创意工具箱                        ║
+║                                                              ║
+║  六大模块:                                                   ║
+║  ┌────────────────────────────────────────────────────────┐  ║
+║  │  🎨 调色板生成   从基础色生成 11 级色阶 + 4 种配色方案   │  ║
+║  │  🌈 渐变编辑器   线性/径向渐变，多色节点，角度调节       │  ║
+║  │  🌓 阴影生成器   多层阴影，柔/硬阴影，实时预览            │  ║
+║  │  🔤 字体预览     8 款精选字体，中英文对照展示            │  ║
+║  │  ◐  对比度检查   WCAG 2.1 标准，AA/AAA 可访问性          │  ║
+║  │  📐 单位转换     px / rem / em / vw / % 互换             │  ║
+║  └────────────────────────────────────────────────────────┘  ║
+║                                                              ║
+║  打开方式:  在启动器搜索 "Studio Suite" 或 "创意工作室"      ║
+║                                                              ║
+║  特性:                                                       ║
+║    • 一键复制 CSS 代码                                       ║
+║    • 实时预览，所见即所得                                    ║
+║    • 深色主题，护眼设计                                      ║
+║    • 无需联网，纯本地计算                                    ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+提示: 输入 "help" 查看所有命令，输入 "apps" 浏览应用列表
+`
+    return { output }
+  },
+  description: '显示 Studio Suite 创意工作室使用指南',
+  usage: 'studio',
+  examples: ['studio'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('color', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const hex = ctx.args[0]
+    if (!hex) {
+      return {
+        output: `用法: color <hex颜色值>
+
+示例:
+  color #7c6cf0
+  color ff6b6b
+
+功能: 显示颜色的 HSL、RGB 信息，并生成配色建议`
+      }
+    }
+
+    let cleanHex = hex.startsWith('#') ? hex.slice(1) : hex
+    if (cleanHex.length === 3) {
+      cleanHex = cleanHex.split('').map(c => c + c).join('')
+    }
+    if (!/^[0-9a-fA-F]{6}$/.test(cleanHex)) {
+      return { output: `错误: "${hex}" 不是有效的 HEX 颜色值` }
+    }
+    cleanHex = '#' + cleanHex.toLowerCase()
+
+    const r = parseInt(cleanHex.slice(1, 3), 16)
+    const g = parseInt(cleanHex.slice(3, 5), 16)
+    const b = parseInt(cleanHex.slice(5, 7), 16)
+
+    const rNorm = r / 255, gNorm = g / 255, bNorm = b / 255
+    const max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm)
+    let h = 0, s = 0
+    const l = (max + min) / 2
+
+    if (max !== min) {
+      const d = max - min
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+      switch (max) {
+        case rNorm: h = ((gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0)) / 6; break
+        case gNorm: h = ((bNorm - rNorm) / d + 2) / 6; break
+        case bNorm: h = ((rNorm - gNorm) / d + 4) / 6; break
+      }
+    }
+
+    const output = `
+颜色信息: ${cleanHex.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  HEX:   ${cleanHex.toUpperCase()}
+  RGB:   rgb(${r}, ${g}, ${b})
+  HSL:   hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)
+
+配色建议:
+  邻近色:  ${shiftHue(cleanHex, -30)}  ${cleanHex}  ${shiftHue(cleanHex, 30)}
+  互补色:  ${cleanHex}  ${shiftHue(cleanHex, 180)}
+  三元色:  ${cleanHex}  ${shiftHue(cleanHex, 120)}  ${shiftHue(cleanHex, 240)}
+
+提示: 打开 "Studio Suite" 获取完整的调色板功能
+`
+    return { output }
+  },
+  description: '分析颜色并生成配色建议',
+  usage: 'color <hex>',
+  examples: ['color #7c6cf0', 'color ff6b6b'],
+}, { source: 'workbenchCommands' })
+
+function shiftHue(hex: string, degrees: number): string {
+  const r = parseInt(hex.slice(1, 3), 16) / 255
+  const g = parseInt(hex.slice(3, 5), 16) / 255
+  const b = parseInt(hex.slice(5, 7), 16) / 255
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  let h = 0, s = 0
+  const l = (max + min) / 2
+  if (max !== min) {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
+      case g: h = ((b - r) / d + 2) / 6; break
+      case b: h = ((r - g) / d + 4) / 6; break
+    }
+  }
+  h = ((h * 360 + degrees) % 360 + 360) % 360 / 360
+
+  let r2: number, g2: number, b2: number
+  if (s === 0) {
+    r2 = g2 = b2 = l
+  } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1
+      if (t > 1) t -= 1
+      if (t < 1/6) return p + (q - p) * 6 * t
+      if (t < 1/2) return q
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6
+      return p
+    }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+    const p = 2 * l - q
+    r2 = hue2rgb(p, q, h + 1/3)
+    g2 = hue2rgb(p, q, h)
+    b2 = hue2rgb(p, q, h - 1/3)
+  }
+  const toHex = (n: number) => Math.round(n * 255).toString(16).padStart(2, '0')
+  return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`
+}
+
 

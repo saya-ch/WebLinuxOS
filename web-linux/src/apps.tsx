@@ -30,6 +30,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // Studio Suite 创意工作室（v53.1 创新功能 — 设计师与前端开发者的一站式创意工具箱）
+  { id: 'studio-suite', name: 'Studio Suite 创意工作室', icon: <StudioSuiteIcon />, component: 'StudioSuite', category: 'multimedia', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '设计师与前端开发者的创意工具箱：调色板生成、渐变编辑、阴影生成、字体预览、WCAG对比度检查、单位转换，六大模块一站式服务' },
   // InfoPulse 信息脉搏中心（v53创新功能 — 多源信息聚合+实时监控+个性化布局）
   { id: 'info-pulse-center', name: 'InfoPulse 信息脉搏', icon: <ZapIcon />, component: 'InfoPulseCenter', category: 'utilities', defaultWidth: 1280, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false, isNew: true, description: '实时信息聚合中心：技术动态+天气状况+系统健康度+世界时钟+GitHub热门+加密货币，卡片化布局，数据实时刷新' },
   // 智能工作台（v52创新功能 — 统一工作入口，聚合常用工具与实时信息）
@@ -147,6 +149,17 @@ export function registerApps(extras: AppDefinition[]) {
       existingIds.add(app.id)
     }
   }
+}
+
+function StudioSuiteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+      <path d="M2 17l10 5 10-5" />
+      <path d="M2 12l10 5 10-5" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+    </svg>
+  )
 }
 
 function AudioVizIcon() {

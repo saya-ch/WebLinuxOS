@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 // 由 vite.config.ts 注入，对应 package.json 的 version
 declare const __APP_VERSION__: string
@@ -21,11 +21,24 @@ export default function BootAnimation({ onComplete }: BootAnimationProps) {
   const [progress, setProgress] = useState(0)
   const [currentMessage, setCurrentMessage] = useState('')
   const [showContent, setShowContent] = useState(false)
+  const [fading, setFading] = useState(false)
+  const completedRef = useRef(false)
+
+  const finishBoot = useCallback(() => {
+    if (completedRef.current) return
+    completedRef.current = true
+    setFading(true)
+    setTimeout(() => {
+      setShowContent(false)
+      onComplete()
+    }, 500)
+  }, [onComplete])
 
   useEffect(() => {
     setShowContent(true)
     
-    let progressInterval: ReturnType<typeof setInterval>
+    let progressInterval: ReturnType<typeof setInterval> | null = null
+    let messageInterval: ReturnType<typeof setInterval> | null = null
     let messageIndex = 0
     
     const updateMessage = () => {
@@ -37,49 +50,45 @@ export default function BootAnimation({ onComplete }: BootAnimationProps) {
     
     updateMessage()
     
-    const messageInterval = setInterval(() => {
+    messageInterval = setInterval(() => {
       updateMessage()
     }, 400)
 
     progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
-          clearInterval(progressInterval)
-          clearInterval(messageInterval)
-          setTimeout(() => {
-            setShowContent(false)
-            setTimeout(onComplete, 500)
-          }, 500)
+          if (progressInterval) clearInterval(progressInterval)
+          if (messageInterval) clearInterval(messageInterval)
+          finishBoot()
           return 100
         }
         return prev + Math.random() * 8 + 2
       })
     }, 100)
 
-    // 允许用户按任意键或点击跳过启动动画
     const skip = () => {
-      clearInterval(progressInterval)
-      clearInterval(messageInterval)
+      if (progressInterval) clearInterval(progressInterval)
+      if (messageInterval) clearInterval(messageInterval)
       setProgress(100)
-      setShowContent(false)
-      setTimeout(onComplete, 200)
+      finishBoot()
     }
-    window.addEventListener('keydown', skip, { once: true })
+    
+    window.addEventListener('keydown', skip)
 
     return () => {
-      clearInterval(progressInterval)
-      clearInterval(messageInterval)
+      if (progressInterval) clearInterval(progressInterval)
+      if (messageInterval) clearInterval(messageInterval)
       window.removeEventListener('keydown', skip)
     }
-  }, [onComplete])
+  }, [finishBoot])
 
   if (!showContent) return null
 
   return (
-    <div className="boot-overlay" onClick={() => {
-      setShowContent(false)
-      setTimeout(onComplete, 200)
-    }}>
+    <div 
+      className={`boot-overlay${fading ? ' fading' : ''}`} 
+      onClick={finishBoot}
+    >
       <div className="boot-container">
         <div className="boot-logo">
           <div className="logo-ring"></div>
@@ -139,14 +148,17 @@ export default function BootAnimation({ onComplete }: BootAnimationProps) {
           align-items: center;
           justify-content: center;
           z-index: 99999;
+        }
+        
+        .boot-overlay.fading {
           animation: bootFadeOut 0.5s ease-out forwards;
-          animation-delay: 2.5s;
         }
         
         @keyframes bootFadeOut {
           to {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
           }
         }
         

@@ -39,6 +39,7 @@ Built with React 19 and TypeScript, it features a polished windowing system with
 
 WebLinuxOS evolves beyond simulation into a real productivity platform:
 
+- **Studio Suite 创意工作室** — A comprehensive creative toolbox for designers and frontend developers. Six integrated modules: palette generator with 11-step color scales and 4 color harmony schemes, gradient editor with linear/radial modes and multi-color stops, shadow generator with soft/hard presets and real-time preview, typography preview with 8 curated font families, WCAG 2.1 contrast checker with AA/AAA compliance ratings, and unit converter for px/rem/em/vw/% conversions. One-click CSS code copying, glass morphism design, fully offline. Type `studio` in the terminal or `color #hex` for quick color analysis.
 - **InfoPulse 信息脉搏中心** — A revolutionary real-time information aggregation hub. Features a card-based layout with tech news, weather monitoring, system health scoring (with animated ring visualization), world clocks across 6 timezones, GitHub trending repositories, and cryptocurrency market data. Auto-refreshes every minute with manual refresh support. Glass morphism design with cyberpunk aesthetics. Type `infopulse` in the terminal for quick access.
 
 ### 🛡️ Reliability & Quality (v52)
@@ -135,7 +136,7 @@ Classic games including 2048, Snake, Tetris, Breakout, Memory, and more — all 
 | **Productivity** | 40+ | PulseBoard, KnowledgeVine, Smart Dashboard, JSONForge, CronLab, Todo, Calendar |
 | **System Tools** | 30+ | File Manager, System Monitor, Performance Dashboard, Settings, Terminal |
 | **Network** | 25+ | BookFinder, Network Toolkit Pro, Web Browser, WorldPulse, Weather, News, IP Lookup |
-| **Media & Creative** | 20+ | AudioViz, Music Player, Image Viewer, Paint, Whiteboard, Camera |
+| **Media & Creative** | 20+ | **Studio Suite**, AudioViz, Music Player, Image Viewer, Paint, Whiteboard, Camera |
 | **Utilities** | 40+ | **Smart Workbench**, PrivacyGuard, DevShortcuts, Password Generator, Hash Tools, Unit Converter, Real System Monitor, Clipboard History |
 | **Games** | 10+ | 2048, Snake, Tetris, Breakout, Memory, Virtual Pet |
 | **AI Tools** | 20+ | AI Assistant, Code Assistant, Prompt Library, AI Workbench, AI Learning |

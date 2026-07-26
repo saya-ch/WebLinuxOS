@@ -49,6 +49,7 @@ const appShortcuts: Record<string, { config: ShortcutConfig; appId: string }> = 
   'app-7': { config: { mod: true, key: '7' }, appId: 'music-player' },
   'app-8': { config: { mod: true, key: '8' }, appId: 'system-monitor' },
   'app-9': { config: { mod: true, key: '9' }, appId: 'weather' },
+  'studio-suite': { config: { mod: true, shift: true, key: 'u' }, appId: 'studio-suite' },
 }
 
 const systemShortcuts: Record<string, { config: ShortcutConfig; action: string }> = {
