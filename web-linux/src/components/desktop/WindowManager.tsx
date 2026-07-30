@@ -386,6 +386,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevPortal: () => import('../../apps/DevPortal'),
   NexusHub: () => import('../../apps/NexusHub'),
   EcoTrack: () => import('../../apps/EcoTrack'),
+  // === v54.1 新增三大创新应用 — NeuroGraph / ImageForge / TimeCapsule
+  NeuroGraph: () => import('../../apps/NeuroGraph'),
+  ImageForge: () => import('../../apps/ImageForge'),
+  TimeCapsule: () => import('../../apps/TimeCapsule'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

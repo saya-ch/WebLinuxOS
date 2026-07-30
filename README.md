@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v53.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v54.1.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,14 @@ Built with React 19 and TypeScript, it features a polished windowing system with
 - **Always up to date** — no installations, no updates, just refresh the page
 
 ## Core Features
+
+### 🧠 Knowledge, Creativity & Self-Growth (v54.1)
+
+The v54.1 release brings three new flagship applications that go beyond the desktop metaphor into real-world value:
+
+- **NeuroGraph 神经笔记** — A local-first knowledge management system that visualizes your notes as an interactive graph. Write notes in Markdown, link them with `[[wiki]]` syntax (with autocomplete suggestions), and watch the relationship network emerge automatically. Features include a force-directed graph layout with adjustable physics, reverse backlink tracking, tag filtering, a full-text search command palette (Cmd/Ctrl+K), star/favorite, import/export as JSON, and one-click seed data. All notes are persisted in `localStorage` — no cloud, no account, no lock-in. Type `neuro` in the terminal for quick access.
+- **ImageForge AI 图像工坊** — A zero-configuration AI image generator powered by [Pollinations.ai](https://pollinations.ai/) — a free, public, no-API-key image generation service. Pick from 8 artistic style presets (photorealistic, anime, oil painting, watercolor, cyberpunk, sketch, pixel art, 3D render), 5 model backends (Flux, SDXL, Turbo, etc.), 5 aspect ratios, and optional negative prompts to steer the result. The full generation history is searchable and filterable; star your favorites, re-roll the seed for variations, and download images with one click. Type `forge` in the terminal for quick access.
+- **TimeCapsule 时间胶囊** — A four-in-one personal growth tool: track **milestones** (with progress bars, target dates, and category), build **habits** with streak visualization and mood logging, manage **tasks** (linked to parent milestones), and capture **daily reflections**. A unified **timeline** view weaves everything together chronologically, a smart prompt suggests what to log today based on your active habits, and a daily quote sets the tone. All data lives in your browser. Type `capsule` in the terminal for quick access.
 
 ### ⚡ Innovation & Productivity (v53)
 

@@ -2,7 +2,8 @@ import type { DesktopIcon, FileNode } from '../types'
 import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
-  ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon, GlobeIcon, LayersIcon
+  ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon, GlobeIcon, LayersIcon,
+  ClockIcon, WandIcon
 } from '../icons'
 
 export const defaultDesktopIcons: DesktopIcon[] = [
@@ -24,6 +25,10 @@ export const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'icon-world-pulse', appId: 'world-pulse', name: 'WorldPulse', icon: <GlobeIcon />, x: 380, y: 520 },
   { id: 'icon-intelligent-dashboard', appId: 'intelligent-dashboard', name: '智能仪表盘', icon: <ActivityIcon />, x: 380, y: 20 },
   { id: 'icon-quick-capture', appId: 'quick-capture', name: 'QuickCapture', icon: <LayersIcon />, x: 260, y: 520 },
+  // === v54.1 新增三大创新应用 — NeuroGraph / ImageForge / TimeCapsule
+  { id: 'icon-neuro-graph', appId: 'neuro-graph', name: '神经笔记', icon: <LayersIcon />, x: 380, y: 120 },
+  { id: 'icon-image-forge', appId: 'image-forge', name: 'AI 图像工坊', icon: <WandIcon />, x: 380, y: 220 },
+  { id: 'icon-time-capsule', appId: 'time-capsule', name: '时间胶囊', icon: <ClockIcon />, x: 380, y: 320 },
 ]
 
 export const defaultFiles: FileNode[] = [

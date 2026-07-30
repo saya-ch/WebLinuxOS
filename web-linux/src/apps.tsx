@@ -141,6 +141,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v54.0 新增创新应用 — NexusHub 互联枢纽 + EcoTrack 碳足迹追踪器
   { id: 'nexus-hub', name: 'NexusHub 互联枢纽', icon: <NexusHubIcon />, component: 'NexusHub', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '一站式内容发现与收藏中心：箴言、笑话、萌宠、虚拟人物、艺术画廊、美食食谱、API探索，基于8个合规公开API，支持本地收藏' },
   { id: 'eco-track', name: 'EcoTrack 碳足迹追踪', icon: <EcoTrackIcon />, component: 'EcoTrack', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 850, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '个人碳足迹追踪与教育工具：交通、居家、饮食、购物、能耗5大类30+预设活动，数据可视化，目标跟踪，等价值换算，基于IPCC公开因子' },
+  // === v54.1 新增三大创新应用 — NeuroGraph / ImageForge / TimeCapsule
+  { id: 'neuro-graph', name: 'NeuroGraph 神经笔记', icon: <NeuroGraphIcon />, component: 'NeuroGraph', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '双向链接 + 知识图谱可视化的本地笔记应用：[[wiki 链接]] 自动补全、力导向图谱、标签、反向链接、命令面板(⌘K)、导入/导出 JSON' },
+  { id: 'image-forge', name: 'ImageForge AI 图像工坊', icon: <ImageForgeIcon />, component: 'ImageForge', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '零配置 AI 图像生成器：基于 Pollinations.ai 公开免费 API，8 种艺术风格预设、5 种模型、5 种比例、反向提示词、生成历史与收藏' },
+  { id: 'time-capsule', name: 'TimeCapsule 时间胶囊', icon: <TimeCapsuleIcon />, component: 'TimeCapsule', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 880, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '个人里程碑 + 习惯打卡 + 任务追踪 + 每日反思四合一：时间线视图、连续打卡可视化、心情记录、智能提示词、可关联子任务' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -568,6 +572,52 @@ function EcoTrackIcon() {
       <circle cx="12" cy="12" r="2" />
       <path d="M12 4V2" />
       <path d="M4 12H2" />
+    </svg>
+  )
+}
+
+function NeuroGraphIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="6" r="2.5" fill="currentColor" stroke="none" opacity="0.7" />
+      <circle cx="18" cy="6" r="2.5" fill="currentColor" stroke="none" opacity="0.7" />
+      <circle cx="12" cy="14" r="2.5" fill="currentColor" stroke="none" opacity="0.9" />
+      <circle cx="5" cy="18" r="2" fill="currentColor" stroke="none" opacity="0.6" />
+      <circle cx="19" cy="18" r="2" fill="currentColor" stroke="none" opacity="0.6" />
+      <line x1="7.5" y1="7" x2="11" y2="13" />
+      <line x1="16.5" y1="7" x2="13" y2="13" />
+      <line x1="10.5" y1="15.5" x2="6.5" y2="17" />
+      <line x1="13.5" y1="15.5" x2="17.5" y2="17" />
+    </svg>
+  )
+}
+
+function ImageForgeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 4V2" />
+      <path d="M15 16v-2" />
+      <path d="M8 9h2" />
+      <path d="M20 9h2" />
+      <path d="M17.8 11.8L19 13" />
+      <path d="M15 9h0" />
+      <path d="M17.8 6.2L19 5" />
+      <path d="M3 21l9-9 4 4-3 3" />
+      <path d="M3 21h6" />
+      <path d="M9 21l3-3" />
+      <circle cx="15" cy="9" r="2" />
+    </svg>
+  )
+}
+
+function TimeCapsuleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M19 5l1.5-1.5" />
+      <path d="M5 19l-1.5 1.5" />
     </svg>
   )
 }

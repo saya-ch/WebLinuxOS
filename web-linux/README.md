@@ -6,7 +6,7 @@ A production-grade Linux desktop environment running entirely in the browser. Bu
 
 [![Deploy to GitHub Pages](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-52.0.0-7c3aed.svg)](./web-linux/package.json)
+[![Version](https://img.shields.io/badge/version-54.1.0-7c3aed.svg)](./web-linux/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
