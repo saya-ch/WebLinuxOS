@@ -151,6 +151,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'data-viz-studio', name: 'DataViz Studio · 数据可视化工坊', icon: <DataVizStudioIcon />, component: 'DataVizStudio', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '专业数据可视化：柱状/折线/面积/饼/环形/散点/雷达 8种图表，CSV/JSON双格式导入导出，SVG矢量复制，智能统计洞察 + Z-Score异常检测' },
   { id: 'code-review-bot', name: 'CodeReviewBot · AI代码审查', icon: <CodeReviewBotIcon />, component: 'CodeReviewBot', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '离线代码审查引擎：25+高价值规则（安全/性能/复杂度/可维护/命名规范），精确行号定位+修复建议+评分环图+批量 nolint，HTML审查报告导出' },
   { id: 'flash-master', name: 'FlashMaster · 间隔重复记忆', icon: <FlashMasterIcon />, component: 'FlashMaster', category: 'office', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'SM-2间隔重复算法卡片：学习/浏览/统计三视图，86张内置英语/React/系统设计/算法卡片，3D翻转动画+热力图打卡+LeetCode刷题模式+JSON导入导出' },
+  // === v55.1 新增两大核心创新工具（v55.1 Innovation Suite）
+  { id: 'markdown-publisher', name: 'MarkdownPublisher · 内容发布工坊', icon: <MarkdownPublisherIcon />, component: 'MarkdownPublisher', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '真正可用的 Markdown 写作与发布：5种出版模板（极简白/文章深读/杂志风/技术文档/手账笔记），分屏编辑+实时预览+一键明暗主题，生成独立 HTML 文件带完整样式，本地多文档管理' },
+  { id: 'idea-board', name: 'IdeaBoard · 灵感无限画板', icon: <IdeaBoardIcon />, component: 'IdeaBoardInfinite', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 提示词生成 + 自由绘画 + 可拖拽灵感卡片三合一：8种艺术风格（赛博朋克/水彩/像素/中国风等），撤销重做，PNG 导出，无限想法组织' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -162,6 +165,18 @@ export function registerApps(extras: AppDefinition[]) {
       existingIds.add(app.id)
     }
   }
+}
+
+function MarkdownPublisherIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M9 13l-2 3h4l-2 3" />
+      <path d="M15 13v6" />
+      <path d="M13 15l2-2 2 2" />
+    </svg>
+  )
 }
 
 function StudioSuiteIcon() {

@@ -1,7 +1,7 @@
 {
   "name": "weblinux",
   "private": true,
-  "version": "55.0.0",
+  "version": "55.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
