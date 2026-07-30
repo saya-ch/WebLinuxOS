@@ -390,6 +390,11 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   NeuroGraph: () => import('../../apps/NeuroGraph'),
   ImageForge: () => import('../../apps/ImageForge'),
   TimeCapsule: () => import('../../apps/TimeCapsule'),
+  // === v55 新增五大创新实用工具
+  OpenAPIHub: () => import('../../apps/OpenAPIHub'),
+  ResumeForge: () => import('../../apps/ResumeForge'),
+  CodeReviewBot: () => import('../../apps/CodeReviewBot'),
+  FlashMaster: () => import('../../apps/FlashMaster'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

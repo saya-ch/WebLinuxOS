@@ -145,6 +145,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'neuro-graph', name: 'NeuroGraph 神经笔记', icon: <NeuroGraphIcon />, component: 'NeuroGraph', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '双向链接 + 知识图谱可视化的本地笔记应用：[[wiki 链接]] 自动补全、力导向图谱、标签、反向链接、命令面板(⌘K)、导入/导出 JSON' },
   { id: 'image-forge', name: 'ImageForge AI 图像工坊', icon: <ImageForgeIcon />, component: 'ImageForge', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '零配置 AI 图像生成器：基于 Pollinations.ai 公开免费 API，8 种艺术风格预设、5 种模型、5 种比例、反向提示词、生成历史与收藏' },
   { id: 'time-capsule', name: 'TimeCapsule 时间胶囊', icon: <TimeCapsuleIcon />, component: 'TimeCapsule', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 880, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '个人里程碑 + 习惯打卡 + 任务追踪 + 每日反思四合一：时间线视图、连续打卡可视化、心情记录、智能提示词、可关联子任务' },
+  // === v55 新增五大创新实用工具（v55 Innovation Suite）
+  { id: 'open-api-hub', name: 'OpenAPI Hub · 开放API工坊', icon: <OpenAPIHubIcon />, component: 'OpenAPIHub', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '集成 15+ 合规公开 API：天气预报/地理编码/公开知识/加密货币/NASA天文/随机用户/开放数据等，可视化请求构建+参数配置+响应展示+收藏与历史' },
+  { id: 'resume-forge', name: 'ResumeForge · 简历工坊', icon: <ResumeForgeIcon />, component: 'ResumeForge', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '真正可用的专业简历生成器：4种模板+10色主题，7大模块编辑，分屏/编辑/预览三视图，HTML/Markdown/JSON三格式导出，浏览器600ms自动保存' },
+  { id: 'data-viz-studio', name: 'DataViz Studio · 数据可视化工坊', icon: <DataVizStudioIcon />, component: 'DataVizStudio', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '专业数据可视化：柱状/折线/面积/饼/环形/散点/雷达 8种图表，CSV/JSON双格式导入导出，SVG矢量复制，智能统计洞察 + Z-Score异常检测' },
+  { id: 'code-review-bot', name: 'CodeReviewBot · AI代码审查', icon: <CodeReviewBotIcon />, component: 'CodeReviewBot', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '离线代码审查引擎：25+高价值规则（安全/性能/复杂度/可维护/命名规范），精确行号定位+修复建议+评分环图+批量 nolint，HTML审查报告导出' },
+  { id: 'flash-master', name: 'FlashMaster · 间隔重复记忆', icon: <FlashMasterIcon />, component: 'FlashMaster', category: 'office', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'SM-2间隔重复算法卡片：学习/浏览/统计三视图，86张内置英语/React/系统设计/算法卡片，3D翻转动画+热力图打卡+LeetCode刷题模式+JSON导入导出' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -618,6 +624,73 @@ function TimeCapsuleIcon() {
       <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
       <path d="M19 5l1.5-1.5" />
       <path d="M5 19l-1.5 1.5" />
+    </svg>
+  )
+}
+
+// === v55 新增 5 个图标函数
+function OpenAPIHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M8 9l-2 3 2 3" />
+      <path d="M16 9l2 3-2 3" />
+      <path d="M12 9l-1 6" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function ResumeForgeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+      <line x1="8" y1="16" x2="14" y2="16" />
+      <path d="M18 14l2 2-2 2" />
+    </svg>
+  )
+}
+
+function DataVizStudioIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="20" x2="4" y2="12" />
+      <line x1="9" y1="20" x2="9" y2="6" />
+      <line x1="14" y1="20" x2="14" y2="15" />
+      <line x1="19" y1="20" x2="19" y2="9" />
+      <polyline points="4,12 9,6 14,15 19,9" />
+      <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="6" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="15" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="9" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function CodeReviewBotIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 17l-7.5-5L9 7" />
+      <path d="M15 7l7.5 5L15 17" />
+      <circle cx="12" cy="12" r="3.2" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <path d="M3 4l2-2" />
+      <path d="M21 20l-2 2" />
+      <path d="M3 20l-2 2" />
+      <path d="M21 4l2-2" />
+    </svg>
+  )
+}
+
+function FlashMasterIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="13" height="16" rx="2" />
+      <path d="M16 8l6 3-6 3" />
+      <rect x="6" y="6" width="7" height="12" rx="1" />
+      <path d="M9 8l-2 5 2-1-1 3" />
     </svg>
   )
 }
@@ -1610,7 +1683,6 @@ export const appRegistry: AppDefinition[] = [
   // === v13.0.0 新增创新应用 ===
   { id: 'code-interview-prep', name: '编程面试准备', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/><path d="M14 4l-4 16"/></svg>, component: 'CodeInterviewPrep', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'api-playground', name: 'API游乐场', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="3"/></svg>, component: 'APIPlayground', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'data-viz-studio', name: '数据可视化工作室', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/><path d="M7 17l3-3 4 4 4-6"/></svg>, component: 'DataVizStudio', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   // === v14.0 新增实用工具应用 ===
   { id: 'dev-toolkit', name: '开发者工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, component: 'DevToolkit', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-overview', name: '智能概览', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/></svg>, component: 'SmartOverview', category: 'system', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
