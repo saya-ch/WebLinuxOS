@@ -384,6 +384,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevShortcuts: () => import('../../apps/DevShortcuts'),
   DevLab: () => import('../../apps/DevLab'),
   DevPortal: () => import('../../apps/DevPortal'),
+  NexusHub: () => import('../../apps/NexusHub'),
+  EcoTrack: () => import('../../apps/EcoTrack'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

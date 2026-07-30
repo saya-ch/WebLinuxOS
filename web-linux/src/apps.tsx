@@ -138,6 +138,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'screen-capture', name: '屏幕录制工具', icon: <VideoRecorderIcon />, component: 'ScreenCapture', category: 'utilities', defaultWidth: 850, defaultHeight: 650, minWidth: 650, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 getDisplayMedia + MediaRecorder 的屏幕录制：格式选择、计时器、暂停/继续、录制预览与下载' },
   { id: 'file-hash-calc', name: '文件哈希计算器', icon: <ShieldIcon />, component: 'FileHashCalc', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '基于 Web Crypto API 的哈希计算：文件拖拽/文本输入、SHA-1/256/384/512 多算法、一键复制、哈希对比' },
   { id: 'web-serial-terminal', name: 'Web Serial 终端', icon: <HardDriveIcon />, component: 'WebSerialTerminal', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 Web Serial API 的串口终端：波特率/数据位/校验位配置、HEX/ASCII模式、实时收发、硬件调试' },
+  // === v54.0 新增创新应用 — NexusHub 互联枢纽 + EcoTrack 碳足迹追踪器
+  { id: 'nexus-hub', name: 'NexusHub 互联枢纽', icon: <NexusHubIcon />, component: 'NexusHub', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '一站式内容发现与收藏中心：箴言、笑话、萌宠、虚拟人物、艺术画廊、美食食谱、API探索，基于8个合规公开API，支持本地收藏' },
+  { id: 'eco-track', name: 'EcoTrack 碳足迹追踪', icon: <EcoTrackIcon />, component: 'EcoTrack', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 850, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '个人碳足迹追踪与教育工具：交通、居家、饮食、购物、能耗5大类30+预设活动，数据可视化，目标跟踪，等价值换算，基于IPCC公开因子' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -533,6 +536,38 @@ function RecipeBookIcon() {
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
       <path d="M8 7h8M8 11h8M8 15h6" />
+    </svg>
+  )
+}
+
+function NexusHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <circle cx="4" cy="7" r="2" />
+      <circle cx="20" cy="7" r="2" />
+      <circle cx="4" cy="17" r="2" />
+      <circle cx="20" cy="17" r="2" />
+      <path d="M6 8.5L10 11" />
+      <path d="M18 8.5L14 11" />
+      <path d="M6 15.5L10 13" />
+      <path d="M18 15.5L14 13" />
+      <path d="M4 9V5" />
+      <path d="M20 9V5" />
+      <path d="M4 15v4" />
+      <path d="M20 15v4" />
+    </svg>
+  )
+}
+
+function EcoTrackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22c4-4 6-8 6-12A6 6 0 0 0 6 6c-4 0-8 2-12 6Z" />
+      <path d="M12 22c-4-4-6-8-6-12a6 6 0 0 1 6-6c0 4 2 8 6 12Z" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 4V2" />
+      <path d="M4 12H2" />
     </svg>
   )
 }
