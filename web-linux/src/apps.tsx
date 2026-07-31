@@ -30,6 +30,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // AI图像工作室（v58创新功能 — 基于 Pollinations.ai 公开免费 API 的 AI 图像生成工具）
+  { id: 'ai-image-studio', name: 'AI图像工作室', icon: <ImageForgeIcon />, component: 'AIImageStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '零配置 AI 图像生成器：基于 Pollinations.ai 公开免费 API，多种艺术风格预设、尺寸选择、模型选择、提示词输入、生成历史与本地收藏' },
   // LocalFileExplorer 本地文件浏览器（v57创新功能 — 基于 File System Access API 的真实本地文件浏览）
   { id: 'local-file-explorer', name: 'LocalFileExplorer 本地文件浏览', icon: <FolderOpenIcon />, component: 'LocalFileExplorer', category: 'system', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 File System Access API 的真实本地文件浏览：打开本地目录、浏览文件树、读取文件内容、搜索、排序、网格/列表视图、下载文件（需 Chrome/Edge）' },
   // WebAssembly Playground（v57创新功能 — 浏览器内 WebAssembly 学习与实验）

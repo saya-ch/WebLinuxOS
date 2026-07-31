@@ -8,10 +8,11 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v57.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v58.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
 </div>
 
@@ -19,13 +20,23 @@
 
 ## Overview
 
-WebLinuxOS is a full-featured Linux desktop environment that runs entirely in the browser. Every application delivers real functionality — the terminal executes actual commands, the code editor writes real code, the API tester makes genuine network requests, and privacy tools detect real sensitive information locally. No simulation, no demo — these tools actually work.
+WebLinuxOS is a full-featured Linux desktop environment that runs entirely in the browser. Every application delivers real functionality — the terminal executes actual commands, the code editor writes real code, the API tester makes genuine network requests, the AI image studio generates real images via public APIs, and privacy tools detect real sensitive information locally. No simulation, no demo — these tools actually work.
 
-With **360+ built-in applications** across development, productivity, networking, media, system tools, and games, WebLinuxOS turns any device with a browser into a complete workstation. Built with React 19 and TypeScript, featuring virtual desktops, multiple themes, GPU-accelerated animations, and browser-native APIs (Web Speech, getDisplayMedia, Web Crypto, Web Serial).
+With **360+ built-in applications** across development, productivity, networking, media, system tools, AI, and games, WebLinuxOS turns any device with a browser into a complete workstation. Built with React 19 and TypeScript, featuring virtual desktops, multiple themes, GPU-accelerated animations, and browser-native APIs (Web Speech, getDisplayMedia, Web Crypto, Web Serial, File System Access).
 
-## What's New in v57
+## What's New in v58
 
-Three new applications that expand WebLinuxOS into local file access, WebAssembly education, and regex mastery:
+A major stability and creativity release focused on reliability and AI-powered content creation:
+
+- **AIImageStudio (NEW)** — Zero-config AI image generator built on the Pollinations.ai public API. 12 artistic style presets (Photorealistic, Anime, Cyberpunk, Oil Painting, Watercolor, Pixel Art, and more), 6 aspect ratios, 5 Flux-based models, generation history, and local favorites collection. No API keys required.
+- **Launcher / Start Menu reliability overhaul** — Fixed memo-based stale-state rendering that prevented StartMenu from responding to launcher state changes. Taskbar launcher button now uses a robust state-update path with explicit 44×36 px hit target and gradient-encoded visual state (green→blue closed / purple→pink open).
+- **Calculator & SystemSettings launch fixed** — Previously blocked by the same memo/render desync that affected the launcher; resolved by removing unnecessary memo wrappers from frequently-updating UI components.
+- **Global `window.WebLinuxOS` API (NEW)** — Stable programmatic surface for browser automation and external integrations. Methods include `openApp(appId)`, `closeWindow(winId)`, `maximizeWindow(winId)`, `toggleLauncher()`, `getState()`, plus a `weblinux-ready` DOM event.
+- **Improved keyboard shortcut handling** — Focus-guard bypass for critical shortcuts; `Ctrl+Shift+L` launcher toggle now works reliably without requiring manual document blur.
+- **Start Menu visual polish** — Fixed-position overlay + panel with `backdrop-filter` blur, smooth spring-open animation, and click-outside dismiss behavior.
+- **TypeScript build clean** — All TS6133 (unused vars) and TS2554 (wrong arity) errors eliminated; `tsc -b && vite build` passes with zero warnings.
+
+### Previous (v57)
 
 - **LocalFileExplorer** — Real local file browsing via the File System Access API (Chrome/Edge). Open directories, browse file trees, read file contents, search and sort, switch between grid and list view. No upload required — direct access to files on your machine.
 - **WebAssemblyPlayground** — Browser-based WASM learning lab. Pre-built examples (add, factorial, fibonacci, square) with execution timing, memory inspection, and `.wasm` binary export. Write WAT, compile, and run — all in the browser.
@@ -35,7 +46,7 @@ Three new applications that expand WebLinuxOS into local file access, WebAssembl
 
 ### Desktop & Window System
 
-Multi-window environment with 4 virtual desktops, draggable/resizable windows, taskbar, start menu, command palette (`Ctrl+P`), global search (`Ctrl+K`), and Quick Action Center (`Ctrl+A`). GPU-accelerated animations with 4 built-in themes: Cyberpunk, Quantum, Glass Morphism, Classic Light.
+Multi-window environment with 4 virtual desktops, draggable/resizable windows, taskbar, redesigned launcher / start menu (`Ctrl+Shift+L`), command palette (`Ctrl+P`), global search (`Ctrl+K`), and Quick Action Center (`Ctrl+A`). GPU-accelerated animations with 4 built-in themes: Cyberpunk, Quantum, Glass Morphism, Classic Light.
 
 ### Terminal
 
@@ -62,6 +73,15 @@ Multi-window environment with 4 virtual desktops, draggable/resizable windows, t
 - **JSONForge** — Format, compress, convert YAML/CSV, validate schema, diff
 - **CronLab** — Visual Cron builder with next-execution predictions
 
+### AI & Creativity
+
+- **AIImageStudio** — AI image generation via Pollinations.ai. 12 style presets, 6 aspect ratios, 5 Flux-family models, prompt suggestions, generation history, favorites. Zero API key required.
+- **IdeaBoard** — AI prompt generation, freehand drawing, draggable idea cards on an infinite canvas
+- **ImageForge** — Zero-config AI image generation via Pollinations.ai, 8 style presets, 5 models
+- **Studio Suite** — Palette generator, gradient editor, shadow builder, typography preview, WCAG contrast checker
+- **AudioViz** — 5 visualization types, 5 themes, mic/file/demo sources
+- **PromptForge** — Prompt engineering workspace with template library and copy-to-clipboard
+
 ### Network & APIs
 
 - **OpenAPI Hub** — 50+ endpoints across 10 categories, zero configuration, live JSON viewer
@@ -79,15 +99,9 @@ Multi-window environment with 4 virtual desktops, draggable/resizable windows, t
 - **File Hash Calculator** — SHA-1/256/384/512 via Web Crypto API
 - **Web Serial Terminal** — Hardware debugging via Web Serial API
 - **Screen Capture** — Screen recording via getDisplayMedia + MediaRecorder
+- **Password strength checker + generator** — Local generation with entropy estimation
 
-All data stays in `localStorage`. Nothing is uploaded unless you explicitly enable online APIs.
-
-### Creativity
-
-- **IdeaBoard** — AI prompt generation, freehand drawing, draggable idea cards on an infinite canvas
-- **ImageForge** — Zero-config AI image generation via Pollinations.ai, 8 style presets, 5 models
-- **Studio Suite** — Palette generator, gradient editor, shadow builder, typography preview, WCAG contrast checker
-- **AudioViz** — 5 visualization types, 5 themes, mic/file/demo sources
+All data stays in `localStorage`. Nothing is uploaded unless you explicitly enable online APIs or submit requests to public third-party endpoints (OpenAPI Hub, BookFinder, Pollinations.ai, etc.).
 
 ### System & Utilities
 
@@ -108,13 +122,14 @@ All data stays in `localStorage`. Nothing is uploaded unless you explicitly enab
 | Layer | Technology |
 |-------|-----------|
 | Framework | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) |
-| Build | [Vite 8](https://vitejs.dev/) |
-| State | [Zustand](https://github.com/pmndrs/zustand) |
-| Styling | CSS Variables + Theme System |
+| Build | [Vite 8](https://vitejs.dev/) with code splitting, rollup chunks, terser minification |
+| State | [Zustand](https://github.com/pmndrs/zustand) (action creators + shallow selectors) |
+| Styling | CSS Variables + Theme System (4 themes) |
 | Icons | [Lucide React](https://lucide.dev/) |
 | Code Editor | [Monaco Editor](https://microsoft.github.io/monaco-editor/) |
 | Markdown | [marked](https://github.com/markedjs/marked) + [DOMPurify](https://github.com/cure53/DOMPurify) |
 | Python Runtime | [Pyodide](https://pyodide.org/) (optional) |
+| AI Image | [Pollinations.ai](https://pollinations.ai/) Public API — no key required |
 | Deployment | GitHub Pages + GitHub Actions |
 
 ## Quick Start
@@ -132,14 +147,19 @@ npm install
 npm run dev
 ```
 
-Development server starts at `http://localhost:5173`.
+Development server starts at `http://localhost:5173/WebLinuxOS/` (the base path is intentional — it matches the GitHub Pages deployment).
 
 **Production build:**
 
 ```bash
+# Clean TypeScript build + Vite bundle
 npm run build
+
+# Serve the built dist directory locally to verify
 npm run preview
 ```
+
+The build verifies all TypeScript types (`tsc -b`) before bundling. Zero type errors is the release gate.
 
 ## Project Structure
 
@@ -148,17 +168,20 @@ WebLinuxOS/
 ├── web-linux/
 │   ├── src/
 │   │   ├── apps/               # 360+ application implementations
+│   │   │   ├── AIImageStudio   # v58: AI image generation (Pollinations.ai)
 │   │   │   └── terminal/       # Terminal command system (90+ commands)
 │   │   ├── components/         # Core UI (Desktop, Window, Taskbar, StartMenu)
-│   │   ├── store/              # Zustand state management
+│   │   │   └── desktop/        # Taskbar launcher + StartMenu (v58 reliability fix)
+│   │   ├── store/              # Zustand state management, file/storage utils
 │   │   ├── styles/             # Theme system and global styles
-│   │   ├── utils/              # Utility functions
-│   │   ├── services/           # API and service layer
-│   │   ├── config/             # Configuration
+│   │   ├── utils/              # Utility functions, perf monitor, logger
+│   │   ├── services/           # API and service layer (AI, clipboard, cache)
+│   │   ├── config/             # API endpoint configuration
 │   │   └── types/              # TypeScript definitions
-│   ├── public/                 # Static assets
-│   └── vite.config.ts
-├── .github/workflows/          # CI/CD (auto-deployment)
+│   ├── public/                 # Static assets, PWA manifest, SW, 404.html
+│   ├── screenshots/            # Gallery images for docs / README
+│   └── vite.config.ts          # Base path, code splitting, rollup output
+├── .github/workflows/          # CI/CD: build + deploy to Pages on main
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 └── LICENSE
@@ -166,20 +189,65 @@ WebLinuxOS/
 
 ## Keyboard Shortcuts
 
+**Desktop & System**
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + Shift + L` | Open/close launcher (Start Menu) — v58 |
+| `Ctrl/Cmd + Space` | Smart command center |
+| `Ctrl/Cmd + P` | Command palette |
+| `Ctrl/Cmd + K` | Global search |
+| `Ctrl/Cmd + A` | Quick action center |
+| `Alt + Tab` | Switch windows (forward) |
+| `Shift + Alt + Tab` | Switch windows (reverse) |
+| `Ctrl + Alt + [1-9]` | Switch virtual desktops 1–9 |
+| `PrintScreen` | Screenshot app |
+
+**Applications**
+
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl/Cmd + T` | Open terminal |
 | `Ctrl/Cmd + E` | Open file manager |
 | `Ctrl/Cmd + B` | Open browser |
-| `Ctrl/Cmd + K` | Global search |
-| `Ctrl/Cmd + P` | Command palette |
-| `Ctrl/Cmd + Space` | Smart command center |
-| `Ctrl/Cmd + Q` | Close window |
-| `Ctrl/Cmd + M` | Minimize window |
-| `Ctrl/Cmd + A` | Quick action center |
-| `Alt + Tab` | Switch windows |
-| `Ctrl + Alt + [1-9]` | Switch virtual desktops |
-| `PrintScreen` | Screenshot |
+| `Ctrl/Cmd + ,` | Open system settings |
+| `Ctrl/Cmd + Shift + C` | Open calculator |
+
+**Window Management**
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + Q` | Close focused window |
+| `Ctrl/Cmd + M` | Minimize focused window |
+| `F11` | Maximize / restore focused window |
+
+## Global API (Browser Integration)
+
+v58 exposes a stable programmatic surface at `window.WebLinuxOS` after the app has mounted. External scripts, iframes, and browser-automation tools can use this to drive WebLinuxOS.
+
+**Listen for readiness:**
+
+```js
+window.addEventListener('weblinux-ready', (e) => {
+  console.log('WebLinuxOS version:', e.detail.version)
+  e.detail.openApp('calculator') // Opens the calculator
+})
+```
+
+**Available methods:**
+
+```ts
+window.WebLinuxOS.openApp(appId)              // Launch an app by registry id
+window.WebLinuxOS.closeWindow(winId)          // Close a specific window
+window.WebLinuxOS.minimizeWindow(winId)
+window.WebLinuxOS.maximizeWindow(winId)
+window.WebLinuxOS.focusWindow(winId)
+window.WebLinuxOS.toggleLauncher()            // Show / hide the start menu
+window.WebLinuxOS.closeAllWindows()
+window.WebLinuxOS.getState()                  // Snapshot of full Zustand store
+window.WebLinuxOS.version                     // e.g. "58.0.0"
+window.WebLinuxOS.buildTime                   // ISO timestamp
+```
 
 ## Contributing
 
@@ -189,9 +257,34 @@ WebLinuxOS/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-To add a new application: create the component in `web-linux/src/apps/`, register it in `apps.tsx`, add the lazy loading entry in `WindowManager.tsx`, test, and submit a PR.
+**Before you commit, verify:**
+
+```bash
+cd web-linux
+npm run build   # Must pass: tsc -b && vite build → 0 type errors
+```
+
+**To add a new application:**
+
+1. Create the component in `web-linux/src/apps/YourAppName.tsx`
+2. Register the app metadata in `apps.tsx` (icon, dimensions, category, description)
+3. Add the lazy-loading entry in `components/desktop/WindowManager.tsx` (`componentMap`)
+4. Test manually: launcher search, desktop icon, window close/maximize
+5. Submit a PR with a screenshot and a one-paragraph description
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+## Deployment
+
+Deployment is fully automatic via GitHub Actions (`.github/workflows/deploy.yml`):
+
+1. Every push to `main` triggers the workflow
+2. `npm ci` installs dependencies
+3. `npm run build` runs the TypeScript + Vite build (required to pass)
+4. The `dist/` output is published to the `gh-pages` branch
+5. GitHub Pages serves from `gh-pages` → [Live Demo](https://saya-ch.github.io/WebLinuxOS/)
+
+If you deploy to your own fork, verify `vite.config.ts` → `base` matches your repository name (default is `/WebLinuxOS/`).
 
 ## License
 

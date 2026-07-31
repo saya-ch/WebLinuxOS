@@ -233,7 +233,7 @@ export const useStore = create<Store>((set, get) => ({
   wallpaper: initialWallpaper,
   liveWallpaper: initialLiveWallpaper,
   liveWallpaperEnabled: initialLiveWallpaperEnabled,
-  launcherOpen: false,
+  launcherOpen: false, // 恢复正常初始值
   contextMenu: { x: 0, y: 0, visible: false },
   fileOperationHistory: [],
   historyIndex: -1,

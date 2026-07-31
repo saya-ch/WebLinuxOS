@@ -123,10 +123,12 @@ const App = memo(function App() {
     return () => clearInterval(interval)
   }, [refreshSystemStats])
 
-  // === v55.3 全局 API 暴露 + 自定义事件监听（外部集成与测试支持）
-  useEffect(() => {
+  // === v58 全局 API 暴露（同步阶段提前挂载 + useEffect 负责生命周期）
+  const handleLaunchAppRef = useRef<EventListener | null>(null)
+  if (typeof window !== 'undefined' && !(window as any).__weblinux_api_ready) {
+    // 标记已挂载，防止 StrictMode 双调用导致重复注册
+    Object.defineProperty(window, '__weblinux_api_ready', { value: true, writable: false, configurable: false })
     const st = useStore
-    // 1) 暴露全局 WebLinuxOS API，方便浏览器控制台、外部脚本、自动化测试调用
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const globalApi: any = {
       openApp: (appId: string) => st.getState().openApp(appId),
@@ -143,29 +145,28 @@ const App = memo(function App() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       addNotification: (n: any) => st.getState().addNotification(n),
       getState: () => st.getState(),
+      version: '58.0.0',
+      buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(window as any).WebLinuxOS = globalApi
+    window.dispatchEvent(new CustomEvent('weblinux-ready', { detail: globalApi }))
 
-    // 2) 监听 weblinux-launch-app / weblinux-open-app 两个自定义事件
-    //    兼容 DesktopWidgets 中 QuickLaunchWidget 派发的事件名与旧版命名
-    const handleLaunchApp = (e: Event) => {
+    handleLaunchAppRef.current = ((e: Event) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ce = e as any
       const appId = ce?.detail?.appId || ce?.detail?.id
       if (appId) st.getState().openApp(appId)
-    }
-    window.addEventListener('weblinux-launch-app', handleLaunchApp as EventListener)
-    window.addEventListener('weblinux-open-app', handleLaunchApp as EventListener)
+    }) as EventListener
+    window.addEventListener('weblinux-launch-app', handleLaunchAppRef.current)
+    window.addEventListener('weblinux-open-app', handleLaunchAppRef.current)
+  }
 
+  useEffect(() => {
     return () => {
-      window.removeEventListener('weblinux-launch-app', handleLaunchApp as EventListener)
-      window.removeEventListener('weblinux-open-app', handleLaunchApp as EventListener)
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delete (window as any).WebLinuxOS
-      } catch {
-        // 某些严格环境禁止 delete window 属性，静默忽略
+      if (handleLaunchAppRef.current) {
+        window.removeEventListener('weblinux-launch-app', handleLaunchAppRef.current)
+        window.removeEventListener('weblinux-open-app', handleLaunchAppRef.current)
       }
     }
   }, [])

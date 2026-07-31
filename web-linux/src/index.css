@@ -2285,14 +2285,23 @@ body {
 }
 
 .launcher-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   bottom: 40px;
   z-index: 9998;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: launcherOverlayFade 0.2s ease-out;
+}
+
+@keyframes launcherOverlayFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .launcher {
-  position: absolute;
+  position: fixed;
   bottom: 52px;
   left: 50%;
   transform: translateX(-50%);
@@ -2312,6 +2321,7 @@ body {
   z-index: 9999;
   animation: launcherOpen 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
 }
 
 .launcher-sidebar {

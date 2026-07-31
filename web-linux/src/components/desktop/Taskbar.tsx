@@ -643,12 +643,40 @@ const Taskbar = memo(function Taskbar() {
       <style>{TASKBAR_ENHANCEMENTS_CSS}</style>
 
       <div className="taskbar-left">
+        {/* 启动器按钮：显著视觉区分，44px固定宽度确保点击区域足够大 */}
         <div
+          id="weblinux-launcher-btn"
+          data-testid="weblinux-launcher-btn"
           className={`taskbar-launcher ${launcherOpen ? 'active' : ''}`}
-          onClick={toggleLauncher}
-          title="启动器 (Ctrl+Shift+L)"
+          onClick={(e) => {
+            e.stopPropagation()
+            // 直接使用 getState() 调用，规避 memo 中 selector 引用稳定性隐患
+            useStore.getState().toggleLauncher()
+          }}
+          title="启动器 (Ctrl+Shift+L) — 打开/关闭应用启动器"
+          style={{
+            width: '44px',
+            height: '36px',
+            minWidth: '44px',
+            marginRight: '6px',
+            borderRadius: '10px',
+            background: launcherOpen 
+              ? 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)' 
+              : 'linear-gradient(135deg, rgba(139,124,240,0.28) 0%, rgba(56,189,248,0.20) 100%)',
+            border: '1px solid',
+            borderColor: launcherOpen ? 'rgba(168, 85, 247, 0.9)' : 'rgba(139, 124, 240, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flex: '0 0 44px',
+            cursor: 'pointer',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: launcherOpen 
+              ? '0 0 18px rgba(168, 85, 247, 0.55), inset 0 1px 0 rgba(255,255,255,0.2)' 
+              : '0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
+          }}
         >
-          <TerminalIcon size={18} />
+          <TerminalIcon size={19} style={{ color: launcherOpen ? 'white' : 'rgba(226, 232, 240, 0.95)', filter: launcherOpen ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' : 'none' }} />
         </div>
 
         <div style={{ width: '1px', height: '24px', background: 'var(--window-border)', margin: '0 4px' }} />

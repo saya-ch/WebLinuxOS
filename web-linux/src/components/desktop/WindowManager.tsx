@@ -44,6 +44,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AICodeCompanion: () => import('../../apps/AICodeCompanion'),
   AICodeTutor: () => import('../../apps/AICodeTutor'),
   AIGenerator: () => import('../../apps/AIGenerator'),
+  AIImageStudio: () => import('../../apps/AIImageStudio'),
   AIHelper: () => import('../../apps/AIHelper'),
   AILearningCompanion: () => import('../../apps/AILearningCompanion'),
   AIProgrammingAssistantPro: () => import('../../apps/AIProgrammingAssistantPro'),
