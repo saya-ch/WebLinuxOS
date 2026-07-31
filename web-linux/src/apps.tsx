@@ -12,7 +12,7 @@ import {
   LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
-  LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon
+  LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon
 } from './icons'
 
 
@@ -30,6 +30,12 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // LocalFileExplorer 本地文件浏览器（v57创新功能 — 基于 File System Access API 的真实本地文件浏览）
+  { id: 'local-file-explorer', name: 'LocalFileExplorer 本地文件浏览', icon: <FolderOpenIcon />, component: 'LocalFileExplorer', category: 'system', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于 File System Access API 的真实本地文件浏览：打开本地目录、浏览文件树、读取文件内容、搜索、排序、网格/列表视图、下载文件（需 Chrome/Edge）' },
+  // WebAssembly Playground（v57创新功能 — 浏览器内 WebAssembly 学习与实验）
+  { id: 'wasm-playground', name: 'WasmPlayground WASM实验场', icon: <Code2Icon />, component: 'WebAssemblyPlayground', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '浏览器内 WebAssembly 学习与实验：预置示例程序（加法/阶乘/斐波那契）、运行WASM函数、执行时间测量、内存检查、WASM字节导出' },
+  // RegexGolf 正则挑战（v57创新功能 — 正则表达式挑战游戏）
+  { id: 'regex-golf', name: 'RegexGolf 正则挑战', icon: <SearchIcon />, component: 'RegexGolf', category: 'games', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '正则表达式挑战游戏：15+关卡逐步解锁、实时匹配测试、最短正则得分、提示系统、6大类别覆盖基础到高级' },
   // 实时协作中心（v57创新功能 — 实时多人协作平台）
   { id: 'realtime-collab-hub', name: '实时协作中心', icon: <UsersIcon />, component: 'RealTimeCollaborationHub', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时多人协作平台：创建/加入房间、共享白板、代码编辑、笔记协作，支持画笔/橡皮擦/形状工具，导出PNG' },
   // 智能知识图谱（v57创新功能 — 双向链接笔记系统）

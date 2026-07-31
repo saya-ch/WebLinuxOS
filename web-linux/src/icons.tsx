@@ -1,5 +1,5 @@
 import {
-  Folder, Terminal, FileText, Globe, Calculator, Calendar, Clock, CloudRain, Activity, Settings,
+  Folder, FolderOpen, Terminal, FileText, Globe, Calculator, Calendar, Clock, CloudRain, Activity, Settings,
   Image, Music, Video, Code, Package, ShoppingCart, HardDrive,
   ListTodo, Server, Wifi, WifiOff, Shield, User, Camera, Palette, LayoutGrid, Presentation, Mail, MessageSquare,
   Users, CheckSquare, Lock, CloudBackup, Archive, Search, Sun, Type, BookOpen, Languages, MapPin,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 
 export const FolderIcon = Folder
+export const FolderOpenIcon = FolderOpen
 export const TerminalIcon = Terminal
 export const FileTextIcon = FileText
 export const BrowserIcon = Globe

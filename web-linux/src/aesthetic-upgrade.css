@@ -586,3 +586,83 @@ select:focus {
     scroll-behavior: auto !important;
   }
 }
+
+/* === v57 New App Styles === */
+
+/* LocalFileExplorer - File System Access API Browser */
+.local-file-explorer {
+  --lfe-bg: #12131f;
+  --lfe-surface: #1a1b2e;
+  --lfe-border: #2a2b3e;
+  --lfe-accent: #6366f1;
+  --lfe-text: #e0e0e0;
+  --lfe-muted: #888;
+}
+
+/* WebAssemblyPlayground */
+.wasm-playground {
+  --wasm-bg: #0d0e1a;
+  --wasm-surface: #151628;
+  --wasm-border: #252638;
+  --wasm-accent: #00d4aa;
+  --wasm-text: #e0e0e0;
+  --wasm-error: #ff5555;
+}
+
+/* RegexGolf */
+.regex-golf {
+  --rg-bg: #0f1020;
+  --rg-surface: #181930;
+  --rg-border: #282940;
+  --rg-accent: #00ff88;
+  --rg-error: #ff4466;
+  --rg-gold: #ffd700;
+  --rg-text: #e0e0e0;
+}
+
+/* Enhanced scrollbar for all new apps */
+.local-file-explorer::-webkit-scrollbar,
+.wasm-playground::-webkit-scrollbar,
+.regex-golf::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.local-file-explorer::-webkit-scrollbar-thumb,
+.wasm-playground::-webkit-scrollbar-thumb,
+.regex-golf::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 3px;
+}
+
+.local-file-explorer::-webkit-scrollbar-thumb:hover,
+.wasm-playground::-webkit-scrollbar-thumb:hover,
+.regex-golf::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* Smooth page transitions for new apps */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.app-fade-in {
+  animation: fadeInScale 0.2s ease-out;
+}
+
+/* RegexGolf success celebration */
+@keyframes celebratePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.celebrate {
+  animation: celebratePulse 0.5s ease-in-out 3;
+}

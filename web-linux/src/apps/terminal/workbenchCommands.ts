@@ -589,4 +589,54 @@ registerCommand('cve', {
   examples: ['cve CVE-2024-3094', 'cve 2023-44487'],
 }, { source: 'workbenchCommands' })
 
+registerCommand('localfiles', {
+  handler: (ctx: CommandContext): CommandResult => {
+    ctx.openApp?.('local-file-explorer')
+    return { output: '正在打开 LocalFileExplorer 本地文件浏览器...' }
+  },
+  description: '打开 LocalFileExplorer 本地文件浏览器',
+  usage: 'localfiles',
+  examples: ['localfiles'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('lfiles', {
+  handler: (ctx: CommandContext): CommandResult => {
+    ctx.openApp?.('local-file-explorer')
+    return { output: '正在打开 LocalFileExplorer 本地文件浏览器...' }
+  },
+  description: '打开 LocalFileExplorer 本地文件浏览器（别名）',
+  usage: 'lfiles',
+  examples: ['lfiles'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('wasm', {
+  handler: (ctx: CommandContext): CommandResult => {
+    ctx.openApp?.('wasm-playground')
+    return { output: '正在打开 WasmPlayground WASM实验场...' }
+  },
+  description: '打开 WasmPlayground WASM实验场',
+  usage: 'wasm',
+  examples: ['wasm'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('regexgolf', {
+  handler: (ctx: CommandContext): CommandResult => {
+    ctx.openApp?.('regex-golf')
+    return { output: '正在打开 RegexGolf 正则挑战...' }
+  },
+  description: '打开 RegexGolf 正则挑战',
+  usage: 'regexgolf',
+  examples: ['regexgolf'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('rgolf', {
+  handler: (ctx: CommandContext): CommandResult => {
+    ctx.openApp?.('regex-golf')
+    return { output: '正在打开 RegexGolf 正则挑战...' }
+  },
+  description: '打开 RegexGolf 正则挑战（别名）',
+  usage: 'rgolf',
+  examples: ['rgolf'],
+}, { source: 'workbenchCommands' })
+
 
