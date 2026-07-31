@@ -395,6 +395,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ResumeForge: () => import('../../apps/ResumeForge'),
   CodeReviewBot: () => import('../../apps/CodeReviewBot'),
   FlashMaster: () => import('../../apps/FlashMaster'),
+  // === v55.2 新增 LivePulse 实时信息中心
+  LivePulse: () => import('../../apps/LivePulse'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

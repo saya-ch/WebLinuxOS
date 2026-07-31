@@ -1,5 +1,6 @@
 import { useState, useCallback, memo, useEffect } from 'react'
 import { useStore } from '../store'
+import { generateUUIDs } from '../utils/common'
 
 // 开发者工具中心 - 集成多个实用开发工具
 const DevHub = memo(function DevHub() {
@@ -114,20 +115,7 @@ const DevHub = memo(function DevHub() {
 
   // UUID生成
   const generateUuids = useCallback(() => {
-    const newUuids: string[] = []
-    for (let i = 0; i < uuidCount; i++) {
-      // 使用crypto.randomUUID()如果可用，否则使用替代方案
-      if (crypto.randomUUID) {
-        newUuids.push(crypto.randomUUID())
-      } else {
-        newUuids.push('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-          const r = Math.random() * 16 | 0
-          const v = c === 'x' ? r : (r & 0x3 | 0x8)
-          return v.toString(16)
-        }))
-      }
-    }
-    setUuids(newUuids)
+    setUuids(generateUUIDs(uuidCount))
     addNotification({ title: 'UUID生成成功', message: `已生成${uuidCount}个UUID`, type: 'success', duration: 2000 })
   }, [uuidCount, addNotification])
 

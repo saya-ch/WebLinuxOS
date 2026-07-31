@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { generateUUIDs } from '../utils/common'
 
 interface DnsAnswer {
   name: string
@@ -739,7 +740,7 @@ function getFlagEmoji(countryCode: string): string {
 
 function QuickTools({ history }: { history: { q: string; type: number; ok: boolean; t: number }[] }) {
   const [uuidCount, setUuidCount] = useState(5)
-  const uuids = useMemo(() => Array.from({ length: uuidCount }, () => crypto.randomUUID()), [uuidCount])
+  const uuids = useMemo(() => generateUUIDs(uuidCount), [uuidCount])
 
   const [pwLen, setPwLen] = useState(16)
   const [useUpper, setUseUpper] = useState(true)

@@ -154,6 +154,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v55.1 新增两大核心创新工具（v55.1 Innovation Suite）
   { id: 'markdown-publisher', name: 'MarkdownPublisher · 内容发布工坊', icon: <MarkdownPublisherIcon />, component: 'MarkdownPublisher', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '真正可用的 Markdown 写作与发布：5种出版模板（极简白/文章深读/杂志风/技术文档/手账笔记），分屏编辑+实时预览+一键明暗主题，生成独立 HTML 文件带完整样式，本地多文档管理' },
   { id: 'idea-board', name: 'IdeaBoard · 灵感无限画板', icon: <IdeaBoardIcon />, component: 'IdeaBoardInfinite', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 提示词生成 + 自由绘画 + 可拖拽灵感卡片三合一：8种艺术风格（赛博朋克/水彩/像素/中国风等），撤销重做，PNG 导出，无限想法组织' },
+  // === v55.2 新增 LivePulse 实时信息中心
+  { id: 'live-pulse', name: 'LivePulse · 实时信息中心', icon: <LivePulseIcon />, component: 'LivePulse', category: 'internet', defaultWidth: 1180, defaultHeight: 820, minWidth: 880, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '四大实时信息面板：全球汇率(Frankfurter)、Hacker News/航天科技新闻、编程笑话(JokeAPI)、奇趣冷知识(UselessFacts+AdviceSlip)，缓存、收藏、复制、一键刷新一应俱全' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1282,6 +1284,17 @@ function IdeaBoardIcon() {
       <circle cx="12" cy="7" r="1" fill="currentColor" />
       <circle cx="8" cy="14.5" r="1" fill="currentColor" />
       <circle cx="16" cy="14.5" r="1" fill="currentColor" />
+    </svg>
+  )
+}
+
+function LivePulseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M3 12h3l2-5 3 10 3-8 2 3h5" />
+      <circle cx="21" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="4" r="1" fill="currentColor" stroke="none" />
     </svg>
   )
 }

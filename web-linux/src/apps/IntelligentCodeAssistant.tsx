@@ -121,7 +121,7 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
     }
     
     const newUser: User = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       name,
       email,
       createdAt: new Date()

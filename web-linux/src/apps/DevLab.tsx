@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { generateUUIDs as genUUIDsBatch } from '../utils/common'
 import {
   Code, Palette, Hash, Globe, Lock,
   Clock, Calculator, FileJson, QrCode,
@@ -345,14 +346,14 @@ function UuidGenerator() {
 
   const generateUUIDs = useCallback(() => {
     const newUuids: string[] = []
-    for (let i = 0; i < count; i++) {
-      if (version === 'v4') {
-        newUuids.push(crypto.randomUUID())
-      } else {
+    if (version === 'v4') {
+      setUuids(genUUIDsBatch(count))
+    } else {
+      for (let i = 0; i < count; i++) {
         newUuids.push(generateUUIDv1())
       }
+      setUuids(newUuids)
     }
-    setUuids(newUuids)
   }, [count, version])
 
   function generateUUIDv1(): string {

@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v55.1.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v55.2.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -51,6 +51,17 @@ The v55.1 release introduces two flagship creative tools that make WebLinuxOS a 
 
 - **MarkdownPublisher 内容发布工坊** — A fully-functional Markdown writing and publishing studio that goes far beyond plain text editing. Five carefully designed publication templates, each with its own typographic voice: Minimal White (Noto Serif SC, tight column, elegant editorial feel), Deep Article (Fraunces serif, immersive long-form reading), Magazine (Outfit sans-serif, bold accents, editorial layout), Technical Documentation (JetBrains Mono + Sora, dark code-first aesthetic for engineering writing), and Notebook (Plus Jakarta Sans, warm paper tone for personal journals). Split-pane editor with live Markdown preview on the right, one-click dark/light theme toggle for the preview area, local multi-document management with title search and auto-save. The export function generates a completely standalone HTML file with all CSS styles inlined — no external dependencies, ready to drop into any web server or send to a friend. Type `mdpub` in the terminal for quick access.
 - **IdeaBoard 灵感无限画板** — A three-in-one creativity canvas that unifies AI prompt generation, free-form drawing, and draggable idea cards into a single infinite workspace. The AI prompt engine covers 8 artistic styles (Portrait, Landscape, Abstract, Cyberpunk, Watercolor, Pixel, 3D Render, Chinese Ink Wash) with curated adjective pools, medium references, artist influences, and lighting moods; every generated prompt is built from 120+ creative combinatorial elements and can be turned into an idea card in one click. The freehand drawing canvas supports pencil, eraser, line, rectangle, circle, and text tools with configurable color and stroke width; full undo/redo stack and PNG export that composes canvas strokes and cards together. Idea cards are freely draggable, double-click to edit, right-click to delete, and each carries its own color tag so you can visually group thoughts by theme. The workspace background uses a dual radial-gradient nebula with violet and pink accents for an atmosphere that invites creativity. Type `ideaboard` or `inspire` in the terminal for quick access.
+
+### 🌍 LivePulse 实时信息中心 (v55.2)
+
+v55.2 引入 LivePulse，一个四合一实时信息面板，从 4 个合规公开 API 拉取真实数据并提供缓存、收藏、复制、一键刷新的完整体验：
+
+- **实时汇率 (Frankfurter API)** — 12 种主要货币互转，输入金额即时计算，正向/反向汇率同屏展示，5 分钟智能缓存，常用货币对 4×2 网格牌价，一键翻转货币对，结果复制为纯文本。支持 USD / EUR / CNY / GBP / JPY / HKD / KRW / SGD / AUD / CAD / CHF / INR
+- **全球速览 (Hacker News + Spaceflight News API)** — 两个数据源可切换：Hacker News 热榜（标题 + points/作者 + 链接直达，前 3 名渐变徽章高亮）和 Spaceflight News（航天领域最新报道，含配图摘要），卡片悬停时上移 + 发光边框的交互效果，每次刷新重新拉取并显示最近同步时间
+- **开怀一刻 (JokeAPI)** — 分类覆盖 Programming / Miscellaneous / Pun / Spooky / Christmas，黑名单过滤 NSFW/宗教/种族/性别/露骨内容；单段与问答双模式，问答模式需点击「查看答案」解锁，内置历史回顾（最近 3 条）和复制分享按钮，粉紫径向渐变的卡片氛围
+- **奇趣百科 (UselessFacts + Advice Slip 双回退)** — 冷知识随机推送，获取失败自动切换至 Advice Slip 人生建议；支持本地 localStorage 收藏，最多 30 条，可一键批量清空；金黄橙色暖色卡片 + 装饰性引号元素，每次换一条触发 scaleIn 弹性动画
+
+整个界面采用玻璃拟态 + 渐变 conic 旋转图标的头部，每个 tab 底部有 2px 发光下划线，内容区叠加径向渐变柔光，接入合规公开 API 且不存储用户数据。在桌面双击 LivePulse 图标或启动器中搜索即可打开。
 
 ### 🧠 Knowledge, Creativity & Self-Growth (v54.1)
 
@@ -324,6 +335,16 @@ Special thanks to these amazing open-source projects that make WebLinuxOS possib
 - [Zustand](https://github.com/pmndrs/zustand) — Lightweight state management
 - [Vite](https://vitejs.dev/) — Next-generation frontend build tool
 - [microlink.io](https://microlink.io/) — Web page metadata scraping
+- [Frankfurter](https://www.frankfurter.app/) — Free, open-source exchange rate data
+- [Hacker News API](https://github.com/HackerNews/API) — Official HN Firebase API
+- [Spaceflight News API](https://spaceflightnewsapi.net/) — Aggregated space industry news
+- [JokeAPI](https://v2.jokeapi.dev/) — Filtered, SFW programming and general jokes
+- [UselessFacts](https://uselessfacts.jsph.pl/) — Random useless trivia API
+- [Advice Slip](https://api.adviceslip.com/) — Free, quotable life advice API
+- [Pollinations.ai](https://pollinations.ai/) — Free, no-key AI image generation
+- [Open Library](https://openlibrary.org/developers/api) — Open book catalog and covers
+- [Open-Meteo](https://open-meteo.com/) — Free open-source weather forecast API
+- [REST Countries](https://restcountries.com/) — World country information API
 
 And to every contributor and user — thank you for making this project better.
 

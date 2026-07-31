@@ -3,7 +3,7 @@ import {
   FolderIcon, TerminalIcon, FileTextIcon, BrowserIcon, CalculatorIcon,
   CalendarIcon, SettingsIcon, ActivityIcon, CodeIcon, ChatIcon, BoardIcon,
   ClipboardIcon, LightningIcon, SearchIcon, ApiLabIcon, GlobeIcon, LayersIcon,
-  ClockIcon, WandIcon
+  ClockIcon, WandIcon, SparklesIcon
 } from '../icons'
 
 export const defaultDesktopIcons: DesktopIcon[] = [
@@ -29,6 +29,8 @@ export const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'icon-neuro-graph', appId: 'neuro-graph', name: '神经笔记', icon: <LayersIcon />, x: 380, y: 120 },
   { id: 'icon-image-forge', appId: 'image-forge', name: 'AI 图像工坊', icon: <WandIcon />, x: 380, y: 220 },
   { id: 'icon-time-capsule', appId: 'time-capsule', name: '时间胶囊', icon: <ClockIcon />, x: 380, y: 320 },
+  // === v55.2 新增 LivePulse 实时信息中心
+  { id: 'icon-live-pulse', appId: 'live-pulse', name: 'LivePulse', icon: <SparklesIcon />, x: 500, y: 20 },
 ]
 
 export const defaultFiles: FileNode[] = [

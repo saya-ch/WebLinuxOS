@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { generateUUIDs } from '../utils/common'
 import {
   Code2,
   Hash,
@@ -290,19 +291,7 @@ function UuidGenerator() {
   const { copied, copy } = useCopy()
 
   const generate = useCallback(() => {
-    const newUuids: string[] = []
-    for (let i = 0; i < count; i++) {
-      if (crypto.randomUUID) {
-        newUuids.push(crypto.randomUUID())
-      } else {
-        newUuids.push('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-          const r = Math.random() * 16 | 0
-          const v = c === 'x' ? r : (r & 0x3 | 0x8)
-          return v.toString(16)
-        }))
-      }
-    }
-    setUuids(newUuids)
+    setUuids(generateUUIDs(count))
   }, [count])
 
   return (

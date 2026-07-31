@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store';
+import { generateUUID } from '../utils/common';
 
 interface Message {
   id: string;
@@ -356,7 +357,7 @@ function example() {
     if (!input.trim()) return;
 
     const userMessage: Message = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       role: 'user',
       content: input,
       timestamp: new Date(),
@@ -368,7 +369,7 @@ function example() {
 
     const delay = 800 + Math.floor(Math.random() * 1200);
     setTimeout(() => {
-      const messageId = crypto.randomUUID();
+      const messageId = generateUUID();
       const aiResponse = generateResponse(input, messageId);
       setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);

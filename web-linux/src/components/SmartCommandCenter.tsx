@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import { useStore } from '../store'
+import { generateUUIDs } from '../utils/common'
 import {
   Search, Terminal, Calculator, Globe, Clock, Zap, Command,
   Sparkles, FileText, ArrowRight, X, Ruler, Calendar, Palette,
@@ -361,20 +362,8 @@ const SmartCommandCenter = memo(function SmartCommandCenter({ isOpen, onClose }:
     }
   }, [])
 
-  const generateUUID = useCallback((count: number = 1): string[] => {
-    const uuids: string[] = []
-    for (let i = 0; i < Math.min(count, 10); i++) {
-      if (crypto.randomUUID) {
-        uuids.push(crypto.randomUUID())
-      } else {
-        uuids.push('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-          const r = Math.random() * 16 | 0
-          const v = c === 'x' ? r : (r & 0x3 | 0x8)
-          return v.toString(16)
-        }))
-      }
-    }
-    return uuids
+  const genUUIDs = useCallback((count: number = 1): string[] => {
+    return generateUUIDs(Math.min(count, 10))
   }, [])
 
   const generatePassword = useCallback((length: number = 16): string => {
@@ -684,7 +673,7 @@ const SmartCommandCenter = memo(function SmartCommandCenter({ isOpen, onClose }:
     const uuidMatch = qLower.match(/^uuid\s*(\d*)$/)
     if (uuidMatch) {
       const count = uuidMatch[1] ? parseInt(uuidMatch[1]) : 1
-      const uuids = generateUUID(count)
+      const uuids = genUUIDs(count)
       if (uuids.length > 0) {
         toolResults.push({
           id: 'uuid-gen',
@@ -932,7 +921,7 @@ const SmartCommandCenter = memo(function SmartCommandCenter({ isOpen, onClose }:
     }
 
     return [...toolResults, ...systemCommands, ...appResults, ...commandResults, ...webResults]
-  }, [query, apps, quickActions, calcExpression, openApp, onClose, commandHistory, theme, setTheme, setWallpaper, clearWindows, addNotification, copyToClipboard, addToHistory, convertUnit, calculateTime, convertColor, base64Encode, base64Decode, generateUUID, generatePassword, calculateHash, searchEmojis])
+  }, [query, apps, quickActions, calcExpression, openApp, onClose, commandHistory, theme, setTheme, setWallpaper, clearWindows, addNotification, copyToClipboard, addToHistory, convertUnit, calculateTime, convertColor, base64Encode, base64Decode, genUUIDs, generatePassword, calculateHash, searchEmojis])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {

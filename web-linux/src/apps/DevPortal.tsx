@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import { generateUUIDs } from '../utils/common'
 import {
   LayoutDashboard, Code2, FileText, Palette, Clock, Globe,
   BarChart3, Copy, Check, RefreshCw, ChevronRight, Hash,
@@ -493,9 +494,7 @@ function UuidTool() {
   const [count, setCount] = useState(5)
 
   const gen = useCallback(() => {
-    const arr: string[] = []
-    for (let i = 0; i < count; i++) arr.push(crypto.randomUUID())
-    setUuids(arr)
+    setUuids(generateUUIDs(count))
   }, [count])
 
   useEffect(() => { gen() }, [gen])

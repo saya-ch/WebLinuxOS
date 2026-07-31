@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import { generateUUIDs } from '../utils/common'
 
 /**
  * DevConsole - 开发者工具控制台
@@ -428,21 +429,8 @@ function UUIDTool() {
   const [uppercase, setUppercase] = useState(false)
 
   const generate = useCallback(() => {
-    const result: string[] = []
-    for (let i = 0; i < count; i++) {
-      if (crypto.randomUUID) {
-        const id = crypto.randomUUID()
-        result.push(uppercase ? id.toUpperCase() : id)
-      } else {
-        // 回退方案
-        result.push('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-          const r = Math.random() * 16 | 0
-          const v = c === 'x' ? r : (r & 0x3 | 0x8)
-          return (uppercase ? v.toString(16).toUpperCase() : v.toString(16))
-        }))
-      }
-    }
-    setUuids(result)
+    const result = generateUUIDs(count)
+    setUuids(uppercase ? result.map(id => id.toUpperCase()) : result)
   }, [count, uppercase])
 
   useEffect(() => { generate() }, [])
