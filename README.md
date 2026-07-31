@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v55.2.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v56.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,9 +21,19 @@
 
 WebLinuxOS is a full-featured Linux desktop environment that runs entirely in your browser. Unlike OS simulators that only look the part, every application here delivers real functionality — the terminal executes actual commands, the code editor writes real code, the API testing tool makes genuine network requests, and privacy tools detect real sensitive information locally.
 
-With **350+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
+With **360+ built-in applications** spanning development, productivity, networking, media, system tools, and games, WebLinuxOS transforms any device with a browser into a complete workstation. Whether you're on an iPad, Chromebook, or a locked-down corporate machine, your entire workflow is just a URL away.
 
 Built with React 19 and TypeScript, it features a polished windowing system with virtual desktops, multiple themes (Cyberpunk, Quantum, Glass Morphism, Classic Light), smooth GPU-accelerated animations, and a boot animation that makes every startup feel like an event. The terminal supports Unix-style pipes, output redirection, and multi-command execution. Browser-native APIs power real functionality: Web Speech for text-to-speech, getDisplayMedia for screen recording, Web Crypto for cryptographic hashing, and Web Serial for hardware debugging.
+
+## What's New in v56
+
+The v56 release introduces four innovative applications and six new terminal commands that expand WebLinuxOS into knowledge exploration, geography, cooking, and code management:
+
+- **WikiExplorer** -- Interactive Wikipedia browser powered by the MediaWiki API. Search millions of articles, read summaries with proper formatting, discover random knowledge, switch between English and Chinese Wikipedia, and build a personal reading history and favorites collection. All data from the real Wikipedia API with no API key required. Type `wiki` in the terminal for quick access.
+- **GeoAtlas** -- Interactive geographic atlas built on the REST Countries API. Browse 250+ countries with search and region filtering, view comprehensive details (flag, capital, population, area, languages, currencies, timezones, borders) with embedded OpenStreetMap,1-3 country side-by-side comparison, and a geography quiz mode with three question types. Type `geo` in the terminal for quick access.
+- **RecipeLab** -- Recipe discovery and meal planning powered by TheMealDB API. Search by name or ingredient, browse 14 categories, get random recipe inspiration, plan your weekly meals, and auto-generate shopping lists from selected recipes. Favorites and meal plans persist in localStorage. Type `recipe` in the terminal for quick access.
+- **SnippetVault** -- Developer code snippet manager with smart search, tag-based organization, basic syntax highlighting for 15+ languages, one-click clipboard copy, and JSON import/export. Ships with 16 pre-loaded useful snippets covering React hooks, Python decorators, Go goroutines, Rust error handling, and more. Type `snippets` in the terminal for quick access.
+- **New terminal commands**: `wiki`, `geo`, `snippets`, `recipe`, `qr`, `cve` -- quick-launch commands for the new apps plus QR code generation and CVE vulnerability lookup.
 
 ## Why WebLinuxOS?
 

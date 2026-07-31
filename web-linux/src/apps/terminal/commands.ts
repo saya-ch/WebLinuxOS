@@ -15,6 +15,7 @@ export type CommandContext = {
   renameFile?: (id: string, name: string) => void
   copyFile?: (sourceId: string, targetParentId: string) => void
   moveFile?: (sourceId: string, targetParentId: string) => void
+  openApp?: (appId: string) => void
 }
 
 export type CommandResult = {

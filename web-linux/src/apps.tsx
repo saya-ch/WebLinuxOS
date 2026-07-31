@@ -30,6 +30,12 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // WikiExplorer 维基探索（v56 创新功能 — 基于 Wikipedia API 的交互式百科探索工具）
+  { id: 'wiki-explorer', name: 'WikiExplorer 维基探索', icon: <WikiExplorerIcon />, component: 'WikiExplorer', category: 'internet', defaultWidth: 1200, defaultHeight: 820, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '基于 Wikipedia API 的交互式百科探索：搜索+文章阅读+精选推荐+随机发现+阅读历史+收藏+中英双语' },
+  // SnippetVault 代码片段保险库（v56 创新功能 — 开发者代码片段管理与模板库）
+  { id: 'snippet-vault', name: 'SnippetVault 代码保险库', icon: <SnippetVaultIcon />, component: 'SnippetVault', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '代码片段管理：CRUD+智能搜索+语言筛选+标签系统+语法高亮+导入导出+置顶收藏+16个内置模板' },
+  // GeoAtlas 地理图鉴（v56 创新功能 — 基于 REST Countries API 的交互式地理探索）
+  { id: 'geo-atlas', name: 'GeoAtlas 地理图鉴', icon: <GeoAtlasIcon />, component: 'GeoAtlas', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '交互式地理图鉴：国家探索+搜索筛选+详情(国旗/首都/人口/面积/语言/货币/时区/邻国)+2-3国对比+地理测验+区域统计+收藏+OpenStreetMap地图' },
   // Studio Suite 创意工作室（v53.1 创新功能 — 设计师与前端开发者的一站式创意工具箱）
   { id: 'studio-suite', name: 'Studio Suite 创意工作室', icon: <StudioSuiteIcon />, component: 'StudioSuite', category: 'multimedia', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '设计师与前端开发者的创意工具箱：调色板生成、渐变编辑、阴影生成、字体预览、WCAG对比度检查、单位转换，六大模块一站式服务' },
   // InfoPulse 信息脉搏中心（v53创新功能 — 多源信息聚合+实时监控+个性化布局）
@@ -1412,6 +1418,42 @@ function GlobeInsightsIcon() {
   )
 }
 
+function GeoAtlasIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M5 7h14" opacity="0.4" />
+      <path d="M5 17h14" opacity="0.4" />
+      <circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="15" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function WikiExplorerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      <circle cx="12" cy="9" r="3" />
+      <path d="M12 12v2" />
+      <line x1="9" y1="16" x2="15" y2="16" />
+    </svg>
+  )
+}
+
+function SnippetVaultIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+      <line x1="14" y1="4" x2="10" y2="20" />
+    </svg>
+  )
+}
+
 function ChinesePoetryIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1498,6 +1540,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'base64-tools', name: 'Base64 工具箱', icon: <Base64ToolsIcon />, component: 'Base64Tools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'json-yaml-converter', name: 'JSON/YAML 转换器', icon: <JSONYAMLConverterIcon />, component: 'JSONYAMLConverter', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'recipe-book', name: '食谱大全', icon: <RecipeBookIcon />, component: 'RecipeBook', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
+  { id: 'recipe-lab', name: '食谱实验室', icon: <RecipeBookIcon />, component: 'RecipeLab', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'online-toolkit', name: '在线工具中心', icon: <OnlineToolkitIcon />, component: 'OnlineToolkit', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'realtime-translator', name: '实时翻译助手', icon: <RealTimeTranslatorIcon />, component: 'RealTimeTranslator', category: 'utilities', defaultWidth: 900, defaultHeight: 800, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'stock-tracker', name: '股票市场追踪器', icon: <StockTrackerIcon />, component: 'StockTracker', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },

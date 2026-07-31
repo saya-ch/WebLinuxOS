@@ -389,4 +389,204 @@ function shiftHue(hex: string, degrees: number): string {
   return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`
 }
 
+registerCommand('wiki', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const query = ctx.args.join(' ')
+    if (!query) {
+      return {
+        output: `
+WikiExplorer 维基探索
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+  基于 Wikipedia API 的交互式百科探索工具
+
+  功能:
+    - 搜索维基百科文章
+    - 阅读文章摘要
+    - 随机发现知识
+    - 中英双语支持
+    - 阅读历史与收藏
+
+  用法:
+    wiki <关键词>    在 Wikipedia 搜索并打开应用
+    wiki             打开 WikiExplorer 应用
+
+  示例:
+    wiki artificial intelligence
+    wiki 人工智能
+`
+      }
+    }
+    ctx.openApp?.('wiki-explorer')
+    return { output: `正在打开 WikiExplorer，搜索 "${query}"...` }
+  },
+  description: '打开 WikiExplorer 维基百科探索工具',
+  usage: 'wiki [关键词]',
+  examples: ['wiki', 'wiki React', 'wiki 量子计算'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('geo', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const query = ctx.args.join(' ')
+    if (!query) {
+      return {
+        output: `
+GeoAtlas 地理图鉴
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+  基于 REST Countries API 的交互式地理探索工具
+
+  功能:
+    - 浏览全球 250+ 国家和地区
+    - 国家详情（国旗/首都/人口/面积/语言/货币）
+    - 2-3 国对比模式
+    - 地理测验
+    - 区域统计
+    - 收藏与地图预览
+
+  用法:
+    geo <国家名>    打开 GeoAtlas 搜索国家
+    geo             打开 GeoAtlas 应用
+
+  示例:
+    geo Japan
+    geo 中国
+`
+      }
+    }
+    ctx.openApp?.('geo-atlas')
+    return { output: `正在打开 GeoAtlas，查找 "${query}"...` }
+  },
+  description: '打开 GeoAtlas 地理图鉴',
+  usage: 'geo [国家名]',
+  examples: ['geo', 'geo France', 'geo 巴西'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('snippets', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const query = ctx.args.join(' ')
+    if (!query) {
+      return {
+        output: `
+SnippetVault 代码片段保险库
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+  开发者代码片段管理与模板库
+
+  功能:
+    - 代码片段 CRUD
+    - 智能搜索（标题/描述/代码/标签）
+    - 语言筛选 + 标签系统
+    - 语法高亮
+    - 导入/导出 JSON
+    - 一键复制
+    - 16 个内置模板
+
+  用法:
+    snippets <关键词>  打开 SnippetVault 搜索
+    snippets           打开 SnippetVault 应用
+
+  示例:
+    snippets react hooks
+    snippets python decorator
+`
+      }
+    }
+    ctx.openApp?.('snippet-vault')
+    return { output: `正在打开 SnippetVault，搜索 "${query}"...` }
+  },
+  description: '打开 SnippetVault 代码片段保险库',
+  usage: 'snippets [关键词]',
+  examples: ['snippets', 'snippets react hooks'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('recipe', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const query = ctx.args.join(' ')
+    if (!query) {
+      return {
+        output: `
+RecipeLab 食谱实验室
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+  基于 TheMealDB API 的美食发现工具
+
+  功能:
+    - 搜索全球食谱
+    - 分类浏览
+    - 随机发现美食
+    - 食材筛选
+    - 每周膳食计划
+    - 购物清单
+    - 收藏夹
+
+  用法:
+    recipe <菜名>    搜索食谱
+    recipe           打开 RecipeLab 应用
+
+  示例:
+    recipe pasta
+    recipe chicken
+`
+      }
+    }
+    ctx.openApp?.('recipe-lab')
+    return { output: `正在打开 RecipeLab，搜索 "${query}"...` }
+  },
+  description: '打开 RecipeLab 食谱实验室',
+  usage: 'recipe [菜名]',
+  examples: ['recipe', 'recipe pasta', 'recipe salad'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('qr', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const text = ctx.args.join(' ')
+    if (!text) {
+      return {
+        output: `用法: qr <文本>
+生成二维码
+
+示例:
+  qr https://github.com
+  qr Hello World
+
+提示: 也可使用 "qrgen" 命令打开完整的二维码生成器应用`
+      }
+    }
+    ctx.openApp?.('qr-generator')
+    return { output: `正在打开二维码生成器...` }
+  },
+  description: '生成二维码',
+  usage: 'qr <文本>',
+  examples: ['qr https://example.com', 'qr Hello'],
+}, { source: 'workbenchCommands' })
+
+registerCommand('cve', {
+  handler: (ctx: CommandContext): CommandResult => {
+    const id = ctx.args[0]
+    if (!id) {
+      return {
+        output: `用法: cve <CVE编号>
+查询 CVE 漏洞信息（基于 NVD 公开 API）
+
+示例:
+  cve CVE-2024-3094
+  cve CVE-2023-44487
+
+提示: 此命令需要网络连接`
+      }
+    }
+
+    const cveId = id.toUpperCase().startsWith('CVE-') ? id.toUpperCase() : `CVE-${id}`
+    return {
+      output: `正在查询 ${cveId}...
+
+可访问以下链接查看详情:
+  https://nvd.nist.gov/vuln/detail/${cveId}
+  https://cve.mitre.org/cgi-bin/cvename.cgi?name=${cveId}
+
+提示: 在浏览器中打开 WebBrowser 应用访问上述链接`
+    }
+  },
+  description: '查询 CVE 安全漏洞信息',
+  usage: 'cve <CVE编号>',
+  examples: ['cve CVE-2024-3094', 'cve 2023-44487'],
+}, { source: 'workbenchCommands' })
+
 

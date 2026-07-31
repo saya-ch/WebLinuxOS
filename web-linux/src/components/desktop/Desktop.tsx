@@ -657,6 +657,15 @@ const Desktop = memo(function Desktop() {
         <div className="splash-subtitle">
           Web-Based Linux Desktop Environment
         </div>
+        <div className="splash-version" style={{
+          fontSize: '13px',
+          color: 'rgba(139, 124, 240, 0.7)',
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          marginBottom: '24px',
+          letterSpacing: '0.5px',
+        }}>
+          v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '56.0.0'}
+        </div>
         <div className="splash-status">
           正在启动桌面环境...
         </div>
