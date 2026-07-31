@@ -154,7 +154,9 @@ export default function PerformanceDashboard() {
 
   useEffect(() => {
     // 初始测量
-    measurePerformance().then(setMetrics)
+    measurePerformance().then(setMetrics).catch(() => {
+      // 测量失败时不抛出，避免未处理的 rejection
+    })
   }, [measurePerformance])
 
   const formatBytes = (mb: number) => {

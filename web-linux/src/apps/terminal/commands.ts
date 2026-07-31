@@ -36,6 +36,17 @@ export const COMMANDS: Record<string, CommandDefinition> = {}
 
 // 已注册命令的来源记录，用于在开发模式下定位重复注册问题
 const COMMAND_SOURCES: Record<string, string> = {}
+// 全局初始化守卫：防止 React StrictMode 或多终端组件实例导致的重复注册
+// 使用 globalThis 跨模块共享状态，确保整个页面生命周期内只做一次警告汇总
+const INIT_GUARD_KEY = '__WebLinuxOS_TERMINAL_COMMANDS_INIT_GUARD__' as const
+function getGlobalGuard(): { warned: Set<string> } {
+  if (typeof globalThis === 'undefined') return { warned: new Set() }
+  const g = globalThis as unknown as Record<string, unknown>
+  if (!g[INIT_GUARD_KEY]) {
+    g[INIT_GUARD_KEY] = { warned: new Set<string>() }
+  }
+  return g[INIT_GUARD_KEY] as { warned: Set<string> }
+}
 
 interface RegisterOptions {
   /** 强制覆盖已存在的同名命令。默认 false：遇到重复时跳过并保留首次注册的实现。 */
@@ -53,10 +64,18 @@ export function registerCommand(name: string, definition: CommandDefinition, opt
       return
     }
     // 静默跳过：保留首次注册的实现，避免被后续加载的旧版本覆盖
+    // 开发模式下只针对第一次重复发出一条警告，避免StrictMode双执行时刷屏
     if (import.meta.env.DEV) {
-      const prev = COMMAND_SOURCES[normalizedName] || 'unknown'
-      const next = options?.source || 'unknown'
-      console.warn(`[terminal] 命令 "${normalizedName}" 重复注册被跳过 (已注册于 ${prev}, 重复来源 ${next})`)
+      const guard = getGlobalGuard()
+      if (!guard.warned.has(normalizedName)) {
+        guard.warned.add(normalizedName)
+        // 只有来源不同时才警告，同来源（完全一样的重复完全静默
+        const prev = COMMAND_SOURCES[normalizedName] || 'unknown'
+        const next = options?.source || 'unknown'
+        if (prev !== next) {
+          console.warn(`[terminal] 命令 "${normalizedName}" 重复注册被跳过 (已注册于 ${prev}, 重复来源 ${next})`)
+        }
+      }
     }
     return
   }

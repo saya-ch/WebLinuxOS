@@ -146,7 +146,7 @@ const PomodoroStudio = () => {
       } else if (Notification.permission !== 'denied') {
         Notification.requestPermission().then(p => {
           if (p === 'granted') new Notification(title, { body })
-        })
+        }).catch(() => { /* 用户拒绝或浏览器不支持 */ })
       }
     }
   }, [playBeep])

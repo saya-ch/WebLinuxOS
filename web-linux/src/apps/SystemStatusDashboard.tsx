@@ -100,7 +100,7 @@ export default function SystemStatusDashboard() {
     if (navigator.storage && navigator.storage.estimate) {
       navigator.storage.estimate().then((estimate) => {
         storageUsed = (estimate.usage || 0) / 1048576
-      })
+      }).catch(() => { /* ignore */ })
     }
     
     // 窗口数量（模拟）
@@ -222,7 +222,7 @@ export default function SystemStatusDashboard() {
             if (navigator.storage && navigator.storage.estimate) {
               navigator.storage.estimate().then((estimate) => {
                 alert(`存储使用: ${((estimate.usage || 0) / 1048576).toFixed(2)} MB\n可用: ${((estimate.quota || 0) / 1048576).toFixed(2)} MB`)
-              })
+              }).catch(() => alert('无法获取存储信息'))
             }
           }}
         >

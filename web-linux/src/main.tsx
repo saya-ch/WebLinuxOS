@@ -8,6 +8,44 @@ import BootAnimation from './components/BootAnimation'
 // 全局错误处理器：捕获未处理的 JavaScript 异常
 // 在开发环境下通过 console 详细记录，便于调试
 if (typeof window !== 'undefined') {
+  // 安全序列化任意值，防止循环引用导致 JSON.stringify 崩溃
+  function safeSerializeReason(v: unknown, depth = 0): unknown {
+    const MAX_DEPTH = 4
+    if (v === null || v === undefined) return v
+    if (typeof v !== 'object') return v
+    if (depth > MAX_DEPTH) return '[MaxDepthReached]'
+    try {
+      if (v instanceof Error) {
+        return {
+          _type: 'Error',
+          name: v.name,
+          message: v.message,
+          stack: v.stack,
+        }
+      }
+      if (Array.isArray(v)) {
+        return v.map((item) => safeSerializeReason(item, depth + 1)).slice(0, 50)
+      }
+      if (v instanceof Promise) return '[Promise]'
+      if (typeof (v as { toJSON?: () => unknown }).toJSON === 'function') {
+        return (v as { toJSON: () => unknown }).toJSON()
+      }
+      const out: Record<string, unknown> = {}
+      let count = 0
+      for (const k of Object.keys(v as Record<string, unknown>)) {
+        if (count++ > 100) break
+        try {
+          out[k] = safeSerializeReason((v as Record<string, unknown>)[k], depth + 1)
+        } catch {
+          out[k] = '[Unserializable]'
+        }
+      }
+      return out
+    } catch {
+      return String(v)
+    }
+  }
+
   // 保存原始 onerror 以便在需要时恢复或链式调用
   const originalOnError = window.onerror
 
@@ -42,8 +80,32 @@ if (typeof window !== 'undefined') {
   // 未处理的 Promise rejection 处理器
   window.addEventListener('unhandledrejection', (event) => {
     if (import.meta.env.DEV) {
+      // 尽可能提取出可读的错误详情，避免控制台中显示为无法展开的空对象
+      const r = event.reason
+      let reasonInfo: Record<string, unknown> = { raw: typeof r === 'object' ? JSON.stringify(safeSerializeReason(r), null, 2) : String(r) }
+      if (r instanceof Error) {
+        reasonInfo = {
+          name: r.name,
+          message: r.message,
+          stack: r.stack,
+          cause: safeSerializeReason((r as unknown as { cause?: unknown }).cause),
+        }
+      } else if (r && typeof r === 'object') {
+        try {
+          const keys = Object.keys(r)
+          if (keys.length === 0) {
+            reasonInfo = { emptyObject: true, toString: String(r) }
+          } else {
+            reasonInfo = Object.fromEntries(
+              keys.map((k) => [k, safeSerializeReason((r as Record<string, unknown>)[k])]),
+            ) as Record<string, unknown>
+          }
+        } catch {
+          reasonInfo = { note: '无法序列化 reason', toString: String(r) }
+        }
+      }
       console.error('[WebLinuxOS] 未处理的 Promise rejection：', {
-        reason: event.reason,
+        reason: reasonInfo,
         timestamp: new Date().toISOString(),
       })
     } else {

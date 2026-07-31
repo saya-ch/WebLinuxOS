@@ -104,7 +104,7 @@ export default function SystemMonitorDashboard() {
         updateBattery()
         battery.addEventListener('levelchange', updateBattery)
         battery.addEventListener('chargingchange', updateBattery)
-      })
+      }).catch(() => { /* 浏览器不支持或拒绝访问电池API */ })
     }
 
     const updateNetwork = () => {

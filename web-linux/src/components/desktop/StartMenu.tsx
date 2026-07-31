@@ -1,4 +1,4 @@
-import { useState, useMemo, memo, useCallback } from 'react'
+import { useState, useMemo, memo, useCallback, useEffect } from 'react'
 import { useStore } from '../../store'
 import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, GamepadIcon, StarIcon, StarOffIcon, ClockIcon, GridIcon } from '../../icons'
 
@@ -96,6 +96,7 @@ const StartMenu = memo(function StartMenu() {
   const [favoriteApps, setFavoriteApps] = useState<string[]>(loadFavoriteApps)
   const [sortMode, setSortMode] = useState<SortMode>('default')
   const [useGridLayout, setUseGridLayout] = useState(false)
+  const [selectedAppIndex, setSelectedAppIndex] = useState(0)
 
   const pinnedAppObjects = useMemo(
     () =>
@@ -150,6 +151,11 @@ const StartMenu = memo(function StartMenu() {
     return list
   }, [apps, activeCategory, search, pinnedAppObjects, favoriteAppObjects, sortMode, appUsage])
 
+  // 当搜索结果或分类变化时，重置选中索引
+  useEffect(() => {
+    setSelectedAppIndex(0)
+  }, [search, activeCategory, filteredApps.length])
+
   const handleAppClick = useCallback((appId: string) => {
     openApp(appId)
     closeLauncher()
@@ -187,6 +193,34 @@ const StartMenu = memo(function StartMenu() {
     setSearchHistory([])
     saveSearchHistory([])
   }, [])
+
+  // 搜索框键盘导航：Enter打开首个结果，↑↓切换选中项
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const total = filteredApps.length
+      if (total === 0) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          closeLauncher()
+        }
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelectedAppIndex((prev) => (prev + 1) % total)
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelectedAppIndex((prev) => (prev - 1 + total) % total)
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        const targetApp = filteredApps[selectedAppIndex] || filteredApps[0]
+        if (targetApp) {
+          handleAppClick(targetApp.id)
+        }
+      }
+    },
+    [filteredApps, selectedAppIndex, handleAppClick, closeLauncher],
+  )
 
   // 获取最大使用次数，用于使用频率进度条
   const maxUsage = useMemo(() => {
@@ -272,6 +306,7 @@ const StartMenu = memo(function StartMenu() {
               placeholder="搜索应用..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               autoFocus
               style={{ paddingLeft: '32px' }}
             />

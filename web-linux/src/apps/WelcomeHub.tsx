@@ -44,6 +44,8 @@ export default function WelcomeHub() {
     ]).then(([quoteData, activityData]) => {
       if (quoteData) setQuote(`${quoteData.content} — ${quoteData.author}`)
       if (activityData) setActivity(activityData.activity || '')
+    }).catch(() => {
+      // 接口失败时静默回退，保持默认空状态避免控制台报错
     })
   }, [])
 
