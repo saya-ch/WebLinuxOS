@@ -123,6 +123,53 @@ const App = memo(function App() {
     return () => clearInterval(interval)
   }, [refreshSystemStats])
 
+  // === v55.3 全局 API 暴露 + 自定义事件监听（外部集成与测试支持）
+  useEffect(() => {
+    const st = useStore
+    // 1) 暴露全局 WebLinuxOS API，方便浏览器控制台、外部脚本、自动化测试调用
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const globalApi: any = {
+      openApp: (appId: string) => st.getState().openApp(appId),
+      closeWindow: (windowId: string) => st.getState().closeWindow(windowId),
+      focusWindow: (windowId: string) => st.getState().focusWindow(windowId),
+      minimizeWindow: (windowId: string) => st.getState().minimizeWindow(windowId),
+      maximizeWindow: (windowId: string) => st.getState().maximizeWindow(windowId),
+      restoreWindow: (windowId: string) => st.getState().restoreWindow(windowId),
+      clearWindows: () => st.getState().clearWindows(),
+      toggleLauncher: () => st.getState().toggleLauncher(),
+      switchDesktop: (n: number) => st.getState().switchDesktop(n),
+      getApps: () => st.getState().apps,
+      getWindows: () => st.getState().windows,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      addNotification: (n: any) => st.getState().addNotification(n),
+      getState: () => st.getState(),
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).WebLinuxOS = globalApi
+
+    // 2) 监听 weblinux-launch-app / weblinux-open-app 两个自定义事件
+    //    兼容 DesktopWidgets 中 QuickLaunchWidget 派发的事件名与旧版命名
+    const handleLaunchApp = (e: Event) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ce = e as any
+      const appId = ce?.detail?.appId || ce?.detail?.id
+      if (appId) st.getState().openApp(appId)
+    }
+    window.addEventListener('weblinux-launch-app', handleLaunchApp as EventListener)
+    window.addEventListener('weblinux-open-app', handleLaunchApp as EventListener)
+
+    return () => {
+      window.removeEventListener('weblinux-launch-app', handleLaunchApp as EventListener)
+      window.removeEventListener('weblinux-open-app', handleLaunchApp as EventListener)
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (window as any).WebLinuxOS
+      } catch {
+        // 某些严格环境禁止 delete window 属性，静默忽略
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const handleOnline = () => setSystemStatus('online')
     const handleOffline = () => setSystemStatus('offline')

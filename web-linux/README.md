@@ -6,7 +6,7 @@ A production-grade Linux desktop environment running entirely in the browser. Bu
 
 [![Deploy to GitHub Pages](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-54.1.0-7c3aed.svg)](./web-linux/package.json)
+[![Version](https://img.shields.io/badge/version-55.3.0-7c3aed.svg)](./web-linux/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
@@ -30,6 +30,8 @@ Everything runs in the browser. No backend, no account, no telemetry.
 | **PrivacyGuard** | Detects 17 classes of personally identifiable information (email, phone, ID, cards, IP, API keys, JWT, PEM keys, BTC addresses, …) and sanitizes them via four modes: highlight, partial mask, hash, full redact. 100% local. |
 | **JSONForge** | All-in-one JSON workbench: format / minify, JSON ⇌ YAML, JSON ⇌ CSV, deep JSON diff, and automatic JSON Schema generation with type inference. |
 | **CronLab** | Visual cron expression builder with human-readable explanation, next-N-run preview, and 12 presets. Supports aliases (`mon`, `jan`, `L`, `W`, `#`). |
+| **InsightPulse** | Multi-source aggregation dashboard: Hacker News tech news, GitHub trending repositories, ZenQuotes daily proverbs, RestCountries world nation information. Supports 10-minute smart cache, search filtering, local favorites, one-click copy, and offline fallback. |
+| **CodeDocGen** | Multi-language code documentation auto-generation: automatic detection for TypeScript/JavaScript/Python/Go/Rust/Java/CSS/HTML. Five comment styles (JSDoc/Google/NumPy/Doxygen/PyDoc). Six-dimensional analysis: function summary / parameters / return values / exceptions / examples. One-click copy or Markdown export. |
 | **Command Center** | Enhanced terminal with 100+ commands including network tools (`curl`, `fetch`, `ping`, `ipinfo`, `dig`, `nslookup`), online utilities (`weather`, `news`, `currency`, `crypto`, `translate`, `trivia`, `joke`, `holiday`), and developer tools (`hash-verify`, `calc`, `base64`, `uuid`, `timestamp`, `url-encode`, `url-decode`). |
 
 ### Desktop environment
@@ -215,6 +217,8 @@ without secrets:
 | Pollinations.ai | Free text-to-text AI (no key required) |
 | microlink.io | Webpage metadata and screenshots |
 | Frankfurter | Exchange rates |
+| ZenQuotes | Daily motivational proverbs (used in InsightPulse) |
+| RestCountries | World nation information, flags, languages, currencies |
 
 ## Performance
 
@@ -227,6 +231,17 @@ without secrets:
 - `content-visibility` for off-screen windows
 
 ## Recent releases
+
+### v55.3 — AI Insight Dashboard & Code Documentation Generator
+
+- **New: InsightPulse** — Multi-source aggregation dashboard integrating Hacker News (Algolia API), GitHub Trending (GitHub API), ZenQuotes, and RestCountries. Features include 10-minute intelligent caching, tag-based categorization, search filtering, local favorites, one-click copy, and offline static data fallback.
+- **New: CodeDocGen** — Multi-language code documentation auto-generator. Automatic language detection for TypeScript/JavaScript/Python/Rust/Go/Java/CSS/HTML. Five comment output styles (JSDoc/Google/NumPy/Doxygen/PyDoc). Six-dimensional function analysis covering summary, parameters, return values, exceptions, usage examples, and TODO suggestions. One-click copy to clipboard or Markdown file export.
+- **Global WebLinuxOS API** — Exposes `window.WebLinuxOS` global object with programmatic interfaces for `openApp`, `closeWindow`, `focusWindow`, `minimizeWindow`, `maximizeWindow`, `clearWindows`, `toggleLauncher`, `switchDesktop`, `getApps`, `getWindows`, `addNotification`, and `getState`. Enables browser console, external scripts, and automated testing to control the system.
+- **Custom event system** — Listens for `weblinux-launch-app` and `weblinux-open-app` custom DOM events, enabling interop with QuickLaunchWidget and third-party integrations for application launching.
+- **Fixed: Weather widget SVG icons** — Replaced emoji icons with scalable vector SVG graphics, covering all WMO standard weather codes (0-99), including sunny, cloudy, rainy, snowy, foggy, and thunderstorm. Added default fallback icons for unknown codes.
+- **Fixed: TypeScript JSX namespace error** — Replaced `JSX.Element` with properly imported `ReactElement` type to resolve `Cannot find namespace 'JSX'` compilation errors in DesktopWidgets.tsx during production build.
+- **Version sync** — Updated package.json version from v55.1.0 to v55.3.0, consistent with changelog and README.
+- **Build verification** — Full TypeScript strict mode check and Vite production build succeeded, with lazy-loaded code chunks for all 240+ apps.
 
 ### v52.0 — Terminal command cleanup and UX improvements
 

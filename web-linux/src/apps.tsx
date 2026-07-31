@@ -156,6 +156,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'idea-board', name: 'IdeaBoard · 灵感无限画板', icon: <IdeaBoardIcon />, component: 'IdeaBoardInfinite', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 提示词生成 + 自由绘画 + 可拖拽灵感卡片三合一：8种艺术风格（赛博朋克/水彩/像素/中国风等），撤销重做，PNG 导出，无限想法组织' },
   // === v55.2 新增 LivePulse 实时信息中心
   { id: 'live-pulse', name: 'LivePulse · 实时信息中心', icon: <LivePulseIcon />, component: 'LivePulse', category: 'internet', defaultWidth: 1180, defaultHeight: 820, minWidth: 880, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '四大实时信息面板：全球汇率(Frankfurter)、Hacker News/航天科技新闻、编程笑话(JokeAPI)、奇趣冷知识(UselessFacts+AdviceSlip)，缓存、收藏、复制、一键刷新一应俱全' },
+  // === v55.3 新增 InsightPulse AI 洞察仪表盘 + CodeDocGen 代码文档生成器
+  { id: 'insight-pulse', name: 'InsightPulse · AI 洞察仪表盘', icon: <InsightPulseIcon />, component: 'InsightPulse', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '多源聚合洞察中心：Hacker News 科技新闻、GitHub 热门趋势、ZenQuotes 每日箴言、RestCountries 世界国家信息，支持 10 分钟智能缓存、搜索过滤、本地收藏、一键复制、离线回退' },
+  { id: 'code-doc-gen', name: 'CodeDocGen · 代码文档生成器', icon: <CodeDocGenIcon />, component: 'CodeDocGen', category: 'development', defaultWidth: 1200, defaultHeight: 840, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '多语言代码文档自动生成：TypeScript/JavaScript/Python/Go/Rust/Java/CSS/HTML 自动检测，JSDoc/Google/NumPy/Doxygen/PyDoc 五种注释风格，函数摘要/参数/返回值/异常/示例六维分析，一键复制或导出 Markdown' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1295,6 +1298,38 @@ function LivePulseIcon() {
       <path d="M3 12h3l2-5 3 10 3-8 2 3h5" />
       <circle cx="21" cy="12" r="1" fill="currentColor" stroke="none" />
       <circle cx="12" cy="4" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function InsightPulseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2" />
+      <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M12 3a9 9 0 016.36 2.64" />
+      <path d="M12 3v4" />
+      <path d="M21 12h-4" />
+      <path d="M18.36 18.36A9 9 0 0112 21" />
+      <path d="M12 21v-4" />
+      <path d="M3 12h4" />
+      <path d="M5.64 5.64A9 9 0 0112 3" />
+      <rect x="6" y="8" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.7" />
+      <rect x="15" y="14" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.7" />
+    </svg>
+  )
+}
+
+function CodeDocGenIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M9 14l-2 2 2 2" />
+      <path d="M15 14l2 2-2 2" />
+      <path d="M13 13l-1 6" />
+      <line x1="8" y1="12" x2="16" y2="12" strokeWidth="2.5" />
     </svg>
   )
 }

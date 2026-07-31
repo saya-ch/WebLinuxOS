@@ -397,6 +397,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   FlashMaster: () => import('../../apps/FlashMaster'),
   // === v55.2 新增 LivePulse 实时信息中心
   LivePulse: () => import('../../apps/LivePulse'),
+  // === v55.3 新增 InsightPulse AI 洞察仪表盘 + CodeDocGen 代码文档生成器
+  InsightPulse: () => import('../../apps/InsightPulse'),
+  CodeDocGen: () => import('../../apps/CodeDocGen'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

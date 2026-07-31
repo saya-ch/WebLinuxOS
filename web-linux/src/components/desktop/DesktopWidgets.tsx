@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, memo } from 'react'
+import { useState, useEffect, useRef, useCallback, memo, type ReactElement } from 'react'
 import { loadFromStorage, debouncedSaveToStorage } from '../../store/storageUtils'
 
 export type WidgetId = 'clock' | 'pulse' | 'weather' | 'note' | 'focus' | 'systemMonitor' | 'quickLaunch' | 'musicPlayer' | 'airQuality' | 'dailyPoem'
@@ -263,28 +263,28 @@ interface WeatherData {
   isDay: boolean
 }
 
-const WEATHER_CODE_MAP: Record<number, { label: string; icon: string }> = {
-  0: { label: '晴', icon: '☀' },
-  1: { label: '晴间多云', icon: '🌤' },
-  2: { label: '多云', icon: '⛅' },
-  3: { label: '阴', icon: '☁' },
-  45: { label: '雾', icon: '🌫' },
-  48: { label: '冻雾', icon: '🌫' },
-  51: { label: '小毛毛雨', icon: '🌦' },
-  53: { label: '毛毛雨', icon: '🌦' },
-  55: { label: '大毛毛雨', icon: '🌧' },
-  61: { label: '小雨', icon: '🌦' },
-  63: { label: '中雨', icon: '🌧' },
-  65: { label: '大雨', icon: '🌧' },
-  71: { label: '小雪', icon: '🌨' },
-  73: { label: '中雪', icon: '🌨' },
-  75: { label: '大雪', icon: '❄' },
-  80: { label: '阵雨', icon: '🌦' },
-  81: { label: '中阵雨', icon: '🌧' },
-  82: { label: '强阵雨', icon: '⛈' },
-  95: { label: '雷暴', icon: '⛈' },
-  96: { label: '雷暴冰雹', icon: '⛈' },
-  99: { label: '强雷暴', icon: '⛈' },
+const WEATHER_CODE_MAP: Record<number, { label: string; icon: string; svg: ReactElement }> = {
+  0: { label: '晴', icon: '☀', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" fill="#fbbf24" stroke="#f59e0b"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="#f59e0b"/></svg> },
+  1: { label: '晴间多云', icon: '🌤', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="9" r="3.5" fill="#fbbf24" stroke="#f59e0b"/><path d="M8 2v2M8 16v2M2.93 4.93l1.41 1.41M11.66 12.66l1.41 1.41M0 9h2M14 9h2M4.34 12.66l-1.41 1.41M13.07 4.93l-1.41 1.41" stroke="#f59e0b"/><path d="M18 17H7a4 4 0 011-7.5A5 5 0 0118 17z" fill="#e0e7ff" stroke="#818cf8"/></svg> },
+  2: { label: '多云', icon: '⛅', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="8.5" cy="10" r="3" fill="#fbbf24" stroke="#f59e0b" opacity="0.9"/><path d="M17.5 19H6a3.5 3.5 0 01.5-6.96A5 5 0 0117 14.5a3 3 0 01.5 4.5z" fill="#c7d2fe" stroke="#6366f1"/></svg> },
+  3: { label: '阴', icon: '☁', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 18H6a4 4 0 01.7-7.94A5.5 5.5 0 0118 13.5a3.5 3.5 0 01-.5 4.5z" fill="#94a3b8" stroke="#64748b"/></svg> },
+  45: { label: '雾', icon: '🌫', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8h16M3 12h18M5 16h14M6 20h12" stroke="#94a3b8" strokeWidth="2.5" opacity="0.6"/><path d="M4 8h16M3 12h18M5 16h14" stroke="#cbd5e1" strokeWidth="2"/></svg> },
+  48: { label: '冻雾', icon: '🌫', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8h16M3 12h18M5 16h14" stroke="#93c5fd" strokeWidth="2.5" opacity="0.5"/><path d="M4 8h16M3 12h18M5 16h14" stroke="#bfdbfe" strokeWidth="2"/><circle cx="7" cy="19" r="1" fill="#93c5fd"/><circle cx="12" cy="20" r="1.2" fill="#93c5fd"/><circle cx="17" cy="19" r="1" fill="#93c5fd"/></svg> },
+  51: { label: '小毛毛雨', icon: '🌦', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14H7a3.5 3.5 0 01.5-6.5A4.5 4.5 0 0117 10a2.5 2.5 0 010 4z" fill="#c7d2fe" stroke="#6366f1"/><path d="M9 17l-1 3M12 17l-1 3M15 17l-1 3" stroke="#60a5fa" strokeWidth="2"/></svg> },
+  53: { label: '毛毛雨', icon: '🌦', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14H7a3.5 3.5 0 01.5-6.5A4.5 4.5 0 0117 10a2.5 2.5 0 010 4z" fill="#a5b4fc" stroke="#4f46e5"/><path d="M8 17l-1.5 3.5M11.5 17l-1.5 3.5M15 17l-1.5 3.5M18 17l-1 3" stroke="#3b82f6" strokeWidth="2"/></svg> },
+  55: { label: '大毛毛雨', icon: '🌧', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 13H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0118 9.5a3.5 3.5 0 01-.5 3.5z" fill="#818cf8" stroke="#4338ca"/><path d="M7 16l-2 4M11 16l-2 4M15 16l-2 4M19 16l-2 4" stroke="#2563eb" strokeWidth="2.2"/></svg> },
+  61: { label: '小雨', icon: '🌦', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.5" fill="#fbbf24" stroke="#f59e0b"/><path d="M17 15H7a3.5 3.5 0 01.5-6.5A4.5 4.5 0 0117 11a2.5 2.5 0 010 4z" fill="#c7d2fe" stroke="#6366f1"/><path d="M8.5 18l-1 3M12.5 18l-1 3M16.5 18l-1 3" stroke="#60a5fa" strokeWidth="2"/></svg> },
+  63: { label: '中雨', icon: '🌧', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 13H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0118 9.5a3.5 3.5 0 01-.5 3.5z" fill="#6366f1" stroke="#3730a3"/><path d="M7 16l-2 4M11 16l-2 4M15 16l-2 4M19 16l-2 4" stroke="#1d4ed8" strokeWidth="2.3"/></svg> },
+  65: { label: '大雨', icon: '🌧', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 12.5H6a4.5 4.5 0 01.8-8.9A6 6 0 0118.5 9a4 4 0 01-.5 3.5z" fill="#4f46e5" stroke="#312e81"/><path d="M6 16l-2.5 5M10 16l-2.5 5M14 16l-2.5 5M18 16l-2.5 5M21 16l-1.5 4" stroke="#1e40af" strokeWidth="2.5"/></svg> },
+  71: { label: '小雪', icon: '🌨', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 13H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0118 9.5a3.5 3.5 0 01-.5 3.5z" fill="#e0e7ff" stroke="#818cf8"/><path d="M9 17l-1 2M9 19h2M12 17l-1 2v2M15 17l-1 2M15 19h2M7 20l.5 1M17 20l.5 1" stroke="#93c5fd" strokeWidth="2"/></svg> },
+  73: { label: '中雪', icon: '🌨', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 13H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0118 9.5a3.5 3.5 0 01-.5 3.5z" fill="#c7d2fe" stroke="#6366f1"/><path d="M8 17l-1 1.5M8 18.5h2M9 17v3M12 17l-1 1.5M12 18.5h2M13 17v3M15 17l-1 1.5M15 18.5h2M16 17v3M6.5 21l1 1M17.5 21l1 1" stroke="#60a5fa" strokeWidth="2"/></svg> },
+  75: { label: '大雪', icon: '❄', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 12.5H6a4.5 4.5 0 01.8-8.9A6 6 0 0118.5 9a4 4 0 01-.5 3.5z" fill="#a5b4fc" stroke="#4f46e5"/><g stroke="#3b82f6" strokeWidth="2"><path d="M12 16v6M8.5 17.5l7 3M15.5 17.5l-7 3"/><circle cx="12" cy="19" r="1" fill="#60a5fa"/><circle cx="9" cy="20.5" r="0.8" fill="#60a5fa"/><circle cx="15" cy="20.5" r="0.8" fill="#60a5fa"/><path d="M6 15l-1.5 2M18 15l1.5 2M7.5 14l-2 1M16.5 14l2 1"/></g></svg> },
+  80: { label: '阵雨', icon: '🌦', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.8" fill="#fbbf24" stroke="#f59e0b"/><path d="M17 14.5H7a3.5 3.5 0 01.5-6.5A4.5 4.5 0 0117 10.5a2.5 2.5 0 010 4z" fill="#c7d2fe" stroke="#6366f1"/><path d="M9 17v3M12 17v2.5M15.5 17v2" stroke="#3b82f6" strokeWidth="2.2"/></svg> },
+  81: { label: '中阵雨', icon: '🌧', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 13H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0118 9.5a3.5 3.5 0 01-.5 3.5z" fill="#6366f1" stroke="#3730a3"/><path d="M7 16l-2 3.5M11 16l-2 3.5M15 16l-2 3.5M19 16l-2 3.5" stroke="#1d4ed8" strokeWidth="2.3"/></svg> },
+  82: { label: '强阵雨', icon: '⛈', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 12.5H6a4.5 4.5 0 01.8-8.9A6 6 0 0118.5 9a4 4 0 01-.5 3.5z" fill="#4338ca" stroke="#1e1b4b"/><path d="M6 16l-2.5 4.5M10 16l-2.5 4.5M14 16l-2.5 4.5M18 16l-2 4" stroke="#1e40af" strokeWidth="2.4"/><path d="M12 13l-2 4h2l-1 4" fill="#fbbf24" stroke="#d97706" strokeWidth="1.5"/></svg> },
+  95: { label: '雷暴', icon: '⛈', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18.5 12H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0119 8.5a3.5 3.5 0 01-.5 3.5z" fill="#3730a3" stroke="#1e1b4b"/><path d="M7 16l-2 4M11 16l-2 4M15 16l-2 4M19 16l-2 4" stroke="#1e3a8a" strokeWidth="2.3"/><path d="M12.5 12L9 18h3l-2 5 6-7h-3l2-4z" fill="#facc15" stroke="#b45309" strokeWidth="1.5"/></svg> },
+  96: { label: '雷暴冰雹', icon: '⛈', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18.5 12H6.5a4 4 0 01.7-7.94A5.5 5.5 0 0119 8.5a3.5 3.5 0 01-.5 3.5z" fill="#3730a3" stroke="#1e1b4b"/><path d="M7 16l-2 4M15 16l-2 4" stroke="#1e3a8a" strokeWidth="2.3"/><path d="M12.5 12L9 18h3l-2 5 6-7h-3l2-4z" fill="#facc15" stroke="#b45309" strokeWidth="1.5"/><circle cx="9" cy="19" r="1.3" fill="#e0f2fe" stroke="#0284c7"/><circle cx="13" cy="20" r="1.1" fill="#e0f2fe" stroke="#0284c7"/><circle cx="17" cy="19.5" r="1.4" fill="#e0f2fe" stroke="#0284c7"/></svg> },
+  99: { label: '强雷暴', icon: '⛈', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M19 11.5H5a5 5 0 01.9-9.88A6.5 6.5 0 0119.5 8a4.5 4.5 0 01-.5 3.5z" fill="#1e1b4b" stroke="#0f0a2e"/><path d="M5 16l-3 5.5M9.5 16l-3 5.5M14 16l-3 5.5M18.5 16l-3 5.5M22 16l-2 4.5" stroke="#172554" strokeWidth="2.6"/><path d="M13 11L8 19h4l-3 6 8-9h-4l3-5z" fill="#fde047" stroke="#a16207" strokeWidth="1.5"/><path d="M13 11L8 19h4l-3 6 8-9h-4l3-5z" fill="#fde047" stroke="#a16207" strokeWidth="1.5" opacity="0.5"/></svg> },
 }
 
 const WeatherWidget = memo(function WeatherWidget() {
@@ -375,14 +375,14 @@ const WeatherWidget = memo(function WeatherWidget() {
     )
   }
 
-  const info = WEATHER_CODE_MAP[data.code] || { label: '未知', icon: '🌡' }
+  const info = WEATHER_CODE_MAP[data.code] || { label: '未知', icon: '🌡', svg: <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" fill="#f87171" stroke="#dc2626"/></svg> }
 
   return (
     <div className={`dw-weather ${data.isDay ? '' : 'dw-weather-night'}`}>
       <div className="dw-weather-bg" />
       <div className="dw-weather-main">
         <div className="dw-weather-icon-wrap">
-          <div className="dw-weather-icon">{info.icon}</div>
+          <div className="dw-weather-icon">{info.svg}</div>
         </div>
         <div className="dw-weather-main-info">
           <div className="dw-weather-temp">{data.temp}°</div>
