@@ -17,6 +17,8 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  RealTimeCollaborationHub: () => import('../../apps/RealTimeCollaborationHub'),
+  SmartKnowledgeGraph: () => import('../../apps/SmartKnowledgeGraph'),
   StudioSuite: () => import('../../apps/StudioSuite'),
   InfoPulseCenter: () => import('../../apps/InfoPulseCenter'),
   SmartWorkbench: () => import('../../apps/SmartWorkbench'),

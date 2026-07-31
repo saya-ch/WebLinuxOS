@@ -12,7 +12,7 @@ import {
   LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
-  LayersIcon, ClipboardIcon
+  LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon
 } from './icons'
 
 
@@ -30,6 +30,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // 实时协作中心（v57创新功能 — 实时多人协作平台）
+  { id: 'realtime-collab-hub', name: '实时协作中心', icon: <UsersIcon />, component: 'RealTimeCollaborationHub', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时多人协作平台：创建/加入房间、共享白板、代码编辑、笔记协作，支持画笔/橡皮擦/形状工具，导出PNG' },
+  // 智能知识图谱（v57创新功能 — 双向链接笔记系统）
+  { id: 'smart-knowledge-graph', name: '智能知识图谱', icon: <NetworkIcon />, component: 'SmartKnowledgeGraph', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '双向链接笔记系统：[[链接]]语法、自动反向链接追踪、知识图谱可视化、标签系统、全文搜索、导入导出JSON' },
   // WikiExplorer 维基探索（v56 创新功能 — 基于 Wikipedia API 的交互式百科探索工具）
   { id: 'wiki-explorer', name: 'WikiExplorer 维基探索', icon: <WikiExplorerIcon />, component: 'WikiExplorer', category: 'internet', defaultWidth: 1200, defaultHeight: 820, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '基于 Wikipedia API 的交互式百科探索：搜索+文章阅读+精选推荐+随机发现+阅读历史+收藏+中英双语' },
   // SnippetVault 代码片段保险库（v56 创新功能 — 开发者代码片段管理与模板库）

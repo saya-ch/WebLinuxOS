@@ -100,6 +100,7 @@ export const FileIcon = FileIconL
 export const AppIcon = AppWindow
 export const ChartIcon = Blocks
 export const ApiLabIcon = Network
+export const NetworkIcon = Network
 export const BellIcon = Bell
 
 export const PinIcon = Pin
