@@ -161,7 +161,26 @@ export default function NebulaDashboard() {
       const res = await fetchWithTimeout(url, {}, 15000)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const d = await res.json()
-      setWeather({ current: d.current, daily: d.daily })
+      // 字段映射：Open-Meteo API → 内部组件字段
+      const cur = d.current || {}
+      const mappedCurrent: WeatherCurrent = {
+        temp: typeof cur.temperature_2m === 'number' ? cur.temperature_2m : 0,
+        feels_like: typeof cur.apparent_temperature === 'number' ? cur.apparent_temperature : 0,
+        humidity: typeof cur.relative_humidity_2m === 'number' ? cur.relative_humidity_2m : 0,
+        wind_speed_10m: typeof cur.wind_speed_10m === 'number' ? cur.wind_speed_10m : 0,
+        weather_code: typeof cur.weather_code === 'number' ? cur.weather_code : 0,
+        pressure_msl: typeof cur.pressure_msl === 'number' ? cur.pressure_msl : 0,
+      }
+      const dly = d.daily || {}
+      const mappedDaily: WeatherDaily = {
+        time: Array.isArray(dly.time) ? dly.time : [],
+        temperature_2m_max: Array.isArray(dly.temperature_2m_max) ? dly.temperature_2m_max : [],
+        temperature_2m_min: Array.isArray(dly.temperature_2m_min) ? dly.temperature_2m_min : [],
+        weather_code: Array.isArray(dly.weather_code) ? dly.weather_code : [],
+        sunrise: Array.isArray(dly.sunrise) ? dly.sunrise : [],
+        sunset: Array.isArray(dly.sunset) ? dly.sunset : [],
+      }
+      setWeather({ current: mappedCurrent, daily: mappedDaily })
     } catch (e) {
       setError(handleApiError(e, '天气服务'))
     }
@@ -384,7 +403,11 @@ export default function NebulaDashboard() {
                     <InfoRow icon={<Droplets size={14} style={{ color: '#38bdf8' }} />} label="湿度" value={`${weather.current.humidity}%`} />
                     <InfoRow icon={<Wind size={14} style={{ color: '#a78bfa' }} />} label="风速" value={`${weather.current.wind_speed_10m.toFixed(1)} km/h`} />
                     <InfoRow icon={<ThermometerSun size={14} style={{ color: '#fb7185' }} />} label="气压" value={`${weather.current.pressure_msl.toFixed(0)} hPa`} />
-                    <InfoRow icon={<Sunrise size={14} style={{ color: '#f59e0b' }} />} label="日出/日落" value={`${weather.daily.sunrise[0].slice(11)} / ${weather.daily.sunset[0].slice(11)}`} />
+                    <InfoRow
+                      icon={<Sunrise size={14} style={{ color: '#f59e0b' }} />}
+                      label="日出/日落"
+                      value={`${weather.daily.sunrise[0]?.slice(11) || '--:--'} / ${weather.daily.sunset[0]?.slice(11) || '--:--'}`}
+                    />
                   </div>
                 </div>
 
@@ -399,13 +422,13 @@ export default function NebulaDashboard() {
                         {new Date(d).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
                       </div>
                       <div style={{ fontSize: 18, margin: '4px 0' }}>
-                        {weatherCodeToIcon(weather.daily.weather_code[i], true)}
+                        {weatherCodeToIcon(weather.daily.weather_code[i] ?? 0, true)}
                       </div>
                       <div style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                        {weather.daily.temperature_2m_max[i].toFixed(0)}°
+                        {typeof weather.daily.temperature_2m_max[i] === 'number' ? weather.daily.temperature_2m_max[i].toFixed(0) : '--'}°
                       </div>
                       <div style={{ fontSize: 11, color: '#8b8bbf', fontVariantNumeric: 'tabular-nums' }}>
-                        {weather.daily.temperature_2m_min[i].toFixed(0)}°
+                        {typeof weather.daily.temperature_2m_min[i] === 'number' ? weather.daily.temperature_2m_min[i].toFixed(0) : '--'}°
                       </div>
                     </div>
                   ))}
