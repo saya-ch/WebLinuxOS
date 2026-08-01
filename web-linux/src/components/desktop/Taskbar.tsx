@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
-import { TerminalIcon, SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon, NoteIcon } from '../../icons'
+import { SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon, NoteIcon, GridIcon } from '../../icons'
 
 // 进场/指示器/提示框动画 —— 通过 <style> 注入，避免新增依赖
 const TASKBAR_ENHANCEMENTS_CSS = `
@@ -676,7 +676,7 @@ const Taskbar = memo(function Taskbar() {
               : '0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}
         >
-          <TerminalIcon size={19} style={{ color: launcherOpen ? 'white' : 'rgba(226, 232, 240, 0.95)', filter: launcherOpen ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' : 'none' }} />
+          <GridIcon size={19} style={{ color: launcherOpen ? 'white' : 'rgba(226, 232, 240, 0.95)', filter: launcherOpen ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' : 'none' }} />
         </div>
 
         <div style={{ width: '1px', height: '24px', background: 'var(--window-border)', margin: '0 4px' }} />
