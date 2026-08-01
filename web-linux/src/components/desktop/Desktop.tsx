@@ -276,6 +276,7 @@ const Desktop = memo(function Desktop() {
 
   const [selectedIconId, setSelectedIconId] = useState<string | null>(null)
   const [showSplash, setShowSplash] = useState(true)
+  const [splashPhase, setSplashPhase] = useState(0)
   // 开机动画：图标交错淡入
   const [booted, setBooted] = useState(false)
   // 桌面小部件总开关与单项可见性，持久化到 localStorage
@@ -455,39 +456,37 @@ const Desktop = memo(function Desktop() {
     }
   }, [])
 
+  // 开机动画：分阶段切换启动状态文本
+  useEffect(() => {
+    const t1 = setTimeout(() => setSplashPhase(1), 800)
+    const t2 = setTimeout(() => setSplashPhase(2), 1600)
+    const t3 = setTimeout(() => setSplashPhase(3), 2400)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+    }
+  }, [])
+
+  // 3秒后关闭开机动画并标记启动完成
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false)
-    }, 1500)
+      setBooted(true)
+    }, 3000)
     return () => clearTimeout(timer)
   }, [])
 
-  // 开机后延迟启动图标交错动画
-  useEffect(() => {
-    if (showSplash) return
-    const timer = setTimeout(() => setBooted(true), 100)
-    return () => clearTimeout(timer)
-  }, [showSplash])
-
   const handleIconClick = useCallback(
     (appId: string, iconId: string) => {
-      const now = Date.now()
-      if (lastClickRef.current?.id === iconId && now - lastClickRef.current.time < 400) {
-        openApp(appId)
-        lastClickRef.current = null
-        setSelectedIconId(null)
-      } else {
-        setSelectedIconId(iconId)
-        lastClickRef.current = { id: iconId, time: now }
-      }
+      setSelectedIconId(iconId)
     },
-    [openApp],
+    [],
   )
 
   const handleIconDoubleClick = useCallback(
     (appId: string) => {
       openApp(appId)
-      setSelectedIconId(null)
     },
     [openApp],
   )
@@ -667,7 +666,10 @@ const Desktop = memo(function Desktop() {
           v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '56.0.0'}
         </div>
         <div className="splash-status">
-          正在启动桌面环境...
+          {splashPhase === 0 && 'Initializing kernel modules...'}
+          {splashPhase === 1 && 'Loading desktop environment...'}
+          {splashPhase === 2 && 'Starting window manager...'}
+          {splashPhase === 3 && 'Welcome to WebLinuxOS'}
         </div>
         <div className="splash-progress-container">
           <div className="splash-progress-bar" />

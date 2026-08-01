@@ -31,6 +31,12 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  { id: 'markdown-slides-pro', name: 'Markdown 演示文稿', icon: <PresentationIcon />, component: 'MarkdownSlidesPro', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown转演示文稿：实时编辑预览、幻灯片播放、全屏演示、导出HTML、过渡动画' },
+  { id: 'open-source-hub', name: '开源项目导航', icon: <GitHubIcon />, component: 'OpenSourceHub', category: 'internet', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'GitHub开源项目探索：仓库搜索、热门项目、语言筛选、星标排序、搜索历史' },
+  { id: 'online-code-runner-pro', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerPro', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '真正的在线代码运行器：支持JavaScript实时执行、HTML/CSS/JS实时预览、代码分享、预置示例模板' },
+  { id: 'weather-live', name: '实时天气', icon: <CloudRainIcon />, component: 'WeatherLive', category: 'internet', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '接入wttr.in公开API的实时天气：城市搜索、3天预报、温湿度风速、摄氏华氏切换、位置自动检测' },
+  { id: 'json-crusher', name: 'JSON 超级工具', icon: <WrenchIcon />, component: 'JsonCrusher', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'JSON高级工具箱：格式化/压缩、TS类型生成、JSONPath查询、Diff对比、Schema验证、树形视图' },
+  { id: 'css-studio', name: 'CSS 工作室', icon: <PaletteIcon />, component: 'CssStudio', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'CSS可视化工具箱：渐变编辑、阴影生成、圆角编辑、动画关键帧、颜色转换、Flexbox布局预览' },
   // AI图像工作室（v58创新功能 — 基于 Pollinations.ai 公开免费 API 的 AI 图像生成工具）
   { id: 'ai-image-studio', name: 'AI图像工作室', icon: <ImageForgeIcon />, component: 'AIImageStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '零配置 AI 图像生成器：基于 Pollinations.ai 公开免费 API，多种艺术风格预设、尺寸选择、模型选择、提示词输入、生成历史与本地收藏' },
   // LocalFileExplorer 本地文件浏览器（v57创新功能 — 基于 File System Access API 的真实本地文件浏览）

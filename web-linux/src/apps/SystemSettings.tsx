@@ -133,6 +133,8 @@ export default function Settings() {
   const wallpaper = useStore((s) => s.wallpaper)
   const setWallpaper = useStore((s) => s.setWallpaper)
   const clearWindows = useStore((s) => s.clearWindows)
+  const resetToDefaults = useStore((s) => s.resetToDefaults)
+  const appCount = useStore((s) => s.apps.length)
 
   const [activeCategory, setActiveCategory] = useState('appearance')
   const [wifiEnabled, setWifiEnabled] = useState(true)
@@ -204,6 +206,10 @@ export default function Settings() {
             duration: 5000,
           })
         }, 500)
+        break
+      case 'reset':
+        resetToDefaults()
+        clearWindows()
         break
     }
     setPowerDialog(null)
@@ -492,7 +498,7 @@ export default function Settings() {
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <div style={{ fontSize: 64, marginBottom: 8 }}>🐧</div>
               <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>Web Linux</div>
-              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>版本 8.2.1</div>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>版本 {__APP_VERSION__}</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
@@ -508,9 +514,60 @@ export default function Settings() {
                 <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>x86_64 (Web)</div>
               </div>
               <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>构建日期</div>
-                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{new Date().toLocaleDateString('zh-CN')}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>构建时间</div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{__BUILD_TIME__}</div>
               </div>
+              <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>应用总数</div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{appCount}</div>
+              </div>
+              <div style={{ padding: 12, background: 'var(--window-bg)', border: '1px solid var(--window-border)', borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>GitHub</div>
+                <a
+                  href="https://github.com/saya-ch/WebLinuxOS"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 14, color: 'var(--accent)', textDecoration: 'none' }}
+                >
+                  saya-ch/WebLinuxOS
+                </a>
+              </div>
+            </div>
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--window-border)' }}>
+              <button
+                onClick={() => {
+                  setPowerDialog({
+                    type: 'reset',
+                    title: '重置系统',
+                    message: '所有设置、文件和自定义配置将恢复为默认值。此操作不可撤销，确定要继续吗？',
+                    confirmText: '重置',
+                    isDestructive: true,
+                  })
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  borderRadius: 8,
+                  border: '1px solid #ff6b6b',
+                  background: 'rgba(255,107,107,0.1)',
+                  color: '#ff6b6b',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,107,107,0.2)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,107,107,0.1)'
+                }}
+              >
+                ⚠️ 重置系统到默认状态
+              </button>
             </div>
           </div>
         )}

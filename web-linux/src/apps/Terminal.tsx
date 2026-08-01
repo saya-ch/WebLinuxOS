@@ -77,7 +77,7 @@ export default function Terminal() {
   const [prevCwd, setPrevCwd] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([
-    { input: '', output: 'Web Linux 终端 v56\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南\n输入 "wiki" 探索维基百科 | "geo" 探索世界地理 | "recipe" 发现美食 | "snippets" 管理代码片段' },
+    { input: '', output: 'Web Linux 终端 v56\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南\n输入 "wiki" 探索维基百科 | "geo" 探索世界地理 | "recipe" 发现美食 | "snippets" 管理代码片段\n💡 提示：输入 \'help\' 查看所有可用命令\n🔄 新增命令：weather [城市] - 查看实时天气 | js [代码] - 执行JS代码 | share - 分享终端内容' },
   ])
   const [cmdHistory, setCmdHistory] = useState<string[]>(() => {
     try {
@@ -398,7 +398,7 @@ export default function Terminal() {
         '系统监控': ['ps', 'top', 'sysinfo'],
         '网络工具': ['ping', 'curl', 'fetch', 'ifconfig', 'ipinfo', 'iplookup', 'dig', 'nslookup', 'ip', 'weather', 'weather-forecast', 'news', 'crypto', 'translate', 'currency'],
         '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'converter', 'ascii-table', 'md5sum', 'sha256sum', 'sha1sum', 'sha512sum', 'watch'],
-        '开发工具': ['code-highlight', 'color', 'http-status', 'base-convert', 'url-parse', 'markdown', 'dict', 'wikipedia'],
+        '开发工具': ['code-highlight', 'color', 'http-status', 'base-convert', 'url-parse', 'markdown', 'dict', 'wikipedia', 'js'],
         '趣味命令': ['cowsay', 'cowthink', 'dog', 'fortune', 'sl', 'banner', 'matrix', 'joke', 'advice', 'flip', 'rps', 'fact', 'emoji', 'nasa', 'randomuser', 'github-trending'],
         '其他': ['search', 'alias', 'unalias', 'history', 'welcome', 'open', 'app', 'motd', 'timer'],
       }

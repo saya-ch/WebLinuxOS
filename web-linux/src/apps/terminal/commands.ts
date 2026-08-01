@@ -132,3 +132,37 @@ export function getSuggestions(input: string, cwd: string, files: FileNode[]): s
       return child.type === 'folder' ? `${fullPath}/` : fullPath
     })
 }
+
+// 新增命令：weather (使用 wttr.in API)
+registerCommand('weather', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const city = context.args.join(' ') || 'Beijing'
+    try {
+      const resp = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=3`)
+      const text = await resp.text()
+      return { output: text }
+    } catch {
+      return { output: `❌ 获取天气失败，请检查网络连接` }
+    }
+  },
+  description: '查看实时天气 (使用 wttr.in API)',
+  usage: 'weather [城市名]',
+}, { force: true, source: 'commands.ts' })
+
+// 新增命令：js
+registerCommand('js', {
+  handler: async (context: CommandContext): Promise<CommandResult> => {
+    const code = context.args.join(' ')
+    if (!code) {
+      return { output: '❌ 请提供要执行的代码，例如: js Math.PI * 2' }
+    }
+    try {
+      const result = new Function('return ' + code)()
+      return { output: String(result) }
+    } catch (err: any) {
+      return { output: `❌ 执行错误: ${err.message}` }
+    }
+  },
+  description: '执行 JavaScript 代码',
+  usage: 'js <代码表达式>',
+}, { source: 'commands.ts' })

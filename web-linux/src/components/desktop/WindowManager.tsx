@@ -17,6 +17,10 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  OnlineCodeRunnerPro: () => import('../../apps/OnlineCodeRunnerPro'),
+  WeatherLive: () => import('../../apps/WeatherLive'),
+  JsonCrusher: () => import('../../apps/JsonCrusher'),
+  CssStudio: () => import('../../apps/CssStudio'),
   RealTimeCollaborationHub: () => import('../../apps/RealTimeCollaborationHub'),
   SmartKnowledgeGraph: () => import('../../apps/SmartKnowledgeGraph'),
   StudioSuite: () => import('../../apps/StudioSuite'),
@@ -414,6 +418,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIWikiSearch: () => import('../../apps/AIWikiSearch'),
   CodeSnapShare: () => import('../../apps/CodeSnapShare'),
   WebSummarizer: () => import('../../apps/WebSummarizer'),
+  MarkdownSlidesPro: () => import('../../apps/MarkdownSlidesPro'),
+  OpenSourceHub: () => import('../../apps/OpenSourceHub'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
