@@ -328,7 +328,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SystemAssistant: () => import('../../apps/SystemAssistant'),
   SystemDashboard: () => import('../../apps/SystemDashboard'),
   SystemDiagnosticsPro: () => import('../../apps/SystemDiagnosticsPro'),
-  SystemHealthCheck: () => import('../../apps/SystemHealthCheck'),
   SystemHealthDashboard: () => import('../../apps/SystemHealthDashboard'),
   SystemHealthDashboardEnhanced: () => import('../../apps/SystemHealthDashboardEnhanced'),
   SystemInfo: () => import('../../apps/SystemInfo'),
@@ -424,6 +423,13 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   NebulaDashboard: () => import('../../apps/NebulaDashboard'),
   PollinationsAI: () => import('../../apps/PollinationsAI'),
   DevAtlas: () => import('../../apps/DevAtlas'),
+  // === v63 安全与创新套件 ===
+  SecureVault: () => import('../../apps/SecureVault'),
+  CryptoPriceTracker: () => import('../../apps/CryptoPriceTracker'),
+  SystemHealthCheck: () => import('../../apps/SystemHealthCheck'),
+  JsonWorkbench: () => import('../../apps/JsonWorkbench'),
+  TimeTravel: () => import('../../apps/TimeTravel'),
+  ColorLab: () => import('../../apps/ColorLab'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

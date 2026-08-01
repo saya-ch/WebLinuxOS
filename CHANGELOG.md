@@ -5,6 +5,37 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [63.0.0] - 2026-08-14
+
+### Added — v63 安全与创新套件
+
+- **SecureVault 密码保险库** — 本地加密密码管理器，使用 Web Crypto API AES-GCM 加密，主密码解锁，支持密码 CRUD、自动生成强密码、强度指示器、分类管理、标签搜索、导入导出。(`apps/SecureVault.tsx`)
+- **CryptoPrice 实时行情追踪** — 基于 CoinGecko 公开 API 的加密货币行情追踪，100+ 币种、7 日价格走势图、市值排名、收藏列表、24h 涨跌幅、成交量数据。(`apps/CryptoPriceTracker.tsx`)
+- **SystemHealth 健康检查** — 浏览器系统健康检查仪表盘，实时监控 JS 堆内存、CPU 核心数、FPS 帧率、网络状态、存储分析、浏览器信息，提供优化建议。(`apps/SystemHealthCheck.tsx`)
+- **JSON Workbench 工作台** — 高级 JSON 处理工作台：格式化/压缩/校验、JSONPath 查询、Diff 对比、Schema 生成、TypeScript 类型生成、树形可视化。(`apps/JsonWorkbench.tsx`)
+- **TimeTravel 时间旅行** — 时间戳转换与日期计算工具：Unix 时间戳互转、时区转换、日期差值计算、节假日倒数、自定义格式化、批量转换。(`apps/TimeTravel.tsx`)
+- **ColorLab 色彩实验室** — 色彩工具箱：颜色选择器、HEX/RGB/HSL 互转、调色板生成、渐变编辑器、对比度检查、色盲模拟。(`apps/ColorLab.tsx`)
+
+### Added — 终端 API 集成命令
+
+- 新增 `advancedApiCommands.ts`：npm 包搜索、货币汇率、天气查询（CLI版）、IP 地址查询、文本翻译、ASCII 艺术字生成命令。
+- 新增 `vitalApiCommands.ts`：Hacker News 新闻、随机名言、笑话、冷知识、GitHub 搜索、趋势榜等终端命令。
+- 终端命令总数突破 100+，集成多个合规公开 API。
+
+### Fixed — 编译错误修复
+
+- 修复 SystemHealthCheck.tsx JSX 结构错误（缺少包裹 div 导致编译失败）。
+- 修复 CryptoPriceTracker.tsx 接口类型定义（添加 `sparkline_in_7d` 属性、移除未使用导入）。
+- 修复 JsonWorkbench.tsx 类型错误（Schema properties 类型推断、移除未使用变量）。
+- 修复 ColorLab.tsx 未使用参数警告。
+- 修复 vitalApiCommands.ts 变量引用错误（`id` → `story.id`）。
+- 修复 WindowManager.tsx 重复属性名（`SystemHealthCheck` 重复注册）。
+
+### Changed — 版本与文档
+
+- 版本号更新至 v63.0.0。
+- README 更新：新增 v63 功能说明、更新应用数量、新增终端命令介绍。
+
 ## [59.0.0] - 2026-08-01
 
 ### Added — System-wide QuickNote overlay

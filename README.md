@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v61.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v63.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -20,7 +20,7 @@
 
 ## 项目简介
 
-WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 370+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 380+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 ## 特性
 
@@ -42,7 +42,7 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 
 ### 应用生态
 
-- 370+ 内置应用，涵盖开发、办公、互联网、多媒体、系统、AI、游戏等类别
+- 380+ 内置应用，涵盖开发、办公、互联网、多媒体、系统、AI、游戏等类别
 - 每个应用都是真实可用的工具，不是占位或演示
 - 统一的应用注册系统，支持扩展与动态发现
 
@@ -75,6 +75,12 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 - Web Serial 终端：硬件调试
 - File System Access 本地文件浏览：真实本地文件系统访问
 - PrivacyGuard 隐私卫士：本地 PII 检测，17 类敏感信息
+- SecureVault 密码保险库：Web Crypto API AES-GCM 本地加密、主密码解锁、密码 CRUD、强密码生成、分类管理
+- CryptoPrice 实时行情：CoinGecko 公开 API、100+ 币种价格追踪、7 日走势图、市值排名、收藏列表
+- SystemHealth 健康检查：浏览器内存/CPU/FPS/网络/存储实时监控、性能诊断与优化建议
+- JSON Workbench 工作台：格式化/压缩/校验、JSONPath 查询、Diff 对比、Schema 生成、TypeScript 类型生成
+- TimeTravel 时间旅行：Unix 时间戳互转、时区转换、日期差值计算、节假日倒数、自定义格式化
+- ColorLab 色彩实验室：颜色选择器、HEX/RGB/HSL 互转、调色板生成、渐变编辑器、对比度检查、色盲模拟
 
 ## 技术栈
 
@@ -135,6 +141,7 @@ npm run preview
 | 在线代码运行器 Pro | JavaScript 实时执行、HTML/CSS/JS 实时预览、代码分享 |
 | API 测试器 | 真实 HTTP 请求、预设模板、请求历史 |
 | JSON 超级工具 | 格式化/压缩、JSONPath 查询、Schema 验证、Diff 对比 |
+| JSON Workbench | 高级 JSON 处理、Schema 生成、TypeScript 类型生成、树形可视化 |
 | CSS 工作室 | 渐变编辑、阴影生成、动画关键帧、Flexbox 预览 |
 | WASM 实验场 | WAT 编辑、编译、执行、字节导出 |
 | AI 代码分析器 Pro | 7 种语言的代码质量分析、改进建议 |
@@ -142,6 +149,7 @@ npm run preview
 | SnippetVault | 代码片段管理、16 个内置模板 |
 | DevLab | 12+ 开发工具集成 |
 | CronLab | 可视化 Cron 构建器、下次执行预测 |
+| ColorLab | 色彩工具箱、HEX/RGB/HSL 互转、调色板生成、色盲模拟 |
 
 ### 办公工具
 
@@ -179,9 +187,11 @@ npm run preview
 
 | 应用 | 说明 |
 |------|------|
-| 终端 | 90+ 命令、Unix 管道、输出重定向 |
+| 终端 | 100+ 命令、Unix 管道、输出重定向、API 集成（npm/天气/汇率/翻译/IP 查询） |
 | 实时系统监控 | JS 堆内存、网络、FPS、性能计时 |
 | PrivacyGuard | 本地 PII 检测、17 类敏感信息 |
+| SecureVault | 本地加密密码管理器、Web Crypto API、AES-GCM 加密、密码生成器 |
+| SystemHealth | 浏览器健康检查仪表盘、内存/CPU/网络/存储实时监控 |
 | File Hash Calculator | SHA-1/256/384/512 |
 | 剪贴板历史 | 搜索、过滤、收藏、持久化存储 |
 | LocalFileExplorer | File System Access API 真实本地文件浏览 |
