@@ -410,6 +410,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v55.3 新增 InsightPulse AI 洞察仪表盘 + CodeDocGen 代码文档生成器
   InsightPulse: () => import('../../apps/InsightPulse'),
   CodeDocGen: () => import('../../apps/CodeDocGen'),
+  // === v60 创新应用套件
+  AIWikiSearch: () => import('../../apps/AIWikiSearch'),
+  CodeSnapShare: () => import('../../apps/CodeSnapShare'),
+  WebSummarizer: () => import('../../apps/WebSummarizer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

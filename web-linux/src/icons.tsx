@@ -337,3 +337,41 @@ export const WorkflowIcon = ({ size = 18 }: { size?: number }) => (
     <line x1="18" y1="9" x2="12" y2="15"/>
   </svg>
 )
+
+/* =================== v60 新增应用图标 =================== */
+
+export const WikiSearchIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <path d="M8 11h6" strokeWidth="2.5"/>
+    <path d="M11 8v6" strokeWidth="2.5"/>
+  </svg>
+)
+
+export const CodeSnapIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6"/>
+    <polyline points="8 6 2 12 8 18"/>
+    <line x1="14" y1="4" x2="10" y2="20"/>
+  </svg>
+)
+
+export const WebSummarizeIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 6h16M4 12h10M4 18h16" strokeWidth="2.5"/>
+    <circle cx="19" cy="18" r="3" fill="currentColor" opacity="0.3"/>
+    <path d="M20 17l-2 2-1-1" strokeWidth="2"/>
+  </svg>
+)
+
+export const TranslateIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m5 8 6 6"/>
+    <path d="m4 14 6-6 2-3"/>
+    <path d="M2 5h12"/>
+    <path d="M7 2h1"/>
+    <path d="m22 22-5-10-5 10"/>
+    <path d="M14 18h6"/>
+  </svg>
+)

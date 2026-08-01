@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v59.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v60.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -24,15 +24,22 @@ WebLinuxOS is a full-featured Linux desktop environment that runs entirely in th
 
 With **360+ built-in applications** across development, productivity, networking, media, system tools, AI, and games, WebLinuxOS turns any device with a browser into a complete workstation. Built with React 19 and TypeScript, featuring virtual desktops, multiple themes, GPU-accelerated animations, and browser-native APIs (Web Speech, getDisplayMedia, Web Crypto, Web Serial, File System Access).
 
-## What's New in v59
+## What's New in v60
+
+A major innovation release with three new productivity-enhancing applications integrated with public APIs:
+
+- **AIWikiSearch (NEW)** — Intelligent Wikipedia search tool with bilingual (English/Chinese) real-time search suggestions, article reading with table of contents navigation, AI-powered summary generation, favorites and browsing history, dark/light theme support with glass morphism design. Built on the official Wikipedia REST API and MediaWiki OpenSearch API.
+- **CodeSnapShare (NEW)** — Code snippet sharing platform supporting 10 programming languages with lightweight syntax highlighting. Generate shareable links via Base64 encoding + hash routing, one-click copy/import, favorites and history management, emoji tagging, and theme switching. Zero backend required.
+- **WebSummarizer (NEW)** — Web content extraction and intelligent summarization tool. Input any URL to extract metadata (title, description, OG tags), generate multi-level summaries (short/medium/detailed), extract keywords and tags, analyze reading difficulty, translate across 7 languages via MyMemory API, and export summaries as Markdown. Uses multiple CORS proxies for reliable fetching.
+- **Code quality hardening** — Fixed TypeScript strict mode violations across all three new applications: proper null checking, type assertions for CSS properties, duplicate identifier resolution, and unused variable cleanup.
+
+### Previous (v59)
 
 A quality and productivity release: hardening critical bugs and adding a frictionless system-wide capture tool.
 
-- **QuickNote Overlay (NEW)** — A global quick-capture scratchpad available everywhere via `Alt+N` or the taskbar tray note icon. Type a thought and it auto-saves to localStorage instantly; press `Ctrl+Enter` to save it as a real `.txt` file into the virtual `~/文档` directory, or send it straight to the text editor. Multi-note list, full-text search, live word/character count, and an editorial amber-on-glass aesthetic. No app window to open — capture happens in place, over any running app.
-- **Terminal resilience fix** — `JSON.parse` of saved command history and aliases is now wrapped in `try/catch` with shape validation, so a corrupted `localStorage` entry can no longer crash the Terminal on open. Clipboard copy/paste handlers no longer leak unhandled promise rejections when permissions are denied, and the mount-time `setTimeout` is properly cleared on unmount.
-- **Duplicate app id resolved** — The launcher registry contained two entries both using `id: 'idea-board'` (one mapping to `IdeaBoardInfinite`, one to the classic `IdeaBoard`), causing the launcher to show duplicates or silently overwrite one entry. The classic variant is now registered as `idea-board-classic`.
-- **RecipeLab unhandled rejection fix** — The "add all planned meals to shopping list" action could leak an unhandled promise rejection if any individual lookup failed; each lookup is now individually caught and the whole flow degrades gracefully.
-- **Discoverable shortcut** — QuickNote is documented in the Shortcut Panel (`Ctrl+Shift+?`) so the `Alt+N` binding is visible alongside every other system shortcut.
+- **QuickNote Overlay (NEW)** — A global quick-capture scratchpad available everywhere via `Alt+N` or the taskbar tray note icon. Type a thought and it auto-saves to localStorage instantly; press `Ctrl+Enter` to save it as a real `.txt` file into the virtual `~/文档` directory, or send it straight to the text editor. Multi-note list, full-text search, live word/character count, and an editorial amber-on-glass aesthetic.
+- **Terminal resilience fix** — `JSON.parse` of saved command history and aliases is now wrapped in `try/catch` with shape validation, so a corrupted `localStorage` entry can no longer crash the Terminal on open.
+- **Duplicate app id resolved** — The launcher registry contained two entries both using `id: 'idea-board'`; the classic variant is now registered as `idea-board-classic`.
 
 ### Previous (v58)
 
@@ -64,6 +71,7 @@ Multi-window environment with 4 virtual desktops, draggable/resizable windows, t
 
 ### Development Tools
 
+- **CodeSnapShare** — Code snippet sharing with 10-language syntax highlighting, Base64 share links, favorites, emoji tagging
 - **Monaco Editor** — Syntax highlighting, multi-language support, auto-completion
 - **API Tester** — Real API calls, preset templates, request history, favorites
 - **CodeReviewBot** — 25+ static analysis rules across security, performance, complexity, maintainability, and naming for JS/TS/Python
@@ -74,6 +82,7 @@ Multi-window environment with 4 virtual desktops, draggable/resizable windows, t
 
 ### Productivity
 
+- **WebSummarizer** — URL metadata extraction, multi-level summaries, keyword extraction, reading difficulty analysis, 7-language translation, Markdown export
 - **Smart Workbench** — Unified hub with Pomodoro timer, system stats, 36+ curated apps
 - **ResumeForge** — 4 templates, 10 color palettes, 7 editable modules, keyword highlighter, HTML/Markdown export
 - **MarkdownPublisher** — 5 publication templates, split-pane editor, standalone HTML export
@@ -94,6 +103,7 @@ Multi-window environment with 4 virtual desktops, draggable/resizable windows, t
 
 ### Network & APIs
 
+- **AIWikiSearch** — Intelligent Wikipedia search with bilingual (EN/ZH) real-time suggestions, TOC navigation, AI summaries, favorites, and reading history
 - **OpenAPI Hub** — 50+ endpoints across 10 categories, zero configuration, live JSON viewer
 - **NexusHub** — 8 public APIs, favorites collection, no keys required
 - **BookFinder** — Open Library API search with covers, ratings, and favorites
@@ -308,12 +318,16 @@ If you deploy to your own fork, verify `vite.config.ts` → `base` matches your 
 - [Pyodide](https://pyodide.org/) — Python runtime for the browser
 - [Zustand](https://github.com/pmndrs/zustand) — State management
 - [Vite](https://vitejs.dev/) — Build tool
+- [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) — Free encyclopedia content
+- [MediaWiki OpenSearch API](https://www.mediawiki.org/wiki/API:Opensearch) — Real-time search suggestions
+- [MyMemory Translation API](https://mymemory.translated.net/) — Free multilingual translation
 - [Frankfurter](https://www.frankfurter.app/) — Exchange rate data
 - [Pollinations.ai](https://pollinations.ai/) — Free AI image generation
 - [Open Library](https://openlibrary.org/developers/api) — Book catalog
 - [Open-Meteo](https://open-meteo.com/) — Weather forecast API
 - [REST Countries](https://restcountries.com/) — Country information API
 - [Hacker News API](https://github.com/HackerNews/API) — HN Firebase API
+- [Corsproxy.io](https://corsproxy.io/) — CORS proxy for web scraping
 
 ---
 

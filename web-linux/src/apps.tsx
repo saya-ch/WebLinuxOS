@@ -12,7 +12,8 @@ import {
   LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
-  LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon
+  LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
+  WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon
 } from './icons'
 
 
@@ -177,6 +178,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v55.3 新增 InsightPulse AI 洞察仪表盘 + CodeDocGen 代码文档生成器
   { id: 'insight-pulse', name: 'InsightPulse · AI 洞察仪表盘', icon: <InsightPulseIcon />, component: 'InsightPulse', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '多源聚合洞察中心：Hacker News 科技新闻、GitHub 热门趋势、ZenQuotes 每日箴言、RestCountries 世界国家信息，支持 10 分钟智能缓存、搜索过滤、本地收藏、一键复制、离线回退' },
   { id: 'code-doc-gen', name: 'CodeDocGen · 代码文档生成器', icon: <CodeDocGenIcon />, component: 'CodeDocGen', category: 'development', defaultWidth: 1200, defaultHeight: 840, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '多语言代码文档自动生成：TypeScript/JavaScript/Python/Go/Rust/Java/CSS/HTML 自动检测，JSDoc/Google/NumPy/Doxygen/PyDoc 五种注释风格，函数摘要/参数/返回值/异常/示例六维分析，一键复制或导出 Markdown' },
+  // === v60 创新应用套件
+  { id: 'ai-wiki-search', name: 'AIWikiSearch · 智能维基搜索', icon: <WikiSearchIcon />, component: 'AIWikiSearch', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Wikipedia 智能搜索：中英双语实时搜索建议、文章阅读+目录导航、AI摘要生成、收藏与历史、深色/浅色主题、玻璃拟态设计' },
+  { id: 'code-snap-share', name: 'CodeSnapShare · 代码片段分享', icon: <CodeSnapIcon />, component: 'CodeSnapShare', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '代码片段快速分享：10种语言语法高亮、Base64编码分享链接、一键复制导入、收藏与历史管理、表情标签、主题切换' },
+  { id: 'web-summarizer', name: 'WebSummarizer · 网页摘要工具', icon: <WebSummarizeIcon />, component: 'WebSummarizer', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '网页内容提取与智能摘要：URL元数据抓取、多级摘要生成、关键词提取、阅读难度分析、7种语言翻译、导出Markdown' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
