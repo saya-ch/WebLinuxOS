@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
-import { TerminalIcon, SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon } from '../../icons'
+import { TerminalIcon, SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon, NoteIcon } from '../../icons'
 
 // 进场/指示器/提示框动画 —— 通过 <style> 注入，避免新增依赖
 const TASKBAR_ENHANCEMENTS_CSS = `
@@ -804,6 +804,16 @@ const Taskbar = memo(function Taskbar() {
           style={{ cursor: 'pointer' }}
         >
           {getVolumeIcon()}
+        </TrayItem>
+        <TrayItem
+          title="速记 (Alt+N)"
+          onClick={(e) => {
+            e.stopPropagation()
+            window.dispatchEvent(new CustomEvent('weblinux-open-quicknote'))
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          <NoteIcon size={14} />
         </TrayItem>
         <TrayItem
           title={`电池: ${Math.round(battery)}% ${isCharging ? '(充电中)' : ''}`}

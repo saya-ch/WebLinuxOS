@@ -5,6 +5,40 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [59.0.0] - 2026-08-01
+
+### Added — System-wide QuickNote overlay
+
+- **QuickNote Overlay** — a frictionless quick-capture scratchpad reachable from
+  anywhere via `Alt+N` or the new taskbar tray note icon. Multi-note list with
+  full-text search, instant debounced auto-save to `localStorage`, live
+  word/character count, and one-key (`Ctrl+Enter`) export of a note as a real
+  `.txt` file into the virtual `~/文档` directory — or send it straight to the
+  text editor. Editorial amber-on-glass aesthetic with serif body type.
+  (`components/QuickNoteOverlay.tsx`, wired in `App.tsx`, `Taskbar.tsx`,
+  `ShortcutPanel.tsx`)
+
+### Fixed — Reliability hardening
+
+- **Terminal no longer crashes on corrupted `localStorage`** — `JSON.parse` of
+  saved command history and aliases is now wrapped in `try/catch` with shape
+  validation, so a malformed entry can no longer throw at component init and
+  blank the Terminal. (`apps/Terminal.tsx`)
+- **Terminal clipboard handlers no longer leak unhandled rejections** —
+  `handleCopy` / `handlePaste` now `try/catch` the async Clipboard API calls,
+  which previously rejected when clipboard permission was denied.
+  (`apps/Terminal.tsx`)
+- **Terminal mount `setTimeout` is now cleared on unmount** — closing the
+  Terminal quickly no longer leaves a pending focus timer. (`apps/Terminal.tsx`)
+- **Duplicate `idea-board` app id resolved** — the registry contained two
+  entries both keyed `idea-board` (one → `IdeaBoardInfinite`, one → classic
+  `IdeaBoard`), causing the launcher to render duplicates or silently overwrite
+  one. The classic variant is now registered as `idea-board-classic`.
+  (`apps.tsx`)
+- **RecipeLab no longer leaks an unhandled rejection** — the "add all planned
+  meals to shopping list" action now catches each individual lookup so a single
+  failed request no longer rejects the whole `Promise.all`. (`apps/RecipeLab.tsx`)
+
 ## [52.0.0] - 2026-07-25
 
 ### Fixed — Reliability & Quality pass

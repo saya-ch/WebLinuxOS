@@ -34,6 +34,7 @@ const allShortcuts: ShortcutItem[] = [
   { keys: 'PrintScreen', description: '截图', category: '系统' },
   { keys: 'Ctrl + K', description: '全局搜索', category: '系统' },
   { keys: 'Ctrl + P', description: '命令面板', category: '系统' },
+  { keys: 'Alt + N', description: '速记（快速笔记覆盖层）', category: '系统' },
   { keys: 'Ctrl + L', description: '锁屏', category: '系统' },
   { keys: 'Ctrl + N', description: '通知中心', category: '系统' },
   { keys: 'Super', description: '打开启动器', category: '系统' },

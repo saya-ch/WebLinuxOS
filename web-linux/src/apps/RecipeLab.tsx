@@ -1257,9 +1257,12 @@ export default memo(function RecipeLab() {
                     plannedMeals.map(m =>
                       fetchJSON<{ meals: Meal[] | null }>(`${API}/lookup.php?i=${m.idMeal}`)
                         .then(data => data.meals ? data.meals[0] : null)
+                        .catch(() => null)
                     )
                   ).then(meals => {
                     meals.forEach(m => { if (m) addMealToShopping(m) })
+                    setTab('shopping')
+                  }).catch(() => {
                     setTab('shopping')
                   })
                 }}

@@ -80,14 +80,18 @@ export default function Terminal() {
     { input: '', output: 'Web Linux 终端 v56\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南\n输入 "wiki" 探索维基百科 | "geo" 探索世界地理 | "recipe" 发现美食 | "snippets" 管理代码片段' },
   ])
   const [cmdHistory, setCmdHistory] = useState<string[]>(() => {
-    const saved = localStorage.getItem('weblinux-cmd-history')
-    return saved ? JSON.parse(saved) : []
+    try {
+      const saved = localStorage.getItem('weblinux-cmd-history')
+      const parsed = saved ? JSON.parse(saved) : []
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
   })
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number }>({ visible: false, x: 0, y: 0 })
   const [aliases, setAliases] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('weblinux-aliases')
-    return saved ? JSON.parse(saved) : {
+    const defaults: Record<string, string> = {
       ll: 'ls -la',
       la: 'ls -a',
       '..': 'cd ..',
@@ -95,6 +99,13 @@ export default function Terminal() {
       home: 'cd ~',
       cls: 'clear',
       q: 'exit',
+    }
+    try {
+      const saved = localStorage.getItem('weblinux-aliases')
+      const parsed = saved ? JSON.parse(saved) : defaults
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? { ...defaults, ...parsed } : defaults
+    } catch {
+      return defaults
     }
   })
 
@@ -111,7 +122,8 @@ export default function Terminal() {
 
   useEffect(() => {
     const focusInput = () => inputRef.current?.focus()
-    setTimeout(focusInput, 100)
+    const id = setTimeout(focusInput, 100)
+    return () => clearTimeout(id)
   }, [])
 
   useEffect(() => {
@@ -550,15 +562,23 @@ export default function Terminal() {
   const handleCopy = async () => {
     const selectedText = window.getSelection()?.toString()
     if (selectedText) {
-      await navigator.clipboard.writeText(selectedText)
+      try {
+        await navigator.clipboard.writeText(selectedText)
+      } catch {
+        // 剪贴板权限被拒或不可用，静默忽略
+      }
     }
     setContextMenu({ visible: false, x: 0, y: 0 })
   }
 
   const handlePaste = async () => {
     if (navigator.clipboard && navigator.clipboard.readText) {
-      const text = await navigator.clipboard.readText()
-      setInput(prev => prev + text)
+      try {
+        const text = await navigator.clipboard.readText()
+        setInput(prev => prev + text)
+      } catch {
+        // 剪贴板权限被拒或不可用，静默忽略
+      }
     }
     setContextMenu({ visible: false, x: 0, y: 0 })
   }

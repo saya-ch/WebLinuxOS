@@ -11,6 +11,7 @@ const GlobalSearch = lazy(() => import('./apps/GlobalSearch'))
 import CommandPalette from './components/CommandPalette'
 import ShortcutPanel from './components/ShortcutPanel'
 import SmartCommandCenter from './components/SmartCommandCenter'
+import QuickNoteOverlay from './components/QuickNoteOverlay'
 import './styles/cyberpunk-theme.css'
 import './styles/quantum-theme.css'
 
@@ -90,16 +91,19 @@ const App = memo(function App() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [shortcutPanelOpen, setShortcutPanelOpen] = useState(false)
   const [smartCommandOpen, setSmartCommandOpen] = useState(false)
+  const [quickNoteOpen, setQuickNoteOpen] = useState(false)
   const registeredRef = useRef(false)
   const setSearchOpenRef = useRef(setSearchOpen)
   const setCommandPaletteOpenRef = useRef(setCommandPaletteOpen)
   const setSmartCommandOpenRef = useRef(setSmartCommandOpen)
+  const setQuickNoteOpenRef = useRef(setQuickNoteOpen)
 
   useEffect(() => {
     setSearchOpenRef.current = setSearchOpen
     setCommandPaletteOpenRef.current = setCommandPaletteOpen
     setSmartCommandOpenRef.current = setSmartCommandOpen
-  }, [setSearchOpen, setCommandPaletteOpen, setSmartCommandOpen])
+    setQuickNoteOpenRef.current = setQuickNoteOpen
+  }, [setSearchOpen, setCommandPaletteOpen, setSmartCommandOpen, setQuickNoteOpen])
 
   useEffect(() => {
     if (!registeredRef.current) {
@@ -145,7 +149,7 @@ const App = memo(function App() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       addNotification: (n: any) => st.getState().addNotification(n),
       getState: () => st.getState(),
-      version: '58.0.0',
+      version: '59.0.0',
       buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -169,6 +173,13 @@ const App = memo(function App() {
         window.removeEventListener('weblinux-open-app', handleLaunchAppRef.current)
       }
     }
+  }, [])
+
+  // 监听「速记」自定义事件：允许任务栏等任意组件唤起全局快速笔记覆盖层
+  useEffect(() => {
+    const openQuickNote = () => setQuickNoteOpen(true)
+    window.addEventListener('weblinux-open-quicknote', openQuickNote)
+    return () => window.removeEventListener('weblinux-open-quicknote', openQuickNote)
   }, [])
 
   useEffect(() => {
@@ -306,6 +317,14 @@ const App = memo(function App() {
       if (isMod && key === 'p') {
         e.preventDefault()
         setCommandPaletteOpenRef.current(true)
+        return
+      }
+
+      // 全局快速笔记覆盖层：Alt + N (N = Note 速记)
+      // 避开 Ctrl+Shift+J（Chrome DevTools 控制台快捷键）等浏览器保留组合
+      if (e.altKey && !isMod && key === 'n') {
+        e.preventDefault()
+        setQuickNoteOpenRef.current(true)
         return
       }
 
@@ -449,6 +468,7 @@ const App = memo(function App() {
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
       <ShortcutPanel isOpen={shortcutPanelOpen} onClose={() => setShortcutPanelOpen(false)} />
       <SmartCommandCenter isOpen={smartCommandOpen} onClose={() => setSmartCommandOpen(false)} />
+      <QuickNoteOverlay isOpen={quickNoteOpen} onClose={() => setQuickNoteOpen(false)} />
       <QuickActionCenter isOpen={quickActionCenterOpen} onClose={closeQuickActionCenter} />
     </ErrorBoundary>
   )

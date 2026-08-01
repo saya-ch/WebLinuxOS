@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v58.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v59.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -24,7 +24,17 @@ WebLinuxOS is a full-featured Linux desktop environment that runs entirely in th
 
 With **360+ built-in applications** across development, productivity, networking, media, system tools, AI, and games, WebLinuxOS turns any device with a browser into a complete workstation. Built with React 19 and TypeScript, featuring virtual desktops, multiple themes, GPU-accelerated animations, and browser-native APIs (Web Speech, getDisplayMedia, Web Crypto, Web Serial, File System Access).
 
-## What's New in v58
+## What's New in v59
+
+A quality and productivity release: hardening critical bugs and adding a frictionless system-wide capture tool.
+
+- **QuickNote Overlay (NEW)** — A global quick-capture scratchpad available everywhere via `Alt+N` or the taskbar tray note icon. Type a thought and it auto-saves to localStorage instantly; press `Ctrl+Enter` to save it as a real `.txt` file into the virtual `~/文档` directory, or send it straight to the text editor. Multi-note list, full-text search, live word/character count, and an editorial amber-on-glass aesthetic. No app window to open — capture happens in place, over any running app.
+- **Terminal resilience fix** — `JSON.parse` of saved command history and aliases is now wrapped in `try/catch` with shape validation, so a corrupted `localStorage` entry can no longer crash the Terminal on open. Clipboard copy/paste handlers no longer leak unhandled promise rejections when permissions are denied, and the mount-time `setTimeout` is properly cleared on unmount.
+- **Duplicate app id resolved** — The launcher registry contained two entries both using `id: 'idea-board'` (one mapping to `IdeaBoardInfinite`, one to the classic `IdeaBoard`), causing the launcher to show duplicates or silently overwrite one entry. The classic variant is now registered as `idea-board-classic`.
+- **RecipeLab unhandled rejection fix** — The "add all planned meals to shopping list" action could leak an unhandled promise rejection if any individual lookup failed; each lookup is now individually caught and the whole flow degrades gracefully.
+- **Discoverable shortcut** — QuickNote is documented in the Shortcut Panel (`Ctrl+Shift+?`) so the `Alt+N` binding is visible alongside every other system shortcut.
+
+### Previous (v58)
 
 A major stability and creativity release focused on reliability and AI-powered content creation:
 
@@ -197,6 +207,7 @@ WebLinuxOS/
 | `Ctrl/Cmd + Space` | Smart command center |
 | `Ctrl/Cmd + P` | Command palette |
 | `Ctrl/Cmd + K` | Global search |
+| `Alt + N` | QuickNote overlay (system-wide capture) — v59 |
 | `Ctrl/Cmd + A` | Quick action center |
 | `Alt + Tab` | Switch windows (forward) |
 | `Shift + Alt + Tab` | Switch windows (reverse) |
