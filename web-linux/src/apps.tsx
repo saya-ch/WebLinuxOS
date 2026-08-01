@@ -13,7 +13,7 @@ import {
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
-  WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon
+  WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon
 } from './icons'
 
 
@@ -182,6 +182,14 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'ai-wiki-search', name: 'AIWikiSearch · 智能维基搜索', icon: <WikiSearchIcon />, component: 'AIWikiSearch', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Wikipedia 智能搜索：中英双语实时搜索建议、文章阅读+目录导航、AI摘要生成、收藏与历史、深色/浅色主题、玻璃拟态设计' },
   { id: 'code-snap-share', name: 'CodeSnapShare · 代码片段分享', icon: <CodeSnapIcon />, component: 'CodeSnapShare', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '代码片段快速分享：10种语言语法高亮、Base64编码分享链接、一键复制导入、收藏与历史管理、表情标签、主题切换' },
   { id: 'web-summarizer', name: 'WebSummarizer · 网页摘要工具', icon: <WebSummarizeIcon />, component: 'WebSummarizer', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '网页内容提取与智能摘要：URL元数据抓取、多级摘要生成、关键词提取、阅读难度分析、7种语言翻译、导出Markdown' },
+  // === v61 创新应用套件 — AI 创作工作室 + 实时数据洞察 + 浏览器工具箱
+  { id: 'ai-creation-studio', name: 'AI 创作工作室', icon: <SparklesIcon />, component: 'AICreationStudio', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的一站式创作平台：AI 图像生成（Pollinations.ai）、智能文案生成、配色方案生成、画布绘制，四合一创作工作台' },
+  { id: 'crypto-dashboard', name: '加密货币仪表盘', icon: <TrendingUpIcon />, component: 'CryptoTracker', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时加密货币行情追踪：基于 CoinGecko 公开 API，支持 100+ 加密货币、价格走势图、市值排名、收藏列表、价格提醒' },
+  { id: 'reddit-explorer', name: 'Reddit 探索', icon: <MessageIcon />, component: 'NewsHub', category: 'internet', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Reddit 社区内容探索：基于 Reddit JSON API，浏览热门帖子、子版块搜索、投票互动、内容收藏' },
+  { id: 'color-contrast-checker', name: 'WCAG 对比度检查器', icon: <PaletteIcon />, component: 'ColorPicker', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: 'WCAG 2.1 对比度合规检查：实时计算前景/背景颜色对比度、AAA/AA 等级判定、色盲模拟、色彩和谐度建议' },
+  { id: 'keyboard-shortcut-tester', name: '快捷键测试器', icon: <CommandIcon />, component: 'DevShortcuts', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '实时键盘事件可视化测试：捕获按键事件、显示键码/修饰键、生成快捷键组合、导出按键记录' },
+  { id: 'weather-now', name: '天气实时预报', icon: <CloudRainIcon />, component: 'WeatherNow', category: 'internet', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于 Open-Meteo API 的真实天气预报：城市搜索、7日预报、温湿度/风速/降水量数据、收藏城市、摄氏度/华氏度切换' },
+  { id: 'markdown-slides-pro', name: 'Markdown 幻灯片 Pro', icon: <PresentationIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于 Markdown 的幻灯片演示工具：实时预览、主题切换、演讲者视图、PDF导出、键盘导航' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

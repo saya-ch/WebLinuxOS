@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v60.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v61.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -24,7 +24,16 @@ WebLinuxOS is a full-featured Linux desktop environment that runs entirely in th
 
 With **360+ built-in applications** across development, productivity, networking, media, system tools, AI, and games, WebLinuxOS turns any device with a browser into a complete workstation. Built with React 19 and TypeScript, featuring virtual desktops, multiple themes, GPU-accelerated animations, and browser-native APIs (Web Speech, getDisplayMedia, Web Crypto, Web Serial, File System Access).
 
-## What's New in v60
+## What's New in v61
+
+A major innovation release with new AI-powered creative tools and real-time data applications:
+
+- **AI Creation Studio (NEW)** — AI-powered one-stop creation platform integrating four modules: AI image generation via Pollinations.ai (8+ artistic styles, 5 Flux models, multiple aspect ratios), intelligent copywriting with 5+ template types and variable interpolation, color palette generation with preset schemes and random creation, and canvas drawing with brush/eraser tools and undo/redo support.
+- **WeatherNow (NEW)** — Real-time weather forecast application built on the Open-Meteo public API. Features include city search with geocoding, 7-day forecast display, detailed weather metrics (humidity, wind speed, precipitation), favorite cities management, Celsius/Fahrenheit toggle, and dynamic background that changes between day/night modes.
+- **New app integrations** — Added five new app entries to the registry: AI Creation Studio, Crypto Dashboard, Reddit Explorer, WCAG Contrast Checker, Keyboard Shortcut Tester, and Markdown Slides Pro, extending the total application count to 370+.
+- **Code quality improvements** — Fixed TypeScript strict mode violations: removed unused imports and variables, fixed missing icon import references, and ensured all new components compile cleanly.
+
+### Previous (v60)
 
 A major innovation release with three new productivity-enhancing applications integrated with public APIs:
 
