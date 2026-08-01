@@ -196,6 +196,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'keyboard-shortcut-tester', name: '快捷键测试器', icon: <CommandIcon />, component: 'DevShortcuts', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '实时键盘事件可视化测试：捕获按键事件、显示键码/修饰键、生成快捷键组合、导出按键记录' },
   { id: 'weather-now', name: '天气实时预报', icon: <CloudRainIcon />, component: 'WeatherNow', category: 'internet', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于 Open-Meteo API 的真实天气预报：城市搜索、7日预报、温湿度/风速/降水量数据、收藏城市、摄氏度/华氏度切换' },
   { id: 'markdown-slides-pro', name: 'Markdown 幻灯片 Pro', icon: <PresentationIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于 Markdown 的幻灯片演示工具：实时预览、主题切换、演讲者视图、PDF导出、键盘导航' },
+  // === v62 三大创新应用套件 ===
+  { id: 'nebula-dashboard', name: 'Nebula 星云仪表盘', icon: <NebulaIcon />, component: 'NebulaDashboard', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '一站式信息聚合中心：NASA每日天文图、实时加密货币行情、精准天气预报、每日励志名言、系统状态监控，多源API一屏掌握' },
+  { id: 'pollinations-ai', name: 'Pollinations AI 工坊', icon: <PollinationsAIIcon />, component: 'PollinationsAI', category: 'utilities', defaultWidth: 1200, defaultHeight: 860, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '零配置 AI 全能工作台：AI智能对话、图像生成、代码生成、多语言翻译、文本总结写作，基于 Pollinations.ai 免费公开 API' },
+  { id: 'dev-atlas', name: 'DevAtlas 开发者图鉴', icon: <DevAtlasIcon />, component: 'DevAtlas', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '系统化学习路径导航：10+精选技术路径、步骤化学习指南、高质量免费资源聚合、进度跟踪收藏，构建你的技术成长地图' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1367,6 +1371,45 @@ function CodeDocGenIcon() {
       <path d="M15 14l2 2-2 2" />
       <path d="M13 13l-1 6" />
       <line x1="8" y1="12" x2="16" y2="12" strokeWidth="2.5" />
+    </svg>
+  )
+}
+
+/* === v62 三大创新应用图标 === */
+function NebulaIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(60 12 12)" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(120 12 12)" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+      <circle cx="18.5" cy="8.5" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="5" cy="15" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function PollinationsAIIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" />
+      <path d="M12 7v10" />
+      <path d="M3 7l9 5 9-5" />
+      <circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M7 9.5l5 2.8M17 9.5l-5 2.8" />
+    </svg>
+  )
+}
+
+function DevAtlasIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
+      <path d="M8 12c0-2.2 1.8-4 4-4M16 12c0 2.2-1.8 4-4 4" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M3 6l3 2M21 6l-3 2M3 18l3-2M21 18l-3-2" />
     </svg>
   )
 }

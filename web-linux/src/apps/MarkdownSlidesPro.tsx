@@ -226,7 +226,7 @@ function getTransitionStyle(type: TransitionType, direction: 'enter' | 'exit'): 
   }
   // slide
   return {
-    transform: direction === 'enter' ? 'translateX(0)' : (direction === 'exit-left' ? 'translateX(-30px)' : 'translateX(30px)'),
+    transform: direction === 'enter' ? 'translateX(0)' : 'translateX(30px)',
     opacity: direction === 'enter' ? 1 : 0,
     transition: `all ${transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
   } as React.CSSProperties;
@@ -238,7 +238,6 @@ export default function MarkdownSlidesPro() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPresenting, setIsPresenting] = useState(false);
   const [transition, setTransition] = useState<TransitionType>('slide');
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [isAnimating, setIsAnimating] = useState(false);
   const [showTemplateMenu, setShowTemplateMenu] = useState(false);
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -267,9 +266,8 @@ export default function MarkdownSlidesPro() {
   }, []);
 
   // Navigate slides
-  const goToSlide = useCallback((index: number, dir?: 'left' | 'right') => {
+  const goToSlide = useCallback((index: number, _dir?: 'left' | 'right') => {
     if (index < 0 || index >= totalSlides || isAnimating) return;
-    setSlideDirection(dir ?? (index > currentSlide ? 'right' : 'left'));
     setIsAnimating(true);
     setCurrentSlide(index);
     setTimeout(() => setIsAnimating(false), transitionDuration);

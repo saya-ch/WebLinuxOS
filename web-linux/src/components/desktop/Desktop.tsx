@@ -286,7 +286,6 @@ const Desktop = memo(function Desktop() {
   const [widgetVisibility, setWidgetVisibilityState] = useState<Record<string, boolean>>(() =>
     getWidgetVisibility()
   )
-  const lastClickRef = useRef<{ id: string; time: number } | null>(null)
   const [particles, setParticles] = useState<Particle[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   const mousePosRef = useRef({ x: 0, y: 0 })
@@ -478,7 +477,7 @@ const Desktop = memo(function Desktop() {
   }, [])
 
   const handleIconClick = useCallback(
-    (appId: string, iconId: string) => {
+    (_appId: string, iconId: string) => {
       setSelectedIconId(iconId)
     },
     [],

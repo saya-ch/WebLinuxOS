@@ -6,7 +6,7 @@ A production-grade Linux desktop environment running entirely in the browser. Bu
 
 [![Deploy to GitHub Pages](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-55.3.0-7c3aed.svg)](./web-linux/package.json)
+[![Version](https://img.shields.io/badge/version-62.0.0-7c3aed.svg)](./web-linux/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
@@ -32,6 +32,9 @@ Everything runs in the browser. No backend, no account, no telemetry.
 | **CronLab** | Visual cron expression builder with human-readable explanation, next-N-run preview, and 12 presets. Supports aliases (`mon`, `jan`, `L`, `W`, `#`). |
 | **InsightPulse** | Multi-source aggregation dashboard: Hacker News tech news, GitHub trending repositories, ZenQuotes daily proverbs, RestCountries world nation information. Supports 10-minute smart cache, search filtering, local favorites, one-click copy, and offline fallback. |
 | **CodeDocGen** | Multi-language code documentation auto-generation: automatic detection for TypeScript/JavaScript/Python/Go/Rust/Java/CSS/HTML. Five comment styles (JSDoc/Google/NumPy/Doxygen/PyDoc). Six-dimensional analysis: function summary / parameters / return values / exceptions / examples. One-click copy or Markdown export. |
+| **Nebula Dashboard** | One-stop information aggregation dashboard: NASA Astronomy Picture of the Day, real-time cryptocurrency market data (CoinGecko), precision weather forecasts (Open-Meteo) with city geocoding search, daily inspirational quotes (Quotable), and live system status monitoring. Multi-source API data displayed in one elegant, responsive glassmorphism interface. |
+| **Pollinations AI Studio** | Zero-config AI all-in-one workbench: intelligent chat conversations, AI image generation with style presets and size options, multi-language code generation, professional text translation between 8+ languages, and advanced text summarization/writing assistance. All powered by Pollinations.ai free public API — no API key required. |
+| **DevAtlas Developer Atlas** | Systematic learning path navigation: 10+ curated technical paths covering modern frontend, fullstack JavaScript, Python data science & AI, backend Go, Rust systems programming, DevOps & SRE, mobile development, UI/UX design, cybersecurity, and system design. Step-by-step learning guides with high-quality free resource aggregation, progress tracking, and favorites collection. Build your personal tech growth map. |
 | **Command Center** | Enhanced terminal with 100+ commands including network tools (`curl`, `fetch`, `ping`, `ipinfo`, `dig`, `nslookup`), online utilities (`weather`, `news`, `currency`, `crypto`, `translate`, `trivia`, `joke`, `holiday`), and developer tools (`hash-verify`, `calc`, `base64`, `uuid`, `timestamp`, `url-encode`, `url-decode`). |
 
 ### Desktop environment
@@ -231,6 +234,17 @@ without secrets:
 - `content-visibility` for off-screen windows
 
 ## Recent releases
+
+### v62.0 — Nebula Dashboard, Pollinations AI Studio & DevAtlas Developer Atlas
+
+The v62 Innovation Suite ships three brand-new production-grade applications that significantly extend WebLinuxOS beyond a desktop simulator into a genuinely useful daily workbench:
+
+- **New: Nebula Dashboard** — A polished one-screen information hub that consolidates four real public API sources into a single elegant dashboard. Live NASA Astronomy Picture of the Day with title/copyright/excerpt display, top-8 cryptocurrency market data from CoinGecko with 60s auto-refresh, precision weather from Open-Meteo including current conditions, 5-day forecast, humidity, wind, pressure, sunrise/sunset plus Open-Meteo Geocoding city search, a Quotable.io daily wisdom card, and a live system status panel (browser, connectivity, screen resolution, language). Features glassmorphism card layout, responsive grid, manual refresh, error toast notifications, and full data-source transparency disclosure.
+- **New: Pollinations AI Studio** — A zero-setup, no-API-key AI creative workstation built on top of Pollinations.ai free public endpoints. Five dedicated panels: **Chat** (6 preset personas including Creative Writing, Tech Advisor, Business Copywriting, English Tutor, Translator, Code Review with streaming-style progressive output, copy/regenerate/thumbs-up/down, conversation auto-save), **Image** (8 art style presets — photorealistic / cyberpunk / watercolor / anime / concept art / 3D render / pixel art / minimalist, 6 canvas aspect ratios, prompt + negative prompt, generation history sidebar, click to enlarge, one-click download), **Code** (14 language templates covering JS/TS/Python/Go/Rust/Java/C++/SQL/CSS/HTML/Swift/Kotlin/Ruby/PHP with syntax-highlighted output and copy button), **Translate** (8 languages bidirectional translation with swap-language button and copy), **Summarize / Writing** (long-form text summarization, article condensation, essay drafting with tone presets and result copy). All data flows directly from the browser to Pollinations endpoints — no middleman server.
+- **New: DevAtlas Developer Atlas** — A structured technical learning companion rather than yet-another link list. Ships with 10 curated learning paths: Modern Frontend Engineer, Full-Stack JavaScript Developer, Python Data Science & AI, Backend Go Developer, Rust Systems Programmer, DevOps & SRE Engineer, Cross-Platform Mobile Developer, UI/UX Designer, Cybersecurity Practitioner, and System Design Interview Preparation. Each path is broken into sequential steps categorized as learn / practice / project / read / watch with time estimates; each resource is explicitly tagged as doc / video / course / book / repo / article / practice / tool with free/paid status and expert notes (for example, “Eloquent JavaScript free book — strongly recommended”). Progress tracking via checked-off steps and per-path completion ratio, favorites/bookmarks system to save resources for later, live search across all paths + steps + resources, category filter chips, difficulty filter, progress tracking persisted to localStorage, expandable step accordions, and a click-through link icon to open every resource in a new tab.
+- **TypeScript build quality** — Strict-mode `tsc --noEmit` and `tsc -b` passes cleanly with zero errors. Fixed previously lingering unused-variable / unused-parameter TS issues across MarkdownSlidesPro, OnlineCodeRunnerPro, and Desktop core components.
+- **Build validation** — Full Vite production build verified at 14.8s, generating 40+ correctly lazy-loaded chunk files including the three new apps (`NebulaDashboard.js`, `PollinationsAI.js`, `DevAtlas.js`) at sensible sizes for on-demand loading.
+- **Version sync** — `package.json` version bumped from v55.3.0 to v62.0.0 to reflect the major feature milestone.
 
 ### v55.3 — AI Insight Dashboard & Code Documentation Generator
 

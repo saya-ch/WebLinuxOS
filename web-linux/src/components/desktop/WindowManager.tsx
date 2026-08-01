@@ -420,6 +420,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WebSummarizer: () => import('../../apps/WebSummarizer'),
   MarkdownSlidesPro: () => import('../../apps/MarkdownSlidesPro'),
   OpenSourceHub: () => import('../../apps/OpenSourceHub'),
+  // === v62 三大创新应用套件 ===
+  NebulaDashboard: () => import('../../apps/NebulaDashboard'),
+  PollinationsAI: () => import('../../apps/PollinationsAI'),
+  DevAtlas: () => import('../../apps/DevAtlas'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
