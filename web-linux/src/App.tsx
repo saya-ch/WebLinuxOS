@@ -168,7 +168,7 @@ const App = memo(function App() {
         getWindows: () => st.getState().windows,
         addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => st.getState().addNotification(n),
         getState: () => st.getState(),
-        version: '59.0.0',
+        version: '64.0.0',
         buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
       }
       win.WebLinuxOS = globalApi
