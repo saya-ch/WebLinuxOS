@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v63.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v64.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -81,6 +81,9 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 - JSON Workbench 工作台：格式化/压缩/校验、JSONPath 查询、Diff 对比、Schema 生成、TypeScript 类型生成
 - TimeTravel 时间旅行：Unix 时间戳互转、时区转换、日期差值计算、节假日倒数、自定义格式化
 - ColorLab 色彩实验室：颜色选择器、HEX/RGB/HSL 互转、调色板生成、渐变编辑器、对比度检查、色盲模拟
+- UnifiedCmd 统一命令中心：自然语言输入自动识别查询类型，集成天气/汇率/国家/维基/词典/名言/计算器 7 大公开 API，历史记录与本地收藏
+- DevPulse 开发者脉搏：Hacker News + GitHub Trending + DEV.to + Product Hunt 多源新闻聚合，智能缓存、搜索过滤、排序收藏、一键跳转原文
+- CryptoMarketHub 加密行情：CoinGecko 免费 API、80+ 币种、24h 涨跌幅、7 日 Sparkline 走势图、自选币种、持仓追踪（总价值/总盈亏/24h浮动盈亏）、自动刷新、本地缓存加速
 
 ## 技术栈
 
@@ -150,6 +153,7 @@ npm run preview
 | DevLab | 12+ 开发工具集成 |
 | CronLab | 可视化 Cron 构建器、下次执行预测 |
 | ColorLab | 色彩工具箱、HEX/RGB/HSL 互转、调色板生成、色盲模拟 |
+| DevPulse 开发者脉搏 | Hacker News + GitHub Trending + DEV.to + Product Hunt 多源新闻聚合、搜索过滤排序收藏 |
 
 ### 办公工具
 
@@ -172,6 +176,8 @@ npm run preview
 | GeoAtlas | 250+ 国家、对比、测验 |
 | 实时天气 | 城市搜索、7 天预报、温湿度风速 |
 | LivePulse | 实时汇率、Hacker News、趣味问答 |
+| UnifiedCmd 统一命令中心 | 自然语言输入、7 类查询自动识别、公开 API 聚合、历史记录收藏 |
+| CryptoMarketHub 加密行情 | 80+ 币种、7 日走势图、持仓与盈亏追踪、自选币种、自动刷新 |
 
 ### 多媒体与 AI
 
@@ -241,7 +247,7 @@ npm run preview
 WebLinuxOS/
 ├── web-linux/
 │   ├── src/
-│   │   ├── apps/               # 370+ 应用实现
+│   │   ├── apps/               # 380+ 应用实现
 │   │   │   └── terminal/       # 终端命令系统（90+ 命令）
 │   │   ├── components/         # 核心 UI（Desktop, Window, Taskbar, StartMenu）
 │   │   │   └── desktop/        # WindowManager + 窗口懒加载
@@ -314,6 +320,9 @@ npm run build   # 必须通过：tsc -b && vite build → 0 类型错误
 - [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) — 百科内容
 - [REST Countries](https://restcountries.com/) — 国家信息 API
 - [Frankfurter](https://www.frankfurter.app/) — 汇率数据
+- [CoinGecko](https://www.coingecko.com/en/api) — 加密货币行情（无需密钥的免费层）
+- [Hacker News API](https://github.com/HackerNews/API) — 科技新闻
+- [DEV.to API](https://developers.forem.com/api) — 开发者社区文章
 
 ---
 

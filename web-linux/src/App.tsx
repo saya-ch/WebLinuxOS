@@ -129,41 +129,59 @@ const App = memo(function App() {
 
   // === v58 全局 API 暴露（同步阶段提前挂载 + useEffect 负责生命周期）
   const handleLaunchAppRef = useRef<EventListener | null>(null)
-  if (typeof window !== 'undefined' && !(window as any).__weblinux_api_ready) {
-    // 标记已挂载，防止 StrictMode 双调用导致重复注册
-    Object.defineProperty(window, '__weblinux_api_ready', { value: true, writable: false, configurable: false })
-    const st = useStore
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const globalApi: any = {
-      openApp: (appId: string) => st.getState().openApp(appId),
-      closeWindow: (windowId: string) => st.getState().closeWindow(windowId),
-      focusWindow: (windowId: string) => st.getState().focusWindow(windowId),
-      minimizeWindow: (windowId: string) => st.getState().minimizeWindow(windowId),
-      maximizeWindow: (windowId: string) => st.getState().maximizeWindow(windowId),
-      restoreWindow: (windowId: string) => st.getState().restoreWindow(windowId),
-      clearWindows: () => st.getState().clearWindows(),
-      toggleLauncher: () => st.getState().toggleLauncher(),
-      switchDesktop: (n: number) => st.getState().switchDesktop(n),
-      getApps: () => st.getState().apps,
-      getWindows: () => st.getState().windows,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      addNotification: (n: any) => st.getState().addNotification(n),
-      getState: () => st.getState(),
-      version: '59.0.0',
-      buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
+  if (typeof window !== 'undefined') {
+    const win = window as Window & {
+      __weblinux_api_ready?: boolean
+      WebLinuxOS?: {
+        openApp: (appId: string) => void
+        closeWindow: (windowId: string) => void
+        focusWindow: (windowId: string) => void
+        minimizeWindow: (windowId: string) => void
+        maximizeWindow: (windowId: string) => void
+        restoreWindow: (windowId: string) => void
+        clearWindows: () => void
+        toggleLauncher: () => void
+        switchDesktop: (n: number) => void
+        getApps: () => unknown
+        getWindows: () => unknown
+        addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => void
+        getState: () => unknown
+        version: string
+        buildTime: string
+      }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).WebLinuxOS = globalApi
-    window.dispatchEvent(new CustomEvent('weblinux-ready', { detail: globalApi }))
+    if (!win.__weblinux_api_ready) {
+      // 标记已挂载，防止 StrictMode 双调用导致重复注册
+      Object.defineProperty(win, '__weblinux_api_ready', { value: true, writable: false, configurable: false })
+      const st = useStore
+      const globalApi = {
+        openApp: (appId: string) => st.getState().openApp(appId),
+        closeWindow: (windowId: string) => st.getState().closeWindow(windowId),
+        focusWindow: (windowId: string) => st.getState().focusWindow(windowId),
+        minimizeWindow: (windowId: string) => st.getState().minimizeWindow(windowId),
+        maximizeWindow: (windowId: string) => st.getState().maximizeWindow(windowId),
+        restoreWindow: (windowId: string) => st.getState().restoreWindow(windowId),
+        clearWindows: () => st.getState().clearWindows(),
+        toggleLauncher: () => st.getState().toggleLauncher(),
+        switchDesktop: (n: number) => st.getState().switchDesktop(n),
+        getApps: () => st.getState().apps,
+        getWindows: () => st.getState().windows,
+        addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => st.getState().addNotification(n),
+        getState: () => st.getState(),
+        version: '59.0.0',
+        buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
+      }
+      win.WebLinuxOS = globalApi
+      window.dispatchEvent(new CustomEvent('weblinux-ready', { detail: globalApi }))
 
-    handleLaunchAppRef.current = ((e: Event) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ce = e as any
-      const appId = ce?.detail?.appId || ce?.detail?.id
-      if (appId) st.getState().openApp(appId)
-    }) as EventListener
-    window.addEventListener('weblinux-launch-app', handleLaunchAppRef.current)
-    window.addEventListener('weblinux-open-app', handleLaunchAppRef.current)
+      handleLaunchAppRef.current = ((e: Event) => {
+        const ce = e as CustomEvent<{ appId?: string; id?: string }>
+        const appId = ce?.detail?.appId || ce?.detail?.id
+        if (appId) st.getState().openApp(appId)
+      }) as EventListener
+      window.addEventListener('weblinux-launch-app', handleLaunchAppRef.current)
+      window.addEventListener('weblinux-open-app', handleLaunchAppRef.current)
+    }
   }
 
   useEffect(() => {

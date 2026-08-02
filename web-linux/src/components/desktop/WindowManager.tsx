@@ -430,6 +430,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   JsonWorkbench: () => import('../../apps/JsonWorkbench'),
   TimeTravel: () => import('../../apps/TimeTravel'),
   ColorLab: () => import('../../apps/ColorLab'),
+  // === v64 创新应用套件
+  UnifiedCommandHub: () => import('../../apps/UnifiedCommandHub'),
+  DevPulseHub: () => import('../../apps/DevPulseHub'),
+  CryptoMarketHub: () => import('../../apps/CryptoMarketHub'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
