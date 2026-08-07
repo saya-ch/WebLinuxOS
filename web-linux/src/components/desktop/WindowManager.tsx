@@ -434,6 +434,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   UnifiedCommandHub: () => import('../../apps/UnifiedCommandHub'),
   DevPulseHub: () => import('../../apps/DevPulseHub'),
   CryptoMarketHub: () => import('../../apps/CryptoMarketHub'),
+  // === v65 新增创新应用 ===
+  DnsDiagnostics: () => import('../../apps/DnsDiagnostics'),
+  ColorTools: () => import('../../apps/ColorTools'),
+  MarkdownPreviewerEnhanced: () => import('../../apps/MarkdownPreviewer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
