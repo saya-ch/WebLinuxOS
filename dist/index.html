@@ -24,7 +24,26 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- 字体加载：使用 font-display: swap 确保网络慢时显示系统字体 -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600&family=Noto+Sans+SC:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&family=Chakra+Petch:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800;900&family=Michroma&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- 字体加载检测：如果3秒内未加载完成，强制使用系统字体 -->
+    <script>
+      (function() {
+        var fontLoaded = false;
+        var timeoutId = setTimeout(function() {
+          if (!fontLoaded) {
+            document.documentElement.classList.add('fonts-failed');
+          }
+        }, 3000);
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function() {
+            fontLoaded = true;
+            clearTimeout(timeoutId);
+            document.documentElement.classList.add('fonts-loaded');
+          });
+        }
+      })();
+    </script>
     <title>WebLinuxOS v64 - Web Linux 桌面环境</title>
     <script>
       // 主题预加载：兼容 JSON 编码（"light"）和纯字符串（light）两种存储格式
@@ -217,11 +236,11 @@
         z-index: 1;
       }
     </style>
-    <script type="module" crossorigin src="/WebLinuxOS/assets/index-BPueycbp.js"></script>
+    <script type="module" crossorigin src="/WebLinuxOS/assets/index-BXOL7csl.js"></script>
     <link rel="modulepreload" crossorigin href="/WebLinuxOS/assets/vendor-react-BlF2BpX6.js">
     <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/app-bookfinder-B6Hg7Vx-.css">
     <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/app-codeeditor-DVwqZSAi.css">
-    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-DFhJHwCl.css">
+    <link rel="stylesheet" crossorigin href="/WebLinuxOS/assets/index-DCoyuQ8i.css">
   </head>
   <body>
     <div id="preload">

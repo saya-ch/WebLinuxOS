@@ -208,10 +208,10 @@ export default function About() {
 
   const overviewItems = [
     { label: '系统名称', value: 'WebLinuxOS', icon: '🐧' },
-    { label: '版本号', value: 'v36.0', icon: '🏷️' },
-    { label: '内核版本', value: 'WebLinuxOS 36.0.0', icon: '⚙️' },
+    { label: '版本号', value: `v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '64.0.0'}`, icon: '🏷️' },
+    { label: '内核版本', value: 'WebLinuxOS 64.0.0', icon: '⚙️' },
     { label: '架构', value: 'x86_64 (Browser)', icon: '🖥️' },
-    { label: '桌面环境', value: 'Web DE 36', icon: '🎨' },
+    { label: '桌面环境', value: 'Web DE 64', icon: '🎨' },
     { label: '窗口系统', value: 'Web Window Manager', icon: '🪟' },
     { label: '构建时间', value: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__! : new Date().toLocaleString('zh-CN'), icon: '🕐' },
     { label: '许可证', value: 'MIT', icon: '📄' },
@@ -261,11 +261,11 @@ export default function About() {
   ]
 
   const changelog = [
+    { version: '64.0.0', date: '2026-07-20', changes: ['版本号统一更新，修复多处硬编码版本号不一致问题', '桌面图标交互优化：支持单击选中后再次单击打开', '字体加载降级方案：网络异常时自动切换系统字体', '新增系统信息面板增强：实时性能监控与硬件检测', '优化启动画面与应用加载性能', '代码质量改进与错误处理优化'] },
     { version: '36.0.0', date: '2026-07-15', changes: ['全新 About 系统信息面板，展示真实运行时数据', '完整帮助系统重构，支持搜索与分类浏览', '实时 FPS 与性能监控', '浏览器 UA 智能解析', '硬件信息与 GPU 检测', 'localStorage 使用量估算'] },
     { version: '6.3.0', date: '2026-07-01', changes: ['增强前端设计 - 添加独特字体和精致动画效果', '优化用户体验 - 新增流畅微交互和视觉效果', '性能优化 - 改进CSS动画和渲染性能', '改进字体系统 - 添加Sora、Outfit等独特字体选择'] },
     { version: '6.2.1', date: '2026-06-19', changes: ['CI/CD自动化部署优化', '代码质量和结构改进', '性能优化和bug修复', '用户体验增强'] },
     { version: '4.5.0', date: '2026-05-29', changes: ['全面代码优化 - 提升性能和加载速度', '响应式设计改进 - 更好的移动端体验', 'UI/UX优化 - 更流畅的动画和交互', '新增数据可视化组件 - 实时数据展示', '安全性增强 - 改进输入验证和错误处理'] },
-    { version: '3.7.0', date: '2026-05-26', changes: ['代码差异查看器 - 支持对比代码差异', '图片优化器 - 压缩和优化图片', '网络速度测试 - 测试网络连接速度和延迟', '界面优化 - 改进应用体验和视觉效果'] },
   ]
 
   const tabs = [
@@ -343,7 +343,7 @@ export default function About() {
           WebkitTextFillColor: 'transparent',
         }}>WebLinuxOS</h1>
         <div style={{ fontSize: '13px', color: s.textSecondary }}>
-          浏览器中的 Linux 桌面环境 · v36.0
+          浏览器中的 Linux 桌面环境 · v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '64.0.0'}
         </div>
         <div style={{ fontSize: '11px', color: s.textSecondary, marginTop: '4px', opacity: 0.7 }}>
           {apps.length} 已注册应用 · 完整窗口管理 · Python 运行时

@@ -184,7 +184,7 @@ const DesktopIcon = memo(function DesktopIcon({
       }}
       tabIndex={0}
       role="button"
-      aria-label={`${icon.name} - 双击打开`}
+      aria-label={`${icon.name} - 单击选中，双击打开`}
       aria-pressed={selectedIconId === icon.id}
       data-app-id={icon.appId}
     >
@@ -477,10 +477,15 @@ const Desktop = memo(function Desktop() {
   }, [])
 
   const handleIconClick = useCallback(
-    (_appId: string, iconId: string) => {
-      setSelectedIconId(iconId)
+    (appId: string, iconId: string) => {
+      // 如果图标已选中，则再次单击直接打开（提升操作效率）
+      if (selectedIconId === iconId) {
+        openApp(appId)
+      } else {
+        setSelectedIconId(iconId)
+      }
     },
-    [],
+    [openApp, selectedIconId],
   )
 
   const handleIconDoubleClick = useCallback(
@@ -662,7 +667,7 @@ const Desktop = memo(function Desktop() {
           marginBottom: '24px',
           letterSpacing: '0.5px',
         }}>
-          v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '56.0.0'}
+          v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '64.0.0'}
         </div>
         <div className="splash-status">
           {splashPhase === 0 && 'Initializing kernel modules...'}

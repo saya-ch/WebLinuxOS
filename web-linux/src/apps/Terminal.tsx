@@ -77,7 +77,7 @@ export default function Terminal() {
   const [prevCwd, setPrevCwd] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([
-    { input: '', output: 'Web Linux 终端 v56\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南\n输入 "wiki" 探索维基百科 | "geo" 探索世界地理 | "recipe" 发现美食 | "snippets" 管理代码片段\n💡 提示：输入 \'help\' 查看所有可用命令\n🔄 新增命令：weather [城市] - 查看实时天气 | js [代码] - 执行JS代码 | share - 分享终端内容' },
+    { input: '', output: 'Web Linux 终端 v64.0.0\n输入 "help" 查看可用命令\n输入 "welcome" 查看新手指南\n输入 "wiki" 探索维基百科 | "geo" 探索世界地理 | "recipe" 发现美食 | "snippets" 管理代码片段\n💡 提示：输入 \'help\' 查看所有可用命令\n🔄 新增命令：weather [城市] - 查看实时天气 | js [代码] - 执行JS代码 | share - 分享终端内容 | about - 查看系统信息' },
   ])
   const [cmdHistory, setCmdHistory] = useState<string[]>(() => {
     try {
