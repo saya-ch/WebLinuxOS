@@ -1949,6 +1949,9 @@ export const appRegistry: AppDefinition[] = [
   { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
   // === v39.0 全新创新应用 - Snap Studio 浏览器原生图片工坊 ===
   { id: 'snap-studio', name: 'Snap Studio 美图工坊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>, component: 'SnapStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Canvas 像素级图片编辑器：滤镜、微调、缩放、撤销重做、多格式导出' },
+  // === v41.0 创新功能扩展 — 真实可用的开发者工具 ===
+  { id: 'system-info-pro', name: '系统信息诊断', icon: <InfoIcon />, component: 'SystemInfoPro', category: 'system', defaultWidth: 1150, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '详细的浏览器与系统信息诊断：CPU核心数、内存估算、电池状态、网络类型、屏幕信息、字体能力、权限状态、WebGL能力、CPU压力测试、实时性能监控' },
+  { id: 'web-code-runner', name: 'Web代码运行器', icon: <Code2Icon />, component: 'WebCodeRunner', category: 'development', defaultWidth: 1150, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '浏览器内 JavaScript 真实执行环境：代码编辑器、控制台输出、错误捕获、预设代码片段、执行时间测量、历史记录、代码分享链接' },
   // === v40.0 创新功能扩展 ===
   // 注意：以下 ...APP_REGISTRY_EXTRAS 必须放在 appRegistry 数组末尾，
   // 否则会被后续字面量项覆盖。
