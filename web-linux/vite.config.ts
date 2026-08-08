@@ -172,6 +172,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/DailyChallenge')) {
               return 'app-challenge';
             }
+            if (id.includes('src/apps/FocusFlow')) {
+              return 'app-focusflow';
+            }
+            if (id.includes('src/apps/QuickShare')) {
+              return 'app-quickshare';
+            }
+            if (id.includes('src/apps/RegexMaster')) {
+              return 'app-regexmaster';
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }

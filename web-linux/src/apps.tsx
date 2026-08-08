@@ -13,7 +13,8 @@ import {
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
-  WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon
+  WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
+  ShareIcon
 } from './icons'
 
 
@@ -231,6 +232,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'online-toolkit-pro', name: '在线工具箱 Pro', icon: <WrenchIcon />, component: 'OnlineToolkitPro', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '集成8大实用工具的在线工具箱：天气查询、实时汇率、新闻聚合、GitHub热门、二维码生成、多语言翻译、哈希计算、URL短链' },
   // === v68 创新应用 — DevProductivitySuite 开发者生产力工具箱 ===
   { id: 'dev-productivity-suite', name: '开发者生产力工具箱 Pro', icon: <Code2Icon />, component: 'DevProductivitySuite', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '一站式开发者工具箱：代码片段管理、正则测试、时间戳转换、JSON工具、哈希生成、URL编解码，支持数据持久化与主题切换' },
+  // === v69 创新应用套件 ===
+  { id: 'focus-flow', name: 'FocusFlow 专注流', icon: <PomodoroIcon />, component: 'FocusFlow', category: 'utilities', defaultWidth: 520, defaultHeight: 680, minWidth: 460, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '深度工作计时器：番茄工作法、专注/休息模式切换、统计追踪、连续打卡、声音提醒、通知推送' },
+  { id: 'quick-share', name: 'QuickShare 快速分享', icon: <ShareIcon />, component: 'QuickShare', category: 'utilities', defaultWidth: 720, defaultHeight: 620, minWidth: 620, minHeight: 520, resizable: true, multiple: false, isNew: true, description: '文本/文件/图片快速分享：拖拽上传、本地存储、分享链接、二维码生成、Web Share API集成、一键下载' },
+  { id: 'regex-master', name: 'RegexMaster 正则大师', icon: <SearchIcon />, component: 'RegexMaster', category: 'development', defaultWidth: 1280, defaultHeight: 800, minWidth: 980, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '正则表达式在线测试与学习：12+预设模板、实时高亮匹配、标志位开关、保存管理、语法快速参考' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

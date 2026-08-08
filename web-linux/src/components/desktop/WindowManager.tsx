@@ -449,6 +449,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CodeSnippetPlayground: () => import('../../apps/CodeSnippetPlayground'),
   DailyChallenge: () => import('../../apps/DailyChallenge'),
   DevProductivitySuite: () => import('../../apps/DevProductivitySuite'),
+  // === v69 创新应用 ===
+  FocusFlow: () => import('../../apps/FocusFlow'),
+  QuickShare: () => import('../../apps/QuickShare'),
+  RegexMaster: () => import('../../apps/RegexMaster'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

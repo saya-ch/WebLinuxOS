@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v66.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v69.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -20,16 +20,16 @@
 
 ## 项目简介
 
-WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 385+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 388+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
-## v64.0.0 更新亮点
+## v69.0.0 更新亮点
 
-- **版本一致性修复**：统一全项目版本号显示，修复多处硬编码版本号不一致问题
-- **桌面交互优化**：支持单击选中图标后再次单击直接打开，操作效率提升
-- **字体降级方案**：新增字体加载检测机制，网络异常时自动切换系统字体，确保可用性
-- **系统信息面板增强**：About 应用全面升级，展示实时运行时数据、硬件检测、性能监控
-- **性能优化**：改进启动画面与应用加载性能，优化组件懒加载与缓存淘汰策略
-- **错误处理改进**：增强组件加载错误处理与重试机制，提升应用稳定性
+- **新增 3 款创新应用**：FocusFlow 专注流、QuickShare 快速分享、RegexMaster 正则大师
+- **FocusFlow 专注流**：深度工作计时器，支持番茄工作法、专注/休息模式切换、连续打卡统计、声音提醒、浏览器通知推送
+- **QuickShare 快速分享**：文本/文件/图片快速分享工具，支持拖拽上传、本地存储、分享链接生成、二维码生成、Web Share API 集成
+- **RegexMaster 正则大师**：正则表达式在线测试与学习平台，12+ 预设模板、实时高亮匹配、标志位开关、保存管理、语法快速参考
+- **代码分割优化**：新增 3 个应用独立 chunk 配置，进一步优化加载策略
+- **版本统一**：全项目版本号同步至 v69.0.0
 
 ## v66.0.0 更新亮点
 
