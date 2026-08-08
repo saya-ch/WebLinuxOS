@@ -448,6 +448,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   FontPairing: () => import('../../apps/FontPairing'),
   CodeSnippetPlayground: () => import('../../apps/CodeSnippetPlayground'),
   DailyChallenge: () => import('../../apps/DailyChallenge'),
+  DevProductivitySuite: () => import('../../apps/DevProductivitySuite'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

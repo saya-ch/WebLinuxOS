@@ -229,6 +229,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'daily-challenge', name: 'DailyChallenge 每日挑战', icon: <ActivityIcon />, component: 'DailyChallenge', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '每日编程挑战：12道预设题目、三级难度、计时统计、进度保存、解决方案提示' },
   // === v67 创新应用套件 — OnlineToolkitPro 在线工具箱 ===
   { id: 'online-toolkit-pro', name: '在线工具箱 Pro', icon: <WrenchIcon />, component: 'OnlineToolkitPro', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '集成8大实用工具的在线工具箱：天气查询、实时汇率、新闻聚合、GitHub热门、二维码生成、多语言翻译、哈希计算、URL短链' },
+  // === v68 创新应用 — DevProductivitySuite 开发者生产力工具箱 ===
+  { id: 'dev-productivity-suite', name: '开发者生产力工具箱 Pro', icon: <Code2Icon />, component: 'DevProductivitySuite', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '一站式开发者工具箱：代码片段管理、正则测试、时间戳转换、JSON工具、哈希生成、URL编解码，支持数据持久化与主题切换' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

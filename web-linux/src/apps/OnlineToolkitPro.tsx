@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import {
   Search, Copy, Check, ExternalLink, RefreshCw,
   Globe, Cloud, DollarSign, Newspaper, Zap,
-  Clock, MapPin, TrendingUp, Star, Users,
-  ChevronRight, X, Download, Share2, History,
-  BookOpen, Code, Hash, Type, Link2, QrCode
+  TrendingUp, Star, Users,
+  ChevronRight, Download, History,
+  Code, Hash, Link2, QrCode
 } from 'lucide-react'
 
 type TabType = 'weather' | 'exchange' | 'news' | 'github' | 'qr' | 'translate' | 'hash' | 'url'
@@ -395,7 +395,7 @@ function ExchangePanel({ copyToClipboard, copied }: { copyToClipboard: (text: st
     const names: Record<string, string> = {
       USD: '美元', EUR: '欧元', GBP: '英镑', JPY: '日元', AUD: '澳元',
       CAD: '加元', CHF: '瑞郎', HKD: '港币', SGD: '新元', KRW: '韩元',
-      CNY: '人民币', HKD: '港币', NZD: '纽元', INR: '卢比',
+      CNY: '人民币', NZD: '纽元', INR: '卢比',
     }
     return names[code] || code
   }
@@ -480,9 +480,9 @@ function ExchangePanel({ copyToClipboard, copied }: { copyToClipboard: (text: st
 }
 
 /* ============ News Panel ============ */
-function NewsPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
+function NewsPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null; _loading?: boolean }) {
   const [news, setNews] = useState<NewsItem[]>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [category, setCategory] = useState('technology')
 
   const fetchNews = useCallback(async () => {
@@ -595,7 +595,7 @@ function NewsPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: st
 /* ============ GitHub Panel ============ */
 function GitHubPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
   const [repos, setRepos] = useState<GitHubTrending[]>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [language, setLanguage] = useState('javascript')
 
   const fetchTrending = useCallback(async () => {
@@ -764,7 +764,7 @@ function QRPanel() {
 }
 
 /* ============ Translate Panel ============ */
-function TranslatePanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
+function TranslatePanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
   const [inputText, setInputText] = useState('Hello, World!')
   const [sourceLang, setSourceLang] = useState('en')
   const [targetLang, setTargetLang] = useState('zh')
@@ -870,7 +870,7 @@ function TranslatePanel({ copyToClipboard }: { copyToClipboard: (text: string, i
 }
 
 /* ============ Hash Panel ============ */
-function HashPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
+function HashPanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
   const [input, setInput] = useState('Hello, WebLinuxOS!')
   const [hashes, setHashes] = useState<Record<string, string>>({})
 
@@ -893,7 +893,7 @@ function HashPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: st
   }, [input])
 
   const computeHash = async (data: Uint8Array, algo: string): Promise<string> => {
-    const hashBuffer = await crypto.subtle.digest(algo, data)
+    const hashBuffer = await crypto.subtle.digest(algo, data.buffer as ArrayBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
@@ -957,7 +957,7 @@ function HashPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: st
 }
 
 /* ============ URL Shortener Panel ============ */
-function URLPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
+function URLPanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
   const [longUrl, setLongUrl] = useState('')
   const [shortUrl, setShortUrl] = useState('')
   const [loading, setLoading] = useState(false)
