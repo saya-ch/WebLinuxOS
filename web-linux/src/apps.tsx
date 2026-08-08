@@ -227,6 +227,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'font-pairing', name: 'FontPairing 字体配对', icon: <TypeIcon />, component: 'FontPairing', category: 'development', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Google Fonts配对方案：15套精选配对、实时预览、代码复制、场景推荐' },
   { id: 'code-snippet-playground', name: '代码片段游乐场', icon: <CodeSnippetsIcon />, component: 'CodeSnippetPlayground', category: 'development', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '代码片段游乐场：JS/TS/Python/CSS/HTML预置片段、搜索筛选、收藏管理、语法高亮' },
   { id: 'daily-challenge', name: 'DailyChallenge 每日挑战', icon: <ActivityIcon />, component: 'DailyChallenge', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '每日编程挑战：12道预设题目、三级难度、计时统计、进度保存、解决方案提示' },
+  // === v67 创新应用套件 — OnlineToolkitPro 在线工具箱 ===
+  { id: 'online-toolkit-pro', name: '在线工具箱 Pro', icon: <WrenchIcon />, component: 'OnlineToolkitPro', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '集成8大实用工具的在线工具箱：天气查询、实时汇率、新闻聚合、GitHub热门、二维码生成、多语言翻译、哈希计算、URL短链' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

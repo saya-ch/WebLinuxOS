@@ -250,6 +250,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   OnlineResourceHub: () => import('../../apps/OnlineResourceHub'),
   OnlineCompiler: () => import('../../apps/OnlineCompiler'),
   OnlineToolkit: () => import('../../apps/OnlineToolkit'),
+  OnlineToolkitPro: () => import('../../apps/OnlineToolkitPro'),
   PackageManager: () => import('../../apps/PackageManager'),
   Paint: () => import('../../apps/Paint'),
   ParticleSystem: () => import('../../apps/ParticleSystem'),
