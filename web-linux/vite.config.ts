@@ -146,7 +146,13 @@ export default defineConfig(({ mode }) => {
               return 'app-notepad'
             }
             if (id.includes('src/apps/Weather')) {
-              return 'app-weather'
+              return 'app-weather';
+            }
+            if (id.includes('src/apps/WebsitePerformanceTester') || id.includes('src/apps/PerformanceDashboard')) {
+              return 'app-perf-tester';
+            }
+            if (id.includes('src/apps/PromptEngineeringLab') || id.includes('src/apps/PromptForge')) {
+              return 'app-prompt-lab';
             }
             if (id.includes('src/apps/Game')) {
               return 'app-games'

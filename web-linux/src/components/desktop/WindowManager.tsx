@@ -19,6 +19,9 @@ interface WindowComponent {
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
   OnlineCodeRunnerPro: () => import('../../apps/OnlineCodeRunnerPro'),
   WeatherLive: () => import('../../apps/WeatherLive'),
+  WeatherDashboard: () => import('../../apps/WeatherDashboard'),
+  PromptEngineeringLab: () => import('../../apps/PromptEngineeringLab'),
+  WebsitePerformanceTester: () => import('../../apps/WebsitePerformanceTester'),
   JsonCrusher: () => import('../../apps/JsonCrusher'),
   CssStudio: () => import('../../apps/CssStudio'),
   RealTimeCollaborationHub: () => import('../../apps/RealTimeCollaborationHub'),
