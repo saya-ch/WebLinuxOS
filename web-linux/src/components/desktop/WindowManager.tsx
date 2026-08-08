@@ -440,6 +440,13 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DnsDiagnostics: () => import('../../apps/DnsDiagnostics'),
   ColorTools: () => import('../../apps/ColorTools'),
   MarkdownPreviewerEnhanced: () => import('../../apps/MarkdownPreviewer'),
+  // === v66 创新应用 ===
+  QuickQuote: () => import('../../apps/QuickQuote'),
+  AstroViewer: () => import('../../apps/AstroViewer'),
+  ColorName: () => import('../../apps/ColorName'),
+  FontPairing: () => import('../../apps/FontPairing'),
+  CodeSnippetPlayground: () => import('../../apps/CodeSnippetPlayground'),
+  DailyChallenge: () => import('../../apps/DailyChallenge'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
@@ -613,6 +620,8 @@ function preloadComponents(): () => void {
     'PDFViewer',
     'TaskManager',
     'PasswordManager',
+    'QuickQuote',
+    'ColorName',
   ]
 
   const developmentComponents = [
@@ -623,6 +632,9 @@ function preloadComponents(): () => void {
     'UnitConverter',
     'RESTClient',
     'DevToolbox',
+    'CodeSnippetPlayground',
+    'FontPairing',
+    'DailyChallenge',
   ]
 
   const loadWithPriority = (components: string[], delay: number) => {

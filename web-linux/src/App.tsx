@@ -144,8 +144,13 @@ const App = memo(function App() {
         switchDesktop: (n: number) => void
         getApps: () => unknown
         getWindows: () => unknown
-        addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => void
         getState: () => unknown
+        listApps: () => Array<{ id: string; name: string; category: string }>
+        searchApps: (query: string) => Array<{ id: string; name: string; category: string; description?: string }>
+        getSystemStats: () => unknown
+        refreshSystemStats: () => void
+        addQuickNote: (content: string) => void
+        getNotifications: () => unknown
         version: string
         buildTime: string
       }
@@ -168,7 +173,23 @@ const App = memo(function App() {
         getWindows: () => st.getState().windows,
         addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => st.getState().addNotification(n),
         getState: () => st.getState(),
-        version: '64.0.0',
+        listApps: () => st.getState().apps.map(a => ({ id: a.id, name: a.name, category: a.category })),
+        searchApps: (query: string) => {
+          const q = query.toLowerCase()
+          return st.getState().apps.filter(a => 
+            a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q)
+          ).map(a => ({ id: a.id, name: a.name, category: a.category, description: a.description }))
+        },
+        getSystemStats: () => st.getState().systemStats,
+        refreshSystemStats: () => st.getState().refreshSystemStats(),
+        addQuickNote: (content: string) => {
+          const store = st.getState()
+          const id = 'file-' + Date.now()
+          store.addFile('notes', `QuickNote-${Date.now()}`, 'file')
+          store.updateFileContent(id, content)
+        },
+        getNotifications: () => st.getState().notifications,
+        version: '66.0.0',
         buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
       }
       win.WebLinuxOS = globalApi

@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v64.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v66.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -30,6 +30,19 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 - **系统信息面板增强**：About 应用全面升级，展示实时运行时数据、硬件检测、性能监控
 - **性能优化**：改进启动画面与应用加载性能，优化组件懒加载与缓存淘汰策略
 - **错误处理改进**：增强组件加载错误处理与重试机制，提升应用稳定性
+
+## v66.0.0 更新亮点
+
+- **新增 6 款创新应用**：QuickQuote 名言生成、AstroViewer NASA天文图、ColorName 颜色大全、FontPairing 字体配对、代码片段游乐场、DailyChallenge 每日挑战
+- **ZenQuotes API 集成**：名言生成器接入公开名言 API，支持 6 大分类筛选
+- **NASA APOD API 集成**：每日天文图浏览器，支持日期导航和高清下载
+- **代码片段游乐场**：17 个预置代码片段，支持 JS/TS/Python/CSS/HTML 多语言
+- **颜色工具增强**：148 种 HTML 命名颜色浏览、HEX/RGB/HSL 实时转换、WCAG 对比度检查
+- **全局 API 扩展**：新增 `listApps`、`searchApps`、`getSystemStats`、`addQuickNote` 等方法
+- **预加载优化**：新增 5 个应用到预加载队列，缩短首次打开时间
+- **代码分割优化**：新增 5 个应用独立 chunk 配置，进一步优化加载策略
+- **字体配对工具**：15 套精选 Google Fonts 配对方案，实时预览和代码复制
+- **每日编程挑战**：12 道预设编程题，三级难度，计时与进度统计
 
 ## 特性
 
@@ -163,6 +176,9 @@ npm run preview
 | CronLab | 可视化 Cron 构建器、下次执行预测 |
 | ColorLab | 色彩工具箱、HEX/RGB/HSL 互转、调色板生成、色盲模拟 |
 | DevPulse 开发者脉搏 | Hacker News + GitHub Trending + DEV.to + Product Hunt 多源新闻聚合、搜索过滤排序收藏 |
+| DailyChallenge 每日挑战 | 12 道预设编程题、三级难度、计时统计、进度保存 |
+| FontPairing 字体配对 | Google Fonts 精选配对、实时预览、HTML/CSS 代码复制 |
+| 代码片段游乐场 | 多语言代码片段、搜索筛选、收藏、语法高亮 |
 
 ### 办公工具
 
@@ -197,6 +213,13 @@ npm run preview
 | AudioViz | 5 种可视化类型、5 种主题 |
 | Paint | 画板工具 |
 | MusicPlayer | 音乐播放器 |
+
+### 灵感与信息
+
+| 应用 | 说明 |
+|------|------|
+| QuickQuote 名言生成 | ZenQuotes API、6 大分类、收藏、复制 |
+| AstroViewer 天文图 | NASA APOD API、日期导航、高清下载、收藏 |
 
 ### 系统与安全
 
@@ -332,6 +355,8 @@ npm run build   # 必须通过：tsc -b && vite build → 0 类型错误
 - [CoinGecko](https://www.coingecko.com/en/api) — 加密货币行情（无需密钥的免费层）
 - [Hacker News API](https://github.com/HackerNews/API) — 科技新闻
 - [DEV.to API](https://developers.forem.com/api) — 开发者社区文章
+- [ZenQuotes](https://zenquotes.io/) — 名言生成 API
+- [NASA APOD](https://api.nasa.gov/#apod) — 每日天文图 API
 
 ---
 

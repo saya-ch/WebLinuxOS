@@ -157,6 +157,21 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/SystemDashboard')) {
               return 'app-dashboard'
             }
+            if (id.includes('src/apps/QuickQuote') || id.includes('src/apps/Quote')) {
+              return 'app-quote';
+            }
+            if (id.includes('src/apps/AstroViewer')) {
+              return 'app-astrophys';
+            }
+            if (id.includes('src/apps/ColorName')) {
+              return 'app-colors';
+            }
+            if (id.includes('src/apps/FontPairing')) {
+              return 'app-fonts';
+            }
+            if (id.includes('src/apps/DailyChallenge')) {
+              return 'app-challenge';
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }
