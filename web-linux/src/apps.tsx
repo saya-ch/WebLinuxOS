@@ -14,7 +14,7 @@ import {
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
-  ShareIcon
+  ShareIcon, Link2Icon
 } from './icons'
 
 
@@ -32,6 +32,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // v72 创新功能 — URL 工具箱 Pro：集成 is.gd 真实缩短 API + QR 码生成
+  { id: 'url-tools-enhanced', name: 'URL 工具箱 Pro', icon: <Link2Icon />, component: 'URLToolsEnhanced', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '增强版URL工具箱：真实URL缩短服务（is.gd API）、QR码生成、编码解码解析、历史记录管理' },
   { id: 'markdown-slides-pro', name: 'Markdown 演示文稿', icon: <PresentationIcon />, component: 'MarkdownSlidesPro', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown转演示文稿：实时编辑预览、幻灯片播放、全屏演示、导出HTML、过渡动画' },
   { id: 'open-source-hub', name: '开源项目导航', icon: <GitHubIcon />, component: 'OpenSourceHub', category: 'internet', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'GitHub开源项目探索：仓库搜索、热门项目、语言筛选、星标排序、搜索历史' },
   { id: 'online-code-runner-pro', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerPro', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '真正的在线代码运行器：支持JavaScript实时执行、HTML/CSS/JS实时预览、代码分享、预置示例模板' },

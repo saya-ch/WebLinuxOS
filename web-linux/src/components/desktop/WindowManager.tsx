@@ -365,6 +365,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   UnifiedDashboard: () => import('../../apps/UnifiedDashboard'),
   UnitConverter: () => import('../../apps/UnitConverter'),
   URLTools: () => import('../../apps/URLTools'),
+  URLToolsEnhanced: () => import('../../apps/URLToolsEnhanced'),
   UserManager: () => import('../../apps/UserManager'),
   UtilityCenter: () => import('../../apps/UtilityCenter'),
   UtilityHub: () => import('../../apps/UtilityHub'),
