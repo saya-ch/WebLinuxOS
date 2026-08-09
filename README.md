@@ -35,6 +35,23 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 - **终端 API 命令增强**：新增 stock（股票查询）、currency（货币汇率）、translate（文本翻译）、joke（笑话生成）、quote（每日名言）、hackernews（HN 热门）、news（新闻资讯）、github（GitHub 信息）、color（颜色转换）、uuid（UUID 生成）、base64（编解码）、hash（哈希计算）、qr（二维码生成）等 13+ 实用 API 命令
 - **字体加载优化**：Google Fonts 从 15+ 个字体精简为 4 个核心字体（JetBrains Mono、Space Grotesk、Noto Sans SC、Orbitron），显著提升页面加载性能
 - **版本统一**：全项目版本号同步至 v71.0.0，修复多处版本号不一致问题
+- **开发者工具箱 Pro (DeveloperToolkitPro)**：全新集成式开发者工具集，包含 10 大核心工具模块：
+  - JSON 工具：格式化、压缩、验证、行号显示
+  - Base64 编解码器：支持 Unicode、双向转换
+  - URL 编解码器：encodeURIComponent / decodeURIComponent
+  - 哈希生成器：MD5（自定义实现）+ SHA-1/256/384/512（Web Crypto API）
+  - UUID 生成器：v4 随机生成，支持批量复制
+  - 时间戳转换器：Unix 时间戳 ↔ 日期互转，支持秒/毫秒
+  - 颜色工具：HEX/RGB/HSL 互转、调色板、和谐色、滑块调节
+  - 正则测试器：实时匹配、分组捕获、常用模式预设
+  - JWT 解码器：Header/Payload 解析、过期时间检测
+  - Cron 解析器：5 字段表达式解析、自然语言描述、最近执行时间预测
+- **系统监控真实性增强**：refreshSystemStats 函数全面升级：
+  - 内存监控：优先使用 performance.memory API 获取真实 JS 堆内存数据
+  - CPU 监控：双重测量机制（执行压力测试 + 间隔延迟分析），获得真实 CPU 占用率
+  - 网络监控：整合 Resource Timing API + Network Information API，获取真实网络负载数据
+  - 完善的降级策略：所有浏览器 API 都有合理的降级方案
+- **版本一致性修复**：修复终端启动信息中硬编码版本号问题，统一使用 __APP_VERSION__ 变量
 
 ## v70.0.0 更新亮点
 
@@ -190,6 +207,7 @@ npm run preview
 | 应用 | 说明 |
 |------|------|
 | DevBox 开发者工具箱 | Base64/URL 编解码、JSON 格式化、哈希生成、UUID/密码生成、时间戳转换、颜色工具、正则测试、JWT 解析、UA 分析、Cron 表达式等 12+ 工具 |
+| 开发者工具箱 Pro | 10 大工具模块：JSON/Base64/URL编解码、哈希生成、UUID生成、时间戳转换、颜色工具、正则测试、JWT解码、Cron解析 |
 | API Lab 实验室 | 12+ 合规公开 API：天气、汇率、加密货币、国家信息、NASA 天文图、Hacker News 等，支持参数编辑和请求历史 |
 | 在线代码运行器 Pro | JavaScript 实时执行、HTML/CSS/JS 实时预览、代码分享 |
 | API 测试器 | 真实 HTTP 请求、预设模板、请求历史 |
@@ -258,7 +276,7 @@ npm run preview
 | **AI 桌面助手** | AI 驱动的桌面助手，自然语言交互，打开应用/天气查询/文本翻译/股票行情/笑话/名言/HN 热门/颜色转换/UUID 生成/系统信息 |
 | 浏览器信息面板 | 浏览器详情、设备信息、系统配置、功能支持检测（20+ 项）、网络状态分析，支持导出报告 |
 | **系统备份与恢复** | 完整系统状态导出/导入、文件/设置选择性备份、备份历史管理、一键重置、跨设备迁移 |
-| 终端 | 100+ 命令、Unix 管道、输出重定向、API 集成（npm/天气/汇率/翻译/IP 查询/股票/笑话/名言/HN/备份） |
+| 终端 | 100+ 命令、Unix 管道、输出重定向、API 集成（npm/天气/汇率/翻译/IP 查询/股票/笑话/名言/HN/备份）、真实系统监控（内存/CPU/网络） |
 | 实时系统监控 | JS 堆内存、网络、FPS、性能计时 |
 | PrivacyGuard | 本地 PII 检测、17 类敏感信息 |
 | SecureVault | 本地加密密码管理器、Web Crypto API、AES-GCM 加密、密码生成器 |

@@ -462,6 +462,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   RegexMaster: () => import('../../apps/RegexMaster'),
   // === v71 创新应用 ===
   AIDesktopAssistant: () => import('../../apps/AIDesktopAssistant'),
+  DeveloperToolkitPro: () => import('../../apps/DeveloperToolkitPro'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

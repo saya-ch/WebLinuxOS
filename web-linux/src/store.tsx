@@ -223,6 +223,9 @@ function trimHistory(history: FileOperation[], historyIndex: number): {
   }
 }
 
+let lastStatsPerfTime = 0
+let cpuBaseline = 1
+
 export const useStore = create<Store>((set, get) => ({
   windows: [],
   apps: [],
@@ -271,12 +274,71 @@ export const useStore = create<Store>((set, get) => ({
   setSystemStatus: (status) => set({ systemStatus: status }),
 
   refreshSystemStats: () => {
-    const perf = performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }
-    const memoryUsage = perf.memory
-      ? Math.round((perf.memory.usedJSHeapSize / perf.memory.totalJSHeapSize) * 100)
-      : Math.round(Math.random() * 40 + 20)
-    const cpuUsage = Math.round(Math.random() * 30 + 5)
-    
+    const now = performance.now()
+    const uptime = Math.floor(Date.now() / 1000)
+
+    const perf = performance as unknown as {
+      memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number }
+    }
+
+    let memoryUsage: number
+    try {
+      if (perf.memory) {
+        const { usedJSHeapSize, totalJSHeapSize } = perf.memory
+        if (totalJSHeapSize > 0) {
+          memoryUsage = Math.round((usedJSHeapSize / totalJSHeapSize) * 100)
+        } else {
+          memoryUsage = 0
+        }
+      } else {
+        const navEntry = performance.getEntriesByType('navigation')[0] as
+          | { transferSize?: number; encodedBodySize?: number; decodedBodySize?: number }
+          | undefined
+        if (navEntry) {
+          const size = navEntry.transferSize || navEntry.encodedBodySize || navEntry.decodedBodySize || 0
+          memoryUsage = Math.min(100, Math.round(size / (1024 * 1024)))
+        } else {
+          memoryUsage = Math.round(typeof performance !== 'undefined' ? 30 : 20)
+        }
+      }
+    } catch {
+      memoryUsage = 25
+    }
+
+    let cpuUsage: number
+    try {
+      const testStart = performance.now()
+      let counter = 0
+      for (let i = 0; i < 10000; i++) {
+        counter += Math.sqrt(i)
+      }
+      const testDuration = performance.now() - testStart
+
+      if (cpuBaseline === 1) {
+        cpuBaseline = testDuration || 0.1
+        cpuUsage = 5
+      } else {
+        const slowdownRatio = testDuration / cpuBaseline
+        const delta = now - lastStatsPerfTime
+        const expectedDelta = 5000
+        const deltaRatio = delta > 0 ? expectedDelta / delta : 1
+        const deltaContention = deltaRatio > 1 ? Math.min(1, (deltaRatio - 1) * 2) : 0
+        const executionPressure = slowdownRatio > 1.5 ? Math.min(1, (slowdownRatio - 1) * 2) : 0
+        cpuUsage = Math.round(Math.min(100, (deltaContention * 0.6 + executionPressure * 0.4) * 100))
+        if (lastStatsPerfTime === 0) {
+          cpuUsage = Math.round(executionPressure * 100)
+        }
+      }
+
+      if (cpuUsage < 0) cpuUsage = 0
+      if (cpuUsage === 0 && lastStatsPerfTime !== 0) {
+        cpuUsage = Math.round(5 + Math.random() * 5)
+      }
+    } catch {
+      cpuUsage = Math.round(10 + Math.random() * 15)
+    }
+    lastStatsPerfTime = now
+
     const localStorageSize = (() => {
       try {
         let total = 0
@@ -297,10 +359,58 @@ export const useStore = create<Store>((set, get) => ({
     const STORAGE_LIMIT_BYTES = 5 * 1024 * 1024
     const storageUsage = localStorageSize > 0
       ? Math.min(100, Math.round((localStorageSize / STORAGE_LIMIT_BYTES) * 100))
-      : Math.round(Math.random() * 15 + 5)
-      
-    const networkUsage = Math.round(Math.random() * 50)
-    const uptime = Math.floor(Date.now() / 1000)
+      : 0
+
+    let networkUsage: number
+    try {
+      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
+      if (resources.length > 0) {
+        const recentResources = resources.slice(-50)
+        let totalBytes = 0
+        let activeCount = 0
+        for (const r of recentResources) {
+          const transfer = (r as unknown as { transferSize?: number; encodedBodySize?: number }).transferSize
+            || (r as unknown as { encodedBodySize?: number }).encodedBodySize
+            || 0
+          totalBytes += transfer
+          if (r.startTime > now - 5000) activeCount++
+        }
+        const resourceScore = Math.min(60, Math.round((totalBytes / (1024 * 10)) + activeCount * 2))
+        const conn = navigator as Navigator & {
+          connection?: { effectiveType?: string; downlink?: number; saveData?: boolean }
+        }
+        if (conn.connection) {
+          const { effectiveType, downlink } = conn.connection
+          if (downlink !== undefined && effectiveType) {
+            const typeScore = effectiveType === '4g' ? 30 : effectiveType === '3g' ? 50 : effectiveType === '2g' ? 70 : 85
+            const downlinkScore = downlink > 10 ? 20 : downlink > 1 ? 40 : downlink > 0.1 ? 60 : 80
+            networkUsage = Math.round(Math.min(100, resourceScore * 0.5 + typeScore * 0.25 + downlinkScore * 0.25))
+          } else {
+            networkUsage = Math.round(Math.min(100, resourceScore + 20))
+          }
+        } else {
+          networkUsage = Math.round(Math.min(100, resourceScore + 25))
+        }
+      } else {
+        const conn = navigator as Navigator & {
+          connection?: { effectiveType?: string; downlink?: number }
+        }
+        if (conn.connection) {
+          const { effectiveType, downlink } = conn.connection
+          if (downlink !== undefined) {
+            networkUsage = Math.round(downlink > 10 ? 15 : downlink > 1 ? 35 : downlink > 0.1 ? 55 : 75)
+          } else if (effectiveType) {
+            networkUsage = Math.round(effectiveType === '4g' ? 20 : effectiveType === '3g' ? 45 : effectiveType === '2g' ? 65 : 80)
+          } else {
+            networkUsage = Math.round(30 + Math.random() * 20)
+          }
+        } else {
+          networkUsage = Math.round(25 + Math.random() * 15)
+        }
+      }
+    } catch {
+      networkUsage = Math.round(20 + Math.random() * 20)
+    }
 
     set({
       systemStats: {

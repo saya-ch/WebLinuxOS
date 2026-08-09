@@ -249,6 +249,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'markdown-slides', name: 'Markdown 幻灯片', icon: <PresentationIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown 转幻灯片：实时编辑预览、幻灯片播放、全屏演示、过渡动画、导出HTML、支持多种主题' },
   // === v71 创新应用套件 — AI 桌面助手 ===
   { id: 'ai-desktop-assistant', name: 'AI 桌面助手', icon: <SparklesIcon />, component: 'AIDesktopAssistant', category: 'utilities', defaultWidth: 500, defaultHeight: 700, minWidth: 400, minHeight: 550, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的桌面助手：自然语言打开应用、天气查询、文本翻译、股票行情、笑话生成、每日名言、Hacker News 热门、颜色转换、UUID 生成、系统信息查询' },
+  { id: 'developer-toolkit-pro', name: '开发者工具箱 Pro', icon: <WrenchIcon />, component: 'DeveloperToolkitPro', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '集成12+实用开发工具：JSON处理、编解码、哈希生成、时间戳转换、颜色工具、正则测试、JWT解码、Cron解析' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
