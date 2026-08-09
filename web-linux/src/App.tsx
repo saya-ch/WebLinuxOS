@@ -150,6 +150,7 @@ const App = memo(function App() {
         getSystemStats: () => unknown
         refreshSystemStats: () => void
         addQuickNote: (content: string) => void
+        addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => void
         getNotifications: () => unknown
         version: string
         buildTime: string
@@ -189,7 +190,7 @@ const App = memo(function App() {
           store.updateFileContent(id, content)
         },
         getNotifications: () => st.getState().notifications,
-        version: '70.0.0',
+        version: '71.0.0',
         buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
       }
       win.WebLinuxOS = globalApi

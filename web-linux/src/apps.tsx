@@ -243,6 +243,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'devbox', name: 'DevBox 开发者工具箱', icon: <WrenchIcon />, component: 'DevBox', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '一站式开发者工具箱：Base64/URL编解码、JSON格式化、哈希生成、UUID/密码生成、时间戳转换、颜色工具、正则测试、JWT解析、UA分析、Cron表达式' },
   { id: 'browser-info', name: '浏览器信息面板', icon: <InfoIcon />, component: 'BrowserInfo', category: 'system', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '全面的浏览器与系统环境检测：浏览器详情、设备信息、系统配置、功能支持检测、网络状态分析，支持导出报告' },
   { id: 'api-lab', name: 'API Lab 实验室', icon: <ApiLabIcon />, component: 'APILab', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实公开API探索实验室：天气/汇率/加密货币/国家信息/NASA天文图/HackerNews等12+API集成，支持参数编辑和请求历史' },
+  // === v71 创新应用套件 ===
+  { id: 'system-backup', name: '系统备份与恢复', icon: <BackupIcon />, component: 'SystemBackup', category: 'system', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '系统备份与恢复：导出/导入完整系统状态、备份历史管理、选择性备份、一键重置，数据安全有保障' },
+  { id: 'speed-test', name: '网络速度测试', icon: <WifiIcon />, component: 'SpeedTest', category: 'internet', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '真实网络速度测试：下载/上传速度测量、延迟ping测试、实时仪表盘、历史记录对比、网络评级' },
+  { id: 'markdown-slides', name: 'Markdown 幻灯片', icon: <PresentationIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown 转幻灯片：实时编辑预览、幻灯片播放、全屏演示、过渡动画、导出HTML、支持多种主题' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

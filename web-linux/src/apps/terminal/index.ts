@@ -21,6 +21,7 @@ import './funCommands'
 import './aiCommands'
 import './advancedCommands'
 import './storageCommands'
+import './systemBackupCommands'
 
 // 5. 扩展命令：历史记录、搜索、比较等实用功能
 import './extendedCommands'
