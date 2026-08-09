@@ -460,6 +460,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   FocusFlow: () => import('../../apps/FocusFlow'),
   QuickShare: () => import('../../apps/QuickShare'),
   RegexMaster: () => import('../../apps/RegexMaster'),
+  // === v71 创新应用 ===
+  AIDesktopAssistant: () => import('../../apps/AIDesktopAssistant'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

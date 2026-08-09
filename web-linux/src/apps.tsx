@@ -247,6 +247,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'system-backup', name: '系统备份与恢复', icon: <BackupIcon />, component: 'SystemBackup', category: 'system', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '系统备份与恢复：导出/导入完整系统状态、备份历史管理、选择性备份、一键重置，数据安全有保障' },
   { id: 'speed-test', name: '网络速度测试', icon: <WifiIcon />, component: 'SpeedTest', category: 'internet', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '真实网络速度测试：下载/上传速度测量、延迟ping测试、实时仪表盘、历史记录对比、网络评级' },
   { id: 'markdown-slides', name: 'Markdown 幻灯片', icon: <PresentationIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown 转幻灯片：实时编辑预览、幻灯片播放、全屏演示、过渡动画、导出HTML、支持多种主题' },
+  // === v71 创新应用套件 — AI 桌面助手 ===
+  { id: 'ai-desktop-assistant', name: 'AI 桌面助手', icon: <SparklesIcon />, component: 'AIDesktopAssistant', category: 'utilities', defaultWidth: 500, defaultHeight: 700, minWidth: 400, minHeight: 550, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的桌面助手：自然语言打开应用、天气查询、文本翻译、股票行情、笑话生成、每日名言、Hacker News 热门、颜色转换、UUID 生成、系统信息查询' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

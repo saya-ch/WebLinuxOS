@@ -667,7 +667,7 @@ const Desktop = memo(function Desktop() {
           marginBottom: '24px',
           letterSpacing: '0.5px',
         }}>
-          v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '69.0.0'}
+          v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '71.0.0'}
         </div>
         <div className="splash-status">
           {splashPhase === 0 && 'Initializing kernel modules...'}

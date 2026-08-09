@@ -44,3 +44,6 @@ import './advancedApiCommands'
 
 // 10. Workbench命令集：智能工作台相关命令（workbench/now/focus/break/motivate/sysinfo/uuid-gen/password/b64/color/weather-cli/calc）
 import './workbenchCommands'
+
+// 11. API命令集：额外API集成命令（stock/currency/translate/joke/quote/hackernews/news/github/color/uuid/base64/hash/qr）
+import './apiCommands'
