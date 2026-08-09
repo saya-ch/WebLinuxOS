@@ -187,6 +187,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/RegexMaster')) {
               return 'app-regexmaster';
             }
+            if (id.includes('src/apps/DevBox')) {
+              return 'app-devbox';
+            }
+            if (id.includes('src/apps/BrowserInfo')) {
+              return 'app-browserinfo';
+            }
+            if (id.includes('src/apps/APILab')) {
+              return 'app-apilab';
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }

@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v69.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v71.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -20,7 +20,16 @@
 
 ## 项目简介
 
-WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 391+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+
+## v71.0.0 更新亮点
+
+- **新增 3 款创新应用**：DevBox 开发者工具箱、浏览器信息面板、API Lab 实验室
+- **DevBox 开发者工具箱**：一站式开发者工具集合，集成 Base64/URL 编解码、JSON 格式化、哈希生成（MD5/SHA）、UUID/密码生成、时间戳转换、颜色工具、正则测试、JWT 解析、UA 分析、Cron 表达式生成与解释等 12+ 实用工具
+- **浏览器信息面板 (BrowserInfo)**：全面的浏览器与系统环境检测，包括浏览器详情、设备信息、系统配置、功能支持检测（WebGL/WebAssembly/Service Worker/WebGPU 等 20+ 项）、网络状态分析，支持导出检测报告
+- **API Lab 实验室**：真实公开 API 探索实验室，集成 12+ 合规公开 API，包括 Open-Meteo 天气、实时汇率、每日箴言、编程笑话、冷知识、国家信息、加密货币行情（CoinGecko）、GitHub 热门仓库、IP 查询、NASA 每日天文图、Hacker News、占位图片等，支持参数编辑和请求历史
+- **代码质量改进**：修复 apps.tsx 中重复的 api-lab 定义，新增应用懒加载映射，TypeScript 类型错误清零
+- **版本统一**：全项目版本号同步至 v71.0.0
 
 ## v70.0.0 更新亮点
 
@@ -175,6 +184,8 @@ npm run preview
 
 | 应用 | 说明 |
 |------|------|
+| DevBox 开发者工具箱 | Base64/URL 编解码、JSON 格式化、哈希生成、UUID/密码生成、时间戳转换、颜色工具、正则测试、JWT 解析、UA 分析、Cron 表达式等 12+ 工具 |
+| API Lab 实验室 | 12+ 合规公开 API：天气、汇率、加密货币、国家信息、NASA 天文图、Hacker News 等，支持参数编辑和请求历史 |
 | 在线代码运行器 Pro | JavaScript 实时执行、HTML/CSS/JS 实时预览、代码分享 |
 | API 测试器 | 真实 HTTP 请求、预设模板、请求历史 |
 | JSON 超级工具 | 格式化/压缩、JSONPath 查询、Schema 验证、Diff 对比 |
@@ -237,6 +248,7 @@ npm run preview
 
 | 应用 | 说明 |
 |------|------|
+| 浏览器信息面板 | 浏览器详情、设备信息、系统配置、功能支持检测（20+ 项）、网络状态分析，支持导出报告 |
 | 终端 | 100+ 命令、Unix 管道、输出重定向、API 集成（npm/天气/汇率/翻译/IP 查询） |
 | 实时系统监控 | JS 堆内存、网络、FPS、性能计时 |
 | PrivacyGuard | 本地 PII 检测、17 类敏感信息 |
