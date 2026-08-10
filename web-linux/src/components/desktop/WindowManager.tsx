@@ -477,6 +477,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIStoryWriter: () => import('../../apps/AIStoryWriter'),
   CodePlaygroundPro: () => import('../../apps/CodePlaygroundPro'),
   CryptoPortfolioTracker: () => import('../../apps/CryptoPortfolioTracker'),
+  // === v75 新增创新应用 ===
+  CrossDeviceSync: () => import('../../apps/CrossDeviceSync'),
+  LiveDataPipeline: () => import('../../apps/LiveDataPipeline'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

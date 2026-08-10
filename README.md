@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v74.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v75.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,6 +21,31 @@
 ## 项目简介
 
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+
+## v75.0.0 更新亮点
+
+- **跨设备同步 (CrossDeviceSync)**：基于 BroadcastChannel API 的实时跨标签页通信工具
+  - 多标签页/窗口实时消息传递：同浏览器内即时通信
+  - 智能内容类型识别：自动检测文本/代码/链接
+  - 连接状态可视化：实时显示在线设备列表与状态
+  - 同步历史记录：保存最近 20 条消息，支持复制、导出、清除
+  - 心跳检测机制：每 5 秒检测一次，15 秒超时自动移除离线设备
+  - 玻璃拟态 UI 设计，紫青色渐变主题
+
+- **实时数据流 (LiveDataPipeline)**：高性能实时数据可视化与处理工具
+  - 多种数据模式：正弦波、随机游走、阶跃函数、斜坡函数
+  - Canvas 高性能折线图：requestAnimationFrame 驱动，DPR 高清渲染
+  - 实时统计分析：均值/方差/最大值/最小值/数量
+  - 数据录制回放：录制数据流并支持回放
+  - CSV 导出：支持导出数据为 CSV 格式（Excel 友好 BOM 头）
+  - 可配置参数：采样率、缓冲区大小、各通道独立参数
+  - Web Audio 声音警报：通道超阈值触发不同频率警报
+
+- **代码质量与架构改进**
+  - 新增应用完整的 TypeScript 类型安全
+  - 组件懒加载优化：所有新应用使用 React.lazy 按需加载
+  - 错误边界保护：每个应用都有 ErrorBoundary 包裹
+  - 浏览器 API 兼容性降级：BroadcastChannel/localStorage 不可用时优雅降级
 
 ## v74.0.0 更新亮点
 

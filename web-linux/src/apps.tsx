@@ -264,6 +264,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'ai-story-writer', name: 'AI 故事创作工坊', icon: <BookmarkIcon />, component: 'AIStoryWriter', category: 'multimedia', defaultWidth: 1000, defaultHeight: 850, minWidth: 800, minHeight: 650, resizable: true, multiple: false, isNew: true, description: 'AI 故事创作助手：多体裁支持（奇幻/科幻/悬疑/ romance/寓言）、角色设定、情节生成、续写模式、多章节管理、风格调整，支持导出与本地收藏' },
   { id: 'code-playground-pro', name: '代码游乐场 Pro', icon: <Code2Icon />, component: 'CodePlaygroundPro', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '增强版在线代码游乐场：支持JavaScript/TypeScript实时执行、HTML/CSS/JS分屏预览、多文件项目、实时Console输出、代码保存与分享' },
   { id: 'crypto-portfolio-tracker', name: '加密投资组合追踪', icon: <TrendingUpIcon />, component: 'CryptoPortfolioTracker', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '个人加密货币投资组合管理：多资产持仓录入、实时市值计算、总价值/盈亏/24h浮动、资产配置饼图、历史趋势、基于CoinGecko API' },
+  // === v75 新增创新应用套件 ===
+  { id: 'cross-device-sync', name: '跨设备同步', icon: <ShareIcon />, component: 'CrossDeviceSync', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '跨标签页/窗口实时同步工具：基于BroadcastChannel API实现多设备消息传递、智能内容类型识别、连接状态可视化、同步历史记录管理' },
+  { id: 'live-data-pipeline', name: '实时数据流', icon: <ActivityIcon />, component: 'LiveDataPipeline', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时数据流处理与可视化：多种数据模式生成、Canvas高性能折线图、实时统计分析、数据录制回放、CSV导出、Web Audio声音警报' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
