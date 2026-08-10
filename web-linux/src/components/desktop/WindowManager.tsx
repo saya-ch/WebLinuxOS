@@ -470,6 +470,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ContentStudio: () => import('../../apps/ContentStudio'),
   SystemResourceDashboard: () => import('../../apps/SystemResourceDashboard'),
   WebPerformanceTesterPro: () => import('../../apps/WebPerformanceTesterPro'),
+  UltimateToolkit: () => import('../../apps/UltimateToolkit'),
+  AIChatReal: () => import('../../apps/AIChatReal'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

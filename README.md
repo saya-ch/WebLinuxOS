@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v71.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v73.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,6 +21,38 @@
 ## 项目简介
 
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+
+## v73.0.0 更新亮点
+
+- **终极工具箱 (UltimateToolkit)**：14合1实用工具集合，覆盖日常开发与生活场景
+  - 天气查询：基于 Open-Meteo API，全球城市实时天气与预报
+  - 汇率转换：基于 Frankfurter API，150+货币实时汇率
+  - IP查询：基于 IP-API，获取IP位置、运营商、时区信息
+  - 国家信息：REST Countries API，获取各国详情、国旗、货币
+  - 百科搜索：Wikipedia API，直接检索维基百科内容
+  - 每日名言：Advice Slip API，随机获取励志名言
+  - 编程笑话：官方 JokeAPI，开发爆笑编程笑话
+  - 加密货币：CoinGecko API，实时加密货币行情
+  - GitHub趋势：GitHub API，查看近期热门仓库
+  - 颜色转换：HEX/RGB/HSL 互转，颜色选择器
+  - UUID生成：v4 UUID 批量生成与格式化
+  - Base64编解码：文本与文件 Base64 互转
+  - 时间戳转换：Unix时间戳与日期互转
+  - JSON格式化：美化、压缩、验证JSON
+
+- **AI 真实聊天 (AIChatReal)**：基于 Pollinations AI 免费公开 API 的真实AI对话
+  - 5种角色预设：通用助手、代码专家、写作助手、翻译专家、创意顾问
+  - 多轮对话上下文记忆，支持自然连续对话
+  - Markdown 渲染：支持代码块、列表、表格等富文本
+  - 代码高亮：语法高亮所有代码块
+  - 打字机效果：模拟AI打字，体验更真实
+  - 对话历史持久化：localStorage 自动保存会话
+
+- **代码质量改进**
+  - TypeScript 严格模式检查，修复所有类型错误
+  - 组件懒加载优化，提升首屏加载速度
+  - 文件管理器错误处理增强
+  - 构建产物体积优化
 
 ## v72.0.0 更新亮点
 

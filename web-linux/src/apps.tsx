@@ -32,6 +32,9 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // v73 创新功能 — 终极在线工具箱 & 真实AI聊天
+  { id: 'ultimate-toolkit', name: '终极工具箱', icon: <WrenchIcon />, component: 'UltimateToolkit', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '14合1在线工具箱：天气/汇率/IP查询/国家信息/百科搜索/每日名言/编程笑话/加密货币/GitHub趋势/颜色转换/UUID生成/Base64编解码/时间戳转换/JSON格式化' },
+  { id: 'ai-chat-real', name: 'AI 真实聊天', icon: <SparklesIcon />, component: 'AIChatReal', category: 'utilities', defaultWidth: 900, defaultHeight: 720, minWidth: 680, minHeight: 520, resizable: true, multiple: false, isNew: true, description: '基于 Pollinations AI 公开免费 API 的真实AI对话：5种角色预设、多轮对话、Markdown渲染、代码高亮、打字机效果、对话历史持久化' },
   // v72 创新功能 — URL 工具箱 Pro：集成 is.gd 真实缩短 API + QR 码生成
   { id: 'url-tools-enhanced', name: 'URL 工具箱 Pro', icon: <Link2Icon />, component: 'URLToolsEnhanced', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '增强版URL工具箱：真实URL缩短服务（is.gd API）、QR码生成、编码解码解析、历史记录管理' },
   { id: 'markdown-slides-pro', name: 'Markdown 演示文稿', icon: <PresentationIcon />, component: 'MarkdownSlidesPro', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown转演示文稿：实时编辑预览、幻灯片播放、全屏演示、导出HTML、过渡动画' },
