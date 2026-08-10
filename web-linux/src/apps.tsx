@@ -252,6 +252,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v71 创新应用套件 — AI 桌面助手 ===
   { id: 'ai-desktop-assistant', name: 'AI 桌面助手', icon: <SparklesIcon />, component: 'AIDesktopAssistant', category: 'utilities', defaultWidth: 500, defaultHeight: 700, minWidth: 400, minHeight: 550, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的桌面助手：自然语言打开应用、天气查询、文本翻译、股票行情、笑话生成、每日名言、Hacker News 热门、颜色转换、UUID 生成、系统信息查询' },
   { id: 'developer-toolkit-pro', name: '开发者工具箱 Pro', icon: <WrenchIcon />, component: 'DeveloperToolkitPro', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '集成12+实用开发工具：JSON处理、编解码、哈希生成、时间戳转换、颜色工具、正则测试、JWT解码、Cron解析' },
+  // === v73 新增创新应用套件 ===
+  { id: 'content-studio', name: 'AI 内容创作工作室', icon: <SparklesIcon />, component: 'ContentStudio', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的内容创作平台：文章生成、文本摘要、润色改写、标题生成、智能翻译、标签提取六大功能，基于Pollinations.ai API' },
+  { id: 'system-resource-dashboard', name: '系统资源监控', icon: <ActivityIcon />, component: 'SystemResourceDashboard', category: 'system', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时系统资源监控仪表盘：CPU/内存/网络/FPS/存储/浏览器信息实时监测，历史趋势可视化，智能性能警告' },
+  { id: 'web-performance-tester-pro', name: '网页性能测试 Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>, component: 'WebPerformanceTesterPro', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业网页性能测试工具：TTFB/加载时间/资源统计/性能评分/优化建议/报告导出，支持测试历史记录和本地存储' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

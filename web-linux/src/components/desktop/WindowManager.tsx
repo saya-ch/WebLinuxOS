@@ -464,6 +464,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v71 创新应用 ===
   AIDesktopAssistant: () => import('../../apps/AIDesktopAssistant'),
   DeveloperToolkitPro: () => import('../../apps/DeveloperToolkitPro'),
+  // === v73 新增创新应用套件 ===
+  ContentStudio: () => import('../../apps/ContentStudio'),
+  SystemResourceDashboard: () => import('../../apps/SystemResourceDashboard'),
+  WebPerformanceTesterPro: () => import('../../apps/WebPerformanceTesterPro'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
