@@ -14,7 +14,7 @@ import {
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
-  ShareIcon, Link2Icon
+  ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon
 } from './icons'
 
 
@@ -259,6 +259,11 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'content-studio', name: 'AI 内容创作工作室', icon: <SparklesIcon />, component: 'ContentStudio', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的内容创作平台：文章生成、文本摘要、润色改写、标题生成、智能翻译、标签提取六大功能，基于Pollinations.ai API' },
   { id: 'system-resource-dashboard', name: '系统资源监控', icon: <ActivityIcon />, component: 'SystemResourceDashboard', category: 'system', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时系统资源监控仪表盘：CPU/内存/网络/FPS/存储/浏览器信息实时监测，历史趋势可视化，智能性能警告' },
   { id: 'web-performance-tester-pro', name: '网页性能测试 Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>, component: 'WebPerformanceTesterPro', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业网页性能测试工具：TTFB/加载时间/资源统计/性能评分/优化建议/报告导出，支持测试历史记录和本地存储' },
+  // === v74 新增创新应用套件 ===
+  { id: 'ai-poetry-generator', name: 'AI 诗歌生成器', icon: <PoetryIcon />, component: 'AIPoetryGenerator', category: 'utilities', defaultWidth: 800, defaultHeight: 900, minWidth: 700, minHeight: 700, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的诗歌创作工具：8种诗歌风格（唐诗/宋词/现代诗/俳句/十四行诗等）、8种情感基调、历史记录、收藏管理、本地持久化，基于Pollinations AI API' },
+  { id: 'ai-story-writer', name: 'AI 故事创作工坊', icon: <BookmarkIcon />, component: 'AIStoryWriter', category: 'multimedia', defaultWidth: 1000, defaultHeight: 850, minWidth: 800, minHeight: 650, resizable: true, multiple: false, isNew: true, description: 'AI 故事创作助手：多体裁支持（奇幻/科幻/悬疑/ romance/寓言）、角色设定、情节生成、续写模式、多章节管理、风格调整，支持导出与本地收藏' },
+  { id: 'code-playground-pro', name: '代码游乐场 Pro', icon: <Code2Icon />, component: 'CodePlaygroundPro', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '增强版在线代码游乐场：支持JavaScript/TypeScript实时执行、HTML/CSS/JS分屏预览、多文件项目、实时Console输出、代码保存与分享' },
+  { id: 'crypto-portfolio-tracker', name: '加密投资组合追踪', icon: <TrendingUpIcon />, component: 'CryptoPortfolioTracker', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '个人加密货币投资组合管理：多资产持仓录入、实时市值计算、总价值/盈亏/24h浮动、资产配置饼图、历史趋势、基于CoinGecko API' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

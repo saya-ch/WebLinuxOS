@@ -11,8 +11,8 @@ import {
   ChevronUp, ChevronLeft, ChevronRight, ExternalLink, Download, Upload, Eye, EyeOff, Check, AlertTriangle,
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
-  Star, Tag, Save, Monitor, Power, Target, TrendingUp, Lightbulb, Bookmark, ArrowRight,
-  CheckCircle, BarChart3, Layers,
+  Star, Tag, Save, Monitor, Power, Target, TrendingUp, TrendingDown, Lightbulb, Bookmark, ArrowRight,
+  BarChart3, Layers, HeartOff, Wallet, PieChart, RotateCcw,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -153,10 +153,18 @@ export const MonitorIcon = Monitor
 export const PowerIcon = Power
 export const TargetIcon = Target
 export const TrendingUpIcon = TrendingUp
+export const TrendingDownIcon = TrendingDown
 export const LightbulbIcon = Lightbulb
 export const BookmarkIcon = Bookmark
 export const ArrowRightIcon = ArrowRight
-export const CheckCircleIcon = CheckCircle
+export const CheckCircleIcon = Check
+export const PoetryIcon = BookOpen
+export const HeartIcon = Heart
+export const HeartOffIcon = HeartOff
+export const MusicNotesIcon = Music
+export const WalletIcon = Wallet
+export const PieChartIcon = PieChart
+export const RotateCcwIcon = RotateCcw
 export const BarChartIcon = BarChart3
 export const LayersIcon = Layers
 export const StarOffIcon = ({ size = 18 }: { size?: number }) => (

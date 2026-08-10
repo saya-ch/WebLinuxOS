@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v73.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v74.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,6 +21,51 @@
 ## 项目简介
 
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+
+## v74.0.0 更新亮点
+
+- **AI 诗歌生成器 (AIPoetryGenerator)**：基于 Pollinations AI 免费 API 的诗歌创作工具
+  - 8 种诗歌风格：唐诗、宋词、现代诗、俳句、十四行诗、诗经、楚辞、自由诗
+  - 8 种情感基调：欢快、忧伤、爱情、自然、哲理、怀旧、豪迈、宁静
+  - 历史记录与收藏管理：localStorage 自动保存创作历史
+  - 支持复制和下载功能：一键复制诗歌内容或导出为 TXT 文件
+  - 优雅的渐变 UI 设计，支持诗歌淡入动画
+
+- **AI 故事创作工坊 (AIStoryWriter)**：AI 驱动的多章节故事创作平台
+  - 8 种故事体裁：奇幻、科幻、悬疑、浪漫、寓言、恐怖、历史、喜剧
+  - 多章节管理：支持分章节创作，章节顺序导航
+  - 续写模式：可以在现有故事基础上继续创作
+  - 本地持久化：保存故事集与章节，支持继续创作
+  - 全文下载：一键导出完整故事为 TXT 文件
+
+- **代码游乐场 Pro (CodePlaygroundPro)**：增强版在线代码编辑器
+  - HTML/CSS/JS 分标签编辑，实时预览渲染
+  - Console 输出捕获：实时查看 JavaScript 控制台输出
+  - 内置示例项目：Hello World、计数器、数据可视化
+  - 代码保存与下载：本地保存项目或下载为独立 HTML 文件
+  - 现代化深色主题，语法高亮
+
+- **加密投资组合追踪 (CryptoPortfolioTracker)**：真实加密货币投资管理
+  - 实时价格数据：基于 CoinGecko 免费公开 API
+  - 持仓管理：添加、编辑、删除加密货币持仓
+  - 资产总览：总资产、总盈亏、24h 变动、持仓成本
+  - 资产配置可视化：自动计算各币种配置比例
+  - 本地持久化：所有持仓数据保存到浏览器本地
+
+- **终端 AI 创意命令集**：新增 7 个实用终端命令
+  - `poetry <主题> [风格]`：AI 诗歌生成
+  - `story <主题> [体裁]`：AI 故事创作
+  - `haiku <主题>`：AI 俳句创作
+  - `quote-ai <主题>`：AI 名言生成
+  - `crypto [币种]`：加密货币实时价格查询
+  - `weather-ai <城市>`：天气查询
+  - `ai-creative-list`：所有 AI 创意命令列表
+
+- **代码质量改进**
+  - 组件懒加载优化：所有新应用使用 React.lazy 按需加载
+  - 错误边界保护：每个应用都有 ErrorBoundary 包裹
+  - 本地回退机制：API 不可用时自动回退到本地模板数据
+  - 类型安全：完整的 TypeScript 类型定义
 
 ## v73.0.0 更新亮点
 

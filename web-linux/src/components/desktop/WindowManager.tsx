@@ -472,6 +472,11 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WebPerformanceTesterPro: () => import('../../apps/WebPerformanceTesterPro'),
   UltimateToolkit: () => import('../../apps/UltimateToolkit'),
   AIChatReal: () => import('../../apps/AIChatReal'),
+  // === v74 新增创新应用 ===
+  AIPoetryGenerator: () => import('../../apps/AIPoetryGenerator'),
+  AIStoryWriter: () => import('../../apps/AIStoryWriter'),
+  CodePlaygroundPro: () => import('../../apps/CodePlaygroundPro'),
+  CryptoPortfolioTracker: () => import('../../apps/CryptoPortfolioTracker'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

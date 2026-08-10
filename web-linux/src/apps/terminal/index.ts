@@ -47,3 +47,6 @@ import './workbenchCommands'
 
 // 11. API命令集：额外API集成命令（stock/currency/translate/joke/quote/hackernews/news/github/color/uuid/base64/hash/qr）
 import './apiCommands'
+
+// 12. AI 创意命令集：诗歌、故事、俳句、名言、加密货币、天气
+import './aiCreativeCommands'
