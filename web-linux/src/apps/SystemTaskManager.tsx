@@ -462,7 +462,7 @@ export default function SystemTaskManager() {
         color: '#6b7280',
       }}>
         <span>总进程数: {allProcesses.length} | CPU: {stats.totalCpu}% | 内存: {stats.totalMem}MB</span>
-        <span>WebLinuxOS v71.0.0 | 实时监控</span>
+        <span>WebLinuxOS v{__APP_VERSION__} | 实时监控</span>
       </div>
     </div>
   )

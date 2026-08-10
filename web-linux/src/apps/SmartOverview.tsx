@@ -684,7 +684,7 @@ export default function SmartOverview() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>系统版本</span>
-                <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>v12.0.0</span>
+                <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>v{__APP_VERSION__}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>应用数量</span>

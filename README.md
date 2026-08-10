@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v75.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v76.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,6 +21,40 @@
 ## 项目简介
 
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+
+## v76.0.0 更新亮点
+
+- **世界时钟 (WorldClock)**：多城市实时时钟应用
+  - 6 大预置时钟：北京、东京、纽约、伦敦、巴黎、悉尼
+  - 自定义时区添加：支持 21 个全球主要时区
+  - 12/24 小时制切换
+  - 拖拽排序：支持拖动调整城市顺序
+  - 玻璃拟态设计：毛玻璃背景、渐变色主题
+  - 亮色/暗色主题切换
+  - 数据持久化：设置自动保存到 localStorage
+  - 白天/夜晚指示：根据时间显示太阳或月亮图标
+
+- **HTTP 状态码参考 (HttpStatusExplorer)**：完整 HTTP 状态码参考工具
+  - 75 个状态码详细说明：覆盖 1xx-5xx 所有类别
+  - 分类筛选：按信息、成功、重定向、客户端错误、服务端错误分类
+  - 实时搜索：支持状态码名称和描述搜索
+  - 收藏功能：标记常用状态码，快速访问
+  - 实时 HTTP 测试：支持 GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS 方法
+  - 响应时间显示：测量请求耗时
+  - 响应头查看：显示完整的 HTTP 响应头信息
+  - 预置测试端点：GitHub、JSONPlaceholder、Postman Echo 等
+
+- **股票追踪增强 (StockTracker)**：集成真实股票数据
+  - 接入 Stooq 免费公开 API 获取实时股票数据
+  - 支持美股、港股、A股等多个市场
+  - 分类浏览：科技、金融、能源等板块
+  - 市场概览：主要指数实时行情
+
+- **代码质量改进**
+  - 版本号统一：全项目使用 `__APP_VERSION__` 变量，消除硬编码
+  - 组件懒加载优化
+  - TypeScript 类型安全修复
+  - 文件名大小写一致性修复
 
 ## v75.0.0 更新亮点
 

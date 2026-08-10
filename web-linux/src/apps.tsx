@@ -267,6 +267,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v75 新增创新应用套件 ===
   { id: 'cross-device-sync', name: '跨设备同步', icon: <ShareIcon />, component: 'CrossDeviceSync', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '跨标签页/窗口实时同步工具：基于BroadcastChannel API实现多设备消息传递、智能内容类型识别、连接状态可视化、同步历史记录管理' },
   { id: 'live-data-pipeline', name: '实时数据流', icon: <ActivityIcon />, component: 'LiveDataPipeline', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时数据流处理与可视化：多种数据模式生成、Canvas高性能折线图、实时统计分析、数据录制回放、CSV导出、Web Audio声音警报' },
+  // v76 创新功能 — 世界时钟 & HTTP状态码工具
+  { id: 'world-clock', name: '世界时钟', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, component: 'WorldClock', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '多城市实时时钟：北京/东京/纽约/伦敦等6大时钟、自定义时区添加、12/24小时制切换、拖拽排序、玻璃拟态设计、数据持久化' },
+  { id: 'http-status-explorer', name: 'HTTP状态码参考', icon: <ApiLabIcon />, component: 'HttpStatusExplorer', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '完整HTTP状态码参考：75个状态码详细说明、分类筛选搜索、收藏功能、实时HTTP测试（支持GET/POST/PUT等方法）、响应时间和头信息展示' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

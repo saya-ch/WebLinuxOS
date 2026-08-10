@@ -533,7 +533,7 @@ export default function DataVizDashboard() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
-                  { label: '操作系统', value: 'WebLinuxOS v15.3.0' },
+                  { label: '操作系统', value: `WebLinuxOS v${__APP_VERSION__}` },
                   { label: '内核版本', value: 'WebKernel 2.0' },
                   { label: '运行时间', value: `${Math.floor(Math.random() * 100) + 1} 天` },
                   { label: '进程数', value: Math.floor(Math.random() * 100) + 50 },
