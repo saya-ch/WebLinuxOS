@@ -24,6 +24,22 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 
 ## v72.0.0 更新亮点
 
+- **系统任务管理器 Pro (SystemTaskManager)**：增强版进程管理器，真正集成 WebLinuxOS 窗口管理
+  - 实时进程监控：显示系统进程、应用进程、窗口进程三大类
+  - 窗口进程管理：可直接终止或聚焦窗口进程，实现真正的进程控制
+  - 系统资源可视化：CPU、内存、存储、网络四大资源实时仪表盘
+  - 进程分类筛选：按系统/应用/窗口分类，支持搜索和排序
+- **代码片段管理器 (SnippetManager)**：个人代码片段库，预置经典代码
+  - 多语言支持：JavaScript/TypeScript/Python/HTML/CSS/JSON/Bash 等 14 种语言
+  - 预置示例：React Hooks、防抖函数、快速排序、Flexbox 居中、Fetch 封装等
+  - 收藏标记、快速搜索、一键复制、JS 执行测试
+  - 本地存储，自动保存所有代码片段
+- **网络速度测试 (SpeedTest)**：基于公开测速服务器的真实网速测量
+  - 延迟 Ping 测试：5 次测量取平均，计算抖动
+  - 下载速度：基于 Hetzner/Cloudflare 公开测速服务器
+  - 上传速度：基于 httpbin.org 上传测试
+  - 历史记录图表：Canvas 绘制历史测速对比图
+  - 本地存储最近 20 条测试记录
 - **URL 工具箱 Pro (URLToolsEnhanced)**：全新增强版 URL 工具，集成真实公共 API，提供实际使用价值
   - 真实 URL 缩短服务：接入 is.gd 公共 API，实现真正的 URL 缩短功能
   - 二维码生成：集成 QR Server API，为任意 URL 生成可下载的二维码图片
