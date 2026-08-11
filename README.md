@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v77.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v78.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,36 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v78.0.0 更新亮点
+
+- **AI 研究助手 (ResearchAssistant)**：集成 arXiv 和 Semantic Scholar 双大学术 API 的专业论文搜索工具
+  - 双源搜索：同时搜索 arXiv 和 Semantic Scholar 学术论文数据库
+  - 每日精选：按学科分类（AI/ML/NLP/CV/量子物理等）浏览最新论文
+  - 引用分析：查看论文的引用关系，了解学术影响力
+  - 相关推荐：基于 Semantic Scholar 的论文推荐算法
+  - 收藏管理：本地收藏重要论文，搜索历史记录
+  - 合规 API：使用 arXiv.org 和 Semantic Scholar 公开免费 API，无需密钥
+
+- **增强版实时协作白板 (CollaborativeWhiteboardEnhanced)**：基于 BroadcastChannel 的跨标签页实时协作
+  - 8 种绘图工具：画笔、荧光笔、橡皮、矩形、圆形、直线、箭头、文字
+  - 实时协作：加入相同房间 ID 即可跨标签页实时协作
+  - 完整操作支持：撤销、重做、清空、导出 PNG
+  - 网格背景、丰富预设颜色、自定义颜色选择
+  - 自适应笔触大小，流畅的绘图体验
+
+- **增强版动态壁纸系统 (EnhancedDynamicWallpaper)**：4 种全新视觉效果
+  - 粒子系统：鼠标交互的彩色粒子，自动连线形成网络
+  - 流场可视化：基于 Perlin 噪声的动态流线效果
+  - 渐变波浪：多层色彩波浪起伏，鼠标影响波形
+  - 星座连接：星空背景 + 鼠标光晕 + 动态连线
+  - 性能优化：自动检测硬件能力调整渲染参数
+
+- **终端学术研究命令集**：新增 4 个学术研究相关终端命令
+  - `arxiv <关键词>`：在 arXiv 上搜索学术论文
+  - `s2search <关键词>`：在 Semantic Scholar 上搜索（含引用数据）
+  - `daily-papers [分类]`：查看 arXiv 各领域最新论文
+  - `paper-stats`：显示学术研究 API 状态和统计
 
 ## v77.0.0 更新亮点
 

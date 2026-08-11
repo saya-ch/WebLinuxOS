@@ -9,6 +9,7 @@ import DesktopWidgets, {
   type WidgetId,
 } from './DesktopWidgets'
 import AuroraWallpaper from './AuroraWallpaper'
+import EnhancedDynamicWallpaper from './EnhancedDynamicWallpaper'
 import { loadFromStorage, debouncedSaveToStorage } from '../../store/storageUtils'
 
 interface Particle {
@@ -695,6 +696,7 @@ const Desktop = memo(function Desktop() {
     >
       {/* Aurora canvas wallpaper */}
       <AuroraWallpaper />
+      <EnhancedDynamicWallpaper />
 
       {/* Enhanced animated background layers */}
       <div className="desktop-background-layer" />

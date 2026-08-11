@@ -169,6 +169,37 @@ export interface SpaceArticle {
   publishedAt: string
 }
 
+// === v78 新增：学术研究类型 ===
+export interface ArxivPaper {
+  id: string
+  title: string
+  summary: string
+  authors: string[]
+  categories: string[]
+  published: string
+  updated: string
+  url: string
+  pdfUrl: string
+  source: string
+}
+
+export interface S2Paper {
+  id: string
+  title: string
+  abstract: string
+  authors: string[]
+  year: string
+  doi?: string
+  arxivId?: string
+  citationCount: number
+  referenceCount?: number
+  url: string
+  publishedDate?: string
+  venue?: string
+  pdfUrl?: string
+  source: string
+}
+
 export class ApiService {
   private static instance: ApiService
   private baseUrls = {
@@ -569,6 +600,201 @@ export class ApiService {
         summary: item.summary,
         publishedAt: item.publishedAt,
       }))
+    } catch {
+      return null
+    }
+  }
+
+  // === v78 新增：学术研究 API ===
+  
+  // arXiv 论文搜索
+  async searchArxiv(query: string, maxResults: number = 20): Promise<ArxivPaper[] | null> {
+    try {
+      const url = `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&max_results=${maxResults}&sortBy=relevance&sortOrder=descending`
+      const response = await fetch(url)
+      const text = await response.text()
+      
+      // 解析 Atom XML
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(text, 'text/xml')
+      const entries = doc.querySelectorAll('entry')
+      
+      const papers: ArxivPaper[] = []
+      entries.forEach((entry, index) => {
+        const title = entry.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim() || ''
+        const summary = entry.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim() || ''
+        const published = entry.querySelector('published')?.textContent || ''
+        const updated = entry.querySelector('updated')?.textContent || ''
+        const id = entry.querySelector('id')?.textContent || ''
+        const authors = Array.from(entry.querySelectorAll('author name')).map(a => a.textContent || '')
+        const categories = Array.from(entry.querySelectorAll('category')).map(c => c.getAttribute('term') || '')
+        const pdfLink = Array.from(entry.querySelectorAll('link')).find(l => l.getAttribute('title') === 'pdf')?.getAttribute('href') || ''
+        const absLink = Array.from(entry.querySelectorAll('link')).find(l => l.getAttribute('type') === 'text/html')?.getAttribute('href') || id
+        
+        papers.push({
+          id: `${index}-${id.split('/').pop()?.replace('abs.', '') || ''}`,
+          title,
+          summary,
+          authors,
+          categories,
+          published,
+          updated,
+          url: absLink || id,
+          pdfUrl: pdfLink,
+          source: 'arXiv'
+        })
+      })
+      
+      return papers
+    } catch {
+      return null
+    }
+  }
+
+  // Semantic Scholar 论文搜索
+  async searchSemanticScholar(query: string, limit: number = 20): Promise<S2Paper[] | null> {
+    try {
+      const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=${limit}&fields=title,abstract,year,authors,externalIds,citationCount,referenceCount,url,publicationDate,venue,openAccessPdf`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (!data.data) return null
+      
+      return data.data.map((paper: {
+        paperId: string
+        title: string
+        abstract?: string
+        year?: string
+        authors?: { name: string }[]
+        externalIds?: { DOI?: string; ArXiv?: string }
+        citationCount?: number
+        referenceCount?: number
+        url?: string
+        publicationDate?: string
+        venue?: string
+        openAccessPdf?: { url: string } | null
+      }) => ({
+        id: paper.paperId,
+        title: paper.title,
+        abstract: paper.abstract || '',
+        authors: paper.authors?.map(a => a.name) || [],
+        year: paper.year || '',
+        doi: paper.externalIds?.DOI || '',
+        arxivId: paper.externalIds?.ArXiv || '',
+        citationCount: paper.citationCount || 0,
+        referenceCount: paper.referenceCount || 0,
+        url: paper.url || `https://www.semanticscholar.org/paper/${paper.paperId}`,
+        publishedDate: paper.publicationDate || '',
+        venue: paper.venue || '',
+        pdfUrl: paper.openAccessPdf?.url || '',
+        source: 'Semantic Scholar'
+      }))
+    } catch {
+      return null
+    }
+  }
+
+  // Semantic Scholar 获取论文引用关系
+  async getPaperCitations(paperId: string, limit: number = 20): Promise<S2Paper[] | null> {
+    try {
+      const url = `https://api.semanticscholar.org/graph/v1/paper/${paperId}/citations?limit=${limit}&fields=title,year,authors,citationCount,url`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (!data.data) return null
+      
+      return data.data.map((item: {
+        citingPaper: {
+          paperId: string
+          title: string
+          year?: string
+          authors?: { name: string }[]
+          citationCount?: number
+          url?: string
+        }
+      }) => ({
+        id: item.citingPaper.paperId,
+        title: item.citingPaper.title,
+        abstract: '',
+        authors: item.citingPaper.authors?.map(a => a.name) || [],
+        year: item.citingPaper.year || '',
+        citationCount: item.citingPaper.citationCount || 0,
+        url: item.citingPaper.url || `https://www.semanticscholar.org/paper/${item.citingPaper.paperId}`,
+        source: 'Semantic Scholar'
+      }))
+    } catch {
+      return null
+    }
+  }
+
+  // Semantic Scholar 推荐相关论文
+  async getRecommendedPapers(paperId: string, limit: number = 10): Promise<S2Paper[] | null> {
+    try {
+      const url = `https://api.semanticscholar.org/graph/v1/paper/${paperId}/recommendations?limit=${limit}&fields=title,abstract,year,authors,citationCount,url`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (!data.recommendedPapers) return null
+      
+      return data.recommendedPapers.map((paper: {
+        paperId: string
+        title: string
+        abstract?: string
+        year?: string
+        authors?: { name: string }[]
+        citationCount?: number
+        url?: string
+      }) => ({
+        id: paper.paperId,
+        title: paper.title,
+        abstract: paper.abstract || '',
+        authors: paper.authors?.map(a => a.name) || [],
+        year: paper.year || '',
+        citationCount: paper.citationCount || 0,
+        url: paper.url || `https://www.semanticscholar.org/paper/${paper.paperId}`,
+        source: 'Semantic Scholar'
+      }))
+    } catch {
+      return null
+    }
+  }
+
+  // 每日学术论文推荐
+  async fetchDailyPapers(category: string = 'cs.AI'): Promise<ArxivPaper[] | null> {
+    try {
+      const url = `https://export.arxiv.org/api/query?search_query=cat:${encodeURIComponent(category)}&max_results=10&sortBy=submittedDate&sortOrder=descending`
+      const response = await fetch(url)
+      const text = await response.text()
+      
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(text, 'text/xml')
+      const entries = doc.querySelectorAll('entry')
+      
+      const papers: ArxivPaper[] = []
+      entries.forEach((entry, index) => {
+        const title = entry.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim() || ''
+        const summary = entry.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim() || ''
+        const published = entry.querySelector('published')?.textContent || ''
+        const id = entry.querySelector('id')?.textContent || ''
+        const authors = Array.from(entry.querySelectorAll('author name')).map(a => a.textContent || '')
+        const categories = Array.from(entry.querySelectorAll('category')).map(c => c.getAttribute('term') || '')
+        const pdfLink = Array.from(entry.querySelectorAll('link')).find(l => l.getAttribute('title') === 'pdf')?.getAttribute('href') || ''
+        
+        papers.push({
+          id: `daily-${index}-${id.split('/').pop()?.replace('abs.', '') || ''}`,
+          title,
+          summary,
+          authors,
+          categories,
+          published,
+          updated: published,
+          url: id,
+          pdfUrl: pdfLink,
+          source: 'arXiv Daily'
+        })
+      })
+      
+      return papers
     } catch {
       return null
     }

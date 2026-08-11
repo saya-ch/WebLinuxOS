@@ -50,3 +50,6 @@ import './apiCommands'
 
 // 12. AI 创意命令集：诗歌、故事、俳句、名言、加密货币、天气
 import './aiCreativeCommands'
+
+// 13. 学术研究命令集：arXiv、Semantic Scholar 论文搜索
+import './academicCommands'

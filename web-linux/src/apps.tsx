@@ -15,7 +15,7 @@ import {
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
-  BarChartIcon, CloudIcon as CloudLucide
+  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon
 } from './icons'
 
 
@@ -33,6 +33,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // v78 创新功能 — AI研究助手：arXiv + Semantic Scholar 学术论文搜索
+  { id: 'research-assistant', name: 'AI研究助手', icon: <ResearchIcon />, component: 'ResearchAssistant', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '学术论文研究助手：arXiv + Semantic Scholar 双源搜索、每日论文精选、引用关系分析、相关论文推荐、收藏与历史' },
   // v73 创新功能 — 终极在线工具箱 & 真实AI聊天
   { id: 'ultimate-toolkit', name: '终极工具箱', icon: <WrenchIcon />, component: 'UltimateToolkit', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '18合1在线工具箱：天气/汇率/IP查询/国家信息/百科搜索/每日名言/编程笑话/加密货币/GitHub趋势/颜色转换/UUID生成/Base64编解码/时间戳转换/JSON格式化/URL编解码/密码生成/Hash哈希/单位转换' },
   { id: 'ai-chat-real', name: 'AI 真实聊天', icon: <SparklesIcon />, component: 'AIChatReal', category: 'utilities', defaultWidth: 900, defaultHeight: 720, minWidth: 680, minHeight: 520, resizable: true, multiple: false, isNew: true, description: '基于 Pollinations AI 公开免费 API 的真实AI对话：5种角色预设、多轮对话、Markdown渲染、代码高亮、打字机效果、对话历史持久化' },
