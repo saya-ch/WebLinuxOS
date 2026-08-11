@@ -5,7 +5,7 @@ export interface AppDefinition {
   name: string
   icon: ReactNode
   component: string
-  category: 'system' | 'office' | 'internet' | 'multimedia' | 'utilities' | 'development' | 'games'
+  category: 'system' | 'office' | 'internet' | 'multimedia' | 'utilities' | 'development' | 'games' | 'graphics' | 'networking'
   defaultWidth: number
   defaultHeight: number
   minWidth: number

@@ -1,5 +1,5 @@
 import {
-  Folder, FolderOpen, Terminal, FileText, Globe, Calculator, Calendar, Clock, CloudRain, Activity, Settings,
+  Folder, FolderOpen, Terminal, FileText, Globe, Calculator, Calendar, Clock, Cloud, CloudRain, Activity, Settings,
   Image, Music, Video, Code, Package, ShoppingCart, HardDrive,
   ListTodo, Server, Wifi, WifiOff, Shield, User, Camera, Palette, LayoutGrid, Presentation, Mail, MessageSquare,
   Users, CheckSquare, Lock, CloudBackup, Archive, Search, Sun, Type, BookOpen, Languages, MapPin,
@@ -54,6 +54,7 @@ export const LockIcon = Lock
 export const BackupIcon = CloudBackup
 export const ZipIcon = Archive
 export const FileSearchIcon = Search
+export const CloudIcon = Cloud
 export const CloudRainIcon = CloudRain
 export const TypeIcon = Type
 export const BookIcon = BookOpen

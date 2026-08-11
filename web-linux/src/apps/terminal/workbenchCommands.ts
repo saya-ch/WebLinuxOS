@@ -347,7 +347,7 @@ registerCommand('color', {
   description: '分析颜色并生成配色建议',
   usage: 'color <hex>',
   examples: ['color #7c6cf0', 'color ff6b6b'],
-}, { source: 'workbenchCommands' })
+}, { source: 'workbenchCommands', force: true })
 
 function shiftHue(hex: string, degrees: number): string {
   const r = parseInt(hex.slice(1, 3), 16) / 255

@@ -1281,10 +1281,6 @@ code, pre, .terminal, .code-editor {
   border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
 }
 
-.neon-text {
-  animation: neonPulse 2s ease-in-out infinite;
-}
-
 .text-typewriter {
   overflow: hidden;
   white-space: nowrap;
@@ -1417,15 +1413,6 @@ code, pre, .terminal, .code-editor {
 
 .glow-on-hover:hover {
   box-shadow: 0 0 20px var(--accent);
-}
-
-.gradient-text {
-  background: var(--accent-gradient-bicolor);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 3s ease infinite;
 }
 
 @keyframes shake {

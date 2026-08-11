@@ -360,6 +360,12 @@ const App = memo(function App() {
         return
       }
 
+      if (isMod && key === '/') {
+        e.preventDefault()
+        setShortcutPanelOpen(true)
+        return
+      }
+
       // 全局快速笔记覆盖层：Alt + N (N = Note 速记)
       // 避开 Ctrl+Shift+J（Chrome DevTools 控制台快捷键）等浏览器保留组合
       if (e.altKey && !isMod && key === 'n') {

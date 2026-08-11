@@ -483,6 +483,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v77 新增创新应用 ===
   InstantTools: () => import('../../apps/InstantTools'),
   DataVizWorkbench: () => import('../../apps/DataVizWorkbench'),
+  // === 新增应用 ===
+  DailyAgenda: () => import('../../apps/DailyAgenda'),
+  MarkdownQuickNote: () => import('../../apps/MarkdownQuickNote'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

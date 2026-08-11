@@ -647,11 +647,19 @@ const Taskbar = memo(function Taskbar() {
         <div
           id="weblinux-launcher-btn"
           data-testid="weblinux-launcher-btn"
+          aria-label="打开应用启动器"
           className={`taskbar-launcher ${launcherOpen ? 'active' : ''}`}
           onClick={(e) => {
             e.stopPropagation()
-            // 直接使用 getState() 调用，规避 memo 中 selector 引用稳定性隐患
             useStore.getState().toggleLauncher()
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              useStore.getState().toggleLauncher()
+            }
           }}
           title="启动器 (Ctrl+Shift+L) — 打开/关闭应用启动器"
           style={{

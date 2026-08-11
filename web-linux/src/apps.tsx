@@ -15,7 +15,7 @@ import {
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
-  BarChartIcon
+  BarChartIcon, CloudIcon as CloudLucide
 } from './icons'
 
 
@@ -130,7 +130,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'online-resource-hub', name: '在线资源聚合器', icon: <BrowserIcon />, component: 'OnlineResourceHub', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'web-toolbox', name: '万能工具箱', icon: <WrenchIcon />, component: 'WebToolbox', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'live-weather', name: '实时天气', icon: <CloudRainIcon />, component: 'LiveWeather', category: 'internet', defaultWidth: 800, defaultHeight: 650, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'weather-dashboard', name: '天气仪表板', icon: <CloudRainIcon />, component: 'WeatherDashboard', category: 'internet', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '精美天气仪表板：全球城市搜索、7日预报、收藏位置、紫外线指数、Open-Meteo 免费API' },
+  { id: 'weather-dashboard', name: '天气仪表板', icon: <CloudLucide />, component: 'WeatherDashboard', category: 'networking', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '精美天气仪表板：全球城市搜索、7日预报、逐时温度图表、收藏位置、Open-Meteo 免费API' },
+  { id: 'color-palette', name: '色彩提取器', icon: <PaletteIcon />, component: 'ColorPaletteExtractor', category: 'graphics', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '图片主色提取工具：支持URL/上传/拖拽、ColorThief算法、颜色命名、LocalStorage收藏、CSS/SCSS导出' },
   { id: 'prompt-engineering-lab', name: 'AI Prompt 工程实验室', icon: <SparklesIcon />, component: 'PromptEngineeringLab', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'AI提示词工程实验室：10+精选模板、变量插值、分类管理、一键生成预览、本地收藏' },
   { id: 'website-performance-tester', name: '网站性能测试', icon: <ActivityIcon />, component: 'WebsitePerformanceTester', category: 'development', defaultWidth: 1000, defaultHeight: 800, minWidth: 750, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '网站性能分析工具：TTFB/加载时间/资源统计/优化建议/报告导出' },
   { id: 'codepen-lite', name: '前端代码编辑器', icon: <Code2Icon />, component: 'CodePenLite', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
@@ -274,6 +275,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // v77 创新功能 — InstantTools 即时开发者工具箱 & DataVizWorkbench
   { id: 'instant-tools', name: 'InstantTools 即时工具箱', icon: <WrenchIcon />, component: 'InstantTools', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '开发者即时工具箱：文本对比、进制转换、URL编解码、Base64编解码、时间戳转换、哈希生成、UUID生成、正则测试、Cron解析、JWT解码，10大工具一站式服务' },
   { id: 'dataviz-workbench', name: 'DataViz 数据可视化', icon: <BarChartIcon />, component: 'DataVizWorkbench', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '数据可视化工作台：支持手动编辑/CSV导入/预设数据三种模式，6种图表类型（柱状/折线/饼图/面积/雷达/散点），SVG导出，实时统计分析' },
+  // FocusFlow Pro — 真实番茄钟专注计时器
+  { id: 'focus-flow-pro', name: 'FocusFlow 专注计时器', icon: <PomodoroIcon />, component: 'FocusFlowPro', category: 'utilities', defaultWidth: 900, defaultHeight: 720, minWidth: 800, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实番茄钟计时器：25/5分钟工作休息循环、任务列表管理、完成统计（番茄数/专注时间/今日统计）、LocalStorage持久化、键盘快捷键（Space开始暂停、R重置）、精美进度环形可视化' },
+  { id: 'daily-agenda', name: '每日议程 DailyAgenda', icon: <CalendarIcon />, component: 'DailyAgenda', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业日程规划器：日视图时间块、事件拖拽调整、分类色彩编码、周视图切换、LocalStorage持久化' },
+  { id: 'markdown-quick-note', name: 'Markdown 速记', icon: <NoteIcon />, component: 'MarkdownQuickNote', category: 'office', defaultWidth: 1000, defaultHeight: 700, minWidth: 750, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '快速Markdown笔记：分屏编辑预览、语法高亮、实时渲染、字数统计、导出MD文件、LocalStorage持久化' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

@@ -37,6 +37,8 @@ const allShortcuts: ShortcutItem[] = [
   { keys: 'Alt + N', description: '速记（快速笔记覆盖层）', category: '系统' },
   { keys: 'Ctrl + L', description: '锁屏', category: '系统' },
   { keys: 'Ctrl + N', description: '通知中心', category: '系统' },
+  { keys: 'Ctrl + Shift + ?', description: '打开快捷键帮助', category: '系统' },
+  { keys: 'Ctrl + /', description: '打开快捷键帮助（备选）', category: '系统' },
   { keys: 'Super', description: '打开启动器', category: '系统' },
   { keys: 'Escape', description: '关闭弹窗/取消操作', category: '通用' },
 ]

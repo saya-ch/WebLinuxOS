@@ -22,6 +22,8 @@
 
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
+WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
 ## v77.0.0 更新亮点
 
 - **InstantTools 即时开发者工具箱**：10 大核心开发工具一站式集成
@@ -302,6 +304,8 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 - 400+ 内置应用，涵盖开发、办公、互联网、多媒体、系统、AI、游戏等类别
 - 每个应用都是真实可用的工具，不是占位或演示
 - 统一的应用注册系统，支持扩展与动态发现
+- **每日议程 DailyAgenda**：专业日程规划器，日视图时间块（7am-10pm）、拖拽调整事件时间、5 类分类色彩编码、周视图切换、统计面板、LocalStorage 持久化
+- **Markdown 速记**：快速 Markdown 笔记应用，分屏编辑预览、实时渲染、语法高亮工具栏、字数统计与阅读时间、导出 .md / .html、LocalStorage 自动保存
 
 ### 开发工具
 
@@ -341,6 +345,16 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 - UnifiedCmd 统一命令中心：自然语言输入自动识别查询类型，集成天气/汇率/国家/维基/词典/名言/计算器 7 大公开 API，历史记录与本地收藏
 - DevPulse 开发者脉搏：Hacker News + GitHub Trending + DEV.to + Product Hunt 多源新闻聚合，智能缓存、搜索过滤、排序收藏、一键跳转原文
 - CryptoMarketHub 加密行情：CoinGecko 免费 API、80+ 币种、24h 涨跌幅、7 日 Sparkline 走势图、自选币种、持仓追踪（总价值/总盈亏/24h浮动盈亏）、自动刷新、本地缓存加速
+
+### 生产力与个人工具
+
+- **每日议程 DailyAgenda**：专业日程规划器，7am-10pm 日视图时间块、点击选择时间段快速创建事件、拖拽调整事件起止时间、5 类分类色彩编码（Work/Personal/Study/Health/Other）、周视图总览、今日/明日/日期选择导航、事件数量与分类时长统计、LocalStorage 自动持久化
+- **Markdown 速记**：快速 Markdown 笔记，分屏编辑与实时预览、工具栏快捷插入语法、字数统计与预估阅读时间、一键导出 .md 或 .html 文件、LocalStorage 自动保存与恢复
+- FocusFlow Pro：真实番茄钟计时器，25/5 分钟工作休息循环、任务列表、今日统计与历史数据
+- Pomodoro Studio：增强版番茄钟，自定义时长、循环模式
+- 日历 Calendar：月/周/日三视图，事件添加与管理
+- 待办事项 TodoApp：任务列表与状态管理
+- 思维导图 MindMap：节点编辑与导出
 
 ## 技术栈
 
@@ -429,6 +443,8 @@ npm run preview
 | FlashMaster | SM-2 间隔重复闪卡 |
 | KanbanBoard | 看板式任务管理 |
 | MarkdownEditor Pro | Markdown 编辑器、实时预览 |
+| **每日议程 DailyAgenda** | 专业日程规划器：日视图时间块 (7am-10pm)、事件拖拽调整时间、5 类分类色彩编码 (Work/Personal/Study/Health/Other)、周视图切换、统计面板、LocalStorage 持久化 |
+| **Markdown 速记** | 快速 Markdown 笔记应用：分屏编辑预览、实时渲染、语法高亮工具栏、字数统计与阅读时间、导出 .md / .html 文件、LocalStorage 自动保存 |
 
 ### 网络与信息
 
@@ -476,6 +492,8 @@ npm run preview
 | File Hash Calculator | SHA-1/256/384/512 |
 | 剪贴板历史 | 搜索、过滤、收藏、持久化存储 |
 | LocalFileExplorer | File System Access API 真实本地文件浏览 |
+| **每日议程 DailyAgenda** | 日视图时间块、拖拽调整、分类色彩、统计面板、周视图切换、LocalStorage 持久化 |
+| **Markdown 速记** | 分屏编辑预览、实时渲染、字数统计、导出 .md/.html、自动保存 |
 
 ### 游戏
 
@@ -548,6 +566,23 @@ WebLinuxOS/
 - **组件懒加载**：所有应用通过 `React.lazy` + 动态 `import()` 按需加载，首屏仅加载关键组件
 - **缓存与重试**：组件加载失败自动重试（最多 2 次），超时 30 秒，LRU 缓存淘汰（上限 100）
 - **状态管理**：Zustand 单一 store，shallow selector 避免不必要渲染
+
+## 截图预览
+
+<div align="center">
+  <img src="web-linux/screenshots/06-final-desktop.png" alt="WebLinuxOS Desktop" width="45%" />
+  <img src="web-linux/screenshots/01-desktop.png" alt="Desktop View" width="45%" />
+</div>
+
+<div align="center">
+  <img src="web-linux/screenshots/02-launcher.png" alt="Launcher" width="45%" />
+  <img src="web-linux/screenshots/04-terminal.png" alt="Terminal" width="45%" />
+</div>
+
+<div align="center">
+  <img src="web-linux/screenshots/03-file-manager.png" alt="File Manager" width="45%" />
+  <img src="web-linux/screenshots/05-text-editor.png" alt="Text Editor" width="45%" />
+</div>
 
 ## 贡献指南
 
