@@ -480,6 +480,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v75 新增创新应用 ===
   CrossDeviceSync: () => import('../../apps/CrossDeviceSync'),
   LiveDataPipeline: () => import('../../apps/LiveDataPipeline'),
+  // === v77 新增创新应用 ===
+  InstantTools: () => import('../../apps/InstantTools'),
+  DataVizWorkbench: () => import('../../apps/DataVizWorkbench'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

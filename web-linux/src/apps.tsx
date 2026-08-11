@@ -14,7 +14,8 @@ import {
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
-  ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon
+  ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
+  BarChartIcon
 } from './icons'
 
 
@@ -270,6 +271,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // v76 创新功能 — 世界时钟 & HTTP状态码工具
   { id: 'world-clock', name: '世界时钟', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, component: 'WorldClock', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '多城市实时时钟：北京/东京/纽约/伦敦等6大时钟、自定义时区添加、12/24小时制切换、拖拽排序、玻璃拟态设计、数据持久化' },
   { id: 'http-status-explorer', name: 'HTTP状态码参考', icon: <ApiLabIcon />, component: 'HttpStatusExplorer', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '完整HTTP状态码参考：75个状态码详细说明、分类筛选搜索、收藏功能、实时HTTP测试（支持GET/POST/PUT等方法）、响应时间和头信息展示' },
+  // v77 创新功能 — InstantTools 即时开发者工具箱 & DataVizWorkbench
+  { id: 'instant-tools', name: 'InstantTools 即时工具箱', icon: <WrenchIcon />, component: 'InstantTools', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '开发者即时工具箱：文本对比、进制转换、URL编解码、Base64编解码、时间戳转换、哈希生成、UUID生成、正则测试、Cron解析、JWT解码，10大工具一站式服务' },
+  { id: 'dataviz-workbench', name: 'DataViz 数据可视化', icon: <BarChartIcon />, component: 'DataVizWorkbench', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '数据可视化工作台：支持手动编辑/CSV导入/预设数据三种模式，6种图表类型（柱状/折线/饼图/面积/雷达/散点），SVG导出，实时统计分析' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

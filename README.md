@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v76.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v77.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -21,6 +21,33 @@
 ## 项目简介
 
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
+
+## v77.0.0 更新亮点
+
+- **InstantTools 即时开发者工具箱**：10 大核心开发工具一站式集成
+  - 文本对比 (Diff)：逐行比较两段文本，高亮显示新增和删除内容
+  - 进制转换：二进制、八进制、十进制、十六进制、三十六进制互转
+  - URL 编解码：encodeURIComponent / decodeURIComponent，URL 解析
+  - Base64 编解码：支持多语言字符的 Base64 双向转换
+  - 时间戳转换：Unix 时间戳与日期格式互转，支持秒级和毫秒级
+  - 哈希生成：Web Crypto API 本地计算 SHA-1/256/384/512
+  - UUID 生成：符合 RFC 4122 v4 标准的 UUID 批量生成
+  - 正则测试：实时测试正则表达式，查看匹配结果和捕获组
+  - Cron 解析：解析 Cron 表达式，显示含义和最近执行时间
+  - JWT 解码：解析 JWT Token 的 Header、Payload 和签名信息
+
+- **DataVizWorkbench 数据可视化工作台**：专业数据可视化工具
+  - 三种数据输入模式：手动编辑、CSV 导入、预设数据
+  - 6 种图表类型：柱状图、折线图、饼图、面积图、雷达图、散点图
+  - 实时统计分析：数量、总和、平均值、最大值、最小值
+  - SVG 导出：一键导出为 SVG 矢量图或 JSON 数据
+  - 3 个预设数据集：月度销售、网站流量来源、编程语言排行
+  - 现代化深色 UI 设计，支持动画和网格显示
+
+- **代码质量改进**
+  - 版本号统一：全项目使用 `__APP_VERSION__` 变量
+  - 组件懒加载优化：新应用使用 React.lazy 按需加载
+  - TypeScript 类型安全增强
 
 ## v76.0.0 更新亮点
 

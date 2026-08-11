@@ -190,7 +190,7 @@ const App = memo(function App() {
           store.updateFileContent(id, content)
         },
         getNotifications: () => st.getState().notifications,
-        version: '73.0.0',
+        version: __APP_VERSION__,
         buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
       }
       win.WebLinuxOS = globalApi
