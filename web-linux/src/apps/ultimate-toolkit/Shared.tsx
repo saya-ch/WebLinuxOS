@@ -6,6 +6,7 @@ export type TabId =
   | 'weather' | 'currency' | 'ip' | 'country' | 'wiki'
   | 'quote' | 'joke' | 'crypto' | 'github' | 'color'
   | 'uuid' | 'base64' | 'timestamp' | 'json'
+  | 'url' | 'password' | 'hash' | 'unit'
 
 export interface ToolProps {
   onAddHistory: (tool: TabId, query: string, result: string) => void
@@ -201,5 +202,6 @@ export {
   Search, RefreshCw, Copy, Check, Globe, Cloud, Sun, CloudRain, CloudSnow,
   Wind, Droplets, Thermometer, MapPin, DollarSign, Flag, BookOpen, Quote,
   Laugh, TrendingUp, Palette, KeyRound, Hash, Clock, Braces, ExternalLink,
-  History, X, ChevronRight, Sparkles,
+  History, X, ChevronRight, Sparkles, Link, Lock, Shield, Ruler,
+  Zap, Eye, EyeOff,
 } from 'lucide-react'

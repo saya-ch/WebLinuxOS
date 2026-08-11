@@ -1,10 +1,13 @@
-const CACHE_NAME = 'weblinuxos-v57'
+const CACHE_NAME = 'weblinuxos-v77'
+const BASE_PATH = new URL(self.registration.scope || '/WebLinuxOS/').pathname
+
 const CACHE_ASSETS = [
-  '/WebLinuxOS/',
-  '/WebLinuxOS/index.html',
-  '/WebLinuxOS/manifest.json',
-  '/WebLinuxOS/favicon.svg',
-  '/WebLinuxOS/icons.svg',
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'favicon.svg',
+  BASE_PATH + 'icons.svg',
+  BASE_PATH + '404.html',
 ]
 
 self.addEventListener('install', (event) => {
@@ -12,6 +15,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(CACHE_ASSETS)
     }).then(() => {
+      self.skipWaiting()
+    }).catch(() => {
       self.skipWaiting()
     })
   )
@@ -45,12 +50,20 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Skip caching for API calls and external resources
+  const url = new URL(request.url)
+  const isExternal = !url.origin.startsWith(self.location.origin)
+  if (isExternal) {
+    return
+  }
+
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const networkFetch = fetch(request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone()
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, networkResponse.clone())
+            cache.put(request, responseClone)
           }).catch(() => {})
         }
         return networkResponse
@@ -59,7 +72,7 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse
         }
 
-        if (request.url.match(/\.(js|css|svg|png|jpg|jpeg|gif|webp|json)$/)) {
+        if (request.url.match(/\.(js|css|svg|png|jpg|jpeg|gif|webp|json|woff2?)$/)) {
           return new Response(null, {
             status: 503,
             statusText: 'Service Unavailable',
@@ -68,7 +81,7 @@ self.addEventListener('fetch', (event) => {
         }
 
         if (request.mode === 'navigate') {
-          return caches.match('/WebLinuxOS/index.html')
+          return caches.match(BASE_PATH + 'index.html')
         }
       })
 

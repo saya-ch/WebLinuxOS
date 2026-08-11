@@ -34,7 +34,7 @@ import type { AppDefinition } from './types'
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // v73 创新功能 — 终极在线工具箱 & 真实AI聊天
-  { id: 'ultimate-toolkit', name: '终极工具箱', icon: <WrenchIcon />, component: 'UltimateToolkit', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '14合1在线工具箱：天气/汇率/IP查询/国家信息/百科搜索/每日名言/编程笑话/加密货币/GitHub趋势/颜色转换/UUID生成/Base64编解码/时间戳转换/JSON格式化' },
+  { id: 'ultimate-toolkit', name: '终极工具箱', icon: <WrenchIcon />, component: 'UltimateToolkit', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '18合1在线工具箱：天气/汇率/IP查询/国家信息/百科搜索/每日名言/编程笑话/加密货币/GitHub趋势/颜色转换/UUID生成/Base64编解码/时间戳转换/JSON格式化/URL编解码/密码生成/Hash哈希/单位转换' },
   { id: 'ai-chat-real', name: 'AI 真实聊天', icon: <SparklesIcon />, component: 'AIChatReal', category: 'utilities', defaultWidth: 900, defaultHeight: 720, minWidth: 680, minHeight: 520, resizable: true, multiple: false, isNew: true, description: '基于 Pollinations AI 公开免费 API 的真实AI对话：5种角色预设、多轮对话、Markdown渲染、代码高亮、打字机效果、对话历史持久化' },
   // v72 创新功能 — URL 工具箱 Pro：集成 is.gd 真实缩短 API + QR 码生成
   { id: 'url-tools-enhanced', name: 'URL 工具箱 Pro', icon: <Link2Icon />, component: 'URLToolsEnhanced', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '增强版URL工具箱：真实URL缩短服务（is.gd API）、QR码生成、编码解码解析、历史记录管理' },
@@ -279,6 +279,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'focus-flow-pro', name: 'FocusFlow 专注计时器', icon: <PomodoroIcon />, component: 'FocusFlowPro', category: 'utilities', defaultWidth: 900, defaultHeight: 720, minWidth: 800, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实番茄钟计时器：25/5分钟工作休息循环、任务列表管理、完成统计（番茄数/专注时间/今日统计）、LocalStorage持久化、键盘快捷键（Space开始暂停、R重置）、精美进度环形可视化' },
   { id: 'daily-agenda', name: '每日议程 DailyAgenda', icon: <CalendarIcon />, component: 'DailyAgenda', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业日程规划器：日视图时间块、事件拖拽调整、分类色彩编码、周视图切换、LocalStorage持久化' },
   { id: 'markdown-quick-note', name: 'Markdown 速记', icon: <NoteIcon />, component: 'MarkdownQuickNote', category: 'office', defaultWidth: 1000, defaultHeight: 700, minWidth: 750, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '快速Markdown笔记：分屏编辑预览、语法高亮、实时渲染、字数统计、导出MD文件、LocalStorage持久化' },
+  // === v78 新增 LiveDataCenter 实时数据中心 ===
+  { id: 'live-data-center', name: '实时数据中心', icon: <ZapIcon />, component: 'LiveDataCenter', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '一站式实时数据聚合中心：全球天气、加密货币行情、实时汇率、科技新闻、股票指数、世界时钟，6大公开API集成，自动刷新' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

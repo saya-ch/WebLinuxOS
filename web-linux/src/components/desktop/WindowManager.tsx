@@ -486,6 +486,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === 新增应用 ===
   DailyAgenda: () => import('../../apps/DailyAgenda'),
   MarkdownQuickNote: () => import('../../apps/MarkdownQuickNote'),
+  // === v78 新增 LiveDataCenter 实时数据中心 ===
+  LiveDataCenter: () => import('../../apps/LiveDataCenter'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

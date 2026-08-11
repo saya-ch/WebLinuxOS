@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { useStore } from '../../store'
 import {
   Globe, Cloud, Sun, CloudRain, CloudSnow, Wind, Droplets, Thermometer,
-  MapPin, DollarSign, Flag, RefreshCw, Copy,
+  MapPin, DollarSign, Flag, RefreshCw, Copy, Ruler, Zap,
 } from './Shared'
 import {
   type ToolProps,
@@ -41,6 +41,215 @@ function getWeatherDesc(code: number): string {
     95: '雷暴', 96: '雷暴伴冰雹', 99: '强雷暴伴冰雹',
   }
   return map[code] || '未知'
+}
+
+const iconBtnStyle: React.CSSProperties = {
+  padding: '6px 10px', borderRadius: 8,
+  background: 'var(--glass-bg)', border: '1px solid var(--window-border)',
+  color: 'var(--text-secondary)', cursor: 'pointer',
+  display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
+}
+
+type UnitCategory = 'length' | 'weight' | 'temperature' | 'currency'
+
+const lengthUnits: Record<string, { label: string; factor: number }> = {
+  mm: { label: '毫米 (mm)', factor: 0.001 },
+  cm: { label: '厘米 (cm)', factor: 0.01 },
+  m: { label: '米 (m)', factor: 1 },
+  km: { label: '千米 (km)', factor: 1000 },
+  inch: { label: '英寸 (in)', factor: 0.0254 },
+  foot: { label: '英尺 (ft)', factor: 0.3048 },
+  yard: { label: '码 (yd)', factor: 0.9144 },
+  mile: { label: '英里 (mi)', factor: 1609.344 },
+}
+
+const weightUnits: Record<string, { label: string; factor: number }> = {
+  mg: { label: '毫克 (mg)', factor: 0.000001 },
+  g: { label: '克 (g)', factor: 0.001 },
+  kg: { label: '千克 (kg)', factor: 1 },
+  ton: { label: '公吨 (t)', factor: 1000 },
+  oz: { label: '盎司 (oz)', factor: 0.0283495 },
+  lb: { label: '磅 (lb)', factor: 0.453592 },
+  jin: { label: '斤', factor: 0.5 },
+}
+
+const tempUnits: Record<string, { label: string }> = {
+  celsius: { label: '摄氏度 (°C)' },
+  fahrenheit: { label: '华氏度 (°F)' },
+  kelvin: { label: '开尔文 (K)' },
+}
+
+const currencyList = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'HKD', 'AUD', 'CAD', 'CHF', 'SGD', 'KRW', 'INR', 'NZD', 'SEK', 'NOK', 'DKK', 'RUB', 'ZAR', 'MXN', 'BRL']
+
+export function UnitConverterTool({ onAddHistory, onCopy }: ToolProps) {
+  const [category, setCategory] = useState<UnitCategory>('length')
+  const [input, setInput] = useState('1')
+  const [fromUnit, setFromUnit] = useState('m')
+  const [toUnit, setToUnit] = useState('cm')
+  const [result, setResult] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [rates, setRates] = useState<Record<string, number> | null>(null)
+
+  const loadRates = useCallback(async () => {
+    if (category !== 'currency') return
+    setLoading(true)
+    try {
+      const res = await fetch('https://api.frankfurter.app/latest?from=USD')
+      const data = await res.json()
+      if (data.rates) {
+        setRates({ USD: 1, ...data.rates })
+      }
+    } catch {
+      setRates(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [category])
+
+  const convert = useCallback(() => {
+    const num = parseFloat(input)
+    if (isNaN(num)) { setResult('请输入有效的数值'); return }
+
+    if (category === 'length') {
+      const meters = num * lengthUnits[fromUnit].factor
+      const converted = meters / lengthUnits[toUnit].factor
+      setResult(`${converted.toFixed(6).replace(/\.?0+$/, '')} ${lengthUnits[toUnit].label.split(' ')[0]}`)
+      onAddHistory('unit', `${num} ${fromUnit} → ${toUnit}`, `${converted.toFixed(6)}`)
+    } else if (category === 'weight') {
+      const kg = num * weightUnits[fromUnit].factor
+      const converted = kg / weightUnits[toUnit].factor
+      setResult(`${converted.toFixed(6).replace(/\.?0+$/, '')} ${weightUnits[toUnit].label.split(' ')[0]}`)
+      onAddHistory('unit', `${num} ${fromUnit} → ${toUnit}`, `${converted.toFixed(6)}`)
+    } else if (category === 'temperature') {
+      let celsius = num
+      if (fromUnit === 'fahrenheit') celsius = (num - 32) * 5 / 9
+      else if (fromUnit === 'kelvin') celsius = num - 273.15
+
+      let converted = celsius
+      if (toUnit === 'fahrenheit') converted = celsius * 9 / 5 + 32
+      else if (toUnit === 'kelvin') converted = celsius + 273.15
+
+      setResult(`${converted.toFixed(2)} ${tempUnits[toUnit].label.split(' ')[0]}`)
+      onAddHistory('unit', `${num} ${fromUnit} → ${toUnit}`, `${converted.toFixed(2)}`)
+    } else if (category === 'currency') {
+      if (!rates) { setResult('请先加载汇率'); return }
+      const fromRate = rates[fromUnit]
+      const toRate = rates[toUnit]
+      if (!fromRate || !toRate) { setResult('货币数据不可用'); return }
+      const converted = (num / fromRate) * toRate
+      setResult(`${converted.toFixed(4)} ${toUnit}`)
+      onAddHistory('unit', `${num} ${fromUnit} → ${toUnit}`, `${converted.toFixed(4)}`)
+    }
+  }, [input, fromUnit, toUnit, category, rates, onAddHistory])
+
+  const switchUnits = () => {
+    setFromUnit(toUnit)
+    setToUnit(fromUnit)
+    setResult('')
+  }
+
+  const categories: { key: UnitCategory; label: string; icon: React.ReactNode }[] = [
+    { key: 'length', label: '长度', icon: <Ruler size={16} /> },
+    { key: 'weight', label: '重量', icon: <Zap size={16} /> },
+    { key: 'temperature', label: '温度', icon: <Thermometer size={16} /> },
+    { key: 'currency', label: '货币', icon: <DollarSign size={16} /> },
+  ]
+
+  const units = category === 'length' ? lengthUnits
+    : category === 'weight' ? weightUnits
+    : category === 'temperature' ? tempUnits
+    : null
+
+  const availableFrom = category === 'currency' ? currencyList : Object.keys(units!)
+  const availableTo = category === 'currency' ? currencyList : Object.keys(units!)
+
+  return (
+    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      <ToolHeader icon={<Ruler size={20} style={{ color: '#60a5fa' }} />} title="单位转换器" subtitle="长度、重量、温度、货币汇率转换" />
+
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+        {categories.map(({ key, label, icon }) => (
+          <button key={key} onClick={() => { setCategory(key); setFromUnit(key === 'currency' ? 'USD' : Object.keys(key === 'length' ? lengthUnits : key === 'weight' ? weightUnits : tempUnits)[0]); setToUnit(key === 'currency' ? 'CNY' : Object.keys(key === 'length' ? lengthUnits : key === 'weight' ? weightUnits : tempUnits)[1] || Object.keys(key === 'length' ? lengthUnits : key === 'weight' ? weightUnits : tempUnits)[0]); setResult('') }} style={{
+            flex: 1, padding: '8px 12px', borderRadius: 8,
+            background: category === key ? 'var(--accent-bg)' : 'var(--glass-bg)',
+            border: category === key ? '1px solid var(--accent)' : '1px solid var(--window-border)',
+            color: category === key ? 'var(--accent)' : 'var(--text-secondary)',
+            cursor: 'pointer', fontSize: 13, fontWeight: category === key ? 600 : 400,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          }}>
+            {icon} {label}
+          </button>
+        ))}
+      </div>
+
+      {category === 'currency' && (
+        <div style={{ marginBottom: 12, display: 'flex', gap: 8 }}>
+          <button onClick={loadRates} disabled={loading} style={{
+            ...ghostBtnStyle, flex: 1,
+            opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer',
+          }}>
+            <RefreshCw size={14} className={loading ? 'ut-spin' : ''} />
+            {loading ? '加载汇率中...' : rates ? '刷新汇率' : '加载实时汇率'}
+          </button>
+          {rates && <span style={{ fontSize: 11, color: 'var(--text-secondary)', alignSelf: 'center' }}>数据来源: frankfurter.app</span>}
+        </div>
+      )}
+
+      <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--window-border)', borderRadius: 12, padding: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 12, alignItems: 'end' }}>
+          <div>
+            <label style={labelStyle}>从</label>
+            <input type="number" value={input} onChange={(e) => setInput(e.target.value)} style={{ ...inputStyle, marginBottom: 8 }} />
+            <select value={fromUnit} onChange={(e) => setFromUnit(e.target.value)} style={selectStyle}>
+              {availableFrom.map((u) => (
+                <option key={u} value={u}>{category === 'currency' ? u : (units as Record<string, any>)[u].label}</option>
+              ))}
+            </select>
+          </div>
+
+          <button onClick={switchUnits} style={{
+            padding: '10px', borderRadius: 10,
+            background: 'var(--accent-bg)', border: '1px solid var(--accent)',
+            color: 'var(--accent)', cursor: 'pointer', fontSize: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 2,
+          }} title="交换">
+            ⇄
+          </button>
+
+          <div>
+            <label style={labelStyle}>到</label>
+            <div style={{ ...inputStyle, marginBottom: 8, background: 'var(--window-bg)', color: 'var(--accent)', fontWeight: 600, textAlign: 'right', fontFamily: 'monospace' }}>
+              {result || '—'}
+            </div>
+            <select value={toUnit} onChange={(e) => setToUnit(e.target.value)} style={selectStyle}>
+              {availableTo.map((u) => (
+                <option key={u} value={u}>{category === 'currency' ? u : (units as Record<string, any>)[u].label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <button onClick={convert} style={{ ...primaryBtnStyle, width: '100%', marginTop: 12 }}>
+          <Zap size={16} /> 转换
+        </button>
+
+        {result && (
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', gap: 8 }}>
+            <button onClick={() => onCopy(result, '转换结果已复制')} style={iconBtnStyle}>
+              <Copy size={14} /> 复制结果
+            </button>
+          </div>
+        )}
+      </div>
+
+      {category === 'currency' && !rates && (
+        <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: 12, color: 'var(--text-secondary)' }}>
+          货币转换需要先加载实时汇率数据。点击上方"加载实时汇率"按钮获取当前汇率。
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function WeatherTool({ onAddHistory, onCopy: _onCopy }: ToolProps) {

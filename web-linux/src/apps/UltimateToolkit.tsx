@@ -5,9 +5,9 @@ import {
   type TabId, type HistoryEntry,
   loadHistory, saveHistory,
 } from './ultimate-toolkit/Shared'
-import { WeatherTool, CurrencyTool, IPTool, CountryTool } from './ultimate-toolkit/NetworkTools'
+import { WeatherTool, CurrencyTool, IPTool, CountryTool, UnitConverterTool } from './ultimate-toolkit/NetworkTools'
 import { WikiTool, QuoteTool, JokeTool, CryptoTool, GitHubTool } from './ultimate-toolkit/InfoTools'
-import { ColorTool, UUIDTool, Base64Tool, TimestampTool, JSONTool } from './ultimate-toolkit/DevTools'
+import { ColorTool, UUIDTool, Base64Tool, TimestampTool, JSONTool, URLTool, PasswordTool, HashTool } from './ultimate-toolkit/DevTools'
 
 interface TabDef {
   id: TabId
@@ -30,6 +30,10 @@ const tabs: TabDef[] = [
   { id: 'base64', label: 'Base64', icon: <span style={{ fontSize: 14 }}>🔐</span> },
   { id: 'timestamp', label: '时间戳', icon: <span style={{ fontSize: 14 }}>⏰</span> },
   { id: 'json', label: 'JSON', icon: <span style={{ fontSize: 14 }}>📋</span> },
+  { id: 'url', label: 'URL', icon: <span style={{ fontSize: 14 }}>🔗</span> },
+  { id: 'password', label: '密码', icon: <span style={{ fontSize: 14 }}>🛡️</span> },
+  { id: 'hash', label: 'Hash', icon: <span style={{ fontSize: 14 }}>⚡</span> },
+  { id: 'unit', label: '单位', icon: <span style={{ fontSize: 14 }}>📏</span> },
 ]
 
 export default function UltimateToolkit() {
@@ -103,7 +107,7 @@ export default function UltimateToolkit() {
           </div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 600 }}>Ultimate Toolkit</div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>终极在线工具箱 · 14 个实用工具</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>终极在线工具箱 · 18 个实用工具</div>
           </div>
         </div>
         <button onClick={() => setShowHistory(!showHistory)} style={{
@@ -161,6 +165,10 @@ export default function UltimateToolkit() {
             {activeTab === 'base64' && <Base64Tool {...toolProps} />}
             {activeTab === 'timestamp' && <TimestampTool {...toolProps} />}
             {activeTab === 'json' && <JSONTool {...toolProps} />}
+            {activeTab === 'url' && <URLTool {...toolProps} />}
+            {activeTab === 'password' && <PasswordTool {...toolProps} />}
+            {activeTab === 'hash' && <HashTool {...toolProps} />}
+            {activeTab === 'unit' && <UnitConverterTool {...toolProps} />}
           </div>
         </div>
 

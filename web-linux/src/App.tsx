@@ -354,20 +354,28 @@ const App = memo(function App() {
         return
       }
 
-      if (isMod && key === 'p') {
-        e.preventDefault()
-        setCommandPaletteOpenRef.current(true)
-        return
-      }
-
       if (isMod && key === '/') {
         e.preventDefault()
         setShortcutPanelOpen(true)
         return
       }
 
+      // Command Palette: Ctrl/Cmd + Shift + P (Palette) — 避免浏览器打印对话框
+      if (isMod && isShift && key === 'p') {
+        e.preventDefault()
+        e.stopPropagation()
+        setCommandPaletteOpenRef.current(true)
+        return
+      }
+
+      // Command Palette: Ctrl/Cmd + P
+      if (isMod && key === 'p') {
+        e.preventDefault()
+        setCommandPaletteOpenRef.current(true)
+        return
+      }
+
       // 全局快速笔记覆盖层：Alt + N (N = Note 速记)
-      // 避开 Ctrl+Shift+J（Chrome DevTools 控制台快捷键）等浏览器保留组合
       if (e.altKey && !isMod && key === 'n') {
         e.preventDefault()
         setQuickNoteOpenRef.current(true)

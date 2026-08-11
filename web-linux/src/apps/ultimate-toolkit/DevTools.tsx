@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import {
   Palette, KeyRound, Hash, Clock, Braces, Copy, Check,
+  Link, Lock, Shield, Eye, EyeOff,
 } from './Shared'
 import { type ToolProps, ToolHeader, inputStyle, labelStyle, primaryBtnStyle, ghostBtnStyle } from './Shared'
 
@@ -149,6 +150,427 @@ const iconBtnStyle: React.CSSProperties = {
   background: 'var(--glass-bg)', border: '1px solid var(--window-border)',
   color: 'var(--text-secondary)', cursor: 'pointer',
   display: 'flex', alignItems: 'center',
+}
+
+export function URLTool({ onAddHistory, onCopy }: ToolProps) {
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
+  const [mode, setMode] = useState<'encode' | 'decode' | 'parse'>('encode')
+  const [parsed, setParsed] = useState<Record<string, string> | null>(null)
+
+  const process = useCallback(() => {
+    try {
+      if (mode === 'encode') {
+        setOutput(encodeURIComponent(input))
+        setParsed(null)
+      } else if (mode === 'decode') {
+        setOutput(decodeURIComponent(input))
+        setParsed(null)
+      } else {
+        try {
+          const u = new URL(input)
+          const params: Record<string, string> = {}
+          u.searchParams.forEach((v, k) => { params[k] = v })
+          setParsed({
+            协议: u.protocol,
+            主机: u.hostname,
+            端口: u.port || '(默认)',
+            路径: u.pathname,
+            查询: u.search,
+            哈希: u.hash,
+            用户名: u.username,
+            密码: u.password,
+          })
+          setOutput('解析成功')
+        } catch {
+          setOutput('无效的 URL 格式')
+          setParsed(null)
+        }
+      }
+      onAddHistory('url', `${mode}: ${input.slice(0, 50)}`, output.slice(0, 50))
+    } catch {
+      setOutput('错误：处理失败，请检查输入格式')
+      setParsed(null)
+    }
+  }, [input, mode, onAddHistory, output])
+
+  return (
+    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      <ToolHeader icon={<Link size={20} style={{ color: '#38bdf8' }} />} title="URL 编解码与解析" subtitle="URL 编码、解码和结构化解析" />
+
+      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+        {(['encode', 'decode', 'parse'] as const).map((m) => (
+          <button key={m} onClick={() => { setMode(m); setOutput(''); setParsed(null) }} style={{
+            flex: 1, padding: '8px 12px', borderRadius: 8,
+            background: mode === m ? 'var(--accent-bg)' : 'var(--glass-bg)',
+            border: mode === m ? '1px solid var(--accent)' : '1px solid var(--window-border)',
+            color: mode === m ? 'var(--accent)' : 'var(--text-secondary)',
+            cursor: 'pointer', fontSize: 13,
+          }}>
+            {m === 'encode' ? '编码' : m === 'decode' ? '解码' : '解析'}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <label style={labelStyle}>{mode === 'encode' ? '原始文本' : mode === 'decode' ? 'URL 编码文本' : 'URL'}</label>
+        <textarea value={input} onChange={(e) => setInput(e.target.value)}
+          placeholder={mode === 'encode' ? '输入要编码的文本...' : mode === 'decode' ? '输入要解码的 URL 编码字符串...' : '输入完整的 URL (https://example.com/path?query=1)...'}
+          style={{ ...inputStyle, minHeight: 90, fontFamily: 'monospace', resize: 'vertical' }}
+        />
+      </div>
+
+      <button onClick={process} disabled={!input} style={{
+        ...primaryBtnStyle, width: '100%', marginBottom: 12,
+        opacity: !input ? 0.5 : 1, cursor: !input ? 'not-allowed' : 'pointer',
+      }}>
+        {mode === 'encode' ? '编码' : mode === 'decode' ? '解码' : '解析 URL'}
+      </button>
+
+      {output && !parsed && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <label style={labelStyle}>结果</label>
+            <button onClick={() => onCopy(output, '已复制')} style={ghostBtnStyle}>
+              <Copy size={12} /> 复制
+            </button>
+          </div>
+          <textarea readOnly value={output}
+            style={{ ...inputStyle, minHeight: 80, fontFamily: 'monospace', resize: 'vertical' }}
+          />
+        </div>
+      )}
+
+      {parsed && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <label style={labelStyle}>解析结果</label>
+          {Object.entries(parsed).map(([k, v]) => (
+            <div key={k} style={{
+              padding: '10px 14px', borderRadius: 8,
+              background: 'var(--glass-bg)', border: '1px solid var(--window-border)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+            }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 60 }}>{k}</span>
+              <code style={{ flex: 1, fontSize: 12, fontFamily: 'monospace', wordBreak: 'break-all' }}>{v || '—'}</code>
+              <button onClick={() => onCopy(v)} style={iconBtnStyle}>
+                <Copy size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function PasswordTool({ onAddHistory, onCopy }: ToolProps) {
+  const [length, setLength] = useState(16)
+  const [useUpper, setUseUpper] = useState(true)
+  const [useLower, setUseLower] = useState(true)
+  const [useNumbers, setUseNumbers] = useState(true)
+  const [useSymbols, setUseSymbols] = useState(true)
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+
+  const generate = useCallback(() => {
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    const lower = 'abcdefghijklmnopqrstuvwxyz'
+    const numbers = '0123456789'
+    const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+
+    let chars = ''
+    if (useUpper) chars += upper
+    if (useLower) chars += lower
+    if (useNumbers) chars += numbers
+    if (useSymbols) chars += symbols
+
+    if (!chars) { setPassword('请至少选择一种字符类型'); return }
+
+    const arr = new Uint32Array(length)
+    crypto.getRandomValues(arr)
+    let pwd = ''
+    for (let i = 0; i < length; i++) {
+      pwd += chars[arr[i] % chars.length]
+    }
+    setPassword(pwd)
+    onAddHistory('password', `生成${length}位密码`, pwd)
+  }, [length, useUpper, useLower, useNumbers, useSymbols, onAddHistory])
+
+  const checkStrength = (pwd: string): { score: number; label: string; color: string } => {
+    if (!pwd) return { score: 0, label: '—', color: 'var(--text-secondary)' }
+    let score = 0
+    if (pwd.length >= 8) score++
+    if (pwd.length >= 12) score++
+    if (pwd.length >= 16) score++
+    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++
+    if (/[0-9]/.test(pwd)) score++
+    if (/[^a-zA-Z0-9]/.test(pwd)) score++
+
+    if (score <= 2) return { score: 1, label: '弱', color: '#ef4444' }
+    if (score <= 3) return { score: 2, label: '中等', color: '#f59e0b' }
+    if (score <= 4) return { score: 3, label: '强', color: '#10b981' }
+    return { score: 4, label: '非常强', color: '#3b82f6' }
+  }
+
+  const strength = checkStrength(password)
+
+  return (
+    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      <ToolHeader icon={<Lock size={20} style={{ color: '#f472b6' }} />} title="密码生成器" subtitle="生成安全的随机密码并检测强度" />
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>密码长度: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{length}</span></label>
+        <input type="range" min={4} max={64} value={length} onChange={(e) => setLength(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {[
+          { key: 'upper', label: '大写字母 (A-Z)', state: useUpper, setter: setUseUpper },
+          { key: 'lower', label: '小写字母 (a-z)', state: useLower, setter: setUseLower },
+          { key: 'numbers', label: '数字 (0-9)', state: useNumbers, setter: setUseNumbers },
+          { key: 'symbols', label: '特殊符号 (!@#$)', state: useSymbols, setter: setUseSymbols },
+        ].map(({ label, state, setter }) => (
+          <label key={label} style={{
+            padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
+            background: state ? 'var(--accent-bg)' : 'var(--glass-bg)',
+            border: state ? '1px solid var(--accent)' : '1px solid var(--window-border)',
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 13,
+          }}>
+            <input type="checkbox" checked={state} onChange={(e) => setter(e.target.checked)} style={{ accentColor: 'var(--accent)' }} />
+            {label}
+          </label>
+        ))}
+      </div>
+
+      <button onClick={generate} style={{ ...primaryBtnStyle, marginBottom: 16 }}>
+        <KeyRound size={16} /> 生成密码
+      </button>
+
+      {password && (
+        <div style={{ background: 'var(--glass-bg)', border: '1px solid var(--window-border)', borderRadius: 12, padding: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <label style={labelStyle}>{showPassword ? '生成的密码' : '生成的密码 (已隐藏)'}</label>
+            <button onClick={() => setShowPassword(!showPassword)} style={iconBtnStyle}>
+              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+            <button onClick={() => onCopy(password, '密码已复制')} style={iconBtnStyle}>
+              <Copy size={14} />
+            </button>
+          </div>
+          <div style={{
+            padding: '12px 14px', borderRadius: 8, background: 'var(--window-bg)',
+            fontFamily: 'monospace', fontSize: 14, wordBreak: 'break-all',
+            color: 'var(--accent)', textAlign: 'center', letterSpacing: 1,
+          }}>
+            {showPassword ? password : '•'.repeat(Math.min(password.length, 24))}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>密码强度</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: strength.color }}>{strength.label}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} style={{
+                  flex: 1, height: 6, borderRadius: 3,
+                  background: i <= strength.score ? strength.color : 'var(--window-border)',
+                  transition: 'background 0.3s',
+                }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function md5(input: string): string {
+  function safeAdd(x: number, y: number): number {
+    const lsw = (x & 0xffff) + (y & 0xffff)
+    const msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+    return (msw << 16) | (lsw & 0xffff)
+  }
+  function rol(num: number, cnt: number): number {
+    return (num << cnt) | (num >>> (32 - cnt))
+  }
+  function cmn(q: number, a: number, b: number, x: number, s: number, t: number): number {
+    return safeAdd(rol(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b)
+  }
+  function ff(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+    return cmn((b & c) | ((~b) & d), a, b, x, s, t)
+  }
+  function gg(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+    return cmn((b & d) | (c & (~d)), a, b, x, s, t)
+  }
+  function hh(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+    return cmn(b ^ c ^ d, a, b, x, s, t)
+  }
+  function ii(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+    return cmn(c ^ (b | (~d)), a, b, x, s, t)
+  }
+  function md5cycle(x: number[], k: number[]): void {
+    let [a, b, c, d] = x
+    a = ff(a, b, c, d, k[0], 7, -680876936); d = ff(d, a, b, c, k[1], 12, -389564586)
+    c = ff(c, d, a, b, k[2], 17, 606105819); b = ff(b, c, d, a, k[3], 22, -1044525330)
+    a = ff(a, b, c, d, k[4], 7, -176418897); d = ff(d, a, b, c, k[5], 12, 1200080426)
+    c = ff(c, d, a, b, k[6], 17, -1473231341); b = ff(b, c, d, a, k[7], 22, -45705983)
+    a = ff(a, b, c, d, k[8], 7, 1770035416); d = ff(d, a, b, c, k[9], 12, -1958414417)
+    c = ff(c, d, a, b, k[10], 17, -42063); b = ff(b, c, d, a, k[11], 22, -1990404162)
+    a = ff(a, b, c, d, k[12], 7, 1804603682); d = ff(d, a, b, c, k[13], 12, -40341101)
+    c = ff(c, d, a, b, k[14], 17, -1502002290); b = ff(b, c, d, a, k[15], 22, 1236535329)
+    a = gg(a, b, c, d, k[1], 5, -165796510); d = gg(d, a, b, c, k[6], 9, -1069501632)
+    c = gg(c, d, a, b, k[11], 14, 643717713); b = gg(b, c, d, a, k[0], 20, -373897302)
+    a = gg(a, b, c, d, k[5], 5, -701558691); d = gg(d, a, b, c, k[10], 9, 38016083)
+    c = gg(c, d, a, b, k[15], 14, -660478335); b = gg(b, c, d, a, k[4], 20, -405537848)
+    a = gg(a, b, c, d, k[9], 5, 568446438); d = gg(d, a, b, c, k[14], 9, -1019803690)
+    c = gg(c, d, a, b, k[3], 14, -187363961); b = gg(b, c, d, a, k[8], 20, 1163531501)
+    a = gg(a, b, c, d, k[13], 5, -1444681467); d = gg(d, a, b, c, k[2], 9, -51403784)
+    c = gg(c, d, a, b, k[7], 14, 1735328473); b = gg(b, c, d, a, k[12], 20, -1926607734)
+    a = hh(a, b, c, d, k[5], 4, -378558); d = hh(d, a, b, c, k[8], 11, -2022574463)
+    c = hh(c, d, a, b, k[11], 16, 1839030562); b = hh(b, c, d, a, k[14], 23, -35309556)
+    a = hh(a, b, c, d, k[1], 4, -1530992060); d = hh(d, a, b, c, k[4], 11, 1272893353)
+    c = hh(c, d, a, b, k[7], 16, -155497632); b = hh(b, c, d, a, k[10], 23, -1094730640)
+    a = hh(a, b, c, d, k[13], 4, 681279174); d = hh(d, a, b, c, k[0], 11, -358537222)
+    c = hh(c, d, a, b, k[3], 16, -722521979); b = hh(b, c, d, a, k[6], 23, 76029189)
+    a = hh(a, b, c, d, k[9], 4, -640364487); d = hh(d, a, b, c, k[12], 11, -421815835)
+    c = hh(c, d, a, b, k[15], 16, 530742520); b = hh(b, c, d, a, k[2], 23, -995338651)
+    a = ii(a, b, c, d, k[0], 6, -198630844); d = ii(d, a, b, c, k[7], 10, 1126891415)
+    c = ii(c, d, a, b, k[14], 15, -1416354905); b = ii(b, c, d, a, k[5], 21, -57434055)
+    a = ii(a, b, c, d, k[12], 6, 1700485571); d = ii(d, a, b, c, k[3], 10, -1894986606)
+    c = ii(c, d, a, b, k[10], 15, -1051523); b = ii(b, c, d, a, k[1], 21, -2054922799)
+    a = ii(a, b, c, d, k[8], 6, 1873313359); d = ii(d, a, b, c, k[15], 10, -30611744)
+    c = ii(c, d, a, b, k[6], 15, -1560198380); b = ii(b, c, d, a, k[13], 21, 1309151649)
+    a = ii(a, b, c, d, k[4], 6, -145523070); d = ii(d, a, b, c, k[11], 10, -1120210379)
+    c = ii(c, d, a, b, k[2], 15, 718787259); b = ii(b, c, d, a, k[9], 21, -343485551)
+    x[0] = safeAdd(a, x[0]); x[1] = safeAdd(b, x[1]); x[2] = safeAdd(c, x[2]); x[3] = safeAdd(d, x[3])
+  }
+  function md5blk(s: string): number[] {
+    const md5blks: number[] = []
+    for (let i = 0; i < 64; i += 4) {
+      md5blks[i >> 2] = s.charCodeAt(i) + (s.charCodeAt(i + 1) << 8) + (s.charCodeAt(i + 2) << 16) + (s.charCodeAt(i + 3) << 24)
+    }
+    return md5blks
+  }
+  function md51(s: string): number[] {
+    const n = s.length
+    const state = [1732584193, -271733879, -1732584194, 271733878]
+    let i: number
+    for (i = 64; i <= n; i += 64) {
+      md5cycle(state, md5blk(s.substring(i - 64, i)))
+    }
+    const tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    const sRest = s.substring(i - 64)
+    let j: number
+    for (j = 0; j < sRest.length; j++) {
+      tail[j >> 2] |= sRest.charCodeAt(j) << ((j % 4) << 3)
+    }
+    tail[j >> 2] |= 0x80 << ((j % 4) << 3)
+    if (j > 55) {
+      md5cycle(state, tail)
+      for (let k = 0; k < 16; k++) tail[k] = 0
+    }
+    tail[14] = n * 8
+    md5cycle(state, tail)
+    return state
+  }
+  function rhex(n: number): string {
+    const hexChr = '0123456789abcdef'
+    let s = ''
+    for (let j = 0; j < 4; j++) {
+      s += hexChr.charAt((n >> (j * 8 + 4)) & 0x0F) + hexChr.charAt((n >> (j * 8)) & 0x0F)
+    }
+    return s
+  }
+  function hex(x: number[]): string {
+    return x.map(rhex).join('')
+  }
+  function str2rstrUTF8(input: string): string {
+    return unescape(encodeURIComponent(input))
+  }
+  return hex(md51(str2rstrUTF8(input)))
+}
+
+export function HashTool({ onAddHistory, onCopy }: ToolProps) {
+  const [input, setInput] = useState('')
+  const [algorithm, setAlgorithm] = useState<'MD5' | 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512'>('SHA-256')
+  const [output, setOutput] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const computeHash = useCallback(async () => {
+    if (!input) return
+    setLoading(true)
+    try {
+      if (algorithm === 'MD5') {
+        const result = md5(input)
+        setOutput(result)
+        onAddHistory('hash', `MD5: ${input.slice(0, 30)}`, result)
+      } else {
+        const encoder = new TextEncoder()
+        const data = encoder.encode(input)
+        const buffer = await crypto.subtle.digest(algorithm, data)
+        const hashArray = Array.from(new Uint8Array(buffer))
+        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+        setOutput(hashHex)
+        onAddHistory('hash', `${algorithm}: ${input.slice(0, 30)}`, hashHex)
+      }
+    } catch {
+      setOutput('哈希计算失败')
+    } finally {
+      setLoading(false)
+    }
+  }, [input, algorithm, onAddHistory])
+
+  return (
+    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      <ToolHeader icon={<Shield size={20} style={{ color: '#a78bfa' }} />} title="Hash 生成器" subtitle="MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 哈希计算" />
+
+      <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
+        {(['MD5', 'SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'] as const).map((alg) => (
+          <button key={alg} onClick={() => { setAlgorithm(alg); setOutput('') }} style={{
+            padding: '8px 14px', borderRadius: 8,
+            background: algorithm === alg ? 'var(--accent-bg)' : 'var(--glass-bg)',
+            border: algorithm === alg ? '1px solid var(--accent)' : '1px solid var(--window-border)',
+            color: algorithm === alg ? 'var(--accent)' : 'var(--text-secondary)',
+            cursor: 'pointer', fontSize: 13, fontWeight: algorithm === alg ? 600 : 400,
+          }}>
+            {alg}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <label style={labelStyle}>输入文本</label>
+        <textarea value={input} onChange={(e) => setInput(e.target.value)}
+          placeholder="输入要计算哈希的文本..."
+          style={{ ...inputStyle, minHeight: 100, fontFamily: 'monospace', resize: 'vertical' }}
+        />
+      </div>
+
+      <button onClick={computeHash} disabled={!input || loading} style={{
+        ...primaryBtnStyle, marginBottom: 12,
+        opacity: !input || loading ? 0.5 : 1,
+        cursor: !input || loading ? 'not-allowed' : 'pointer',
+      }}>
+        <Hash size={16} /> {loading ? '计算中...' : `计算 ${algorithm}`}
+      </button>
+
+      {output && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <label style={labelStyle}>{algorithm} 结果</label>
+            <button onClick={() => onCopy(output, '哈希已复制')} style={ghostBtnStyle}>
+              <Copy size={12} /> 复制
+            </button>
+          </div>
+          <textarea readOnly value={output}
+            style={{ ...inputStyle, minHeight: 80, fontFamily: 'monospace', fontSize: 12, resize: 'vertical' }}
+          />
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function UUIDTool({ onAddHistory, onCopy: _onCopy }: ToolProps) {
