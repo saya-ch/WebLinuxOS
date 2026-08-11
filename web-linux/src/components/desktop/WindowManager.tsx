@@ -335,6 +335,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   Spreadsheet: () => import('../../apps/Spreadsheet'),
   StickyNotesWall: () => import('../../apps/StickyNotesWall'),
   StockTracker: () => import('../../apps/StockTracker'),
+  StockDashboard: () => import('../../apps/StockDashboard'),
   SystemAssistant: () => import('../../apps/SystemAssistant'),
   SystemDashboard: () => import('../../apps/SystemDashboard'),
   SystemDiagnosticsPro: () => import('../../apps/SystemDiagnosticsPro'),
@@ -486,6 +487,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === 新增应用 ===
   DailyAgenda: () => import('../../apps/DailyAgenda'),
   MarkdownQuickNote: () => import('../../apps/MarkdownQuickNote'),
+  // === 新增创新应用套件 — 网络诊断/AI提示词优化 ===
+  NetDiagnostics: () => import('../../apps/NetDiagnostics'),
+  AIPromptOptimizer: () => import('../../apps/AIPromptOptimizer'),
+  AtmosphericWeather: () => import('../../apps/AtmosphericWeather'),
   // === v78 新增 LiveDataCenter 实时数据中心 ===
   LiveDataCenter: () => import('../../apps/LiveDataCenter'),
 }

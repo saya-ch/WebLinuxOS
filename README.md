@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v78.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v79.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,41 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v79.0.0 更新亮点
+
+- **网络诊断 (NetDiagnostics)**：专业网络诊断工具，集成多个合规公开 API
+  - DNS 查询：基于 Cloudflare DoH API，支持 A/AAAA/MX/NS/TXT/CNAME/SOA 七种记录类型
+  - HTTP 测试：对指定 URL 发起 GET/HEAD 请求，显示状态码、响应时间、响应头
+  - 端口检查器：内置 13 个常见端口（FTP/SSH/SMTP/DNS/HTTP/POP3/IMAP/HTTPS/MySQL/RDP/PostgreSQL/Redis），支持自定义端口
+  - 子域名发现：基于 crt.sh 证书透明度日志 + HackerTarget 双源 API，去重合并展示
+  - 数据导出：支持将诊断结果导出为 JSON 文件
+
+- **实时股票仪表盘 (StockDashboard)**：基于 Stooq 免费公开 API 的真实股票行情追踪
+  - 多股票监控：同时获取多只股票实时行情，显示当前价格、涨跌幅、成交量
+  - Canvas 迷你走势图：贝塞尔平滑曲线 + 渐变填充，带数据点标注
+  - 市场指数概览：S&P 500、NASDAQ、道琼斯、上证指数、恒生指数、日经225、富时100、德国DAX
+  - 自选管理：添加/删除自选股票，支持分类（股票/指数/加密货币）
+  - 自动刷新：每 30 秒自动刷新数据，本地 localStorage 持久化
+
+- **AI 提示词优化器 (AIPromptOptimizer)**：基于规则的 AI 提示词工程工具
+  - 智能评分引擎：从清晰度、具体性、结构性、完整性四维度评分（0-100分）
+  - 20 个场景模板：通用对话、代码生成、创意写作、分析推理、角色扮演、教育学习、商业营销、设计艺术、研究学术、翻译语言等 10 大分类
+  - 变量系统：支持 {topic}、{audience}、{style}、{length}、{language}、{code} 等占位符
+  - 实时预览与优化建议：评分条、四维度分解、优化建议列表
+  - 历史与收藏：localStorage 持久化，最近 50 条历史自动保存
+
+- **天气实况 (AtmosphericWeather)**：基于 Open-Meteo API 的精美天气仪表盘
+  - 全球城市搜索：带 350ms 防抖的实时搜索，支持中文本地化
+  - 24 小时温度曲线：Canvas 绘制贝塞尔平滑曲线，渐变填充
+  - 7 日预报：每日最高/最低温度可视化、天气图标、降水量
+  - 收藏城市：localStorage 持久化，最多收藏 12 个城市
+  - 动态背景：根据天气状况（晴/雨/雪/雷暴/雾）和昼夜切换不同背景色
+
+- **代码质量改进**
+  - 修复 `apps.tsx` 中 `markdown-slides-pro` 的重复注册问题
+  - 新增应用完整的 TypeScript 类型安全
+  - 组件懒加载优化，错误边界保护
 
 ## v78.0.0 更新亮点
 
@@ -347,6 +382,7 @@ WebLinuxOS is a complete Linux desktop environment that runs entirely in the bro
 - CSS 工作室：渐变编辑、阴影生成、动画关键帧、Flexbox 布局预览
 - WASM 实验场：WAT 编辑、编译、执行、字节导出
 - 代码协作平台：9 种语言、实时光标追踪、代码执行
+- AI 提示词优化器 (AIPromptOptimizer)：基于规则的 AI 提示词工程工具、智能评分引擎、20 个场景模板
 
 ### 网络工具
 
@@ -356,6 +392,9 @@ WebLinuxOS is a complete Linux desktop environment that runs entirely in the bro
 - GeoAtlas 地理图鉴：250+ 国家、对比、测验
 - 实时天气：城市搜索、7 天预报、温湿度风速
 - WorldPulse / LivePulse：多源实时信息聚合
+- 网络诊断 (NetDiagnostics)：专业网络诊断工具，DNS 查询、HTTP 测试、端口检查、子域名发现
+- 实时股票仪表盘 (StockDashboard)：Stooq 免费 API 股票行情追踪、Canvas 走势图、市场指数概览
+- 天气实况 (AtmosphericWeather)：Open-Meteo API 天气仪表盘、24 小时温度曲线、动态背景
 
 ### 创新功能
 
@@ -461,6 +500,7 @@ npm run preview
 | DailyChallenge 每日挑战 | 12 道预设编程题、三级难度、计时统计、进度保存 |
 | FontPairing 字体配对 | Google Fonts 精选配对、实时预览、HTML/CSS 代码复制 |
 | 代码片段游乐场 | 多语言代码片段、搜索筛选、收藏、语法高亮 |
+| AI 提示词优化器 | 基于规则的 AI 提示词工程工具、智能评分引擎、20 个场景模板、变量系统、历史收藏 |
 
 ### 办公工具
 
@@ -485,6 +525,7 @@ npm run preview
 | OpenAPI Hub | 50+ 端点、10 个分类、零配置 |
 | GeoAtlas | 250+ 国家、对比、测验 |
 | 实时天气 | 城市搜索、7 天预报、温湿度风速 |
+| **天气实况 AtmosphericWeather** | Open-Meteo API、24h 温度曲线、7 日预报、动态背景、城市收藏 |
 | **网络速度测试** | 真实下载/上传速度测量、延迟 Ping 测试、实时仪表盘、历史记录对比、网络评级 |
 | LivePulse | 实时汇率、Hacker News、趣味问答 |
 | UnifiedCmd 统一命令中心 | 自然语言输入、7 类查询自动识别、公开 API 聚合、历史记录收藏 |
