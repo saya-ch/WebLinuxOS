@@ -24,6 +24,50 @@ WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不�
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
 
+## v80.0.0 更新亮点
+
+- **AI 文档分析器 (AIDocAnalyzer)**：AI 驱动的代码质量分析工具
+  - 代码复杂度评估：圈复杂度、嵌套深度、函数长度、函数数量等多维度指标
+  - 文档质量检查：注释覆盖率、JSDoc 检测、TODO/FIXME 标记扫描
+  - 重复代码检测：基于哈希的代码块相似度检测
+  - 多语言支持：JavaScript、TypeScript、Python、Java
+  - 评分系统：A-F 等级评定，总体质量评分
+  - 导出报告：生成 Markdown 格式分析报告
+
+- **智能重构助手 (SmartRefactor)**：智能代码重构建议工具
+  - 命名规范检查：变量/函数/类命名风格检测（camelCase/PascalCase/snake_case）
+  - 函数拆分建议：检测过长函数并提供拆分方案
+  - 依赖关系分析：导入依赖、函数调用关系可视化
+  - 代码迁移建议：ES5 到 ES6+、CommonJS 到 ESM 等迁移路径
+  - 差异预览：重构前后代码对比，高亮显示变更
+
+- **API 设计工作室 (APIDesignStudio)**：RESTful API 设计与文档平台
+  - 端点设计：HTTP 方法、路径、描述、标签管理
+  - 参数校验：路径参数、查询参数、请求体定义
+  - 响应结构：成功/错误响应示例、状态码说明
+  - OpenAPI 规范生成：一键导出 OpenAPI 3.0 JSON 规范
+  - Mock 测试：模拟 API 响应，支持延迟和状态码配置
+
+- **Git 助手 (GitAssistant)**：Git 版本控制全能助手
+  - 命令速查：23 条常用 Git 命令，7 大分类，搜索过滤
+  - 交互教程：3 套分步教程（初始化/开发工作流/Hotfix）
+  - 工作流可视化：SVG 分支合并流程图，动画演示
+  - 命令生成器：6 种预设模板，动态生成 Git 命令
+  - 提交规范检查：Conventional Commits 实时校验，错误/警告/建议三级反馈
+
+- **数据库设计器 (DatabaseDesigner)**：可视化数据库表结构设计器
+  - 字段编辑器：类型、长度、可空、默认值、注释等完整属性
+  - 约束设置：PRIMARY KEY、FOREIGN KEY、UNIQUE、INDEX 可视化配置
+  - 多方言 DDL 生成：MySQL、PostgreSQL、SQLite 三种 SQL 方言
+  - ER 图可视化：表关系图，外键关联虚线连接
+  - 导出功能：单表/全部表 DDL 导出为 .sql 文件
+
+- **代码质量改进**
+  - 修复多个 TypeScript 类型错误，提升代码健壮性
+  - 清理未使用变量和导入，减小打包体积
+  - 正则表达式模式优化，提升运行时性能
+  - 应用注册表去重，确保 ID 唯一性
+
 ## v79.0.0 更新亮点
 
 - **网络诊断 (NetDiagnostics)**：专业网络诊断工具，集成多个合规公开 API

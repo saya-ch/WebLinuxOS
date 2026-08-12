@@ -493,6 +493,12 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AtmosphericWeather: () => import('../../apps/AtmosphericWeather'),
   // === v78 新增 LiveDataCenter 实时数据中心 ===
   LiveDataCenter: () => import('../../apps/LiveDataCenter'),
+  // === v80 创新功能套件 ===
+  AIDocAnalyzer: () => import('../../apps/AIDocAnalyzer'),
+  SmartRefactor: () => import('../../apps/SmartRefactor'),
+  APIDesignStudio: () => import('../../apps/APIDesignStudio'),
+  GitAssistant: () => import('../../apps/GitAssistant'),
+  DatabaseDesigner: () => import('../../apps/DatabaseDesigner'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

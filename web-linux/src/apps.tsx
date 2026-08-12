@@ -43,7 +43,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'markdown-slides-pro', name: 'Markdown 演示文稿', icon: <PresentationIcon />, component: 'MarkdownSlidesPro', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown转演示文稿：实时编辑预览、幻灯片播放、全屏演示、导出HTML、过渡动画' },
   { id: 'open-source-hub', name: '开源项目导航', icon: <GitHubIcon />, component: 'OpenSourceHub', category: 'internet', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'GitHub开源项目探索：仓库搜索、热门项目、语言筛选、星标排序、搜索历史' },
   { id: 'online-code-runner-pro', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerPro', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '真正的在线代码运行器：支持JavaScript实时执行、HTML/CSS/JS实时预览、代码分享、预置示例模板' },
-  { id: 'weather-live', name: '实时天气', icon: <CloudRainIcon />, component: 'WeatherLive', category: 'internet', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '接入wttr.in公开API的实时天气：城市搜索、3天预报、温湿度风速、摄氏华氏切换、位置自动检测' },
+  
   { id: 'json-crusher', name: 'JSON 超级工具', icon: <WrenchIcon />, component: 'JsonCrusher', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'JSON高级工具箱：格式化/压缩、TS类型生成、JSONPath查询、Diff对比、Schema验证、树形视图' },
   { id: 'css-studio', name: 'CSS 工作室', icon: <PaletteIcon />, component: 'CssStudio', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'CSS可视化工具箱：渐变编辑、阴影生成、圆角编辑、动画关键帧、颜色转换、Flexbox布局预览' },
   // AI图像工作室（v58创新功能 — 基于 Pollinations.ai 公开免费 API 的 AI 图像生成工具）
@@ -210,7 +210,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'weather-now', name: '天气实时预报', icon: <CloudRainIcon />, component: 'WeatherNow', category: 'internet', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于 Open-Meteo API 的真实天气预报：城市搜索、7日预报、温湿度/风速/降水量数据、收藏城市、摄氏度/华氏度切换' },
   // === 新增创新应用套件 — 网络诊断/股票仪表盘/AI提示词优化 ===
   { id: 'net-diagnostics', name: '网络诊断', icon: <NetworkIcon />, component: 'NetDiagnostics', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业网络诊断工具：DNS查询(Cloudflare DoH)、HTTP测试、端口检查、子域名发现，支持数据导出' },
-  { id: 'stock-dashboard', name: '实时股票仪表盘', icon: <TrendingUpIcon />, component: 'StockDashboard', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时股票行情追踪：Stooq API多股票监控、迷你走势图、市场指数概览、自选管理、30秒自动刷新' },
+  
   { id: 'ai-prompt-optimizer', name: 'AI 提示词优化器', icon: <SparklesIcon />, component: 'AIPromptOptimizer', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI提示词工程优化器：智能评分引擎、20个场景模板、变量系统、实时预览与建议、历史收藏持久化' },
   { id: 'weather-live', name: '天气实况', icon: <CloudRainIcon />, component: 'AtmosphericWeather', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '精美天气仪表盘：Open-Meteo API、全球城市搜索、24h温度曲线、7日预报、收藏城市、动态背景' },
   // === v62 三大创新应用套件 ===
@@ -258,8 +258,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'api-lab', name: 'API Lab 实验室', icon: <ApiLabIcon />, component: 'APILab', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实公开API探索实验室：天气/汇率/加密货币/国家信息/NASA天文图/HackerNews等12+API集成，支持参数编辑和请求历史' },
   // === v71 创新应用套件 ===
   { id: 'system-backup', name: '系统备份与恢复', icon: <BackupIcon />, component: 'SystemBackup', category: 'system', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '系统备份与恢复：导出/导入完整系统状态、备份历史管理、选择性备份、一键重置，数据安全有保障' },
-  { id: 'speed-test', name: '网络速度测试', icon: <WifiIcon />, component: 'SpeedTest', category: 'internet', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '真实网络速度测试：下载/上传速度测量、延迟ping测试、实时仪表盘、历史记录对比、网络评级' },
-  { id: 'markdown-slides', name: 'Markdown 幻灯片', icon: <PresentationIcon />, component: 'MarkdownSlides', category: 'office', defaultWidth: 1280, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown 转幻灯片：实时编辑预览、幻灯片播放、全屏演示、过渡动画、导出HTML、支持多种主题' },
+  
+  
   // === v71 创新应用套件 — AI 桌面助手 ===
   { id: 'ai-desktop-assistant', name: 'AI 桌面助手', icon: <SparklesIcon />, component: 'AIDesktopAssistant', category: 'utilities', defaultWidth: 500, defaultHeight: 700, minWidth: 400, minHeight: 550, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的桌面助手：自然语言打开应用、天气查询、文本翻译、股票行情、笑话生成、每日名言、Hacker News 热门、颜色转换、UUID 生成、系统信息查询' },
   { id: 'developer-toolkit-pro', name: '开发者工具箱 Pro', icon: <WrenchIcon />, component: 'DeveloperToolkitPro', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '集成12+实用开发工具：JSON处理、编解码、哈希生成、时间戳转换、颜色工具、正则测试、JWT解码、Cron解析' },
@@ -287,6 +287,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'markdown-quick-note', name: 'Markdown 速记', icon: <NoteIcon />, component: 'MarkdownQuickNote', category: 'office', defaultWidth: 1000, defaultHeight: 700, minWidth: 750, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '快速Markdown笔记：分屏编辑预览、语法高亮、实时渲染、字数统计、导出MD文件、LocalStorage持久化' },
   // === v78 新增 LiveDataCenter 实时数据中心 ===
   { id: 'live-data-center', name: '实时数据中心', icon: <ZapIcon />, component: 'LiveDataCenter', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '一站式实时数据聚合中心：全球天气、加密货币行情、实时汇率、科技新闻、股票指数、世界时钟，6大公开API集成，自动刷新' },
+  // v80 创新功能 — AI文档分析器 & 智能代码重构
+  { id: 'ai-doc-analyzer', name: 'AI文档分析器', icon: <SparklesIcon />, component: 'AIDocAnalyzer', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的文档分析工具：代码复杂度评估、文档质量检查、重复代码检测、注释覆盖率分析、一键生成改进建议' },
+  { id: 'smart-refactor', name: '智能重构助手', icon: <Code2Icon />, component: 'SmartRefactor', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '智能代码重构工具：命名规范检查、函数拆分建议、依赖关系分析、代码迁移建议、批量重构预览' },
+  { id: 'api-design-studio', name: 'API设计工作室', icon: <ApiLabIcon />, component: 'APIDesignStudio', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'RESTful API设计与文档工作室：端点设计、参数校验、响应结构、OpenAPI规范生成、接口模拟测试' },
+  { id: 'git-assistant', name: 'Git助手', icon: <Code2Icon />, component: 'GitAssistant', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Git版本控制助手：命令速查、交互教程、工作流可视化、命令生成器、提交规范检查' },
+  { id: 'database-designer', name: '数据库设计器', icon: <Code2Icon />, component: 'DatabaseDesigner', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '可视化数据库表结构设计器：字段类型选择、主键外键索引设置、SQL DDL生成、ER图可视化' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1723,7 +1729,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'clipboard-history', name: '剪贴板管理 (基础版)', icon: <CustomClipboardIcon />, component: 'ClipboardHistory', category: 'utilities', defaultWidth: 700, defaultHeight: 500, minWidth: 500, minHeight: 350, resizable: true, multiple: false },
   { id: 'password-generator', name: '密码生成器', icon: <LockIcon />, component: 'PasswordGenerator', category: 'utilities', defaultWidth: 500, defaultHeight: 800, minWidth: 400, minHeight: 600, resizable: true, multiple: false },
   { id: 'text-diff', name: '文本比较工具', icon: <DiffIcon />, component: 'TextDiffViewer', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'timer-app', name: '定时器', icon: <ClockIcon />, component: 'TimerApp', category: 'utilities', defaultWidth: 600, defaultHeight: 700, minWidth: 500, minHeight: 500, resizable: true, multiple: false },
+  
   // 注：smart-dashboard 已在 APP_REGISTRY_EXTRAS 中注册，此处移除重复条目
   { id: 'autoflow', name: 'AutoFlow 工作流', icon: <AutoFlowIcon />, component: 'AutoFlow', category: 'utilities', defaultWidth: 1300, defaultHeight: 800, minWidth: 1000, minHeight: 600, resizable: true, multiple: false },
   { id: 'focus-mode', name: '专注模式', icon: <FocusIcon />, component: 'FocusMode', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
@@ -1848,7 +1854,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'project-manager', name: '项目管理', icon: <TaskIcon />, component: 'ProjectManager', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'random-tools', name: '随机工具', icon: <DiceIcon />, component: 'RandomTools', category: 'utilities', defaultWidth: 700, defaultHeight: 700, minWidth: 500, minHeight: 500, resizable: true, multiple: false },
   { id: 'ip-lookup', name: 'IP & DNS 查询', icon: <CustomGlobeIcon />, component: 'IPLookup', category: 'utilities', defaultWidth: 700, defaultHeight: 550, minWidth: 550, minHeight: 450, resizable: true, multiple: false },
-  { id: 'system-health', name: '系统健康检查', icon: <ActivityIcon />, component: 'SystemHealthCheck', category: 'system', defaultWidth: 650, defaultHeight: 800, minWidth: 500, minHeight: 600, resizable: true, multiple: false },
+  
   { id: 'system-toolbox', name: '系统工具箱', icon: <WrenchIcon />, component: 'SystemToolbox', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'dev-tools', name: '开发者工具箱', icon: <WrenchIcon />, component: 'DevTools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'regex-builder', name: '正则表达式构建器', icon: <RegexIcon />, component: 'RegexBuilder', category: 'development', defaultWidth: 900, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
@@ -1922,7 +1928,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'utility-hub', name: '实用工具聚合中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/></svg>, component: 'UtilityHub', category: 'utilities', defaultWidth: 1300, defaultHeight: 850, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'api-playbook', name: 'API演练场', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'APIPlaybook', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false },
   { id: 'icon-gallery', name: '图标画廊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, component: 'IconGallery', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'world-clock', name: '世界时钟', icon: <ClockIcon />, component: 'WorldClock', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  
   { id: 'api-explorer', name: 'API探索器', icon: <ApiIcon />, component: 'APIExplorer', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false },
   // === v8.0.0 新增创新应用 ===
   { id: 'dev-hub', name: '开发者工具中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="17" cy="17" r="2" fill="currentColor"/></svg>, component: 'DevHub', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
