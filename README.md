@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v79.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v81.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,64 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v81.0.0 更新亮点
+
+- **个人财务仪表盘 (FinanceDashboard)**：集成真实加密货币和汇率数据的综合财务追踪平台
+  - 实时加密货币行情：接入 CoinGecko 免费公开 API，支持 200+ 主流币种实时价格
+  - 实时汇率查询：接入 Frankfurter API，支持 150+ 货币汇率转换
+  - 投资组合管理：本地存储持仓信息，自动计算总资产、盈亏、持仓成本
+  - 价格走势图：Canvas 绘制 7 日/30 日价格走势和投资组合历史曲线
+  - 隐私保护：一键隐藏资产数值，公开场合安全使用
+  - 玻璃拟态深色 UI，紫青渐变主题
+
+- **AI 代码审查专家 (AICodeReviewPro)**：基于 Pollinations AI 公开 API 的专业代码审查工具
+  - 多语言支持：JavaScript、TypeScript、Python 代码智能分析
+  - 代码质量评分：0-100 分综合评分，涵盖可读性、性能、安全性等维度
+  - 改进建议列表：AI 生成具体的代码优化建议
+  - 安全性检查：检测潜在的安全漏洞和不当实践
+  - 性能优化建议：识别性能瓶颈和优化机会
+  - Markdown 格式报告导出：一键生成完整审查报告
+
+- **网络速度测试 Pro (NetworkSpeedTestPro)**：真实网速测量与分析工具
+  - 下载速度测量：基于 Hetzner 公开测速服务器的真实带宽测试
+  - 上传速度测量：基于 httpbin.org 的真实上传测试
+  - 延迟 Ping 测试：多次测量计算平均延迟和抖动
+  - 实时仪表盘：Canvas 绘制动态速度曲线
+  - 测试历史记录：本地存储最近测试，支持历史对比
+  - 网络评级：根据速度自动判断 5G/4G/3G 等网络等级
+
+- **生产力仪表盘 (ProductivityDashboard)**：个人效率追踪与管理中心
+  - Pomodoro 计时器：可自定义工作/休息时长的番茄钟
+  - 任务追踪：每日任务列表，支持完成状态管理
+  - 打卡热力图：可视化每日完成情况，形成连续打卡记录
+  - 实时时钟：显示当前时间和日期
+  - 天气小组件：接入 Open-Meteo API 显示当前天气
+  - 每日名言：接入 ZenQuotes API 获取励志名言
+  - 本地存储持久化：所有数据自动保存
+
+- **AI 壁纸工作室 (AIWallpaperStudio)**：基于 Pollinations AI 的壁纸生成与管理工具
+  - 6 大壁纸分类：自然风景、抽象艺术、赛博朋克、极简风格、宇宙星空、奇幻梦境
+  - AI 壁纸生成：实时生成高分辨率 AI 图像，支持 4 种分辨率（HD/FHD/QHD/4K）
+  - 创意提示词模板：每类内置专业英文提示词，支持随机灵感
+  - 画廊与收藏：本地保存生成的壁纸，支持下载和删除
+  - Canvas 玻璃拟态效果：4 级预设效果预览
+  - 快捷键 Ctrl+S：一键保存当前壁纸
+
+- **快速翻译 (QuickTranslate)**：基于 MyMemory API 的多语言翻译工具
+  - 100+ 语言互译：覆盖全球主要语言
+  - 自动语言检测：智能识别输入语言
+  - 历史记录：localStorage 持久化最近 50 条翻译
+  - 常用短语收藏：保存常用翻译，支持快速访问
+  - Web Speech API 语音朗读：源文本和译文均可朗读
+  - 一键交换语言、复制译文、搜索语言
+
+- **代码质量改进**
+  - 构建流程优化：新增应用完整 TypeScript 类型安全
+  - 组件懒加载：所有新应用通过 React.lazy 按需加载
+  - 错误边界保护：每个应用都有 ErrorBoundary 包裹
+  - 依赖管理：新增 @types/node 确保完整类型支持
+  - 敏感信息保护：Token 已从历史中清理
 
 ## v80.0.0 更新亮点
 

@@ -499,6 +499,12 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   APIDesignStudio: () => import('../../apps/APIDesignStudio'),
   GitAssistant: () => import('../../apps/GitAssistant'),
   DatabaseDesigner: () => import('../../apps/DatabaseDesigner'),
+  FinanceDashboard: () => import('../../apps/FinanceDashboard'),
+  AICodeReviewPro: () => import('../../apps/AICodeReviewPro'),
+  NetworkSpeedTestPro: () => import('../../apps/NetworkSpeedTestPro'),
+  ProductivityDashboard: () => import('../../apps/ProductivityDashboard'),
+  AIWallpaperStudio: () => import('../../apps/AIWallpaperStudio'),
+  QuickTranslate: () => import('../../apps/QuickTranslate'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
