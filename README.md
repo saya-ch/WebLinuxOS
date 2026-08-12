@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v81.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v82.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,63 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v82.0.0 更新亮点
+
+- **AI 代码重构智能体 (CodeRefactorAI)**：AI 驱动的代码重构与优化工具
+  - 多语言支持：JavaScript、TypeScript、Python 代码智能分析
+  - 代码质量五维评分：可读性、性能、安全性、可维护性、规范性
+  - 重构建议 Before/After 对比：高亮显示变更行
+  - 性能优化分析：识别性能瓶颈和优化机会
+  - Markdown 报告导出：一键生成完整重构报告
+  - 代码复杂度分析：圈复杂度、嵌套深度、函数长度
+
+- **Git 可视化 (GitVisualizer)**：交互式 Git 提交历史可视化工具
+  - SVG 提交图：分支时间线可视化，彩色节点表示不同分支
+  - 提交详情查看器：哈希、作者、日期、变更统计
+  - 模拟仓库生成：一键生成示例仓库演示
+  - SVG 导出：导出可视化图形
+  - Git 命令提示：基于选中提交显示相关 Git 命令
+
+- **系统优化器 (SystemOptimizer)**：浏览器系统性能优化工具
+  - 实时 FPS 监控：Canvas 绘制帧率曲线
+  - 内存使用分析：JS 堆内存实时追踪
+  - 性能评分：0-100 分综合性能评分
+  - 优化建议：基于检测结果的个性化优化建议
+  - 启动时间分析：测量资源加载各阶段耗时
+  - 资源清理：内存占用清理建议
+
+- **WebDB 数据库管理 (WebDB)**：浏览器原生 IndexedDB 管理工具
+  - 数据库与表创建：可视化创建数据库和对象存储
+  - CRUD 操作：完整的增删改查界面
+  - JSON 导入导出：数据迁移和备份
+  - 数据网格：排序、过滤、分页
+  - 查询构建器：可视化构建 IndexedDB 查询
+
+- **API 测试 Pro (APITestingPro)**：专业级 HTTP API 测试工具
+  - 完整 HTTP 方法支持：GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS
+  - 请求头管理：键值对编辑器，支持启用/禁用
+  - 请求体编辑：JSON 实时验证、格式化
+  - 响应查看器：响应体、响应头、预览三标签页
+  - 请求历史：自动保存最近 20 条记录到 localStorage
+  - 代码生成：Fetch/Axios/XMLHttpRequest 三种代码片段
+  - 环境变量：多环境管理，模板变量自动替换
+  - 集合导入导出：JSON 文件格式
+
+- **加密货币交易模拟器 (CryptoSimulator)**：基于真实行情的虚拟交易平台
+  - 实时行情：接入 CoinGecko 免费 API，支持 15 种主流加密货币
+  - 虚拟交易：开户 $100,000 初始资金，按实时价格执行
+  - 投资组合追踪：实时计算持仓市值、成本、盈亏
+  - 交易历史：完整买入/卖出记录
+  - 价格图表：走势图 + 买入/卖出标记
+  - 快捷交易：25%/50%/75%/MAX 快捷下单
+  - 数据持久化：所有数据存储在 LocalStorage
+
+- **代码质量改进**
+  - 组件懒加载优化：所有新应用通过 React.lazy 按需加载
+  - TypeScript 类型安全：零类型错误构建通过
+  - 错误边界保护：每个应用都有 ErrorBoundary 包裹
+  - 代码分割优化：新应用独立 chunk 配置
 
 ## v81.0.0 更新亮点
 
@@ -603,6 +660,10 @@ npm run preview
 | FontPairing 字体配对 | Google Fonts 精选配对、实时预览、HTML/CSS 代码复制 |
 | 代码片段游乐场 | 多语言代码片段、搜索筛选、收藏、语法高亮 |
 | AI 提示词优化器 | 基于规则的 AI 提示词工程工具、智能评分引擎、20 个场景模板、变量系统、历史收藏 |
+| AI 代码重构智能体 | AI 驱动的代码重构与优化：多语言支持、五维质量评分、Before/After 对比、性能分析、Markdown 报告 |
+| Git 可视化 | 交互式 Git 提交历史可视化：SVG 分支时间线、提交详情、模拟仓库生成、SVG 导出 |
+| WebDB 数据库 | 浏览器原生 IndexedDB 管理：可视化建库建表、CRUD 操作、JSON 导入导出、数据网格排序过滤 |
+| API 测试 Pro | 专业级 HTTP API 测试：完整方法支持、请求头/体编辑、响应查看器、请求历史、代码生成、环境变量 |
 
 ### 办公工具
 
@@ -667,6 +728,8 @@ npm run preview
 | LocalFileExplorer | File System Access API 真实本地文件浏览 |
 | **每日议程 DailyAgenda** | 日视图时间块、拖拽调整、分类色彩、统计面板、周视图切换、LocalStorage 持久化 |
 | **Markdown 速记** | 分屏编辑预览、实时渲染、字数统计、导出 .md/.html、自动保存 |
+| **系统优化器** | 浏览器性能优化：实时 FPS 监控、内存分析、性能评分、优化建议、启动时间分析 |
+| **加密货币交易模拟器** | 基于 CoinGecko 真实行情的虚拟交易：$100,000 初始资金、投资组合追踪、价格图表、交易历史 |
 
 ### 游戏
 

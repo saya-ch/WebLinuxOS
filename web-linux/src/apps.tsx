@@ -15,7 +15,7 @@ import {
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
-  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon
+  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon
 } from './icons'
 
 
@@ -306,6 +306,13 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'markPoster', name: 'MarkPoster 海报生成器', icon: <PresentationIcon />, component: 'MarkPoster', category: 'office', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Markdown转精美海报：6种模板主题、封面图URL、标签元数据、实时预览、一键导出PNG、分享链接' },
   { id: 'web-request-lab', name: 'Web请求实验室', icon: <ApiLabIcon />, component: 'WebRequestLab', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实HTTP请求调试器：支持GET/POST/PUT/DELETE/PATCH、Headers与Body编辑、响应预览、请求历史、代码生成' },
   { id: 'code-polisher', name: '代码抛光工坊', icon: <Code2Icon />, component: 'CodePolisher', category: 'development', defaultWidth: 1180, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '代码格式化与压缩：JavaScript/JSON/HTML/CSS/SQL，缩进风格切换、一键复制、体积对比、Gzip压缩率展示' },
+  { id: 'webdb', name: 'WebDB 数据库', icon: <DatabaseIcon />, component: 'WebDB', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '浏览器原生 IndexedDB 管理工具：创建数据库与表、CRUD 操作、JSON 导入导出、数据网格排序过滤、查询构建器' },
+  // === v82.1 创新应用套件 ===
+  { id: 'code-refactor-ai', name: 'AI 代码重构智能体', icon: <SparklesIcon />, component: 'CodeRefactorAI', category: 'development', defaultWidth: 1300, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的代码重构与优化：多语言支持（JS/TS/Python）、代码质量五维评分、重构建议 Before/After 对比、性能优化分析、Markdown 报告导出' },
+  { id: 'git-visualizer', name: 'Git 可视化', icon: <Code2Icon />, component: 'GitVisualizer', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '交互式 Git 提交历史可视化：SVG 提交图、分支时间线、提交详情查看器、模拟仓库生成、SVG/PNG 导出' },
+  { id: 'system-optimizer', name: '系统优化器', icon: <ActivityIcon />, component: 'SystemOptimizer', category: 'system', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '浏览器系统性能优化器：实时 FPS 监控、内存使用分析、性能评分（0-100）、优化建议、启动时间分析、资源清理' },
+  // === v83 创新应用 — CryptoSimulator 加密货币交易模拟器 ===
+  { id: 'crypto-simulator', name: '加密交易模拟器', icon: <TrendingUpIcon />, component: 'CryptoSimulator', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实加密货币交易模拟器：CoinGecko实时行情、$100,000虚拟资金、实时买卖执行、持仓盈亏追踪、交易历史、价格图表标注、15种主流加密货币支持' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1892,6 +1899,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'system-health-dashboard-enhanced', name: '增强版系统健康监控', icon: <SystemHealthDashboardIcon />, component: 'SystemHealthDashboardEnhanced', category: 'system', defaultWidth: 1200, defaultHeight: 900, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'code-collaboration-hub', name: '代码协作中心', icon: <CodeStudioIcon />, component: 'CodeCollaborationHub', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'api-tester-pro', name: 'API测试器Pro', icon: <ApiIcon />, component: 'APITesterPro', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
+  { id: 'api-testing-pro', name: 'API测试专业版', icon: <ApiIcon />, component: 'APITestingPro', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '专业级API测试工具：完整HTTP方法支持、请求头管理、JSON验证、响应高亮、请求历史、代码片段生成、环境变量、集合导入导出' },
   { id: 'productivity-hub', name: '生产力中心', icon: <ListTodoIcon />, component: 'ProductivityHub', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
 
   { id: 'smart-hub', name: '智能聚合面板', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/></svg>, component: 'SmartHub', category: 'utilities', defaultWidth: 1350, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },

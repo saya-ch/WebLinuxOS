@@ -75,6 +75,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ApiTester: () => import('../../apps/ApiTester'),
   ApiTesterEnhanced: () => import('../../apps/ApiTesterEnhanced'),
   APITesterPro: () => import('../../apps/APITesterPro'),
+  APITestingPro: () => import('../../apps/APITestingPro'),
   SystemInfoPro: () => import('../../apps/SystemInfoPro'),
   WebCodeRunner: () => import('../../apps/WebCodeRunner'),
   ArchiveManager: () => import('../../apps/ArchiveManager'),
@@ -346,6 +347,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SystemMonitorDashboard: () => import('../../apps/SystemMonitorDashboard'),
   SystemMonitorPro: () => import('../../apps/SystemMonitorPro'),
   SystemOptimizer: () => import('../../apps/SystemOptimizer'),
+  CodeRefactorAI: () => import('../../apps/CodeRefactorAI'),
+  GitVisualizer: () => import('../../apps/GitVisualizer'),
+  WebDB: () => import('../../apps/WebDB'),
   CssAnimationStudio: () => import('../../apps/CssAnimationStudio'),
   MarkPoster: () => import('../../apps/MarkPoster'),
   WebRequestLab: () => import('../../apps/WebRequestLab'),
@@ -509,6 +513,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ProductivityDashboard: () => import('../../apps/ProductivityDashboard'),
   AIWallpaperStudio: () => import('../../apps/AIWallpaperStudio'),
   QuickTranslate: () => import('../../apps/QuickTranslate'),
+  CryptoSimulator: () => import('../../apps/CryptoSimulator'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
