@@ -315,6 +315,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'system-optimizer', name: '系统优化器', icon: <ActivityIcon />, component: 'SystemOptimizer', category: 'system', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '浏览器系统性能优化器：实时 FPS 监控、内存使用分析、性能评分（0-100）、优化建议、启动时间分析、资源清理' },
   // === v83 创新应用 — CryptoSimulator 加密货币交易模拟器 ===
   { id: 'crypto-simulator', name: '加密交易模拟器', icon: <TrendingUpIcon />, component: 'CryptoSimulator', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实加密货币交易模拟器：CoinGecko实时行情、$100,000虚拟资金、实时买卖执行、持仓盈亏追踪、交易历史、价格图表标注、15种主流加密货币支持' },
+  // === v83 新增创新应用 — PopularDashboard 实时数据聚合仪表板 ===
+  { id: 'popular-dashboard', name: '实时数据中心', icon: <ActivityIcon />, component: 'PopularDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '多源实时数据聚合仪表板：天气+加密货币+新闻+汇率+系统性能一站式监控，Open-Meteo/CoinGecko/NewsAPI/Exchangerate 真实API集成' },
+  // === v83 新增创新应用 — PollinationsStudio AI图像生成工作室 ===
+  { id: 'pollinations-studio', name: 'AI图像工作室', icon: <SparklesIcon />, component: 'PollinationsStudio', category: 'multimedia', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '零配置AI图像生成器：Pollinations.ai公开免费API、10种艺术风格预设、多种画布比例、历史记录收藏、提示词增强、下载导出' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

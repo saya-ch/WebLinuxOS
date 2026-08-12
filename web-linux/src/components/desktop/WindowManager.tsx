@@ -514,6 +514,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIWallpaperStudio: () => import('../../apps/AIWallpaperStudio'),
   QuickTranslate: () => import('../../apps/QuickTranslate'),
   CryptoSimulator: () => import('../../apps/CryptoSimulator'),
+  // === v83 新增创新应用套件 ===
+  PopularDashboard: () => import('../../apps/PopularDashboard'),
+  PollinationsStudio: () => import('../../apps/PollinationsStudio'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

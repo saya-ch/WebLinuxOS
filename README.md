@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v82.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v83.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,30 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v83.0.0 更新亮点
+
+- **实时数据中心 (PopularDashboard)**：多源实时数据聚合仪表板
+  - 天气数据：接入 Open-Meteo 免费 API，支持全球主要城市实时天气、温度、湿度、风速
+  - 加密货币行情：接入 CoinGecko 免费 API，支持 10+ 主流加密货币实时价格和 24h 变化
+  - 新闻聚合：接入 NewsAPI，展示最新科技、财经新闻，自动回退到本地模拟新闻
+  - 汇率转换：接入 Exchangerate API，支持 150+ 货币实时汇率
+  - 系统性能监控：CPU、内存、网络、FPS 实时仪表盘
+  - 玻璃拟态深色 UI，五标签页切换
+
+- **AI 图像工作室 (PollinationsStudio)**：零配置 AI 图像生成器
+  - Pollinations.ai 公开免费 API：无需注册、无需密钥
+  - 10 种艺术风格预设：写实、动漫、油画、水彩、赛博朋克、像素艺术等
+  - 5 种画布比例：1:1、16:9、9:16、4:3、3:4
+  - 历史记录：本地保存生成历史，支持快速复用
+  - 收藏管理：收藏喜欢的提示词组合
+  - 提示词增强：一键优化提示词获得更好效果
+  - 下载导出：PNG 格式下载，支持复制提示词
+
+- **代码质量改进**
+  - TypeScript 类型安全：零类型错误构建通过
+  - 组件懒加载优化：新应用独立 chunk 配置
+  - 错误边界保护：每个应用都有 ErrorBoundary 包裹
 
 ## v82.0.0 更新亮点
 
@@ -664,6 +688,7 @@ npm run preview
 | Git 可视化 | 交互式 Git 提交历史可视化：SVG 分支时间线、提交详情、模拟仓库生成、SVG 导出 |
 | WebDB 数据库 | 浏览器原生 IndexedDB 管理：可视化建库建表、CRUD 操作、JSON 导入导出、数据网格排序过滤 |
 | API 测试 Pro | 专业级 HTTP API 测试：完整方法支持、请求头/体编辑、响应查看器、请求历史、代码生成、环境变量 |
+| 实时数据中心 | 多源实时数据聚合仪表板：天气+加密货币+新闻+汇率+系统性能一站式监控 |
 
 ### 办公工具
 
@@ -699,6 +724,7 @@ npm run preview
 | 应用 | 说明 |
 |------|------|
 | AI 图像工作室 | Pollinations.ai 图像生成、12 种风格、零配置 |
+| AI 图像工作室 Pro | Pollinations.ai 公开免费 API、10 种艺术风格、5 种画布比例、历史记录收藏 |
 | Studio Suite | 调色板、渐变、阴影、字体、WCAG 对比度 |
 | AudioViz | 5 种可视化类型、5 种主题 |
 | Paint | 画板工具 |
