@@ -301,6 +301,11 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // 创新应用套件 — AI壁纸工作室 & 快速翻译
   { id: 'ai-wallpaper-studio', name: 'AI壁纸工作室', icon: <ImageIcon />, component: 'AIWallpaperStudio', category: 'graphics', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Pollinations AI 壁纸生成器：6大分类（自然/抽象/赛博朋克/极简/宇宙/奇幻）、4种分辨率（HD/FHD/QHD/4K）、玻璃拟态Canvas效果、画廊收藏、Ctrl+S快捷键保存' },
   { id: 'quick-translate', name: '快速翻译', icon: <LanguagesIcon />, component: 'QuickTranslate', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 880, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'MyMemory免费翻译API：100+语言互译、自动检测源语言、翻译历史持久化、常用短语收藏、Web Speech API语音朗读、文本长度统计、玻璃拟态深色UI' },
+  // === v82 创新应用套件 ===
+  { id: 'css-animation-studio', name: 'CSS动画工作室', icon: <PaletteIcon />, component: 'CssAnimationStudio', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '可视化CSS动画生成器：10+动画预设、duration/timing-function/iteration-count参数配置、实时预览、一键生成CSS代码' },
+  { id: 'markPoster', name: 'MarkPoster 海报生成器', icon: <PresentationIcon />, component: 'MarkPoster', category: 'office', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Markdown转精美海报：6种模板主题、封面图URL、标签元数据、实时预览、一键导出PNG、分享链接' },
+  { id: 'web-request-lab', name: 'Web请求实验室', icon: <ApiLabIcon />, component: 'WebRequestLab', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '真实HTTP请求调试器：支持GET/POST/PUT/DELETE/PATCH、Headers与Body编辑、响应预览、请求历史、代码生成' },
+  { id: 'code-polisher', name: '代码抛光工坊', icon: <Code2Icon />, component: 'CodePolisher', category: 'development', defaultWidth: 1180, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '代码格式化与压缩：JavaScript/JSON/HTML/CSS/SQL，缩进风格切换、一键复制、体积对比、Gzip压缩率展示' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
