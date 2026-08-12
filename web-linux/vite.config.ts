@@ -121,6 +121,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/BookFinder')) {
               return 'app-bookfinder'
             }
+            if (id.includes('src/apps/QuickTranslate')) {
+              return 'app-translate'
+            }
+            if (id.includes('src/apps/AICraft')) {
+              return 'app-aicraft'
+            }
+            if (id.includes('src/apps/CodeVault')) {
+              return 'app-codevault'
+            }
             if (id.includes('src/apps/Email')) {
               return 'app-email'
             }
