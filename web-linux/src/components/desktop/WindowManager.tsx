@@ -129,6 +129,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ColorPaletteExtractor: () => import('../../apps/ColorPaletteExtractor'),
   ColorPaletteGenerator: () => import('../../apps/ColorPaletteGenerator'),
   ColorPicker: () => import('../../apps/ColorPicker'),
+  ColorConverter: () => import('../../apps/ColorConverter'),
   CommandReference: () => import('../../apps/CommandReference'),
   ComponentSandbox: () => import('../../apps/ComponentSandbox'),
   Contacts: () => import('../../apps/Contacts'),
@@ -190,6 +191,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   GlobalInsights: () => import('../../apps/GlobalInsights'),
   GeoAtlas: () => import('../../apps/GeoAtlas'),
   WebSpeechSynth: () => import('../../apps/WebSpeechSynth'),
+  SpeechMemo: () => import('../../apps/SpeechMemo'),
   ScreenCapture: () => import('../../apps/ScreenCapture'),
   FileHashCalc: () => import('../../apps/FileHashCalc'),
   WebSerialTerminal: () => import('../../apps/WebSerialTerminal'),
@@ -283,6 +285,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ProjectManager: () => import('../../apps/ProjectManager'),
   ProjectPlanner: () => import('../../apps/ProjectPlanner'),
   PromptForge: () => import('../../apps/PromptForge'),
+  QRCodeGenerator: () => import('../../apps/QRCodeGenerator'),
   QRCodeGeneratorPro: () => import('../../apps/QRCodeGeneratorPro'),
   QRGenerator: () => import('../../apps/QRGenerator'),
   QRGeneratorEnhanced: () => import('../../apps/QRGeneratorEnhanced'),
@@ -525,6 +528,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIDocAnalyzerPro: () => import('../../apps/AIDocAnalyzerPro'),
   GlobalEconomicDashboard: () => import('../../apps/GlobalEconomicDashboard'),
   DataVizStudio: () => import('../../apps/DataVizStudio'),
+  HttpStatusCodes: () => import('../../apps/HttpStatusCodes'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
@@ -713,6 +717,7 @@ function preloadComponents(): () => void {
     'CodeSnippetPlayground',
     'FontPairing',
     'DailyChallenge',
+    'ColorConverter',
   ]
 
   const loadWithPriority = (components: string[], delay: number) => {

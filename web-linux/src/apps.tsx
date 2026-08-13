@@ -329,6 +329,15 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'ai-doc-analyzer-pro', name: 'AI文档智能分析器 Pro', icon: <SparklesIcon />, component: 'AIDocAnalyzerPro', category: 'utilities', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的文本分析工具：智能摘要、关键要点提取、情感分析、实体识别、多语言翻译、文本改写润色，基于Pollinations AI公开API' },
   { id: 'global-economic-dashboard', name: '全球经济指标仪表板', icon: <TrendingUpIcon />, component: 'GlobalEconomicDashboard', category: 'internet', defaultWidth: 1320, defaultHeight: 900, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '实时全球经济数据：汇率(Frankfurter API)、加密货币(CoinGecko API)、股指、大宗商品、经济指标、市场热力图，自动刷新，专业金融UI' },
   { id: 'data-viz-studio', name: '数据可视化工作室', icon: <BarChart3Icon />, component: 'DataVizStudio', category: 'development', defaultWidth: 1300, defaultHeight: 880, minWidth: 980, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '专业数据可视化：9种图表类型（柱状/折线/面积/饼/环形/散点/雷达/进度/热力图），CSV/JSON导入导出，SVG矢量导出，10种配色方案，智能统计洞察' },
+  { id: 'color-converter', name: '色彩转换', icon: <PaletteIcon />, component: 'ColorConverter', category: 'development', defaultWidth: 520, defaultHeight: 580, minWidth: 400, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '开发者色彩工具：颜色选择器、HEX/RGB/HSL/HSV/CMYK互转、色彩和谐建议、11级色阶生成、CSS变量生成、历史记录持久化' },
+  { id: 'http-status', name: 'HTTP 状态码', icon: <ListTodoIcon />, component: 'HttpStatusCodes', category: 'development', defaultWidth: 600, defaultHeight: 500, minWidth: 400, minHeight: 350, resizable: true, multiple: false, isNew: true, description: 'HTTP 状态码参考工具：1xx-5xx 全部状态码、搜索过滤、分类标签、一键复制、cURL 命令生成、HTTP 方法速查' },
+  // 系统监控仪表盘
+  { id: 'system-monitor', name: '系统监控', icon: <ActivityIcon />, component: 'SystemMonitor', category: 'system', defaultWidth: 700, defaultHeight: 500, minWidth: 500, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '实时系统监控仪表盘：CPU/内存/磁盘/网络可视化、进程列表、自动刷新开关、系统运行时间、电池状态、主题感知' },
+  { id: 'qr-generator', name: '二维码生成器', icon: <GridIcon />, component: 'QRCodeGenerator', category: 'utilities', defaultWidth: 450, defaultHeight: 520, minWidth: 380, minHeight: 420, resizable: true, multiple: false, isNew: true, description: '纯JS二维码生成器：文本/URL输入、尺寸选择、颜色自定义、PNG下载、剪贴板复制、历史记录持久化、主题感知' },
+  // 语音备忘录 — SpeechMemo
+  { id: 'speech-memo', name: '语音备忘录', icon: <VoiceIcon />, component: 'SpeechMemo', category: 'utilities', defaultWidth: 500, defaultHeight: 520, minWidth: 400, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '语音备忘录：文字转语音（SpeechSynthesis）+ 语音录音转写（SpeechRecognition）+ 备忘录管理 + localStorage持久化' },
+  { id: 'unit-converter', name: '单位换算', icon: <ListTodoIcon />, component: 'UnitConverter', category: 'utilities', defaultWidth: 480, defaultHeight: 560, minWidth: 380, minHeight: 420, resizable: true, multiple: false, isNew: true, description: '综合单位换算工具：长度/重量/温度/体积/面积/时间/速度/数据存储/货币9大类，实时汇率API，本地历史记录' },
+  { id: 'dev-toolkit', name: '开发者工具箱', icon: <WrenchIcon />, component: 'DevToolkit', category: 'development', defaultWidth: 750, defaultHeight: 580, minWidth: 500, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '10合1开发者工具箱：JSON格式化、URL编解码、Base64编解码、正则测试、MD5/SHA哈希生成、时间戳转换、UUID生成、JWT解码、HEX/RGB颜色转换、CSS语法验证' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
@@ -1803,6 +1812,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'wallpaper-gallery', name: '壁纸画廊', icon: <WallpaperIcon />, component: 'WallpaperGallery', category: 'utilities', defaultWidth: 700, defaultHeight: 600, minWidth: 500, minHeight: 450, resizable: true, multiple: false },
   { id: 'mind-map', name: '思维导图', icon: <MindMapIcon />, component: 'MindMap', category: 'office', defaultWidth: 900, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'pomodoro', name: '番茄工作法', icon: <PomodoroIcon />, component: 'Pomodoro', category: 'utilities', defaultWidth: 500, defaultHeight: 650, minWidth: 400, minHeight: 550, resizable: true, multiple: false },
+  { id: 'pomodoro-timer', name: '番茄钟', icon: <PomodoroIcon />, component: 'PomodoroTimer', category: 'utilities', defaultWidth: 400, defaultHeight: 500, minWidth: 320, minHeight: 400, resizable: true, multiple: false },
   { id: 'smart-search', name: '智慧搜索', icon: <SearchIcon />, component: 'SmartSearch', category: 'utilities', defaultWidth: 700, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
   { id: 'network-explorer', name: '网络探索', icon: <ApiLabIcon />, component: 'NetworkExplorer', category: 'development', defaultWidth: 1100, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'files', name: '文件管理器', icon: <FolderIcon />, component: 'FileManager', category: 'system', defaultWidth: 900, defaultHeight: 600, minWidth: 500, minHeight: 350, resizable: true, multiple: true },
@@ -2050,6 +2060,8 @@ export const appRegistry: AppDefinition[] = [
   // === v41.0 创新功能扩展 — 真实可用的开发者工具 ===
   { id: 'system-info-pro', name: '系统信息诊断', icon: <InfoIcon />, component: 'SystemInfoPro', category: 'system', defaultWidth: 1150, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '详细的浏览器与系统信息诊断：CPU核心数、内存估算、电池状态、网络类型、屏幕信息、字体能力、权限状态、WebGL能力、CPU压力测试、实时性能监控' },
   { id: 'web-code-runner', name: 'Web代码运行器', icon: <Code2Icon />, component: 'WebCodeRunner', category: 'development', defaultWidth: 1150, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '浏览器内 JavaScript 真实执行环境：代码编辑器、控制台输出、错误捕获、预设代码片段、执行时间测量、历史记录、代码分享链接' },
+  // Markdown 编辑器
+  { id: 'markdown-editor', name: 'Markdown 编辑器', icon: <TypeIcon />, component: 'MarkdownEditor', category: 'office', defaultWidth: 800, defaultHeight: 600, minWidth: 400, minHeight: 300, resizable: true, multiple: false, isNew: true, description: '功能丰富的 Markdown 编辑器：实时预览、语法高亮、工具栏快捷按钮、目录导航、字数统计、阅读时间、导出 HTML/MD、LocalStorage 持久化' },
   // === v40.0 创新功能扩展 ===
   // 注意：以下 ...APP_REGISTRY_EXTRAS 必须放在 appRegistry 数组末尾，
   // 否则会被后续字面量项覆盖。

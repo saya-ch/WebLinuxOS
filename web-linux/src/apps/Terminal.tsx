@@ -396,7 +396,7 @@ export default function Terminal() {
     if (resolvedFirstWord === 'help' || resolvedFirstWord === '?') {
       const categorizedCommands: Record<string, string[]> = {
         '文件操作': ['ls', 'cd', 'pwd', 'cat', 'head', 'tail', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'tree', 'wc', 'write', 'tee', 'append', 'grep', 'find', 'chmod', 'gzip', 'gunzip', 'file', 'sort', 'uniq', 'cut', 'paste', 'nl', 'expand', 'tr', 'split'],
-        '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'credits', 'time', 'worldtime', 'env', 'export', 'which', 'who', 'w'],
+        '系统信息': ['whoami', 'hostname', 'date', 'uname', 'uptime', 'cal', 'free', 'df', 'neofetch', 'version', 'about', 'system', 'credits', 'time', 'worldtime', 'env', 'export', 'which', 'who', 'w', 'banner'],
         '系统监控': ['ps', 'top', 'sysinfo'],
         '网络工具': ['ping', 'curl', 'fetch', 'ifconfig', 'ipinfo', 'iplookup', 'dig', 'nslookup', 'ip', 'weather', 'weather-forecast', 'news', 'crypto', 'translate', 'currency'],
         '实用工具': ['calc', 'prime', 'factor', 'roman', 'base64', 'unbase64', 'hash', 'rev', 'json', 'urlencode', 'urldecode', 'uuid', 'password', 'timestamp', 'uuidv4', 'password-strength', 'regex-test', 'base64-url', 'cron-parse', 'url-info', 'converter', 'ascii-table', 'md5sum', 'sha256sum', 'sha1sum', 'sha512sum', 'watch'],

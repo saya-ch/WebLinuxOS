@@ -1,732 +1,1023 @@
-import { useState, memo, useCallback } from 'react'
-import { useStore } from '../store'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import {
-  Hash,
-  Copy,
-  Check,
-  RefreshCw,
-  KeyRound,
-  Lock,
+  Code, Link, Binary, Hash, Clock, Sparkles,
+  Palette, FileText, Check, Copy, RefreshCw,
   Shield,
-  Zap,
 } from 'lucide-react'
 
-type TabType = 'uuid' | 'base64' | 'hash' | 'password' | 'jwt'
+type ToolId = 'json' | 'url' | 'base64' | 'regex' | 'hash' | 'timestamp' | 'uuid' | 'jwt' | 'color' | 'css'
 
-const DevToolkit = memo(function DevToolkit() {
-  const [activeTab, setActiveTab] = useState<TabType>('uuid')
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-  const addNotification = useStore((s) => s.addNotification)
+interface Tool {
+  id: ToolId
+  name: string
+  icon: React.ReactNode
+  desc: string
+}
 
-  const copyToClipboard = useCallback((text: string, id: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedId(id)
-    setTimeout(() => setCopiedId(null), 2000)
-  }, [])
+const TOOLS: Tool[] = [
+  { id: 'json', name: 'JSON 格式化', icon: <Code size={16} />, desc: '格式化 / 压缩 / 验证 JSON' },
+  { id: 'url', name: 'URL 编解码', icon: <Link size={16} />, desc: 'URL 编码与解码' },
+  { id: 'base64', name: 'Base64 编解码', icon: <Binary size={16} />, desc: 'Base64 编码与解码' },
+  { id: 'regex', name: '正则测试', icon: <Shield size={16} />, desc: '正则表达式实时匹配测试' },
+  { id: 'hash', name: '哈希生成', icon: <Hash size={16} />, desc: 'MD5 / SHA 哈希生成' },
+  { id: 'timestamp', name: '时间戳转换', icon: <Clock size={16} />, desc: 'Unix 时间戳与日期互转' },
+  { id: 'uuid', name: 'UUID 生成', icon: <Sparkles size={16} />, desc: '生成 UUID v4' },
+  { id: 'jwt', name: 'JWT 解码', icon: <FileText size={16} />, desc: '解码 JWT Payload' },
+  { id: 'color', name: '颜色转换', icon: <Palette size={16} />, desc: 'HEX / RGB 互转' },
+  { id: 'css', name: 'CSS 验证', icon: <Code size={16} />, desc: 'CSS 语法检查' },
+]
 
-  const showNotification = useCallback((title: string, message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    addNotification({ title, message, type, duration: 2000 })
-  }, [addNotification])
+const styles = {
+  root: {
+    height: '100%', display: 'flex', flexDirection: 'column',
+    background: 'var(--window-bg)', color: 'var(--text-primary)', overflow: 'hidden',
+    fontFamily: 'var(--font-family, system-ui, sans-serif)',
+  } as React.CSSProperties,
+  sidebar: {
+    width: 200, flexShrink: 0, borderRight: '1px solid var(--window-border)',
+    background: 'var(--window-bg)', display: 'flex', flexDirection: 'column',
+    overflow: 'hidden',
+  } as React.CSSProperties,
+  sidebarHeader: {
+    padding: '14px 14px 10px', borderBottom: '1px solid var(--window-border)',
+    display: 'flex', flexDirection: 'column', gap: 4,
+  } as React.CSSProperties,
+  logo: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14 } as React.CSSProperties,
+  logoSub: { fontSize: 11, color: 'var(--text-secondary)', opacity: 0.7 } as React.CSSProperties,
+  toolList: { flex: 1, overflowY: 'auto', padding: '6px 0' } as React.CSSProperties,
+  toolItem: (active: boolean): React.CSSProperties => ({
+    display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px',
+    background: active ? 'var(--accent-bg, rgba(99,102,241,0.12))' : 'transparent',
+    border: 'none', borderLeft: active ? '3px solid var(--accent)' : '3px solid transparent',
+    color: active ? 'var(--accent)' : 'var(--text-primary)',
+    cursor: 'pointer', textAlign: 'left', fontSize: 13, transition: 'all 0.15s',
+  }),
+  toolIcon: { display: 'flex', alignItems: 'center', opacity: 0.85 } as React.CSSProperties,
+  toolInfo: { display: 'flex', flexDirection: 'column', minWidth: 0 } as React.CSSProperties,
+  toolName: { fontWeight: 600, fontSize: 13 } as React.CSSProperties,
+  toolDesc: { fontSize: 11, color: 'var(--text-secondary)', opacity: 0.65 } as React.CSSProperties,
+  main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
+  mainHeader: {
+    padding: '12px 16px', borderBottom: '1px solid var(--window-border)',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+  } as React.CSSProperties,
+  toolTitle: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 600 } as React.CSSProperties,
+  toolDescription: { fontSize: 12, color: 'var(--text-secondary)', opacity: 0.7, marginTop: 2 } as React.CSSProperties,
+  content: { flex: 1, overflow: 'auto', padding: 16 } as React.CSSProperties,
+  toolbar: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' } as React.CSSProperties,
+  btnGroup: { display: 'flex', gap: 4 } as React.CSSProperties,
+  btn: (active: boolean): React.CSSProperties => ({
+    padding: '6px 12px', borderRadius: 6, border: '1px solid var(--window-border)',
+    background: active ? 'var(--accent)' : 'var(--window-bg)',
+    color: active ? '#fff' : 'var(--text-primary)',
+    cursor: 'pointer', fontSize: 12, transition: 'all 0.15s',
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+  }),
+  btnPrimary: {
+    padding: '6px 14px', borderRadius: 6, border: 'none',
+    background: 'var(--accent)', color: '#fff',
+    cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+  } as React.CSSProperties,
+  btnDanger: {
+    padding: '6px 12px', borderRadius: 6, border: '1px solid var(--window-border)',
+    background: 'var(--window-bg)', color: 'var(--text-secondary)',
+    cursor: 'pointer', fontSize: 12, transition: 'all 0.15s',
+  } as React.CSSProperties,
+  panels: { display: 'flex', gap: 12, flexDirection: 'column' } as React.CSSProperties,
+  panel: {
+    border: '1px solid var(--window-border)', borderRadius: 8, overflow: 'hidden',
+    display: 'flex', flexDirection: 'column', background: 'var(--window-bg)',
+  } as React.CSSProperties,
+  panelLabel: {
+    padding: '8px 12px', borderBottom: '1px solid var(--window-border)',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
+    background: 'var(--desktop-bg)',
+  } as React.CSSProperties,
+  textarea: {
+    width: '100%', minHeight: 120, padding: 10, border: 'none', background: 'transparent',
+    color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13,
+    resize: 'vertical', outline: 'none', lineHeight: 1.5,
+  } as React.CSSProperties,
+  textareaReadonly: {
+    width: '100%', minHeight: 120, padding: 10, border: 'none',
+    background: 'var(--desktop-bg)', color: 'var(--text-primary)',
+    fontFamily: 'monospace', fontSize: 13, resize: 'vertical', outline: 'none',
+    lineHeight: 1.5,
+  } as React.CSSProperties,
+  error: {
+    padding: 12, color: '#ef4444', background: 'rgba(239,68,68,0.08)',
+    fontSize: 13, fontFamily: 'monospace', whiteSpace: 'pre-wrap',
+  } as React.CSSProperties,
+  copyBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '3px 8px', borderRadius: 4, border: '1px solid var(--window-border)',
+    background: 'var(--window-bg)', color: 'var(--text-secondary)',
+    cursor: 'pointer', fontSize: 11, transition: 'all 0.15s',
+  } as React.CSSProperties,
+  row: { display: 'flex', gap: 8, alignItems: 'center' } as React.CSSProperties,
+  input: {
+    flex: 1, padding: '8px 10px', borderRadius: 6, border: '1px solid var(--window-border)',
+    background: 'var(--window-bg)', color: 'var(--text-primary)',
+    fontSize: 13, outline: 'none', fontFamily: 'monospace',
+  } as React.CSSProperties,
+  copyBtnInline: (copied: boolean): React.CSSProperties => ({
+    ...styles.copyBtn,
+    color: copied ? 'var(--accent)' : 'var(--text-secondary)',
+    borderColor: copied ? 'var(--accent)' : 'var(--window-border)',
+  }),
+  statCard: {
+    border: '1px solid var(--window-border)', borderRadius: 8, padding: '10px 14px',
+    background: 'var(--desktop-bg)', display: 'flex', flexDirection: 'column', gap: 4,
+    flex: 1, minWidth: 120,
+  } as React.CSSProperties,
+  statLabel: { fontSize: 11, color: 'var(--text-secondary)', opacity: 0.7 } as React.CSSProperties,
+  statValue: {
+    fontSize: 14, fontWeight: 600, fontFamily: 'monospace',
+    display: 'flex', alignItems: 'center', gap: 6, wordBreak: 'break-all',
+  } as React.CSSProperties,
+  inlineCode: {
+    fontFamily: 'monospace', fontSize: 12, padding: '2px 6px',
+    borderRadius: 4, background: 'var(--desktop-bg)',
+  } as React.CSSProperties,
+  listItem: {
+    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
+    borderBottom: '1px solid var(--window-border)', fontSize: 13,
+  } as React.CSSProperties,
+  matchCount: { fontSize: 11, color: 'var(--text-secondary)', fontWeight: 400 } as React.CSSProperties,
+  label: { fontSize: 12, color: 'var(--text-secondary)' } as React.CSSProperties,
+}
 
-  const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'uuid', label: 'UUID', icon: <KeyRound size={16} /> },
-    { id: 'base64', label: 'Base64', icon: <Hash size={16} /> },
-    { id: 'hash', label: '哈希', icon: <Shield size={16} /> },
-    { id: 'password', label: '密码', icon: <Lock size={16} /> },
-    { id: 'jwt', label: 'JWT', icon: <Zap size={16} /> },
-  ]
+function DevToolkit() {
+  const [activeTool, setActiveTool] = useState<ToolId>('json')
+
+  const currentTool = useMemo(() => TOOLS.find((t) => t.id === activeTool)!, [activeTool])
 
   return (
-    <div style={{
-      height: '100%', overflow: 'hidden',
-      background: 'linear-gradient(180deg, var(--window-bg) 0%, var(--desktop-bg) 100%)',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
-
-      {/* 头部 */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--glass-border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Hash size={18} color="white" />
+    <div style={styles.root}>
+      <div style={styles.sidebar}>
+        <div style={styles.sidebarHeader}>
+          <div style={styles.logo}>
+            <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+            <span>开发者工具箱</span>
           </div>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 600 }}>开发者工具箱</div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Web开发者的瑞士军刀</div>
-          </div>
+          <div style={styles.logoSub}>10 合 1 开发工具</div>
         </div>
-      </div>
-
-      {/* 标签页 */}
-      <div style={{
-        display: 'flex', gap: 4, padding: '12px 16px',
-        borderBottom: '1px solid var(--glass-border)',
-        background: 'var(--glass-bg)',
-      }}>
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              borderRadius: 8,
-              background: activeTab === tab.id ? 'var(--accent-bg)' : 'transparent',
-              border: activeTab === tab.id ? '1px solid var(--accent)' : '1px solid transparent',
-              color: activeTab === tab.id ? 'var(--accent)' : 'var(--text-secondary)',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 400,
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 内容区域 */}
-      <div style={{ flex: 1, padding: 20, overflow: 'auto' }}>
-        {activeTab === 'uuid' && <UUIDGenerator onCopy={copyToClipboard} copiedId={copiedId} />}
-        {activeTab === 'base64' && <Base64Tool onCopy={copyToClipboard} copiedId={copiedId} onNotify={showNotification} />}
-        {activeTab === 'hash' && <HashTool onCopy={copyToClipboard} copiedId={copiedId} />}
-        {activeTab === 'password' && <PasswordGenerator onCopy={copyToClipboard} copiedId={copiedId} />}
-        {activeTab === 'jwt' && <JWTDecoder onNotify={showNotification} />}
-      </div>
-    </div>
-  )
-})
-
-// UUID 生成器
-function UUIDGenerator({ onCopy, copiedId }: { onCopy: (text: string, id: string) => void; copiedId: string | null }) {
-  const [uuids, setUuids] = useState<string[]>([])
-  const [count, setCount] = useState(5)
-  const [format, setFormat] = useState<'standard' | 'compact' | 'timestamp'>('standard')
-
-  const generateUUIDs = useCallback(() => {
-    const newUuids: string[] = []
-    for (let i = 0; i < count; i++) {
-      if (format === 'timestamp') {
-        newUuids.push(`${Date.now()}-${Math.random().toString(36).substring(2, 9)}`)
-      } else {
-        const uuid = crypto.randomUUID?.() || 
-          'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0
-            const v = c === 'x' ? r : (r & 0x3) | 0x8
-            return v.toString(16)
-          })
-        newUuids.push(format === 'compact' ? uuid.replace(/-/g, '') : uuid)
-      }
-    }
-    setUuids(newUuids)
-  }, [count, format])
-
-  return (
-    <div style={{ animation: 'fadeSlideUp 0.3s ease-out' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600 }}>UUID 生成器</h3>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-          生成符合 RFC 4122 标准的唯一标识符
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-secondary)' }}>数量:</label>
-          <input
-            type="number"
-            min={1}
-            max={50}
-            value={count}
-            onChange={(e) => setCount(Math.min(50, Math.max(1, parseInt(e.target.value) || 1)))}
-            style={{
-              width: 60, padding: '6px 10px', borderRadius: 8,
-              background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-              color: 'var(--text-primary)', textAlign: 'center',
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {(['standard', 'compact', 'timestamp'] as const).map(f => (
+        <div style={styles.toolList}>
+          {TOOLS.map((tool) => (
             <button
-              key={f}
-              onClick={() => setFormat(f)}
-              style={{
-                padding: '6px 12px', borderRadius: 8,
-                background: format === f ? 'var(--accent-bg)' : 'var(--glass-bg)',
-                border: format === f ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-                color: format === f ? 'var(--accent)' : 'var(--text-secondary)',
-                cursor: 'pointer', fontSize: 12,
-              }}
+              key={tool.id}
+              style={styles.toolItem(activeTool === tool.id)}
+              onClick={() => setActiveTool(tool.id)}
+              onMouseEnter={(e) => { if (activeTool !== tool.id) e.currentTarget.style.background = 'var(--accent-bg, rgba(99,102,241,0.08))' }}
+              onMouseLeave={(e) => { if (activeTool !== tool.id) e.currentTarget.style.background = 'transparent' }}
             >
-              {f === 'standard' ? '标准' : f === 'compact' ? '紧凑' : '时间戳'}
+              <span style={styles.toolIcon}>{tool.icon}</span>
+              <div style={styles.toolInfo}>
+                <div style={styles.toolName}>{tool.name}</div>
+                <div style={styles.toolDesc}>{tool.desc}</div>
+              </div>
             </button>
           ))}
         </div>
       </div>
 
-      <button
-        onClick={generateUUIDs}
-        style={{
-          width: '100%', padding: '12px', borderRadius: 10,
-          background: 'linear-gradient(135deg, var(--accent) 0%, #a29bfe 100%)',
-          color: 'white', border: 'none', cursor: 'pointer',
-          fontSize: 14, fontWeight: 600,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          marginBottom: 20,
-        }}
-      >
-        <RefreshCw size={16} />
-        生成 UUID
-      </button>
-
-      {uuids.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {uuids.map((uuid, i) => (
-            <div
-              key={i}
-              style={{
-                padding: '12px 14px',
-                borderRadius: 10,
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              <code style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
-                {uuid}
-              </code>
-              <button
-                onClick={() => onCopy(uuid, `uuid-${i}`)}
-                style={{
-                  padding: '6px 10px', borderRadius: 6,
-                  background: copiedId === `uuid-${i}` ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                  border: '1px solid var(--glass-border)',
-                  color: copiedId === `uuid-${i}` ? '#10b981' : 'var(--text-secondary)',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
-                  fontSize: 12,
-                }}
-              >
-                {copiedId === `uuid-${i}` ? <Check size={14} /> : <Copy size={14} />}
-                {copiedId === `uuid-${i}` ? '已复制' : '复制'}
-              </button>
+      <div style={styles.main}>
+        <div style={styles.mainHeader}>
+          <div>
+            <div style={styles.toolTitle}>
+              {currentTool.icon}
+              <span>{currentTool.name}</span>
             </div>
-          ))}
+            <div style={styles.toolDescription}>{currentTool.desc}</div>
+          </div>
         </div>
-      )}
+        <div style={styles.content}>
+          {activeTool === 'json' && <JSONTool />}
+          {activeTool === 'url' && <URLTool />}
+          {activeTool === 'base64' && <Base64Tool />}
+          {activeTool === 'regex' && <RegexTool />}
+          {activeTool === 'hash' && <HashTool />}
+          {activeTool === 'timestamp' && <TimestampTool />}
+          {activeTool === 'uuid' && <UUIDTool />}
+          {activeTool === 'jwt' && <JWTTool />}
+          {activeTool === 'color' && <ColorTool />}
+          {activeTool === 'css' && <CSSTool />}
+        </div>
+      </div>
     </div>
   )
 }
 
-// Base64 工具
-function Base64Tool({ onCopy, copiedId, onNotify }: { 
-  onCopy: (text: string, id: string) => void
-  copiedId: string | null
-  onNotify: (title: string, message: string, type?: 'success' | 'error' | 'info') => void
-}) {
-  const [input, setInput] = useState('')
+function useCopy() {
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const copy = useCallback((text: string, id?: string) => {
+    try {
+      navigator.clipboard.writeText(text)
+      if (id) setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 1500)
+    } catch { /* ignore */ }
+  }, [])
+  return { copy, copiedId }
+}
+
+function ToolShell({ toolbar, children }: { toolbar: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <>
+      <div style={styles.toolbar}>{toolbar}</div>
+      {children}
+    </>
+  )
+}
+
+function JSONTool() {
+  const [input, setInput] = useState('{"name":"WebLinuxOS","version":"1.0.0","features":["桌面","窗口","应用"]}')
   const [output, setOutput] = useState('')
-  const [mode, setMode] = useState<'encode' | 'decode'>('encode')
+  const [error, setError] = useState('')
+  const [mode, setMode] = useState<'format' | 'minify' | 'validate'>('format')
+  const { copy, copiedId } = useCopy()
 
   const process = useCallback(() => {
     try {
+      const parsed = JSON.parse(input)
+      setError('')
+      if (mode === 'format') setOutput(JSON.stringify(parsed, null, 2))
+      else if (mode === 'minify') setOutput(JSON.stringify(parsed))
+      else setOutput('✓ JSON 格式有效\n\n键值数量: ' + Object.keys(parsed).length + '\n字符串长度: ' + input.length)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '解析错误')
+      setOutput('')
+    }
+  }, [input, mode])
+
+  const clear = () => { setInput(''); setOutput(''); setError('') }
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <div style={styles.btnGroup}>
+            {(['format', 'minify', 'validate'] as const).map((m) => (
+              <button key={m} style={styles.btn(mode === m)} onClick={() => setMode(m)}>
+                {m === 'format' ? '格式化' : m === 'minify' ? '压缩' : '验证'}
+              </button>
+            ))}
+          </div>
+          <button style={styles.btnPrimary} onClick={process}>
+            <RefreshCw size={12} /> 处理
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>输入</div>
+          <textarea style={styles.textarea} value={input} onChange={(e) => setInput(e.target.value)} placeholder='在此输入 JSON...' spellCheck={false} />
+        </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>
+            <span>输出</span>
+            <button style={styles.copyBtn} onClick={() => copy(output, 'json')} disabled={!output}>
+              {copiedId === 'json' ? <Check size={12} /> : <Copy size={12} />}
+              {copiedId === 'json' ? '已复制' : '复制'}
+            </button>
+          </div>
+          {error ? <div style={styles.error}>{error}</div> :
+            <textarea style={styles.textareaReadonly} value={output} readOnly spellCheck={false} />}
+        </div>
+      </div>
+    </ToolShell>
+  )
+}
+
+function URLTool() {
+  const [input, setInput] = useState('https://example.com/path?q=hello world&lang=中文')
+  const [output, setOutput] = useState('')
+  const [mode, setMode] = useState<'encode' | 'decode'>('encode')
+  const [useComponent, setUseComponent] = useState(false)
+  const { copy, copiedId } = useCopy()
+
+  const process = useCallback(() => {
+    try {
+      if (mode === 'encode') {
+        setOutput(useComponent ? encodeURIComponent(input) : encodeURI(input))
+      } else {
+        setOutput(useComponent ? decodeURIComponent(input) : decodeURI(input))
+      }
+    } catch {
+      setOutput(mode === 'encode' ? '编码失败' : '解码失败：无效的 URI 组件')
+    }
+  }, [input, mode, useComponent])
+
+  const clear = () => { setInput(''); setOutput('') }
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <div style={styles.btnGroup}>
+            <button style={styles.btn(mode === 'encode')} onClick={() => setMode('encode')}>编码</button>
+            <button style={styles.btn(mode === 'decode')} onClick={() => setMode('decode')}>解码</button>
+          </div>
+          <button style={styles.btn(useComponent)} onClick={() => setUseComponent(!useComponent)}>
+            {useComponent ? 'encodeURIComponent' : 'encodeURI'}
+          </button>
+          <button style={styles.btnPrimary} onClick={process}>
+            <RefreshCw size={12} /> {mode === 'encode' ? '编码' : '解码'}
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>{mode === 'encode' ? '原文' : '编码后'}</div>
+          <textarea style={styles.textarea} value={input} onChange={(e) => setInput(e.target.value)} placeholder="输入 URL 或文本..." spellCheck={false} />
+        </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>
+            <span>结果</span>
+            <button style={styles.copyBtn} onClick={() => copy(output, 'url')} disabled={!output}>
+              {copiedId === 'url' ? <Check size={12} /> : <Copy size={12} />}
+              {copiedId === 'url' ? '已复制' : '复制'}
+            </button>
+          </div>
+          <textarea style={styles.textareaReadonly} value={output} readOnly spellCheck={false} />
+        </div>
+      </div>
+    </ToolShell>
+  )
+}
+
+function Base64Tool() {
+  const [input, setInput] = useState('Hello, WebLinuxOS!')
+  const [output, setOutput] = useState('')
+  const [mode, setMode] = useState<'encode' | 'decode'>('encode')
+  const [error, setError] = useState('')
+  const { copy, copiedId } = useCopy()
+
+  const process = useCallback(() => {
+    try {
+      setError('')
       if (mode === 'encode') {
         setOutput(btoa(unescape(encodeURIComponent(input))))
       } else {
         setOutput(decodeURIComponent(escape(atob(input))))
       }
     } catch {
-      onNotify('错误', mode === 'encode' ? '编码失败' : '解码失败', 'error')
+      setError('解码失败：无效的 Base64 字符串')
+      setOutput('')
     }
-  }, [input, mode, onNotify])
+  }, [input, mode])
+
+  const clear = () => { setInput(''); setOutput(''); setError('') }
 
   return (
-    <div style={{ animation: 'fadeSlideUp 0.3s ease-out' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600 }}>Base64 编解码</h3>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-          在浏览器本地进行 Base64 编码和解码
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-        <button
-          onClick={() => { setMode('encode'); setOutput('') }}
-          style={{
-            flex: 1, padding: '8px 12px', borderRadius: 8,
-            background: mode === 'encode' ? 'var(--accent-bg)' : 'var(--glass-bg)',
-            border: mode === 'encode' ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-            color: mode === 'encode' ? 'var(--accent)' : 'var(--text-secondary)',
-            cursor: 'pointer', fontSize: 13,
-          }}
-        >
-          编码
-        </button>
-        <button
-          onClick={() => { setMode('decode'); setOutput('') }}
-          style={{
-            flex: 1, padding: '8px 12px', borderRadius: 8,
-            background: mode === 'decode' ? 'var(--accent-bg)' : 'var(--glass-bg)',
-            border: mode === 'decode' ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-            color: mode === 'decode' ? 'var(--accent)' : 'var(--text-secondary)',
-            cursor: 'pointer', fontSize: 13,
-          }}
-        >
-          解码
-        </button>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-          {mode === 'encode' ? '原始文本' : 'Base64 字符串'}
-        </label>
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={mode === 'encode' ? '输入要编码的文本...' : '输入要解码的 Base64 字符串...'}
-          style={{
-            width: '100%', minHeight: 100, padding: 12, borderRadius: 10,
-            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-            color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13,
-            resize: 'vertical',
-          }}
-        />
-      </div>
-
-      <button
-        onClick={process}
-        disabled={!input}
-        style={{
-          width: '100%', padding: '12px', borderRadius: 10,
-          background: !input ? 'var(--glass-bg)' : 'linear-gradient(135deg, var(--accent) 0%, #a29bfe 100%)',
-          color: !input ? 'var(--text-secondary)' : 'white',
-          border: 'none', cursor: !input ? 'not-allowed' : 'pointer',
-          fontSize: 14, fontWeight: 600, marginBottom: 12,
-        }}
-      >
-        {mode === 'encode' ? '编码' : '解码'}
-      </button>
-
-      {output && (
-        <div style={{ position: 'relative' }}>
-          <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-            结果
-          </label>
-          <textarea
-            value={output}
-            readOnly
-            style={{
-              width: '100%', minHeight: 80, padding: 12, borderRadius: 10,
-              background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-              color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13,
-              resize: 'vertical',
-            }}
-          />
-          <button
-            onClick={() => onCopy(output, 'base64-output')}
-            style={{
-              position: 'absolute', top: 30, right: 10,
-              padding: '4px 8px', borderRadius: 6,
-              background: copiedId === 'base64-output' ? 'rgba(16, 185, 129, 0.15)' : 'var(--window-bg)',
-              border: '1px solid var(--glass-border)',
-              color: copiedId === 'base64-output' ? '#10b981' : 'var(--text-secondary)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
-              fontSize: 11,
-            }}
-          >
-            {copiedId === 'base64-output' ? <Check size={12} /> : <Copy size={12} />}
-            {copiedId === 'base64-output' ? '已复制' : '复制'}
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// 哈希工具
-function HashTool({ onCopy, copiedId }: { onCopy: (text: string, id: string) => void; copiedId: string | null }) {
-  const [input, setInput] = useState('')
-  const [algorithm, setAlgorithm] = useState<'SHA-256' | 'SHA-384' | 'SHA-512'>('SHA-256')
-  const [hash, setHash] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const computeHash = useCallback(async () => {
-    if (!input) return
-    setLoading(true)
-    try {
-      const encoder = new TextEncoder()
-      const data = encoder.encode(input)
-      const buffer = await crypto.subtle.digest(algorithm, data)
-      const hashArray = Array.from(new Uint8Array(buffer))
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-      setHash(hashHex)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [input, algorithm])
-
-  return (
-    <div style={{ animation: 'fadeSlideUp 0.3s ease-out' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600 }}>哈希生成器</h3>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-          使用 Web Crypto API 在浏览器本地计算哈希
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-        {(['SHA-256', 'SHA-384', 'SHA-512'] as const).map(algo => (
-          <button
-            key={algo}
-            onClick={() => setAlgorithm(algo)}
-            style={{
-              flex: 1, padding: '8px 12px', borderRadius: 8,
-              background: algorithm === algo ? 'var(--accent-bg)' : 'var(--glass-bg)',
-              border: algorithm === algo ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-              color: algorithm === algo ? 'var(--accent)' : 'var(--text-secondary)',
-              cursor: 'pointer', fontSize: 12,
-            }}
-          >
-            {algo}
-          </button>
-        ))}
-      </div>
-
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="输入要计算哈希的文本..."
-        style={{
-          width: '100%', minHeight: 80, padding: 12, borderRadius: 10,
-          background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-          color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13,
-          resize: 'vertical', marginBottom: 12,
-        }}
-      />
-
-      <button
-        onClick={computeHash}
-        disabled={!input || loading}
-        style={{
-          width: '100%', padding: '12px', borderRadius: 10,
-          background: !input || loading ? 'var(--glass-bg)' : 'linear-gradient(135deg, var(--accent) 0%, #a29bfe 100%)',
-          color: !input || loading ? 'var(--text-secondary)' : 'white',
-          border: 'none', cursor: !input || loading ? 'not-allowed' : 'pointer',
-          fontSize: 14, fontWeight: 600, marginBottom: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}
-      >
-        <RefreshCw size={16} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-        {loading ? '计算中...' : '计算哈希'}
-      </button>
-
-      {hash && (
-        <div
-          style={{
-            padding: 14, borderRadius: 10,
-            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-            position: 'relative',
-          }}
-        >
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
-            {algorithm} 哈希值
+    <ToolShell
+      toolbar={
+        <>
+          <div style={styles.btnGroup}>
+            <button style={styles.btn(mode === 'encode')} onClick={() => setMode('encode')}>编码</button>
+            <button style={styles.btn(mode === 'decode')} onClick={() => setMode('decode')}>解码</button>
           </div>
-          <code style={{ fontSize: 12, color: 'var(--text-primary)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-            {hash}
-          </code>
-          <button
-            onClick={() => onCopy(hash, 'hash-output')}
-            style={{
-              position: 'absolute', top: 10, right: 10,
-              padding: '4px 8px', borderRadius: 6,
-              background: copiedId === 'hash-output' ? 'rgba(16, 185, 129, 0.15)' : 'var(--window-bg)',
-              border: '1px solid var(--glass-border)',
-              color: copiedId === 'hash-output' ? '#10b981' : 'var(--text-secondary)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
-              fontSize: 11,
-            }}
-          >
-            {copiedId === 'hash-output' ? <Check size={12} /> : <Copy size={12} />}
-            {copiedId === 'hash-output' ? '已复制' : '复制'}
+          <button style={styles.btnPrimary} onClick={process}>
+            <RefreshCw size={12} /> {mode === 'encode' ? '编码' : '解码'}
           </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>{mode === 'encode' ? '原文' : 'Base64'}</div>
+          <textarea style={styles.textarea} value={input} onChange={(e) => setInput(e.target.value)}
+            placeholder={mode === 'encode' ? '输入要编码的文本...' : '输入要解码的 Base64...'} spellCheck={false} />
         </div>
-      )}
-    </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>
+            <span>{mode === 'encode' ? 'Base64 结果' : '解码结果'}</span>
+            <button style={styles.copyBtn} onClick={() => copy(output, 'b64')} disabled={!output}>
+              {copiedId === 'b64' ? <Check size={12} /> : <Copy size={12} />}
+              {copiedId === 'b64' ? '已复制' : '复制'}
+            </button>
+          </div>
+          {error ? <div style={styles.error}>{error}</div> :
+            <textarea style={styles.textareaReadonly} value={output} readOnly spellCheck={false} />}
+        </div>
+      </div>
+    </ToolShell>
   )
 }
 
-// 密码生成器
-function PasswordGenerator({ onCopy, copiedId }: { onCopy: (text: string, id: string) => void; copiedId: string | null }) {
-  const [length, setLength] = useState(16)
-  const [options, setOptions] = useState({
-    uppercase: true,
-    lowercase: true,
-    numbers: true,
-    symbols: true,
-  })
-  const [password, setPassword] = useState('')
+function RegexTool() {
+  const [pattern, setPattern] = useState('\\b\\w+@\\w+\\.\\w+\\b')
+  const [flags, setFlags] = useState('g')
+  const [testText, setTestText] = useState('联系我们：support@example.com 或 sales@company.org\n更多信息请访问官网。')
+  const [matches, setMatches] = useState<RegExpMatchArray[]>([])
+  const [error, setError] = useState('')
+  const { copy, copiedId } = useCopy()
 
-  const generate = useCallback(() => {
-    const chars: string[] = []
-    if (options.uppercase) chars.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    if (options.lowercase) chars.push('abcdefghijklmnopqrstuvwxyz')
-    if (options.numbers) chars.push('0123456789')
-    if (options.symbols) chars.push('!@#$%^&*()_+-=[]{}|;:,.<>?')
-    
-    if (chars.length === 0) {
-      setPassword('请至少选择一种字符类型')
-      return
+  const testRegex = useCallback(() => {
+    try {
+      const regex = new RegExp(pattern, flags)
+      const allMatches: RegExpMatchArray[] = []
+      let match: RegExpExecArray | null
+      if (flags.includes('g')) {
+        while ((match = regex.exec(testText)) !== null) {
+          allMatches.push(match)
+          if (match.index === regex.lastIndex) regex.lastIndex++
+        }
+      } else {
+        const m = testText.match(regex)
+        if (m) allMatches.push(m)
+      }
+      setMatches(allMatches)
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '正则表达式错误')
+      setMatches([])
     }
+  }, [pattern, flags, testText])
 
-    const allChars = chars.join('')
-    const array = new Uint32Array(length)
-    crypto.getRandomValues(array)
-    
-    let result = ''
-    for (let i = 0; i < length; i++) {
-      result += allChars[array[i] % allChars.length]
+  const clear = () => { setPattern(''); setTestText(''); setMatches([]); setError('') }
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <div style={styles.row}>
+            <span style={styles.inlineCode}>/</span>
+            <input style={styles.input} value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="正则表达式" spellCheck={false} />
+            <span style={styles.inlineCode}>/</span>
+            <input style={{ ...styles.input, maxWidth: 60 }} value={flags} onChange={(e) => setFlags(e.target.value)} placeholder="gim" spellCheck={false} />
+          </div>
+          <button style={styles.btnPrimary} onClick={testRegex}>
+            <RefreshCw size={12} /> 测试
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>测试文本</div>
+          <textarea style={styles.textarea} value={testText} onChange={(e) => setTestText(e.target.value)} placeholder="输入要测试的文本..." spellCheck={false} />
+        </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>
+            <span>结果</span>
+            <span style={styles.matchCount}>{matches.length} 个匹配</span>
+          </div>
+          {error ? <div style={styles.error}>{error}</div> :
+            <div style={{ maxHeight: 200, overflow: 'auto' }}>
+              {matches.length === 0 ? (
+                <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-secondary)', opacity: 0.6, fontSize: 13 }}>
+                  {pattern ? '没有找到匹配' : '输入正则表达式并点击测试'}
+                </div>
+              ) : matches.slice(0, 30).map((m, i) => (
+                <div key={i} style={styles.listItem}>
+                  <span style={{ ...styles.inlineCode, minWidth: 40, textAlign: 'center' }}>{i + 1}</span>
+                  <code style={{ flex: 1, fontFamily: 'monospace', fontSize: 12 }}>{m[0]}</code>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>位置: {m.index}</span>
+                  <button style={styles.copyBtn} onClick={() => copy(m[0], `re-${i}`)}>
+                    {copiedId === `re-${i}` ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          }
+        </div>
+      </div>
+    </ToolShell>
+  )
+}
+
+function HashTool() {
+  const [input, setInput] = useState('Hello, World!')
+  const [hashes, setHashes] = useState<Record<string, string>>({})
+  const [error, setError] = useState('')
+  const { copy, copiedId } = useCopy()
+
+  const crc32 = useCallback((str: string): string => {
+    let crc = 0xFFFFFFFF
+    const table: number[] = []
+    for (let i = 0; i < 256; i++) {
+      let c = i
+      for (let j = 0; j < 8; j++) {
+        c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1
+      }
+      table[i] = c
     }
-    setPassword(result)
-  }, [length, options])
+    for (let i = 0; i < str.length; i++) {
+      crc = table[(crc ^ str.charCodeAt(i)) & 0xFF] ^ (crc >>> 8)
+    }
+    const result = (crc ^ 0xFFFFFFFF) >>> 0
+    return result.toString(16).padStart(8, '0')
+  }, [])
 
-  const getStrength = () => {
-    let score = 0
-    if (length >= 12) score++
-    if (length >= 16) score++
-    if (options.uppercase) score++
-    if (options.numbers) score++
-    if (options.symbols) score++
-    
-    if (score <= 2) return { label: '弱', color: '#ef4444' }
-    if (score <= 3) return { label: '中等', color: '#f59e0b' }
-    if (score <= 4) return { label: '强', color: '#10b981' }
-    return { label: '极强', color: '#8b5cf6' }
+  const generate = useCallback(async () => {
+    setError('')
+    const results: Record<string, string> = {}
+    try {
+      const enc = new TextEncoder().encode(input)
+      for (const algo of ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512']) {
+        const buf = await crypto.subtle.digest(algo, enc)
+        results[algo] = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+      }
+    } catch { setError('Web Crypto API 不可用') }
+    try { results['CRC32'] = crc32(input) } catch { /* ignore */ }
+    setHashes(results)
+  }, [input, crc32])
+
+  const clear = () => { setInput(''); setHashes({}) }
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <button style={styles.btnPrimary} onClick={generate}>
+            <Hash size={12} /> 生成哈希
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>输入</div>
+          <textarea style={styles.textarea} value={input} onChange={(e) => setInput(e.target.value)} placeholder="输入要哈希的文本..." spellCheck={false} />
+        </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>哈希结果</div>
+          {error ? <div style={styles.error}>{error}</div> :
+            <div>
+              {Object.keys(hashes).length === 0 ? (
+                <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-secondary)', opacity: 0.6, fontSize: 13 }}>
+                  点击"生成哈希"按钮开始
+                </div>
+              ) : Object.entries(hashes).map(([name, value]) => (
+                <div key={name} style={styles.listItem}>
+                  <span style={{ ...styles.inlineCode, minWidth: 90, textAlign: 'center' }}>{name}</span>
+                  <code style={{ flex: 1, fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all' }}>{value}</code>
+                  <button style={styles.copyBtn} onClick={() => copy(value, `hash-${name}`)}>
+                    {copiedId === `hash-${name}` ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          }
+        </div>
+      </div>
+    </ToolShell>
+  )
+}
+
+function TimestampTool() {
+  const [now, setNow] = useState(Date.now())
+  const [tsInput, setTsInput] = useState(() => Math.floor(Date.now() / 1000))
+  const [dateInput, setDateInput] = useState(() => new Date().toISOString().slice(0, 16))
+  const [direction, setDirection] = useState<'ts2date' | 'date2ts'>('ts2date')
+  const { copy, copiedId } = useCopy()
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const tsToDate = (ts: number) => {
+    try { return new Date(ts * 1000).toLocaleString('zh-CN', { hour12: false }) }
+    catch { return '无效时间戳' }
   }
 
-  const strength = getStrength()
+  const dateToTs = (str: string) => {
+    try { return Math.floor(new Date(str).getTime() / 1000) }
+    catch { return 0 }
+  }
+
+  const unixNow = Math.floor(now / 1000)
+  const msNow = now
+  const conversionResult = direction === 'ts2date' ? tsToDate(tsInput) : String(dateToTs(dateInput))
+  const isoResult = direction === 'ts2date' ? new Date(tsInput * 1000).toISOString() : new Date(dateToTs(dateInput) * 1000).toISOString()
 
   return (
-    <div style={{ animation: 'fadeSlideUp 0.3s ease-out' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600 }}>密码生成器</h3>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-          使用加密安全的随机数生成强密码
-        </p>
-      </div>
-
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-secondary)' }}>密码长度</label>
-          <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--accent)' }}>{length}</span>
-        </div>
-        <input
-          type="range"
-          min={8}
-          max={64}
-          value={length}
-          onChange={(e) => setLength(parseInt(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-        {[
-          { key: 'uppercase' as const, label: '大写字母 (A-Z)' },
-          { key: 'lowercase' as const, label: '小写字母 (a-z)' },
-          { key: 'numbers' as const, label: '数字 (0-9)' },
-          { key: 'symbols' as const, label: '特殊符号 (!@#$...)' },
-        ].map(({ key, label }) => (
-          <label
-            key={key}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '8px 12px', borderRadius: 8,
-              background: options[key] ? 'var(--accent-bg)' : 'var(--glass-bg)',
-              border: `1px solid ${options[key] ? 'var(--accent)' : 'var(--glass-border)'}`,
-              cursor: 'pointer', fontSize: 13,
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={options[key]}
-              onChange={(e) => setOptions({ ...options, [key]: e.target.checked })}
-              style={{ width: 16, height: 16 }}
-            />
-            {label}
-          </label>
-        ))}
-      </div>
-
-      <button
-        onClick={generate}
-        style={{
-          width: '100%', padding: '12px', borderRadius: 10,
-          background: 'linear-gradient(135deg, var(--accent) 0%, #a29bfe 100%)',
-          color: 'white', border: 'none', cursor: 'pointer',
-          fontSize: 14, fontWeight: 600, marginBottom: 16,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}
-      >
-        <Lock size={16} />
-        生成密码
-      </button>
-
-      {password && (
-        <div
-          style={{
-            padding: 16, borderRadius: 12,
-            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-            position: 'relative',
-          }}
-        >
-          <div style={{ 
-            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
-            fontSize: 12, color: strength.color, fontWeight: 600,
-          }}>
-            <Shield size={14} />
-            强度: {strength.label}
+    <ToolShell
+      toolbar={
+        <>
+          <div style={styles.btnGroup}>
+            <button style={styles.btn(direction === 'ts2date')} onClick={() => setDirection('ts2date')}>时间戳 → 日期</button>
+            <button style={styles.btn(direction === 'date2ts')} onClick={() => setDirection('date2ts')}>日期 → 时间戳</button>
           </div>
-          <code style={{ fontSize: 14, color: 'var(--text-primary)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-            {password}
-          </code>
-          <button
-            onClick={() => onCopy(password, 'password-output')}
-            style={{
-              position: 'absolute', top: 10, right: 10,
-              padding: '4px 8px', borderRadius: 6,
-              background: copiedId === 'password-output' ? 'rgba(16, 185, 129, 0.15)' : 'var(--window-bg)',
-              border: '1px solid var(--glass-border)',
-              color: copiedId === 'password-output' ? '#10b981' : 'var(--text-secondary)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
-              fontSize: 11,
-            }}
-          >
-            {copiedId === 'password-output' ? <Check size={12} /> : <Copy size={12} />}
-            {copiedId === 'password-output' ? '已复制' : '复制'}
-          </button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+        <div style={styles.statCard}>
+          <div style={styles.statLabel}>Unix (秒)</div>
+          <div style={styles.statValue}>
+            <code>{unixNow}</code>
+            <button style={styles.copyBtn} onClick={() => copy(String(unixNow), 'ts-sec')}>
+              {copiedId === 'ts-sec' ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+        <div style={styles.statCard}>
+          <div style={styles.statLabel}>Unix (毫秒)</div>
+          <div style={styles.statValue}>
+            <code>{msNow}</code>
+            <button style={styles.copyBtn} onClick={() => copy(String(msNow), 'ts-ms')}>
+              {copiedId === 'ts-ms' ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <div style={styles.statLabel}>当前时间</div>
+          <div style={{ ...styles.statValue, fontFamily: 'inherit', fontSize: 13 }}>
+            {new Date(now).toLocaleString('zh-CN', { hour12: false })}
+          </div>
+        </div>
+      </div>
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>输入</div>
+          {direction === 'ts2date' ? (
+            <input type="number" style={{ ...styles.input, margin: 10 }} value={tsInput} onChange={(e) => setTsInput(parseInt(e.target.value) || 0)} placeholder="输入 Unix 时间戳（秒）" />
+          ) : (
+            <input type="datetime-local" style={{ ...styles.input, margin: 10 }} value={dateInput} onChange={(e) => setDateInput(e.target.value)} />
+          )}
+        </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>
+            <span>转换结果</span>
+            <button style={styles.copyBtn} onClick={() => copy(conversionResult, 'ts-res')}>
+              {copiedId === 'ts-res' ? <Check size={12} /> : <Copy size={12} />}
+              {copiedId === 'ts-res' ? '已复制' : '复制'}
+            </button>
+          </div>
+          <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontFamily: 'monospace' }}>
+            <div><span style={styles.label}>日期时间：</span><code>{conversionResult}</code></div>
+            <div><span style={styles.label}>ISO 格式：</span><code>{isoResult}</code></div>
+          </div>
+        </div>
+      </div>
+    </ToolShell>
   )
 }
 
-// JWT 解码器
-function JWTDecoder({ onNotify }: {
-  onNotify: (title: string, message: string, type?: 'success' | 'error' | 'info') => void
-}) {
-  const [token, setToken] = useState('')
-  const [decoded, setDecoded] = useState<{ header: string; payload: string } | null>(null)
+function UUIDTool() {
+  const [uuids, setUuids] = useState<string[]>([])
+  const [count, setCount] = useState(5)
+  const { copy, copiedId } = useCopy()
 
-  const decodeJWT = useCallback(() => {
-    try {
-      const parts = token.split('.')
-      if (parts.length !== 3) {
-        onNotify('错误', '无效的 JWT 格式', 'error')
-        return
-      }
-      
-      const header = JSON.parse(atob(parts[0]))
-      const payload = JSON.parse(atob(parts[1]))
-      
-      setDecoded({
-        header: JSON.stringify(header, null, 2),
-        payload: JSON.stringify(payload, null, 2),
-      })
-      onNotify('成功', 'JWT 解码成功', 'success')
-    } catch {
-      onNotify('错误', 'JWT 解码失败，请检查格式', 'error')
-    }
-  }, [token, onNotify])
+  const generate = useCallback(() => {
+    const make = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+    })
+    setUuids(Array.from({ length: count }, make))
+  }, [count])
+
+  const clear = () => setUuids([])
 
   return (
-    <div style={{ animation: 'fadeSlideUp 0.3s ease-out' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600 }}>JWT 解码器</h3>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-          解析 JSON Web Token 的头部和载荷（仅解码，不验证签名）
-        </p>
-      </div>
-
-      <textarea
-        value={token}
-        onChange={(e) => setToken(e.target.value)}
-        placeholder="在此粘贴 JWT Token..."
-        style={{
-          width: '100%', minHeight: 80, padding: 12, borderRadius: 10,
-          background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-          color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 12,
-          resize: 'vertical', marginBottom: 12,
-        }}
-      />
-
-      <button
-        onClick={decodeJWT}
-        disabled={!token}
-        style={{
-          width: '100%', padding: '12px', borderRadius: 10,
-          background: !token ? 'var(--glass-bg)' : 'linear-gradient(135deg, var(--accent) 0%, #a29bfe 100%)',
-          color: !token ? 'var(--text-secondary)' : 'white',
-          border: 'none', cursor: !token ? 'not-allowed' : 'pointer',
-          fontSize: 14, fontWeight: 600, marginBottom: 16,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}
-      >
-        <Zap size={16} />
-        解码 JWT
-      </button>
-
-      {decoded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div
-            style={{
-              padding: 14, borderRadius: 10,
-              background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-              position: 'relative',
-            }}
-          >
-            <div style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 8, fontWeight: 600 }}>
-              Header
-            </div>
-            <pre style={{ fontSize: 12, color: 'var(--text-primary)', fontFamily: 'monospace', margin: 0, overflow: 'auto' }}>
-              {decoded.header}
-            </pre>
+    <ToolShell
+      toolbar={
+        <>
+          <div style={styles.row}>
+            <span style={styles.label}>数量：</span>
+            <input type="number" min={1} max={100} style={{ ...styles.input, maxWidth: 80 }}
+              value={count} onChange={(e) => setCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))} />
           </div>
-
-          <div
-            style={{
-              padding: 14, borderRadius: 10,
-              background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
-              position: 'relative',
-            }}
-          >
-            <div style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 8, fontWeight: 600 }}>
-              Payload
+          <button style={styles.btnPrimary} onClick={generate}>
+            <Sparkles size={12} /> 生成 UUID
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panel}>
+        <div style={styles.panelLabel}>
+          <span>UUID 列表</span>
+          {uuids.length > 0 && (
+            <button style={styles.copyBtn} onClick={() => copy(uuids.join('\n'), 'uuids')}>
+              {copiedId === 'uuids' ? <Check size={12} /> : <Copy size={12} />}
+              {copiedId === 'uuids' ? '已复制全部' : '复制全部'}
+            </button>
+          )}
+        </div>
+        <div>
+          {uuids.length === 0 ? (
+            <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-secondary)', opacity: 0.6, fontSize: 13 }}>
+              点击"生成 UUID"按钮开始
             </div>
-            <pre style={{ fontSize: 12, color: 'var(--text-primary)', fontFamily: 'monospace', margin: 0, overflow: 'auto' }}>
-              {decoded.payload}
-            </pre>
+          ) : uuids.map((uuid, i) => (
+            <div key={i} style={styles.listItem}>
+              <span style={{ ...styles.inlineCode, minWidth: 40, textAlign: 'center' }}>{i + 1}</span>
+              <code style={{ flex: 1, fontFamily: 'monospace', fontSize: 12 }}>{uuid}</code>
+              <button style={styles.copyBtn} onClick={() => copy(uuid, `uuid-${i}`)}>
+                {copiedId === `uuid-${i}` ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </ToolShell>
+  )
+}
+
+function JWTTool() {
+  const [token, setToken] = useState('')
+  const [header, setHeader] = useState('')
+  const [payload, setPayload] = useState('')
+  const [signature, setSignature] = useState('')
+  const [error, setError] = useState('')
+  const { copy, copiedId } = useCopy()
+
+  const decode = useCallback(() => {
+    setError('')
+    setHeader(''); setPayload(''); setSignature('')
+    try {
+      const parts = token.trim().split('.')
+      if (parts.length !== 3) { setError('无效的 JWT 格式，应由三段以 . 分隔的字符串组成'); return }
+      const decodePart = (s: string) => {
+        const b = atob(s.replace(/-/g, '+').replace(/_/g, '/'))
+        try { return JSON.stringify(JSON.parse(decodeURIComponent(escape(b))), null, 2) }
+        catch { return b }
+      }
+      setHeader(decodePart(parts[0]))
+      setPayload(decodePart(parts[1]))
+      setSignature(parts[2])
+    } catch (e) {
+      setError('解码失败：' + (e instanceof Error ? e.message : '无效的 Base64'))
+    }
+  }, [token])
+
+  const clear = () => { setToken(''); setHeader(''); setPayload(''); setSignature(''); setError('') }
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <button style={styles.btnPrimary} onClick={decode}>
+            <RefreshCw size={12} /> 解码
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>JWT Token</div>
+          <textarea style={{ ...styles.textarea, minHeight: 80 }} value={token} onChange={(e) => setToken(e.target.value)}
+            placeholder="粘贴 JWT Token..." spellCheck={false} />
+        </div>
+        {error ? <div style={styles.error}>{error}</div> :
+          <>
+            <div style={styles.panel}>
+              <div style={styles.panelLabel}>
+                <span>Header (头部)</span>
+                {header && <button style={styles.copyBtn} onClick={() => copy(header, 'jwt-h')}>
+                  {copiedId === 'jwt-h' ? <Check size={12} /> : <Copy size={12} />}
+                </button>}
+              </div>
+              <textarea style={styles.textareaReadonly} value={header} readOnly spellCheck={false} />
+            </div>
+            <div style={styles.panel}>
+              <div style={styles.panelLabel}>
+                <span>Payload (载荷)</span>
+                {payload && <button style={styles.copyBtn} onClick={() => copy(payload, 'jwt-p')}>
+                  {copiedId === 'jwt-p' ? <Check size={12} /> : <Copy size={12} />}
+                </button>}
+              </div>
+              <textarea style={styles.textareaReadonly} value={payload} readOnly spellCheck={false} />
+            </div>
+            <div style={styles.panel}>
+              <div style={styles.panelLabel}>
+                <span>Signature (签名)</span>
+                {signature && <button style={styles.copyBtn} onClick={() => copy(signature, 'jwt-s')}>
+                  {copiedId === 'jwt-s' ? <Check size={12} /> : <Copy size={12} />}
+                </button>}
+              </div>
+              <textarea style={styles.textareaReadonly} value={signature} readOnly spellCheck={false} />
+            </div>
+          </>
+        }
+      </div>
+    </ToolShell>
+  )
+}
+
+function ColorTool() {
+  const [color, setColor] = useState('#6366f1')
+  const { copy, copiedId } = useCopy()
+
+  const hexToRgb = (hex: string) => {
+    const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : null
+  }
+
+  const rgbToHex = (r: number, g: number, b: number) => {
+    return '#' + [r, g, b].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('')
+  }
+
+  const rgbToHsl = (r: number, g: number, b: number) => {
+    r /= 255; g /= 255; b /= 255
+    const max = Math.max(r, g, b), min = Math.min(r, g, b)
+    let h = 0, s = 0
+    const l = (max + min) / 2
+    if (max !== min) {
+      const d = max - min
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
+        case g: h = ((b - r) / d + 2) / 6; break
+        case b: h = ((r - g) / d + 4) / 6; break
+      }
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) }
+  }
+
+  const rgb = hexToRgb(color) || { r: 0, g: 0, b: 0 }
+  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b)
+  const rgbStr = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`
+  const hslStr = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`
+  const hexUpper = color.toUpperCase()
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
+            style={{ width: 44, height: 32, border: '1px solid var(--window-border)', borderRadius: 6, padding: 0, cursor: 'pointer', background: 'none' }} />
+          <input type="text" value={color} onChange={(e) => setColor(e.target.value)}
+            style={{ ...styles.input, maxWidth: 120 }} spellCheck={false} />
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={{ height: 80, background: color, borderRadius: 8, margin: 10 }} />
+        </div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={styles.statCard}>
+            <div style={styles.statLabel}>HEX</div>
+            <div style={styles.statValue}>
+              <code>{hexUpper}</code>
+              <button style={styles.copyBtn} onClick={() => copy(hexUpper, 'hex')}>
+                {copiedId === 'hex' ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statLabel}>RGB</div>
+            <div style={styles.statValue}>
+              <code>{rgbStr}</code>
+              <button style={styles.copyBtn} onClick={() => copy(rgbStr, 'rgb')}>
+                {copiedId === 'rgb' ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statLabel}>HSL</div>
+            <div style={styles.statValue}>
+              <code>{hslStr}</code>
+              <button style={styles.copyBtn} onClick={() => copy(hslStr, 'hsl')}>
+                {copiedId === 'hsl' ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
           </div>
         </div>
-      )}
-    </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>RGB 输入</div>
+          <div style={{ display: 'flex', gap: 10, padding: 10 }}>
+            {(['r', 'g', 'b'] as const).map((ch) => (
+              <div key={ch} style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4, textAlign: 'center' }}>
+                  {ch.toUpperCase()} ({rgb[ch]})
+                </div>
+                <input type="range" min={0} max={255} value={rgb[ch]}
+                  onChange={(e) => setColor(rgbToHex(
+                    ch === 'r' ? parseInt(e.target.value) : rgb.r,
+                    ch === 'g' ? parseInt(e.target.value) : rgb.g,
+                    ch === 'b' ? parseInt(e.target.value) : rgb.b
+                  ))}
+                  style={{ width: '100%', accentColor: 'var(--accent)' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </ToolShell>
+  )
+}
+
+function CSSTool() {
+  const [input, setInput] = useState(`.button {
+  background: #6366f1;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.button:hover {
+  background: #4f46e5;
+}`)
+  const [result, setResult] = useState('')
+  const { copy, copiedId } = useCopy()
+
+  const validate = useCallback(() => {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    const openBraces = (input.match(/\{/g) || []).length
+    const closeBraces = (input.match(/\}/g) || []).length
+    if (openBraces !== closeBraces) {
+      errors.push(`大括号不匹配：左 { ${openBraces} 个，右 } ${closeBraces} 个`)
+    }
+
+    const rules = input.split('}').map(r => r.trim()).filter(Boolean)
+    rules.forEach((rule, i) => {
+      const parts = rule.split('{')
+      if (parts.length > 1) {
+        const decls = parts[1].split(';').map(d => d.trim()).filter(Boolean)
+        decls.forEach((decl) => {
+          if (!decl.includes(':')) {
+            errors.push(`规则 ${i + 1}：声明缺少冒号 → "${decl.slice(0, 40)}"`)
+          } else {
+            const [prop] = decl.split(':')
+            const validProps = ['color', 'background', 'background-color', 'font-size', 'font-weight',
+              'padding', 'margin', 'border', 'border-radius', 'width', 'height',
+              'display', 'position', 'top', 'left', 'right', 'bottom',
+              'transition', 'transform', 'box-shadow', 'opacity', 'z-index',
+              'flex', 'flex-direction', 'justify-content', 'align-items', 'gap',
+              'grid', 'grid-template-columns', 'animation', 'overflow', 'cursor',
+              'text-align', 'text-decoration', 'line-height', 'letter-spacing',
+              'max-width', 'min-width', 'max-height', 'min-height']
+            if (!validProps.includes(prop.trim()) && !prop.includes('--')) {
+              warnings.push(`规则 ${i + 1}：可能的非标准属性 → "${prop.trim()}"`)
+            }
+          }
+        })
+      }
+    })
+
+    const hexColors = input.match(/#[0-9a-fA-F]{3,8}/g) || []
+    hexColors.forEach((c) => {
+      if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(c)) {
+        warnings.push(`可能无效的十六进制颜色 → "${c}"`)
+      }
+    })
+
+    if (errors.length === 0 && warnings.length === 0) {
+      setResult('✓ CSS 语法检查通过，未发现问题。')
+    } else {
+      const output: string[] = []
+      if (errors.length > 0) {
+        output.push(`❌ 错误 (${errors.length})：\n${errors.map(e => '  • ' + e).join('\n')}`)
+      }
+      if (warnings.length > 0) {
+        output.push(`\n⚠️  警告 (${warnings.length})：\n${warnings.map(w => '  • ' + w).join('\n')}`)
+      }
+      if (errors.length === 0) {
+        output.push('\n✓ 无语法错误，仅有警告。')
+      }
+      setResult(output.join('\n'))
+    }
+  }, [input])
+
+  const clear = () => { setInput(''); setResult('') }
+
+  return (
+    <ToolShell
+      toolbar={
+        <>
+          <button style={styles.btnPrimary} onClick={validate}>
+            <RefreshCw size={12} /> 验证
+          </button>
+          <button style={styles.btnDanger} onClick={clear}>清空</button>
+        </>
+      }
+    >
+      <div style={styles.panels}>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>CSS 输入</div>
+          <textarea style={styles.textarea} value={input} onChange={(e) => setInput(e.target.value)}
+            placeholder="粘贴 CSS 代码..." spellCheck={false} />
+        </div>
+        <div style={styles.panel}>
+          <div style={styles.panelLabel}>
+            <span>验证结果</span>
+            {result && <button style={styles.copyBtn} onClick={() => copy(result, 'css')}>
+              {copiedId === 'css' ? <Check size={12} /> : <Copy size={12} />}
+              {copiedId === 'css' ? '已复制' : '复制'}
+            </button>}
+          </div>
+          <textarea style={styles.textareaReadonly} value={result} readOnly spellCheck={false} />
+        </div>
+      </div>
+    </ToolShell>
   )
 }
 
