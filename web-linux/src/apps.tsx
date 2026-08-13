@@ -340,6 +340,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'dev-toolkit', name: '开发者工具箱', icon: <WrenchIcon />, component: 'DevToolkit', category: 'development', defaultWidth: 750, defaultHeight: 580, minWidth: 500, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '10合1开发者工具箱：JSON格式化、URL编解码、Base64编解码、正则测试、MD5/SHA哈希生成、时间戳转换、UUID生成、JWT解码、HEX/RGB颜色转换、CSS语法验证' },
   // v87 新增：安全与实用工具中心
   { id: 'security-center', name: '安全中心', icon: <LockIcon />, component: 'SecurityCenter', category: 'utilities', defaultWidth: 760, defaultHeight: 680, minWidth: 560, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '安全与实用工具中心：密码泄露检查(HIBP k-anonymity)、强密码生成器(crypto API)、密码强度分析、URL缩短(is.gd API)、实时汇率转换(Frankfurter API)' },
+  // === v88 创新应用套件 — LinuxCommandPlayground / SystemDiagnostics / APIDebugger ===
+  { id: 'linux-command-playground', name: 'Linux命令实验场', icon: <TerminalIcon />, component: 'LinuxCommandPlayground', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Linux命令学习与实验场：6大分类50+命令详解、实时命令模拟器、学习进度跟踪、常用命令速查表，中文界面' },
+  { id: 'system-diagnostics', name: '系统诊断分析', icon: <ActivityIcon />, component: 'SystemDiagnostics', category: 'system', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '深度系统诊断工具：CPU/内存/存储/网络/浏览器/安全/性能七维分析、真实浏览器API数据、仪表盘可视化、JSON报告导出' },
+  { id: 'api-debugger', name: 'API调试器 Pro', icon: <ApiLabIcon />, component: 'APIDebugger', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业HTTP调试工具：5种请求方法、Headers/Body管理、响应高亮查看、历史记录、10+常用API模板、代码生成(fetch/axios/curl)' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v86.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v87.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,40 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v87.0.0 更新亮点
+
+- **Linux 命令实验场 (LinuxCommandPlayground)**：Linux 命令学习与实验平台
+  - 6 大命令分类：文件操作、系统管理、文本处理、网络工具、权限管理、进程控制
+  - 50+ 常用命令详解：语法说明、参数介绍、使用示例、注意事项
+  - 实时命令模拟器：内置模拟执行环境，支持文件系统操作模拟
+  - 学习进度跟踪：标记已学习命令、学习统计、进度可视化
+  - 常用命令速查表：快速索引、搜索过滤、一键复制
+
+- **系统诊断分析 (SystemDiagnostics)**：深度浏览器系统诊断工具
+  - CPU 分析：核心数、逻辑处理器、CPU 压力测试
+  - 内存分析：JS 堆内存、估算内存使用、内存压力测试
+  - 存储分析：LocalStorage/SessionStorage/IndexedDB 使用统计
+  - 网络分析：网络类型、RTT、下行速度、在线状态
+  - 浏览器信息：浏览器版本、操作系统、屏幕信息、DPR
+  - 安全检查：Cookie、LocalStorage、混合内容、权限状态
+  - 性能基准：FPS 估算、页面加载时间、DOM 就绪时间
+  - JSON 报告导出：完整诊断报告导出
+
+- **API 调试器 Pro (APIDebugger)**：专业 HTTP 调试工具
+  - 5 种请求方法：GET、POST、PUT、DELETE、PATCH
+  - Headers 管理：键值对编辑器，支持启用/禁用
+  - Body 编辑：JSON 实时验证、Form-Data、Text 三种模式
+  - 响应查看：响应体、响应头、状态码、响应时间
+  - 历史记录：自动保存最近请求到 localStorage
+  - 10+ 常用 API 模板：GitHub、JSONPlaceholder、Open-Meteo 等
+  - 代码生成：fetch/axios/curl 三种代码片段一键生成
+
+- **代码质量改进**
+  - 修复 CSS 属性值语法错误（padding 单位字符串化）
+  - 清理未使用的导入和变量，确保 TypeScript 严格模式通过
+  - 新增应用完整的 TypeScript 类型安全
+  - 组件懒加载优化：新应用独立 chunk 配置
 
 ## v86.0.0 更新亮点
 
@@ -761,6 +795,9 @@ npm run preview
 | WebDB 数据库 | 浏览器原生 IndexedDB 管理：可视化建库建表、CRUD 操作、JSON 导入导出、数据网格排序过滤 |
 | API 测试 Pro | 专业级 HTTP API 测试：完整方法支持、请求头/体编辑、响应查看器、请求历史、代码生成、环境变量 |
 | 实时数据中心 | 多源实时数据聚合仪表板：天气+加密货币+新闻+汇率+系统性能一站式监控 |
+| **Linux 命令实验场** | Linux 命令学习与实验：6 大分类 50+ 命令详解、实时命令模拟器、学习进度跟踪、常用命令速查表 |
+| **系统诊断分析** | 深度浏览器系统诊断：CPU/内存/存储/网络/浏览器/安全/性能七维分析、真实浏览器 API 数据、JSON 报告导出 |
+| **API 调试器 Pro** | 专业 HTTP 调试工具：5 种请求方法、Headers/Body 管理、响应高亮查看、历史记录、10+ API 模板、代码生成 |
 
 ### 办公工具
 

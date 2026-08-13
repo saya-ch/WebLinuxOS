@@ -530,6 +530,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   GlobalEconomicDashboard: () => import('../../apps/GlobalEconomicDashboard'),
   DataVizStudio: () => import('../../apps/DataVizStudio'),
   HttpStatusCodes: () => import('../../apps/HttpStatusCodes'),
+  // === v88 新增创新应用 ===
+  LinuxCommandPlayground: () => import('../../apps/LinuxCommandPlayground'),
+  SystemDiagnostics: () => import('../../apps/SystemDiagnostics'),
+  APIDebugger: () => import('../../apps/APIDebugger'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
