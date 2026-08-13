@@ -71,7 +71,7 @@ export default function Terminal() {
   const updateFileContent = useStore((s) => s.updateFileContent)
   const getWindows = useStore((s) => s.windows)
   const closeWindow = useStore((s) => s.closeWindow)
-  const theme = useStore((s) => s.theme)
+  const theme = useStore((s) => s.resolvedTheme)
 
   const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '71.0.0'
 

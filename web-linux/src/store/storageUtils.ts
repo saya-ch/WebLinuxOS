@@ -28,6 +28,7 @@ export const STORAGE_KEYS = {
   ALIASES: 'weblinux-aliases',
   SETTINGS: 'weblinux-settings',
   APP_STATE: 'weblinux-app-state',
+  ACCENT: 'weblinux-accent',
 } as const
 
 // localStorage 通常单条键值对约 5MB，超出时会报错

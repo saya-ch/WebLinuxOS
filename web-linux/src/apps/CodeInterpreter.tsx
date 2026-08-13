@@ -300,7 +300,7 @@ function analyzeCode(code: string): CodeAnalysis {
 }
 
 export default function CodeInterpreter() {
-  const theme = useStore((s: { theme: 'dark' | 'light' }) => s.theme)
+  const theme = useStore((s) => s.resolvedTheme)
   const [code, setCode] = useState('')
   const [analysis, setAnalysis] = useState<CodeAnalysis | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)

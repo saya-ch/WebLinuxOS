@@ -163,7 +163,7 @@ function generateAISuggestion(event: ScheduleEvent, allEvents: ScheduleEvent[]):
 }
 
 export default function SmartScheduleAssistant() {
-  const theme = useStore((s: { theme: 'dark' | 'light' }) => s.theme)
+  const theme = useStore((s) => s.resolvedTheme)
   const [events, setEvents] = useState<ScheduleEvent[]>(() => {
     const saved = localStorage.getItem('smart-schedule-events')
     return saved ? JSON.parse(saved) : []

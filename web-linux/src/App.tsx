@@ -79,6 +79,10 @@ const App = memo(function App() {
   const minimizeWindow = useStore((s) => s.minimizeWindow)
   const closeWindow = useStore((s) => s.closeWindow)
   const theme = useStore((s) => s.theme)
+  const resolvedTheme = useStore((s) => s.resolvedTheme)
+  const accentColor = useStore((s) => s.accentColor)
+  const applyAccentToDOM = useStore((s) => s.applyAccentToDOM)
+  const setTheme = useStore((s) => s.setTheme)
   const windows = useStore((s) => s.windows)
   const launcherOpen = useStore((s) => s.launcherOpen)
   const refreshSystemStats = useStore((s) => s.refreshSystemStats)
@@ -114,12 +118,27 @@ const App = memo(function App() {
   }, [registerApps])
 
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('light')
+    const root = document.documentElement
+    if (resolvedTheme === 'light') {
+      root.classList.add('light')
     } else {
-      document.documentElement.classList.remove('light')
+      root.classList.remove('light')
     }
-  }, [theme])
+    // 应用强调色到DOM
+    applyAccentToDOM(accentColor, resolvedTheme)
+  }, [resolvedTheme, accentColor, applyAccentToDOM])
+
+  // 监听系统主题变化（当用户选择auto时）
+  useEffect(() => {
+    if (theme !== 'auto') return
+    const mql = window.matchMedia('(prefers-color-scheme: light)')
+    const handler = () => {
+      // 触发主题系统重新解析：通过一个微妙的setTheme调用让store重新计算resolvedTheme
+      setTheme('auto')
+    }
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [theme, setTheme])
 
   useEffect(() => {
     refreshSystemStats()

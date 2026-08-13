@@ -129,7 +129,11 @@ function PowerConfirmationDialog({ title, message, confirmText, onConfirm, onCan
 
 export default function Settings() {
   const theme = useStore((s) => s.theme)
+  const resolvedTheme = useStore((s) => s.resolvedTheme)
+  const accentColor = useStore((s) => s.accentColor)
+  const accentPresets = useStore((s) => s.accentPresets)
   const setTheme = useStore((s) => s.setTheme)
+  const setAccentColor = useStore((s) => s.setAccentColor)
   const wallpaper = useStore((s) => s.wallpaper)
   const setWallpaper = useStore((s) => s.setWallpaper)
   const clearWindows = useStore((s) => s.clearWindows)
@@ -246,41 +250,112 @@ export default function Settings() {
         {activeCategory === 'appearance' && (
           <div>
             <h3 style={{ marginTop: 0, marginBottom: 24, fontSize: 20, color: 'var(--text-primary)' }}>外观设置</h3>
-            <div className="app-settings-section" style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>主题模式</div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button
-                  className={`app-settings-theme-btn${theme === 'light' ? ' active' : ''}`}
-                  onClick={() => setTheme('light')}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: 8,
-                    border: theme === 'light' ? '2px solid var(--accent)' : '1px solid var(--window-border)',
-                    background: theme === 'light' ? 'var(--accent-bg)' : 'var(--window-bg)',
-                    color: 'var(--text-primary)',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  ☀️ 亮色
-                </button>
-                <button
-                  className={`app-settings-theme-btn${theme === 'dark' ? ' active' : ''}`}
-                  onClick={() => setTheme('dark')}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: 8,
-                    border: theme === 'dark' ? '2px solid var(--accent)' : '1px solid var(--window-border)',
-                    background: theme === 'dark' ? 'var(--accent-bg)' : 'var(--window-bg)',
-                    color: 'var(--text-primary)',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  🌙 暗色
-                </button>
+            <div className="app-settings-section" style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 10 }}>
+                主题模式
+                {theme === 'auto' && (
+                  <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--accent)' }}>
+                    (当前：{resolvedTheme === 'light' ? '浅色' : '深色'})
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {(['light', 'dark', 'auto'] as const).map((mode) => {
+                  const labels = { light: '☀️ 亮色', dark: '🌙 暗色', auto: '🖥️ 跟随系统' }
+                  const active = theme === mode
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setTheme(mode)}
+                      style={{
+                        flex: 1,
+                        padding: '12px 14px',
+                        borderRadius: 8,
+                        border: active ? '2px solid var(--accent)' : '1px solid var(--window-border)',
+                        background: active ? 'var(--accent-bg)' : 'var(--window-bg)',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        fontSize: 13,
+                        transition: 'all 0.25s ease',
+                        fontWeight: active ? 500 : 400,
+                      }}
+                    >
+                      {labels[mode]}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="app-settings-section" style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 10 }}>强调色</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: 10 }}>
+                {accentPresets.map((preset) => {
+                  const active = accentColor === preset.id
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => setAccentColor(preset.id)}
+                      title={preset.name}
+                      style={{
+                        padding: 10,
+                        borderRadius: 10,
+                        border: active ? `2px solid ${preset.color}` : '1px solid var(--window-border)',
+                        background: active ? `${preset.color}20` : 'var(--window-bg)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 6,
+                        transition: 'all 0.25s ease',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: '50%',
+                          background: `linear-gradient(135deg, ${preset.color}, ${preset.colorLight})`,
+                          boxShadow: active ? `0 0 16px ${preset.color}aa` : 'none',
+                          transition: 'box-shadow 0.25s ease',
+                        }}
+                      />
+                      <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>{preset.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="app-settings-section" style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 10 }}>界面缩放</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[
+                  { v: 0.9, label: '小' },
+                  { v: 1, label: '默认' },
+                  { v: 1.1, label: '大' },
+                  { v: 1.25, label: '特大' },
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    onClick={() => {
+                      document.documentElement.style.fontSize = `${opt.v * 16}px`
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      border: '1px solid var(--window-border)',
+                      background: 'var(--window-bg)',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      fontSize: 13,
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

@@ -20,7 +20,7 @@ interface PerformanceMetrics {
 }
 
 export default function PerformanceMonitor() {
-  const theme = useStore((s) => s.theme)
+  const theme = useStore((s) => s.resolvedTheme)
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     fps: 60,
     memory: 0,

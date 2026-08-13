@@ -338,6 +338,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'speech-memo', name: '语音备忘录', icon: <VoiceIcon />, component: 'SpeechMemo', category: 'utilities', defaultWidth: 500, defaultHeight: 520, minWidth: 400, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '语音备忘录：文字转语音（SpeechSynthesis）+ 语音录音转写（SpeechRecognition）+ 备忘录管理 + localStorage持久化' },
   { id: 'unit-converter', name: '单位换算', icon: <ListTodoIcon />, component: 'UnitConverter', category: 'utilities', defaultWidth: 480, defaultHeight: 560, minWidth: 380, minHeight: 420, resizable: true, multiple: false, isNew: true, description: '综合单位换算工具：长度/重量/温度/体积/面积/时间/速度/数据存储/货币9大类，实时汇率API，本地历史记录' },
   { id: 'dev-toolkit', name: '开发者工具箱', icon: <WrenchIcon />, component: 'DevToolkit', category: 'development', defaultWidth: 750, defaultHeight: 580, minWidth: 500, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '10合1开发者工具箱：JSON格式化、URL编解码、Base64编解码、正则测试、MD5/SHA哈希生成、时间戳转换、UUID生成、JWT解码、HEX/RGB颜色转换、CSS语法验证' },
+  // v87 新增：安全与实用工具中心
+  { id: 'security-center', name: '安全中心', icon: <LockIcon />, component: 'SecurityCenter', category: 'utilities', defaultWidth: 760, defaultHeight: 680, minWidth: 560, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '安全与实用工具中心：密码泄露检查(HIBP k-anonymity)、强密码生成器(crypto API)、密码强度分析、URL缩短(is.gd API)、实时汇率转换(Frankfurter API)' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

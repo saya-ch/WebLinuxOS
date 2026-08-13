@@ -5,7 +5,7 @@ export type CommandContext = {
   files: FileNode[]
   username: string
   hostname: string
-  theme: 'dark' | 'light'
+  theme: 'dark' | 'light' | 'auto'
   args: string[]
   prevCwd: string | null
   stdin?: string

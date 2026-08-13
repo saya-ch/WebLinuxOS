@@ -92,7 +92,7 @@ const sampleTasks: Task[] = [
 ]
 
 export default function TaskDashboard() {
-  const theme = useStore((s) => s.theme)
+  const theme = useStore((s) => s.resolvedTheme)
   
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem('weblinux-tasks')

@@ -3,7 +3,7 @@ import { Download, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-rea
 import { useStore } from '../store'
 
 type BackupSettings = {
-  theme: 'dark' | 'light'
+  theme: 'dark' | 'light' | 'auto'
   currentDesktop: number
   totalDesktops: number
 }

@@ -193,7 +193,8 @@ code, pre, .terminal, .code-editor {
   --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --gradient-dark: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
 
-  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+  --theme-transition: background-color 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.4s ease;
+  transition: var(--theme-transition);
 }
 
 :root.light {

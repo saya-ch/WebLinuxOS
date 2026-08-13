@@ -38,9 +38,37 @@ function safeLoadArray<T>(key: string, defaultValue: T[]): T[] {
   return defaultValue
 }
 
-const initialTheme: 'dark' | 'light' = (() => {
-  const raw = loadFromStorage<string>(STORAGE_KEYS.THEME, 'dark')
-  return raw === 'light' ? 'light' : 'dark'
+const initialTheme: 'dark' | 'light' | 'auto' = (() => {
+  const raw = loadFromStorage<string>(STORAGE_KEYS.THEME, 'auto')
+  if (raw === 'light' || raw === 'dark' || raw === 'auto') return raw
+  return 'auto'
+})()
+
+const getSystemTheme = (): 'dark' | 'light' => {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'dark'
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+}
+
+const resolveTheme = (t: 'dark' | 'light' | 'auto'): 'dark' | 'light' => {
+  if (t === 'auto') return getSystemTheme()
+  return t
+}
+
+export const accentPresets = [
+  { id: 'indigo', name: '靛蓝', color: '#7c6cf0', colorLight: '#5b4cd8' },
+  { id: 'emerald', name: '翠绿', color: '#10b981', colorLight: '#059669' },
+  { id: 'rose', name: '玫瑰', color: '#f43f5e', colorLight: '#e11d48' },
+  { id: 'amber', name: '琥珀', color: '#f59e0b', colorLight: '#d97706' },
+  { id: 'sky', name: '天蓝', color: '#0ea5e9', colorLight: '#0284c7' },
+  { id: 'violet', name: '紫罗兰', color: '#8b5cf6', colorLight: '#7c3aed' },
+  { id: 'cyan', name: '青', color: '#06b6d4', colorLight: '#0891b2' },
+  { id: 'pink', name: '粉桃', color: '#ec4899', colorLight: '#db2777' },
+] as const
+
+export type AccentId = typeof accentPresets[number]['id']
+const initialAccent: AccentId = (() => {
+  const raw = loadFromStorage<string>(STORAGE_KEYS.ACCENT, 'indigo')
+  return (accentPresets.some(p => p.id === raw) ? raw : 'indigo') as AccentId
 })()
 const initialWallpaper: string = loadFromStorage(STORAGE_KEYS.WALLPAPER, '')
 const initialLiveWallpaper: string = loadFromStorage(STORAGE_KEYS.LIVE_WALLPAPER, 'particles')
@@ -109,7 +137,10 @@ interface Store {
   desktopIcons: DesktopIcon[]
   files: FileNode[]
   nextZIndex: number
-  theme: 'dark' | 'light'
+  theme: 'dark' | 'light' | 'auto'
+  resolvedTheme: 'dark' | 'light'
+  accentColor: AccentId
+  accentPresets: typeof accentPresets
   wallpaper: string
   liveWallpaper: string
   liveWallpaperEnabled: boolean
@@ -146,7 +177,9 @@ interface Store {
   closeLauncher: () => void
   showContextMenu: (x: number, y: number) => void
   hideContextMenu: () => void
-  setTheme: (theme: 'dark' | 'light') => void
+  setTheme: (theme: 'dark' | 'light' | 'auto') => void
+  setAccentColor: (accent: AccentId) => void
+  applyAccentToDOM: (accent: AccentId, theme: 'dark' | 'light') => void
   setWallpaper: (wallpaper: string) => void
   setLiveWallpaper: (wallpaper: string) => void
   toggleLiveWallpaper: () => void
@@ -233,6 +266,9 @@ export const useStore = create<Store>((set, get) => ({
   files: initialFiles,
   nextZIndex: 100,
   theme: initialTheme,
+  resolvedTheme: resolveTheme(initialTheme),
+  accentColor: initialAccent,
+  accentPresets,
   wallpaper: initialWallpaper,
   liveWallpaper: initialLiveWallpaper,
   liveWallpaperEnabled: initialLiveWallpaperEnabled,
@@ -554,7 +590,9 @@ export const useStore = create<Store>((set, get) => ({
       set({
         files: defaultFiles,
         desktopIcons: defaultDesktopIcons,
-        theme: 'dark',
+        theme: 'auto',
+        resolvedTheme: resolveTheme('auto'),
+        accentColor: 'indigo',
         wallpaper: '',
         liveWallpaper: 'particles',
         liveWallpaperEnabled: false,
@@ -867,7 +905,34 @@ export const useStore = create<Store>((set, get) => ({
   hideContextMenu: () => set({ contextMenu: { x: 0, y: 0, visible: false } }),
   setTheme: (theme) => {
     saveToStorage(STORAGE_KEYS.THEME, theme)
-    set({ theme })
+    const resolved = resolveTheme(theme)
+    const { accentColor } = get()
+    set({ theme, resolvedTheme: resolved })
+    // 立即将新主题和强调色应用到DOM
+    get().applyAccentToDOM(accentColor, resolved)
+  },
+  setAccentColor: (accent) => {
+    saveToStorage(STORAGE_KEYS.ACCENT, accent)
+    const { resolvedTheme } = get()
+    set({ accentColor: accent })
+    get().applyAccentToDOM(accent, resolvedTheme)
+  },
+  applyAccentToDOM: (accent, theme) => {
+    if (typeof document === 'undefined') return
+    const preset = accentPresets.find(p => p.id === accent) || accentPresets[0]
+    const root = document.documentElement
+    const activeColor = theme === 'light' ? preset.colorLight : preset.color
+    root.style.setProperty('--accent', activeColor)
+    root.style.setProperty('--color-primary', activeColor)
+    // 渐变与光晕
+    const gradient = `linear-gradient(135deg, ${activeColor} 0%, ${preset.color} 100%)`
+    root.style.setProperty('--accent-gradient', gradient)
+    root.style.setProperty('--accent-gradient-bicolor', gradient)
+    root.style.setProperty('--accent-bg', `${activeColor}20`)
+    root.style.setProperty('--accent-subtle', `${activeColor}10`)
+    root.style.setProperty('--accent-glow', `0 0 25px ${activeColor}66`)
+    root.style.setProperty('--accent-glow-color', `${activeColor}66`)
+    root.style.setProperty('--gradient-primary', gradient)
   },
   setWallpaper: (wallpaper) => {
     saveToStorage(STORAGE_KEYS.WALLPAPER, wallpaper)

@@ -816,6 +816,202 @@ export class ApiService {
 
     return { weather, quote, advice, activity }
   }
+
+  // === v87 新增：实用工具 API ===
+
+  // URL 缩短服务 (is.gd)
+  async shortenUrl(longUrl: string): Promise<string | null> {
+    try {
+      const url = `https://is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`
+      const response = await fetch(url)
+      if (!response.ok) return null
+      const shortened = await response.text()
+      return shortened.trim() || null
+    } catch {
+      return null
+    }
+  }
+
+  // 密码泄露检查 (HaveIBeenPwned - 使用 k-anonymity)
+  async checkPasswordBreached(password: string): Promise<{ breached: boolean; count: number } | null> {
+    try {
+      const encoder = new TextEncoder()
+      const data = encoder.encode(password)
+      const hashBuffer = await crypto.subtle.digest('SHA-1', data)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+      
+      const prefix = hashHex.slice(0, 5)
+      const suffix = hashHex.slice(5)
+      
+      const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`)
+      if (!response.ok) return null
+      
+      const text = await response.text()
+      const lines = text.split('\n')
+      
+      for (const line of lines) {
+        const [suffixPart, countStr] = line.split(':')
+        if (suffixPart === suffix) {
+          return { breached: true, count: parseInt(countStr, 10) || 0 }
+        }
+      }
+      
+      return { breached: false, count: 0 }
+    } catch {
+      return null
+    }
+  }
+
+  // 实时汇率转换 (Frankfurter API - 欧洲央行)
+  async convertCurrencyRealTime(amount: number, from: string, to: string): Promise<{ result: number; rate: number; date: string } | null> {
+    try {
+      const url = `${this.baseUrls.exchange}/${from}`
+      const response = await fetch(url)
+      const data = await response.json()
+      
+      if (!data.rates || !data.rates[to]) return null
+      
+      const rate = data.rates[to]
+      const result = amount * rate
+      
+      return {
+        result: Math.round(result * 100) / 100,
+        rate: Math.round(rate * 10000) / 10000,
+        date: data.date || new Date().toISOString().split('T')[0]
+      }
+    } catch {
+      return null
+    }
+  }
+
+  // 获取支持的货币列表
+  getSupportedCurrencies(): string[] {
+    return [
+      'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD', 'NZD',
+      'SEK', 'KRW', 'SGD', 'NOK', 'MXN', 'INR', 'RUB', 'ZAR', 'TRY', 'BRL',
+      'TWD', 'DKK', 'PLN', 'THB', 'IDR', 'HUF', 'CZK', 'ILS', 'CLP', 'PHP'
+    ]
+  }
+
+  // 生成强随机密码
+  generateStrongPassword(length: number = 16, options: {
+    uppercase?: boolean;
+    lowercase?: boolean;
+    numbers?: boolean;
+    symbols?: boolean;
+  } = {}): string {
+    const opts = { uppercase: true, lowercase: true, numbers: true, symbols: true, ...options }
+    const chars: string[] = []
+    if (opts.uppercase) chars.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    if (opts.lowercase) chars.push('abcdefghijklmnopqrstuvwxyz')
+    if (opts.numbers) chars.push('0123456789')
+    if (opts.symbols) chars.push('!@#$%^&*()_+-=[]{}|;:,.<>?')
+    
+    const allChars = chars.join('')
+    if (!allChars) return ''
+    
+    const array = new Uint32Array(length)
+    crypto.getRandomValues(array)
+    
+    let password = ''
+    for (let i = 0; i < length; i++) {
+      password += allChars[array[i] % allChars.length]
+    }
+    
+    return password
+  }
+
+  // 密码强度分析
+  analyzePasswordStrength(password: string): {
+    score: number;
+    label: string;
+    suggestions: string[];
+    entropy: number;
+  } {
+    let score = 0
+    const suggestions: string[] = []
+    
+    if (password.length >= 8) score += 20
+    else suggestions.push('密码长度应至少为 8 位')
+    
+    if (password.length >= 12) score += 20
+    else suggestions.push('建议密码长度为 12 位或更长')
+    
+    if (/[a-z]/.test(password)) score += 10
+    else suggestions.push('应包含小写字母')
+    
+    if (/[A-Z]/.test(password)) score += 15
+    else suggestions.push('应包含大写字母')
+    
+    if (/[0-9]/.test(password)) score += 15
+    else suggestions.push('应包含数字')
+    
+    if (/[^a-zA-Z0-9]/.test(password)) score += 20
+    else suggestions.push('应包含特殊字符')
+    
+    // 检查常见密码
+    const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein']
+    if (commonPasswords.some(p => password.toLowerCase().includes(p))) {
+      score -= 30
+      suggestions.push('包含常见密码模式，容易被破解')
+    }
+    
+    // 计算熵（粗略估计）
+    const charSetSize = 
+      (/[a-z]/.test(password) ? 26 : 0) +
+      (/[A-Z]/.test(password) ? 26 : 0) +
+      (/[0-9]/.test(password) ? 10 : 0) +
+      (/[^a-zA-Z0-9]/.test(password) ? 32 : 0)
+    const entropy = charSetSize > 0 ? Math.floor(password.length * Math.log2(charSetSize)) : 0
+    
+    let label = '非常弱'
+    if (score >= 80) label = '非常强'
+    else if (score >= 65) label = '强'
+    else if (score >= 45) label = '中等'
+    else if (score >= 25) label = '弱'
+    
+    return { score: Math.max(0, score), label, suggestions, entropy }
+  }
+
+  // 颜色调色板生成 (基于 Coolors API)
+  async generateColorPalette(seed?: string): Promise<string[] | null> {
+    try {
+      const url = seed 
+        ? `https://www.coolors.co/api/palette?hex=${seed.replace('#', '')}`
+        : 'https://www.coolors.co/api/palette'
+      const response = await fetch(url)
+      const data = await response.json()
+      if (data && data.colors) {
+        return data.colors.map((c: { hex: { value: string } }) => c.hex.value)
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  // HTTP 状态码查询
+  getHttpStatusInfo(code: number): { category: string; description: string } {
+    const codes: Record<number, { category: string; description: string }> = {
+      200: { category: '成功', description: '请求成功' },
+      201: { category: '成功', description: '资源创建成功' },
+      204: { category: '成功', description: '请求成功但无返回内容' },
+      301: { category: '重定向', description: '永久重定向' },
+      302: { category: '重定向', description: '临时重定向' },
+      400: { category: '客户端错误', description: '请求参数错误' },
+      401: { category: '客户端错误', description: '未授权' },
+      403: { category: '客户端错误', description: '禁止访问' },
+      404: { category: '客户端错误', description: '资源未找到' },
+      405: { category: '客户端错误', description: '方法不允许' },
+      429: { category: '客户端错误', description: '请求过于频繁' },
+      500: { category: '服务器错误', description: '内部服务器错误' },
+      502: { category: '服务器错误', description: '网关错误' },
+      503: { category: '服务器错误', description: '服务不可用' },
+      504: { category: '服务器错误', description: '网关超时' },
+    }
+    return codes[code] || { category: '未知', description: '未知状态码' }
+  }
 }
 
 export const apiService = ApiService.getInstance()

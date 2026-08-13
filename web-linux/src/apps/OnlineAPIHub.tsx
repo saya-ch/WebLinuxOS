@@ -649,7 +649,7 @@ const COUNTRY_CODES = [
 ]
 
 export default function OnlineAPIHub() {
-  const theme = useStore((s: { theme: 'dark' | 'light' }) => s.theme)
+  const theme = useStore((s) => s.resolvedTheme)
   const [activeCategory, setActiveCategory] = useState('weather')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<APIResponse | null>(null)

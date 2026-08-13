@@ -34,7 +34,7 @@ interface BackupData {
   scope: BackupScope
   files?: FileNode[]
   settings?: {
-    theme: 'dark' | 'light'
+    theme: 'dark' | 'light' | 'auto'
     wallpaper: string
     liveWallpaper: string
     liveWallpaperEnabled: boolean

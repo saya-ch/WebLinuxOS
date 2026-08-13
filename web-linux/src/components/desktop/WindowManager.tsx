@@ -356,6 +356,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   MarkPoster: () => import('../../apps/MarkPoster'),
   WebRequestLab: () => import('../../apps/WebRequestLab'),
   CodePolisher: () => import('../../apps/CodePolisher'),
+  SecurityCenter: () => import('../../apps/SecurityCenter'),
   SystemSettings: () => import('../../apps/SystemSettings'),
   SystemStatusDashboard: () => import('../../apps/SystemStatusDashboard'),
   SystemToolbox: () => import('../../apps/SystemToolbox'),
