@@ -517,6 +517,11 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v83 新增创新应用套件 ===
   PopularDashboard: () => import('../../apps/PopularDashboard'),
   PollinationsStudio: () => import('../../apps/PollinationsStudio'),
+  // === v84 新增创新应用 ===
+  QuickTools: () => import('../../apps/QuickTools'),
+  // === v85 新增创新应用 ===
+  ApiLabPro: () => import('../../apps/ApiLabPro'),
+  ImageCompressor: () => import('../../apps/ImageCompressor'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
@@ -879,7 +884,6 @@ const WindowManager = memo(function WindowManager() {
       preloadedRef.current = true
     }
     return () => {
-      // 组件卸载或 StrictMode 重渲染时移除 visibilitychange 监听器
       if (cleanupRef.current) {
         cleanupRef.current()
         cleanupRef.current = null
@@ -891,15 +895,20 @@ const WindowManager = memo(function WindowManager() {
     const currentDesktopWindows = windowsPerDesktop[currentDesktop] || []
     const appMap = new Map(apps.map((app) => [app.id, app]))
 
-    return windows
+    const result = windows
       .filter((win) => currentDesktopWindows.includes(win.id))
       .map((win) => {
         const app = appMap.get(win.appId) ?? apps.find((a) => a.id === win.appId)
-        if (!app) return null
+        if (!app) {
+          console.warn(`[WindowManager] 未找到应用: ${win.appId}`)
+          return null
+        }
         const Component = loadComponent(app.component)
         return { win, Component, app }
       })
       .filter(Boolean) as WindowComponent[]
+    
+    return result
   }, [windows, apps, currentDesktop, windowsPerDesktop])
 
   useEffect(() => {

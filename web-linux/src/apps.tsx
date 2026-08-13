@@ -319,6 +319,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'popular-dashboard', name: '实时数据中心', icon: <ActivityIcon />, component: 'PopularDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '多源实时数据聚合仪表板：天气+加密货币+新闻+汇率+系统性能一站式监控，Open-Meteo/CoinGecko/NewsAPI/Exchangerate 真实API集成' },
   // === v83 新增创新应用 — PollinationsStudio AI图像生成工作室 ===
   { id: 'pollinations-studio', name: 'AI图像工作室', icon: <SparklesIcon />, component: 'PollinationsStudio', category: 'multimedia', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '零配置AI图像生成器：Pollinations.ai公开免费API、10种艺术风格预设、多种画布比例、历史记录收藏、提示词增强、下载导出' },
+  // === v84 新增创新应用 — QuickTools 快捷工具箱 ===
+  { id: 'quick-tools', name: '快捷工具箱', icon: <WrenchIcon />, component: 'QuickTools', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 880, minHeight: 580, resizable: true, multiple: false, isNew: true, description: '10合1在线工具箱：密码生成器、UUID生成器、时间戳转换、URL编解码、Base64编解码、Hash计算器、JSON格式化、颜色选择器、单位换算、文本统计' },
+  // === v85 新增创新应用 — ApiLabPro API测试实验室 ===
+  { id: 'api-lab-pro', name: 'API测试实验室', icon: <ApiLabIcon />, component: 'ApiLabPro', category: 'development', defaultWidth: 1280, defaultHeight: 850, minWidth: 980, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '10+合规公开API测试实验室：天气预报、汇率转换、加密货币、科技新闻、励志名言、编程笑话、维基搜索、IP查询、国家信息、GitHub趋势，零配置实时数据' },
+  // === v85 新增创新应用 — ImageCompressor 图像压缩工具 ===
+  { id: 'image-compressor', name: '图像压缩工具', icon: <ImageIcon />, component: 'ImageCompressor', category: 'utilities', defaultWidth: 1280, defaultHeight: 850, minWidth: 980, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '浏览器内图片压缩与处理：JPEG/PNG/WebP/AVIF格式转换、质量调整、尺寸缩放、黑白/复古/模糊/亮度/对比度/饱和度滤镜、批量处理、节省空间统计' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

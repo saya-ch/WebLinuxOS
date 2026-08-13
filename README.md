@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v83.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v85.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,44 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v85.0.0 更新亮点
+
+- **API 测试实验室 (ApiLabPro)**：10+ 合规公开 API 测试平台
+  - 天气预报：Open-Meteo API，全球城市实时天气查询
+  - 汇率转换：Frankfurter API，150+ 货币实时汇率
+  - 加密货币：CoinGecko API，主流加密货币价格和 24h 变化
+  - 科技新闻：Hacker News API，最新技术资讯
+  - 励志名言：ZenQuotes API，随机名言获取
+  - 编程笑话：JokeAPI，程序员专属笑话
+  - 维基搜索：Wikipedia API，百科知识检索
+  - IP 查询：IP-API，IP 地址地理信息
+  - 国家信息：REST Countries API，全球国家数据
+  - GitHub 趋势：GitHub API，热门仓库搜索
+  - API 分类筛选、搜索历史、响应格式化、一键复制
+
+- **图像压缩工具 (ImageCompressor)**：浏览器内图片处理工具
+  - 格式转换：JPEG、PNG、WebP、AVIF 四种输出格式
+  - 质量压缩：10%-100% 质量可调，实时预览压缩效果
+  - 尺寸缩放：最大宽度限制，保持宽高比
+  - 滤镜效果：黑白、复古、模糊、亮度、对比度、饱和度
+  - 批量处理：多图同时上传、处理、下载
+  - 空间统计：原图/压缩后大小对比、节省百分比显示
+  - 拖拽上传、网格预览、进度反馈
+
+## v84.0.0 更新亮点
+
+- **快捷工具箱 (QuickTools)**：10 合 1 在线工具集
+  - 密码生成器：可配置长度、字符类型、批量生成
+  - UUID 生成器：v4 随机 UUID，批量生成
+  - 时间戳转换：Unix 时间戳与日期互转，时区支持
+  - URL 编解码：URL encode/decode，一键复制
+  - Base64 编解码：文本 Base64 编码与解码
+  - Hash 计算器：MD5、SHA-1、SHA-256、SHA-512
+  - JSON 格式化：格式化、压缩、验证、高亮
+  - 颜色选择器：HEX/RGB/HSL 互转，调色板预览
+  - 单位换算：长度、重量、温度、面积、体积
+  - 文本统计：字符数、字数、行数、单词频率
 
 ## v83.0.0 更新亮点
 

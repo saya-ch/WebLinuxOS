@@ -479,14 +479,10 @@ const Desktop = memo(function Desktop() {
 
   const handleIconClick = useCallback(
     (appId: string, iconId: string) => {
-      // 如果图标已选中，则再次单击直接打开（提升操作效率）
-      if (selectedIconId === iconId) {
-        openApp(appId)
-      } else {
-        setSelectedIconId(iconId)
-      }
+      setSelectedIconId(iconId)
+      openApp(appId)
     },
-    [openApp, selectedIconId],
+    [openApp],
   )
 
   const handleIconDoubleClick = useCallback(

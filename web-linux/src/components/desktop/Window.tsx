@@ -581,20 +581,18 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     const isDraggingOrResizing = dragging || resizing
     
     return {
+      position: 'absolute',
       left: win.maximized ? 0 : win.x,
       top: win.maximized ? 0 : win.y,
       width: win.maximized ? '100%' : win.width,
       height: win.maximized ? '100%' : win.height,
       zIndex: win.zIndex,
       display: win.minimized ? 'none' : 'flex',
+      flexDirection: 'column',
       backdropFilter: 'blur(24px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
       border: win.focused ? '1px solid rgba(139, 124, 240, 0.5)' : '1px solid rgba(255, 255, 255, 0.08)',
       borderRadius: win.maximized ? '0' : '12px',
-      transform: 'translateZ(0)',
-      willChange: isDraggingOrResizing ? 'transform, opacity' : 'auto',
-      contain: 'strict',
-      backfaceVisibility: 'hidden',
-      perspective: '1000px',
       opacity: dragOpacity,
       transition: isDraggingOrResizing 
         ? 'opacity 0.15s ease' 
