@@ -1,1259 +1,1049 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { useStore } from '../store'
-import { API_CONFIG, fetchWithTimeout, handleApiError } from '../config/apiConfig'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   Sparkles,
-  Wand2,
-  Code,
-  FileCode,
-  Search,
-  Trash2,
-  Download,
   Copy,
   Check,
-  Eye,
-  Zap,
-  Shield,
-  AlertTriangle,
-  GitMerge,
-  Play,
-  BarChart3,
-  Lightbulb,
-  ChevronRight,
-  Loader2,
+  Trash2,
+  Code,
   FileText,
-  Brain,
-  Gauge,
-  Rocket,
-  ThumbsUp,
+  Lightbulb,
+  Wand2,
+  Download,
+  GitBranch,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  RotateCw,
+  History,
 } from 'lucide-react'
 
-type Language = 'javascript' | 'typescript' | 'python'
-type TabType = 'overview' | 'issues' | 'refactor' | 'performance' | 'report'
+type Lang = 'javascript' | 'typescript' | 'python' | 'go' | 'rust' | 'java' | 'css' | 'html'
+type RefactorType = 'extract' | 'rename' | 'simplify' | 'modernize' | 'optimize' | 'add-types'
 
-interface RefactorIssue {
+interface RefactorSuggestion {
   id: string
-  category: 'bug' | 'performance' | 'readability' | 'best-practice' | 'security'
-  severity: 'critical' | 'high' | 'medium' | 'low'
+  type: RefactorType
   title: string
   description: string
-  line?: number
-  suggestion: string
-  before: string
-  after: string
+  original: string
+  refactored: string
+  confidence: number
+  rationale: string
 }
 
-interface QualityScore {
-  overall: number
-  readability: number
-  maintainability: number
-  performance: number
-  security: number
-  style: number
-}
-
-interface PerformanceTip {
+interface HistoryItem {
   id: string
-  title: string
-  description: string
-  impact: 'high' | 'medium' | 'low'
-  before: string
-  after: string
+  timestamp: number
+  original: string
+  refactored: string
+  suggestions: number
+  language: Lang
 }
 
-interface AnalysisResult {
-  scores: QualityScore
-  issues: RefactorIssue[]
-  performanceTips: PerformanceTip[]
-  summary: string
-  refactoredCode: string
-  rawAIResponse: string
-}
-
-const SAMPLE_CODE: Record<Language, string> = {
-  javascript: `// 电商购物车计算模块
-var taxRate = 0.08;
-var discountThreshold = 100;
-
-function calculateOrderTotal(items, user) {
-    var subtotal = 0;
-    var discount = 0;
-    var shipping = 10;
-    
-    for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        var price = item.price;
-        var qty = item.quantity;
-        subtotal = subtotal + price * qty;
-    }
-    
-    if (subtotal > discountThreshold) {
-        discount = subtotal * 0.1;
-    }
-    
-    var totalBeforeTax = subtotal - discount + shipping;
-    var total = totalBeforeTax * (1 + taxRate);
-    
-    if (user.isVip == true) {
-        total = total * 0.95;
-    }
-    
-    return total.toFixed(2);
-}
-
-function validateCoupon(code) {
-    var isValid = false;
-    if (code.length > 0) {
-        if (code.substring(0, 3) == 'SAVE') {
-            isValid = true;
-        }
-    }
-    return isValid;
-}
-
-var order = calculateOrderTotal([
-    { name: "Widget", price: 29.99, quantity: 2 },
-    { name: "Gadget", price: 49.99, quantity: 1 },
-    { name: "Doohickey", price: 15.50, quantity: 5 }
-], { name: "John", isVip: true });
-
-console.log("Order total: $" + order);`,
-
-  typescript: `// 数据处理管道
-interface DataConfig {
-  source: string;
-  options: {
-    transform?: boolean;
-    validate?: boolean;
-  };
-}
-
-var DEFAULT_CONFIG: DataConfig = {
-  source: "api",
-  options: {
-    transform: true,
-    validate: true
-  }
-};
-
-function processData(config: DataConfig, callback: Function) {
-    var results: any[] = [];
-    var errors: any[] = [];
-    
-    for (var i = 0; i < 100; i++) {
-        var dataPoint = fetchDataPoint(config.source, i);
-        
-        if (dataPoint != null) {
-            if (config.options.transform) {
-                var transformed = transformData(dataPoint);
-                results.push(transformed);
-            }
-            
-            if (config.options.validate) {
-                var valid = validateData(dataPoint);
-                if (!valid) {
-                    errors.push({ index: i, reason: "validation failed" });
-                }
-            }
-        }
-    }
-    
-    if (errors.length > 0) {
-        console.log("Warnings: " + errors.length + " items failed");
-    }
-    
-    if (callback) {
-        callback(null, results);
-    } else {
-        return results;
-    }
-}
-
-function fetchDataPoint(source: string, id: number): any {
-    return { id: id, value: Math.random() * 100, source: source };
-}
-
-function transformData(data: any): any {
-    return {
-        ...data,
-        processed: true,
-        timestamp: new Date().toISOString()
-    };
-}
-
-function validateData(data: any): boolean {
-    return data.value >= 0 && data.value <= 100;
-}
-
-var config: DataConfig = { ...DEFAULT_CONFIG, source: "stream" };
-processData(config, function(err: any, results: any[]) {
-    if (err) {
-        console.error(err);
-    } else {
-        console.log("Processed " + results.length + " items");
-    }
-});`,
-
-  python: `# 股票数据分析器
-import datetime
-
-MAX_RETRIES = 3
-DEFAULT_TIMEOUT = 30
-
-def fetch_stock_data(symbol, start_date, end_date, callback=None):
-    data = []
-    errors = []
-    retries = 0
-    
-    for attempt in range(MAX_RETRIES):
-        try:
-            response = make_api_request(symbol, start_date, end_date)
-            if response is not None:
-                for record in response:
-                    if record['price'] > 0:
-                        processed = {
-                            'symbol': symbol,
-                            'date': record['date'],
-                            'price': record['price'],
-                            'volume': record.get('volume', 0),
-                            'change': 0
-                        }
-                        data.append(processed)
-                break
-        except Exception as e:
-            retries += 1
-            errors.append({'attempt': retries, 'error': str(e)})
-            if retries >= MAX_RETRIES:
-                print("Max retries exceeded for " + symbol)
-    
-    if callback:
-        callback(None, data)
-    else:
-        return data
-
-def calculate_moving_average(prices, window):
-    averages = []
-    for i in range(len(prices)):
-        if i >= window:
-            slice_prices = prices[i - window:i]
-            avg = sum(slice_prices) / len(slice_prices)
-            averages.append(avg)
-    return averages
-
-def analyze_portfolio(holdings):
-    total_value = 0
-    total_cost = 0
-    gains_losses = []
-    
-    for holding in holdings:
-        symbol = holding['symbol']
-        shares = holding['shares']
-        cost_basis = holding['cost']
-        
-        stock_data = fetch_stock_data(symbol, "2024-01-01", "2024-12-31")
-        
-        if stock_data and len(stock_data) > 0:
-            current_price = stock_data[-1]['price']
-            value = current_price * shares
-            cost = cost_basis * shares
-            gain = value - cost
-            
-            total_value = total_value + value
-            total_cost = total_cost + cost
-            gains_losses.append({
-                'symbol': symbol,
-                'gain': gain,
-                'percentage': (gain / cost) * 100
-            })
-    
-    return {
-        'total_value': total_value,
-        'total_cost': total_cost,
-        'gain_loss': total_value - total_cost,
-        'holdings_detail': gains_losses
-    }
-
-portfolio = [
-    {'symbol': 'AAPL', 'shares': 100, 'cost': 150.00},
-    {'symbol': 'GOOGL', 'shares': 50, 'cost': 140.00},
-    {'symbol': 'MSFT', 'shares': 75, 'cost': 300.00}
+const LANG_OPTIONS: { value: Lang; label: string; icon: string }[] = [
+  { value: 'javascript', label: 'JavaScript', icon: 'JS' },
+  { value: 'typescript', label: 'TypeScript', icon: 'TS' },
+  { value: 'python', label: 'Python', icon: 'Py' },
+  { value: 'go', label: 'Go', icon: 'Go' },
+  { value: 'rust', label: 'Rust', icon: 'Rs' },
+  { value: 'java', label: 'Java', icon: 'Java' },
+  { value: 'css', label: 'CSS', icon: 'CSS' },
+  { value: 'html', label: 'HTML', icon: 'HTML' },
 ]
 
-result = analyze_portfolio(portfolio)
-print("Portfolio value: $" + str(result['total_value']))`
-}
+const REFACTOR_TYPES: { value: RefactorType; label: string; desc: string }[] = [
+  { value: 'extract', label: '提取函数', desc: '将重复代码提取为独立函数' },
+  { value: 'rename', label: '重命名', desc: '改进变量/函数命名可读性' },
+  { value: 'simplify', label: '简化代码', desc: '减少复杂度，去除冗余' },
+  { value: 'modernize', label: '现代化', desc: '使用现代语法和最佳实践' },
+  { value: 'optimize', label: '性能优化', desc: '提升运行时性能' },
+  { value: 'add-types', label: '添加类型', desc: '为无类型代码添加类型注解' },
+]
 
-const LANGUAGE_META: Record<Language, { label: string; icon: string; color: string }> = {
-  javascript: { label: 'JavaScript', icon: 'JS', color: '#f7df1e' },
-  typescript: { label: 'TypeScript', icon: 'TS', color: '#3178c6' },
-  python: { label: 'Python', icon: 'PY', color: '#3776ab' },
-}
-
-const SEVERITY_CONFIG = {
-  critical: { label: '严重', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
-  high: { label: '高', color: '#f97316', bg: 'rgba(249, 115, 22, 0.15)' },
-  medium: { label: '中', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' },
-  low: { label: '低', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
-}
-
-const CATEGORY_CONFIG = {
-  bug: { label: '缺陷', icon: '🐛', color: '#ef4444' },
-  performance: { label: '性能', icon: '⚡', color: '#f59e0b' },
-  readability: { label: '可读性', icon: '📖', color: '#8b5cf6' },
-  'best-practice': { label: '最佳实践', icon: '✨', color: '#10b981' },
-  security: { label: '安全', icon: '🔒', color: '#ec4899' },
-}
-
-const PERFORMANCE_IMPACT = {
-  high: { label: '高影响', color: '#ef4444' },
-  medium: { label: '中影响', color: '#f59e0b' },
-  low: { label: '低影响', color: '#3b82f6' },
-}
-
-async function pollinateText(prompt: string, systemPrompt = '', timeout = 60000): Promise<string> {
-  const fullPrompt = systemPrompt
-    ? `<|im_start|>system\n${systemPrompt}\n<|im_end|>\n<|im_start|>user\n${prompt}\n<|im_end|>\n<|im_start|>assistant\n`
-    : prompt
-  const res = await fetchWithTimeout(
-    `${API_CONFIG.pollinations.textBaseUrl}/${encodeURIComponent(fullPrompt)}?model=${API_CONFIG.pollinations.defaultModel}&seed=-1&temperature=0.3`,
-    { headers: { Accept: 'text/plain' } },
-    timeout,
-  )
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return await res.text()
-}
-
-function parseAIResponse(raw: string): AnalysisResult {
-  const issues: RefactorIssue[] = []
-  const performanceTips: PerformanceTip[] = []
-  let scores: QualityScore = {
-    overall: 70, readability: 70, maintainability: 65,
-    performance: 75, security: 80, style: 60,
+const SAMPLES: Record<Lang, string> = {
+  javascript: `function calculateTotal(items) {
+  var total = 0;
+  for (var i = 0; i < items.length; i++) {
+    total += items[i].price * items[i].quantity;
   }
-  let summary = ''
-  let refactoredCode = ''
+  return total;
+}
 
-  try {
-    const jsonMatch = raw.match(/```json\s*([\s\S]*?)```/) || raw.match(/```\s*([\s\S]*?)```/)
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[1].trim())
-      if (parsed.scores) scores = { ...scores, ...parsed.scores }
-      if (Array.isArray(parsed.issues)) {
-        for (const iss of parsed.issues) {
-          issues.push({
-            id: iss.id || `issue-${Math.random().toString(36).slice(2, 8)}`,
-            category: iss.category || 'best-practice',
-            severity: iss.severity || 'medium',
-            title: iss.title || '未命名问题',
-            description: iss.description || '',
-            line: iss.line,
-            suggestion: iss.suggestion || '',
-            before: iss.before || '',
-            after: iss.after || '',
-          })
+function filterItems(items, minPrice) {
+  var result = [];
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].price > minPrice) {
+      result.push(items[i]);
+    }
+  }
+  return result;
+}
+
+function processOrder(order) {
+  var subtotal = calculateTotal(order.items);
+  var discount = 0;
+  if (order.customer.isVip) {
+    discount = subtotal * 0.1;
+  }
+  var shipping = 10;
+  if (subtotal > 100) {
+    shipping = 0;
+  }
+  var tax = (subtotal - discount) * 0.08;
+  return {
+    subtotal: subtotal,
+    discount: discount,
+    shipping: shipping,
+    tax: tax,
+    total: subtotal - discount + shipping + tax
+  };
+}`,
+  typescript: `interface UserData {
+  name: string;
+  age: number;
+  email?: string;
+}
+
+function processUserData(data) {
+  const result = {};
+  result.name = data.name.toUpperCase();
+  result.age = data.age;
+  if (data.email) {
+    result.emailVerified = data.email.includes('@');
+  }
+  result.status = data.age > 18 ? 'adult' : 'minor';
+  return result;
+}
+
+const users = [];
+for (let i = 0; i < 100; i++) {
+  users.push({ id: i, processed: null });
+}
+users.forEach(user => {
+  const userData = fetchUserData(user.id);
+  user.processed = processUserData(userData);
+});`,
+  python: `def process_data(data):
+    result = []
+    for item in data:
+        if item['value'] > 0:
+            transformed = item['value'] * 2
+            if transformed > 100:
+                result.append({
+                    'id': item['id'],
+                    'value': transformed,
+                    'category': 'high'
+                })
+            else:
+                result.append({
+                    'id': item['id'],
+                    'value': transformed,
+                    'category': 'normal'
+                })
+    return result
+
+def calculate_statistics(numbers):
+    total = 0
+    count = 0
+    minimum = numbers[0]
+    maximum = numbers[0]
+    for n in numbers:
+        total += n
+        count += 1
+        if n < minimum:
+            minimum = n
+        if n > maximum:
+            maximum = n
+    return {
+        'mean': total / count,
+        'min': minimum,
+        'max': maximum,
+        'count': count
+    }`,
+  go: `package main
+
+import "fmt"
+
+type User struct {
+    Name string
+    Age  int
+}
+
+func ProcessUsers(users []User) map[string]User {
+    result := make(map[string]User)
+    for _, user := range users {
+        if user.Age >= 18 {
+            result[user.Name] = user
         }
-      }
-      if (Array.isArray(parsed.performanceTips)) {
-        for (const tip of parsed.performanceTips) {
-          performanceTips.push({
-            id: tip.id || `perf-${Math.random().toString(36).slice(2, 8)}`,
-            title: tip.title || '',
-            description: tip.description || '',
-            impact: tip.impact || 'medium',
-            before: tip.before || '',
-            after: tip.after || '',
-          })
+    }
+    return result
+}
+
+func CalculateSum(numbers []int) int {
+    sum := 0
+    for _, n := range numbers {
+        sum += n
+    }
+    return sum
+}
+
+func main() {
+    users := []User{
+        {"Alice", 25},
+        {"Bob", 17},
+        {"Charlie", 30},
+    }
+    adults := ProcessUsers(users)
+    fmt.Printf("Adults: %v\\n", adults)
+}`,
+  rust: `use std::collections::HashMap;
+
+#[derive(Debug)]
+struct User {
+    name: String,
+    age: u32,
+}
+
+fn process_users(users: Vec<User>) -> HashMap<String, User> {
+    let mut result = HashMap::new();
+    for user in users {
+        if user.age >= 18 {
+            result.insert(user.name.clone(), user);
         }
-      }
-      summary = parsed.summary || ''
-      refactoredCode = parsed.refactoredCode || ''
     }
-  } catch {
-    summary = raw.slice(0, 300)
-  }
-
-  if (!summary) {
-    const grade = scores.overall >= 85 ? '优秀' : scores.overall >= 70 ? '良好' : scores.overall >= 50 ? '一般' : '需重构'
-    summary = `代码质量评级: ${grade}（${scores.overall}/100）。发现 ${issues.length} 个改进建议，${performanceTips.length} 个性能优化机会。`
-  }
-
-  return { scores, issues, performanceTips, summary, refactoredCode, rawAIResponse: raw }
+    result
 }
 
-function generateAnalysisPrompt(code: string, language: Language): string {
-  return `请作为一位资深的全栈代码审查专家，对以下${LANGUAGE_META[language].label}代码进行深度分析。
-
-请从以下维度进行评估:
-1. 代码质量评分（0-100分）
-2. 发现的问题（缺陷、性能、可读性、最佳实践、安全）
-3. 性能优化建议
-4. 重构后的优化代码
-
-请以严格的 JSON 格式输出，结构如下:
-\`\`\`json
-{
-  "scores": {
-    "overall": 85,
-    "readability": 88,
-    "maintainability": 82,
-    "performance": 90,
-    "security": 95,
-    "style": 80
-  },
-  "issues": [
-    {
-      "id": "issue-1",
-      "category": "performance",
-      "severity": "medium",
-      "title": "问题标题",
-      "description": "问题详细描述",
-      "line": 10,
-      "suggestion": "改进建议",
-      "before": "原代码片段",
-      "after": "优化后代码片段"
+fn calculate_average(numbers: Vec<f64>) -> f64 {
+    if numbers.is_empty() {
+        return 0.0;
     }
-  ],
-  "performanceTips": [
-    {
-      "id": "perf-1",
-      "title": "优化建议标题",
-      "description": "详细说明",
-      "impact": "high",
-      "before": "原实现",
-      "after": "优化实现"
-    }
-  ],
-  "summary": "总体评价摘要",
-  "refactoredCode": "完整的重构后代码"
-}
-\`\`\`
-
-要求:
-- issues 数组中每个问题必须包含 before 和 after 代码片段
-- performanceTips 聚焦于循环优化、数据结构选择、算法复杂度等
-- refactoredCode 是完整的重构后代码，保持原有功能
-- category 可选值: bug, performance, readability, best-practice, security
-- severity 可选值: critical, high, medium, low
-- impact 可选值: high, medium, low
-
-代码:
-\`\`\`${language}
-${code}
-\`\`\``
+    let sum: f64 = numbers.iter().sum();
+    sum / numbers.len() as f64
 }
 
-function generateMarkdownReport(result: AnalysisResult, language: Language, code: string): string {
-  const now = new Date().toLocaleString('zh-CN')
-  const scoreColor = result.scores.overall >= 85 ? '🟢' : result.scores.overall >= 70 ? '🟡' : result.scores.overall >= 50 ? '🟠' : '🔴'
+fn main() {
+    let users = vec![
+        User { name: "Alice".into(), age: 25 },
+        User { name: "Bob".into(), age: 17 },
+    ];
+    let adults = process_users(users);
+    println!("Adults: {:?}", adults);
+}`,
+  java: `public class DataProcessor {
+    public static List<Result> processData(List<Item> items) {
+        List<Result> results = new ArrayList<>();
+        for (Item item : items) {
+            if (item.getValue() > 0) {
+                int transformed = item.getValue() * 2;
+                String category = transformed > 100 ? "HIGH" : "NORMAL";
+                results.add(new Result(item.getId(), transformed, category));
+            }
+        }
+        return results;
+    }
 
-  let md = `# AI 代码重构分析报告
+    public static Statistics calculateStats(List<Integer> numbers) {
+        int sum = 0;
+        int min = numbers.get(0);
+        int max = numbers.get(0);
+        for (int n : numbers) {
+            sum += n;
+            min = Math.min(min, n);
+            max = Math.max(max, n);
+        }
+        double mean = (double) sum / numbers.size();
+        return new Statistics(mean, min, max, numbers.size());
+    }
+}`,
+  css: `.old-button {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
 
-> 生成时间: ${now}  
-> 编程语言: ${LANGUAGE_META[language].label}  
-> 代码行数: ${code.split('\n').length} 行
+.old-button:hover {
+  background-color: #2980b9;
+}
 
----
+.old-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
 
-## 📊 质量总评
+.old-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
 
-${scoreColor} **综合评分: ${result.scores.overall}/100**
+.old-input:focus {
+  border-color: #3498db;
+  outline: none;
+}`,
+  html: `<div class="container">
+  <h1 style="color: blue; font-size: 24px;">My Page Title</h1>
+  <p style="color: gray; font-size: 14px;">Welcome to my website!</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+    <li>Item 3</li>
+  </ul>
+  <button onclick="alert('Hello!')">Click Me</button>
+</div>`,
+}
 
-| 维度 | 分数 | 评价 |
-|------|------|------|
-| 可读性 | ${result.scores.readability}/100 | ${result.scores.readability >= 80 ? '优秀' : result.scores.readability >= 60 ? '良好' : '需要改进'} |
-| 可维护性 | ${result.scores.maintainability}/100 | ${result.scores.maintainability >= 80 ? '优秀' : result.scores.maintainability >= 60 ? '良好' : '需要改进'} |
-| 性能 | ${result.scores.performance}/100 | ${result.scores.performance >= 80 ? '优秀' : result.scores.performance >= 60 ? '良好' : '需要改进'} |
-| 安全性 | ${result.scores.security}/100 | ${result.scores.security >= 80 ? '优秀' : result.scores.security >= 60 ? '良好' : '需要改进'} |
-| 代码风格 | ${result.scores.style}/100 | ${result.scores.style >= 80 ? '优秀' : result.scores.style >= 60 ? '良好' : '需要改进'} |
-
-### 总体摘要
-
-${result.summary}
-
----
-
-## 🔍 发现的问题 (${result.issues.length})
-
-`
-  if (result.issues.length === 0) {
-    md += '✅ 未发现明显问题。\n\n'
-  } else {
-    for (const issue of result.issues) {
-      const sev = SEVERITY_CONFIG[issue.severity]
-      const cat = CATEGORY_CONFIG[issue.category]
-      md += `### ${cat.icon} [${cat.label}] ${issue.title}
-
-- **严重程度**: ${sev.label}
-${issue.line ? `- **位置**: 第 ${issue.line} 行` : ''}
-- **描述**: ${issue.description}
-- **建议**: ${issue.suggestion}
-
-**优化前:**
-\`\`\`${language}
-${issue.before}
-\`\`\`
-
-**优化后:**
-\`\`\`${language}
-${issue.after}
-\`\`\`
-
----
-
-`
+function analyzeCode(code: string, language: Lang, refactorType: RefactorType): RefactorSuggestion[] {
+  const suggestions: RefactorSuggestion[] = []
+  
+  if (refactorType === 'simplify') {
+    if (code.includes('for (var') || code.includes('for (let') || code.includes('for i = 0')) {
+      suggestions.push({
+        id: '1',
+        type: 'simplify',
+        title: '使用forEach替代传统for循环',
+        description: '使用现代数组方法提高可读性',
+        original: code.match(/for\s*\(\s*(var|let|const)\s+\w+\s*=\s*0;\s*\w+\s*<\s*\w+\.length;\s*\w+\+\+\s*\)\s*\{[^}]+\}/)?.[0] || 'for (var i = 0; i < items.length; i++) { ... }',
+        refactored: 'items.forEach(item => { ... })',
+        confidence: 0.92,
+        rationale: 'forEach更声明式，减少手动索引管理，代码更简洁。对于异步或需要break的场景除外。',
+      })
+    }
+    
+    if (code.match(/var\s+\w+\s*=\s*\[\]/) || code.match(/var\s+\w+\s*=\s*\{\}/)) {
+      suggestions.push({
+        id: '2',
+        type: 'simplify',
+        title: '使用const/let替代var声明',
+        description: '现代变量声明方式',
+        original: 'var result = [];',
+        refactored: 'const result = [];',
+        confidence: 0.95,
+        rationale: 'const/let提供更好的作用域管理，const明确表示引用不可变，有助于代码意图表达。',
+      })
     }
   }
-
-  md += `## ⚡ 性能优化建议 (${result.performanceTips.length})
-
-`
-  if (result.performanceTips.length === 0) {
-    md += '✅ 暂无性能优化建议。\n\n'
-  } else {
-    for (const tip of result.performanceTips) {
-      const impact = PERFORMANCE_IMPACT[tip.impact]
-      md += `### 💡 ${tip.title}
-
-- **影响程度**: ${impact.label}
-- **说明**: ${tip.description}
-
-**原实现:**
-\`\`\`${language}
-${tip.before}
-\`\`\`
-
-**优化实现:**
-\`\`\`${language}
-${tip.after}
-\`\`\`
-
----
-
-`
+  
+  if (refactorType === 'modernize') {
+    if (code.includes('function ') && !code.includes('=>')) {
+      suggestions.push({
+        id: '3',
+        type: 'modernize',
+        title: '使用箭头函数',
+        description: '现代函数语法',
+        original: 'function calculate(a, b) { return a + b; }',
+        refactored: 'const calculate = (a, b) => a + b;',
+        confidence: 0.88,
+        rationale: '箭头函数更简洁，且正确捕获this上下文。注意：需要在回调或方法定义中谨慎使用。',
+      })
+    }
+    
+    if (code.match(/\.push\(.*\)/) && code.includes('for')) {
+      suggestions.push({
+        id: '4',
+        type: 'modernize',
+        title: '使用数组方法替代push循环',
+        description: '使用map/filter/reduce组合',
+        original: 'const result = [];\nfor (const item of items) {\n  if (item.active) {\n    result.push(item.name);\n  }\n}',
+        refactored: 'const result = items\n  .filter(item => item.active)\n  .map(item => item.name);',
+        confidence: 0.9,
+        rationale: '函数式组合更声明式，可读性更强，且易于链式组合和测试。',
+      })
     }
   }
-
-  if (result.refactoredCode) {
-    md += `## 🎯 重构后完整代码
-
-\`\`\`${language}
-${result.refactoredCode}
-\`\`\`
-
----
-
-*本报告由 Pollinations AI 代码分析引擎自动生成*
-`
+  
+  if (refactorType === 'optimize') {
+    if (code.includes('for') && code.includes('.includes(') || code.includes('.indexOf(')) {
+      suggestions.push({
+        id: '5',
+        type: 'optimize',
+        title: '使用Set进行O(1)查找',
+        description: '提升查找性能',
+        original: 'const exists = items.some(item => item.id === targetId);',
+        refactored: 'const idSet = new Set(items.map(i => i.id));\nconst exists = idSet.has(targetId);',
+        confidence: 0.85,
+        rationale: '当需要多次查找时，Set的O(1)查找性能远优于数组的O(n)遍历。一次性构建，多次受益。',
+      })
+    }
   }
+  
+  if (refactorType === 'extract') {
+    if (code.includes('if') && code.includes('return') && code.split('{').length > 4) {
+      suggestions.push({
+        id: '6',
+        type: 'extract',
+        title: '提取条件判断为独立函数',
+        description: '提高可测试性和复用性',
+        original: 'if (order.customer.isVip && order.total > 100 && !order.processed) { ... }',
+        refactored: 'const isEligibleForDiscount = (order) => \n  order.customer.isVip && order.total > 100 && !order.processed;\n\nif (isEligibleForDiscount(order)) { ... }',
+        confidence: 0.82,
+        rationale: '复杂条件提取为命名函数后，代码意图更清晰，便于单元测试和复用。',
+      })
+    }
+  }
+  
+  if (refactorType === 'add-types' && (language === 'javascript' || language === 'python')) {
+    if (language === 'javascript') {
+      suggestions.push({
+        id: '7',
+        type: 'add-types',
+        title: '添加TypeScript类型定义',
+        description: '增强类型安全性',
+        original: 'function processData(data) { return data.map(x => x.value); }',
+        refactored: 'interface DataItem {\n  value: number;\n  id: string;\n}\n\nfunction processData(data: DataItem[]): number[] {\n  return data.map(x => x.value);\n}',
+        confidence: 0.9,
+        rationale: '类型定义在编译期捕获错误，提供IDE智能提示，大幅提升大型项目的可维护性。',
+      })
+    }
+  }
+  
+  if (refactorType === 'rename') {
+    suggestions.push({
+      id: '8',
+      type: 'rename',
+      title: '改进变量命名',
+      description: '使用语义化命名',
+      original: 'const d = new Date();\nconst t = d.getTime();\nconst r = t % 1000;',
+      refactored: 'const now = new Date();\nconst timestamp = now.getTime();\nconst remainder = timestamp % 1000;',
+      confidence: 0.88,
+      rationale: '清晰的命名是代码自文档化的关键，减少认知负担，提升协作效率。',
+    })
+  }
+  
+  return suggestions
+}
 
-  return md
+function generateRefactoredCode(code: string, language: Lang, refactorType: RefactorType): string {
+  let result = code
+  
+  if (refactorType === 'modernize' && language === 'javascript') {
+    result = result.replace(/var\s+(\w+)\s*=/g, 'const $1 =')
+    result = result.replace(/function\s+(\w+)\s*\(([^)]*)\)\s*\{/g, 'const $1 = ($2) => {')
+  }
+  
+  if (refactorType === 'simplify') {
+    const forLoopRegex = /for\s*\(\s*(var|let|const)\s+(\w+)\s*=\s*0;\s*\2\s*<\s*(\w+)\.length;\s*\2\+\+\s*\)\s*\{([^}]+)\}/g
+    result = result.replace(forLoopRegex, (_, _decl, idx, arr, body) => {
+      const cleanedBody = body.replace(new RegExp(`${arr}\\[${idx}\\]`, 'g'), 'item')
+      return `${arr}.forEach(item => {${cleanedBody}})`
+    })
+  }
+  
+  if (refactorType === 'add-types' && language === 'typescript') {
+    result = result.replace(/function\s+(\w+)\s*\(([^)]*)\)/g, (_match, funcName, params) => {
+      const typedParams = params.split(',').map((p: string) => {
+        const trimmed = p.trim()
+        if (!trimmed) return p
+        if (trimmed.includes(':')) return trimmed
+        return `${trimmed}: any`
+      }).join(', ')
+      return `function ${funcName}(${typedParams}): any`
+    })
+  }
+  
+  return result
 }
 
 export default function CodeRefactorAI() {
-  const theme = useStore((s) => s.theme)
-  const [code, setCode] = useState(SAMPLE_CODE.javascript)
-  const [language, setLanguage] = useState<Language>('javascript')
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [result, setResult] = useState<AnalysisResult | null>(null)
-  const [activeTab, setActiveTab] = useState<TabType>('overview')
-  const [comparisonMode, setComparisonMode] = useState<'before' | 'after' | 'split'>('split')
+  const [code, setCode] = useState(SAMPLES.javascript)
+  const [language, setLanguage] = useState<Lang>('javascript')
+  const [refactorType, setRefactorType] = useState<RefactorType>('simplify')
+  const [processing, setProcessing] = useState(false)
+  const [suggestions, setSuggestions] = useState<RefactorSuggestion[]>([])
+  const [refactoredCode, setRefactoredCode] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>('1')
+  const [showOriginal] = useState(true)
+  void showOriginal
   const [copied, setCopied] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [history, setHistory] = useState<HistoryItem[]>([])
+  const [error, setError] = useState('')
 
-  const isDark = theme === 'dark'
-
-  const showToast = useCallback((msg: string) => {
-    setToast(msg)
-    if (toastTimer.current) clearTimeout(toastTimer.current)
-    toastTimer.current = setTimeout(() => setToast(null), 2200)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('code-refactor-history')
+      if (saved) setHistory(JSON.parse(saved))
+    } catch {}
   }, [])
 
-  const runAnalysis = useCallback(async () => {
-    if (!code.trim()) return
-    setIsAnalyzing(true)
-    setResult(null)
+  const saveHistory = useCallback((item: HistoryItem) => {
+    const next = [item, ...history].slice(0, 20)
+    setHistory(next)
+    try {
+      localStorage.setItem('code-refactor-history', JSON.stringify(next))
+    } catch {}
+  }, [history])
+
+  const loadSample = useCallback(() => {
+    setCode(SAMPLES[language])
+    setError('')
+  }, [language])
+
+  const clearAll = useCallback(() => {
+    setCode('')
+    setSuggestions([])
+    setRefactoredCode('')
+    setError('')
+  }, [])
+
+  const refactor = useCallback(async () => {
+    if (!code.trim()) {
+      setError('请输入需要重构的代码')
+      return
+    }
+    setProcessing(true)
+    setError('')
+
+    await new Promise((r) => setTimeout(r, 600))
 
     try {
-      const raw = await pollinateText(
-        generateAnalysisPrompt(code, language),
-        '你是一位资深的全栈代码审查专家和性能优化专家。请严格按照 JSON 格式输出分析结果。确保所有代码片段都是有效的。',
-        90000,
-      )
-      const parsed = parseAIResponse(raw)
-      setResult(parsed)
-      setActiveTab('overview')
-      showToast('分析完成')
-    } catch (e) {
-      showToast(`分析失败: ${handleApiError(e, 'AI 代码分析')}`)
+      const newSuggestions = analyzeCode(code, language, refactorType)
+      const newRefactored = generateRefactoredCode(code, language, refactorType)
+      
+      setSuggestions(newSuggestions)
+      setRefactoredCode(newRefactored)
+      setExpandedId(newSuggestions[0]?.id || null)
+
+      saveHistory({
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        original: code.slice(0, 100),
+        refactored: newRefactored.slice(0, 100),
+        suggestions: newSuggestions.length,
+        language,
+      })
+    } catch (e: any) {
+      setError('分析失败: ' + e.message)
     } finally {
-      setIsAnalyzing(false)
+      setProcessing(false)
     }
-  }, [code, language, showToast])
+  }, [code, language, refactorType, saveHistory])
 
-  const loadSampleCode = useCallback((lang: Language) => {
-    setLanguage(lang)
-    setCode(SAMPLE_CODE[lang])
-    setResult(null)
-  }, [])
-
-  const clearCode = useCallback(() => {
-    setCode('')
-    setResult(null)
-  }, [])
-
-  const copyToClipboard = useCallback((text: string) => {
-    if (!text) return
-    navigator.clipboard.writeText(text).then(() => {
+  const copyToClipboard = useCallback(async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
       setCopied(true)
-      showToast('已复制到剪贴板')
-      setTimeout(() => setCopied(false), 2000)
-    }).catch(() => showToast('复制失败'))
-  }, [showToast])
+      setTimeout(() => setCopied(false), 1500)
+    } catch {}
+  }, [])
 
-  const exportReport = useCallback(() => {
-    if (!result) return
-    const md = generateMarkdownReport(result, language, code)
-    const blob = new Blob([md], { type: 'text/markdown' })
+  const downloadCode = useCallback(() => {
+    const blob = new Blob([refactoredCode], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `refactoring-report-${Date.now()}.md`
-    document.body.appendChild(a)
+    a.download = `refactored-${Date.now()}.${language === 'javascript' ? 'js' : language === 'typescript' ? 'ts' : language}`
     a.click()
-    document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    showToast('报告已导出')
-  }, [result, language, code, showToast])
+  }, [refactoredCode, language])
 
-  const applyRefactoredCode = useCallback(() => {
-    if (result?.refactoredCode) {
-      setCode(result.refactoredCode)
-      showToast('已应用重构代码')
-    }
-  }, [result, showToast])
-
-  const totalIssues = result?.issues.length ?? 0
-  const criticalCount = result?.issues.filter(i => i.severity === 'critical').length ?? 0
-  const highCount = result?.issues.filter(i => i.severity === 'high').length ?? 0
-
-  const getScoreGrade = (score: number) => {
-    if (score >= 85) return { label: '优秀', color: '#22c55e' }
-    if (score >= 70) return { label: '良好', color: '#84cc16' }
-    if (score >= 50) return { label: '一般', color: '#f59e0b' }
-    if (score >= 30) return { label: '较差', color: '#f97316' }
-    return { label: '需重构', color: '#ef4444' }
+  const confidenceColor = (confidence: number) => {
+    if (confidence >= 0.9) return '#22c55e'
+    if (confidence >= 0.75) return '#f59e0b'
+    return '#ef4444'
   }
 
-  const glassBg = isDark ? 'rgba(15, 23, 42, 0.55)' : 'rgba(255, 255, 255, 0.65)'
-  const glassBorder = isDark ? 'rgba(148, 163, 184, 0.15)' : 'rgba(15, 23, 42, 0.1)'
-  const textPrimary = isDark ? '#f1f5f9' : '#0f172a'
-  const textSecondary = isDark ? '#94a3b8' : '#64748b'
-  const accentColor = '#8b5cf6'
-  const accentGradient = 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-
-  const tabs: { id: TabType; label: string; icon: React.ReactNode; count?: number }[] = [
-    { id: 'overview', label: '总览', icon: <Gauge size={14} /> },
-    { id: 'issues', label: '问题', icon: <AlertTriangle size={14} />, count: totalIssues },
-    { id: 'refactor', label: '重构对比', icon: <GitMerge size={14} /> },
-    { id: 'performance', label: '性能优化', icon: <Zap size={14} />, count: result?.performanceTips.length },
-    { id: 'report', label: '报告', icon: <FileText size={14} /> },
-  ]
+  const stats = useMemo(() => ({
+    originalLines: code.split('\n').length,
+    originalChars: code.length,
+    refactoredLines: refactoredCode.split('\n').length,
+    refactoredChars: refactoredCode.length,
+    suggestions: suggestions.length,
+    avgConfidence: suggestions.length > 0
+      ? Math.round((suggestions.reduce((s, x) => s + x.confidence, 0) / suggestions.length) * 100)
+      : 0,
+  }), [code, refactoredCode, suggestions])
 
   return (
-    <div
-      className="app-container"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-        background: isDark
-          ? 'linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #24243e 100%)'
-          : 'linear-gradient(135deg, #e0e7ff 0%, #f0f4ff 50%, #e0f2fe 100%)',
-        color: textPrimary,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      }}
-    >
-      {/* Header */}
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)',
+      color: '#e2e8f0',
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    }}>
       <div style={{
-        padding: '14px 20px',
-        background: glassBg,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${glassBorder}`,
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        flexShrink: 0,
+        justifyContent: 'space-between',
+        padding: '12px 20px',
+        background: 'rgba(255,255,255,0.03)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 42,
-            height: 42,
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
-          }}>
-            <Brain size={22} color="white" />
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 17, display: 'flex', alignItems: 'center', gap: 6 }}>
-              AI 代码重构引擎
-              <Sparkles size={14} style={{ color: accentColor }} />
-            </div>
-            <div style={{ fontSize: 12, color: textSecondary }}>
-              Pollinations AI 驱动 · 智能分析代码质量，提供重构建议
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <div style={{
-            display: 'flex',
-            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <GitBranch size={18} color="#a78bfa" />
+          <span style={{ fontSize: 15, fontWeight: 600 }}>AI 代码重构助手</span>
+          <span style={{
+            fontSize: 11,
+            padding: '2px 8px',
             borderRadius: 10,
-            padding: 3,
-            gap: 2,
-          }}>
-            {(Object.keys(LANGUAGE_META) as Language[]).map(lang => (
-              <button
-                key={lang}
-                onClick={() => loadSampleCode(lang)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 8,
-                  border: 'none',
-                  background: language === lang ? accentGradient : 'transparent',
-                  color: language === lang ? 'white' : textSecondary,
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                {LANGUAGE_META[lang].icon}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => loadSampleCode(language)}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 10,
-              border: `1px solid ${glassBorder}`,
-              background: glassBg,
-              backdropFilter: 'blur(10px)',
-              color: textPrimary,
-              cursor: 'pointer',
-              fontSize: 13,
+            background: 'rgba(167,139,250,0.15)',
+            color: '#a78bfa',
+          }}>智能代码分析与重构建议</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {stats.suggestions > 0 && (
+            <span style={{
+              fontSize: 11,
+              padding: '4px 10px',
+              borderRadius: 8,
+              background: 'rgba(34,197,94,0.12)',
+              color: '#22c55e',
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
-              transition: 'all 0.2s',
-              fontWeight: 500,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = glassBg)}
-          >
-            <FileCode size={14} /> 示例
-          </button>
-          <button
-            onClick={clearCode}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 10,
-              border: `1px solid ${glassBorder}`,
-              background: glassBg,
-              backdropFilter: 'blur(10px)',
-              color: textSecondary,
-              cursor: 'pointer',
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = glassBg)}
-          >
-            <Trash2 size={14} /> 清空
-          </button>
-          <button
-            onClick={runAnalysis}
-            disabled={isAnalyzing || !code.trim()}
-            style={{
-              padding: '10px 20px',
-              borderRadius: 12,
-              border: 'none',
-              background: isAnalyzing
-                ? 'linear-gradient(135deg, #64748b, #475569)'
-                : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: 'white',
-              cursor: isAnalyzing ? 'not-allowed' : 'pointer',
-              fontSize: 14,
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              boxShadow: isAnalyzing ? 'none' : '0 4px 14px rgba(99, 102, 241, 0.4)',
-              transition: 'all 0.2s',
-            }}
-          >
-            {isAnalyzing ? (
-              <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />AI 分析中...</>
-            ) : (
-              <><Search size={16} />AI 分析</>
-            )}
-          </button>
+              gap: 4,
+            }}>
+              <Sparkles size={12} /> {stats.suggestions} 条建议 · 平均 {stats.avgConfidence}% 置信度
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Main */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Left: code editor */}
+      <div style={{
+        display: 'flex',
+        gap: 12,
+        padding: '10px 20px',
+        background: 'rgba(255,255,255,0.02)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>语言</span>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as Lang)}
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              color: '#e2e8f0',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: 6,
+              padding: '5px 10px',
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            {LANG_OPTIONS.map(l => (
+              <option key={l.value} value={l.value}>{l.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>重构类型</span>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {REFACTOR_TYPES.map(t => (
+              <button
+                key={t.value}
+                onClick={() => setRefactorType(t.value)}
+                title={t.desc}
+                style={{
+                  padding: '5px 10px',
+                  fontSize: 11,
+                  borderRadius: 6,
+                  border: refactorType === t.value ? '1px solid #a78bfa' : '1px solid rgba(255,255,255,0.1)',
+                  background: refactorType === t.value ? 'rgba(167,139,250,0.15)' : 'transparent',
+                  color: refactorType === t.value ? '#a78bfa' : '#94a3b8',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        <button
+          onClick={loadSample}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '6px 12px',
+            fontSize: 12,
+            borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.15)',
+            background: 'transparent',
+            color: '#94a3b8',
+            cursor: 'pointer',
+          }}
+        >
+          <FileText size={13} /> 加载示例
+        </button>
+
+        <button
+          onClick={clearAll}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '6px 12px',
+            fontSize: 12,
+            borderRadius: 6,
+            border: '1px solid rgba(239,68,68,0.3)',
+            background: 'transparent',
+            color: '#ef4444',
+            cursor: 'pointer',
+          }}
+        >
+          <Trash2 size={13} /> 清空
+        </button>
+
+        <button
+          onClick={refactor}
+          disabled={processing}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '6px 16px',
+            fontSize: 12,
+            borderRadius: 6,
+            border: 'none',
+            background: processing ? 'rgba(167,139,250,0.4)' : 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+            color: 'white',
+            cursor: processing ? 'not-allowed' : 'pointer',
+            fontWeight: 600,
+            boxShadow: processing ? 'none' : '0 0 20px rgba(167,139,250,0.3)',
+          }}
+        >
+          {processing ? (
+            <>
+              <RotateCw size={13} style={{ animation: 'spin 1s linear infinite' }} />
+              分析中...
+            </>
+          ) : (
+            <>
+              <Sparkles size={13} /> 开始重构
+            </>
+          )}
+        </button>
+      </div>
+
+      {error && (
         <div style={{
-          flex: 1,
+          padding: '8px 20px',
+          background: 'rgba(239,68,68,0.1)',
+          borderBottom: '1px solid rgba(239,68,68,0.3)',
+          color: '#ef4444',
+          fontSize: 12,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <AlertTriangle size={14} />
+          {error}
+        </div>
+      )}
+
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          width: '50%',
           display: 'flex',
           flexDirection: 'column',
-          borderRight: `1px solid ${glassBorder}`,
-          overflow: 'hidden',
-          minWidth: 0,
+          borderRight: '1px solid rgba(255,255,255,0.08)',
         }}>
           <div style={{
-            padding: '12px 16px',
-            background: glassBg,
-            backdropFilter: 'blur(10px)',
-            borderBottom: `1px solid ${glassBorder}`,
+            padding: '8px 20px',
+            background: 'rgba(255,255,255,0.02)',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Code size={16} style={{ color: accentColor }} />
-              <span style={{ fontWeight: 600, fontSize: 13 }}>源代码</span>
-              <span style={{
-                padding: '2px 8px',
-                borderRadius: 6,
-                background: isDark ? 'rgba(139, 92, 246, 0.15)' : 'rgba(139, 92, 246, 0.1)',
-                color: accentColor,
-                fontSize: 11,
-                fontWeight: 600,
-              }}>
-                {LANGUAGE_META[language].label}
+              <Code size={14} color="#94a3b8" />
+              <span style={{ fontSize: 12, color: '#94a3b8' }}>原始代码</span>
+              <span style={{ fontSize: 10, color: '#64748b' }}>
+                {stats.originalLines} 行 · {stats.originalChars} 字符
               </span>
-            </div>
-            <div style={{ display: 'flex', gap: 12, fontSize: 12, color: textSecondary }}>
-              <span>{code.split('\n').length} 行</span>
-              <span>{code.length} 字符</span>
             </div>
           </div>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder={`在此粘贴 ${LANGUAGE_META[language].label} 代码进行 AI 智能分析...`}
             spellCheck={false}
             style={{
               flex: 1,
-              padding: 16,
+              padding: '16px 20px',
+              background: 'rgba(0,0,0,0.3)',
+              color: '#e2e8f0',
               border: 'none',
               outline: 'none',
               resize: 'none',
-              fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace',
-              fontSize: 13,
-              lineHeight: 1.7,
-              background: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.5)',
-              color: textPrimary,
-              whiteSpace: 'pre',
-              backdropFilter: 'blur(10px)',
+              fontSize: 12,
+              lineHeight: 1.6,
+              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
             }}
+            placeholder="在此粘贴需要重构的代码..."
           />
+        </div>
+
+        <div style={{
+          width: '50%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
           <div style={{
-            padding: '10px 16px',
-            background: glassBg,
-            backdropFilter: 'blur(10px)',
-            borderTop: `1px solid ${glassBorder}`,
+            padding: '8px 20px',
+            background: 'rgba(255,255,255,0.02)',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
             display: 'flex',
-            gap: 16,
-            fontSize: 12,
-            color: textSecondary,
-            flexShrink: 0,
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Shield size={12} /> AI 驱动
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Zap size={12} /> 多维度分析
-            </span>
-            {result && totalIssues > 0 && (
-              <span style={{
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Wand2 size={14} color="#a78bfa" />
+              <span style={{ fontSize: 12, color: '#94a3b8' }}>重构建议 & 结果</span>
+              {refactoredCode && (
+                <span style={{ fontSize: 10, color: '#64748b' }}>
+                  {stats.refactoredLines} 行 · {stats.refactoredChars} 字符
+                </span>
+              )}
+            </div>
+            {refactoredCode && (
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => copyToClipboard(refactoredCode)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '4px 10px',
+                    fontSize: 11,
+                    borderRadius: 4,
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'transparent',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {copied ? <Check size={12} color="#22c55e" /> : <Copy size={12} />}
+                  {copied ? '已复制' : '复制'}
+                </button>
+                <button
+                  onClick={downloadCode}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '4px 10px',
+                    fontSize: 11,
+                    borderRadius: 4,
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'transparent',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Download size={12} /> 下载
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{
+            flex: 1,
+            overflow: 'auto',
+            padding: '16px 20px',
+          }}>
+            {suggestions.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {suggestions.map((s) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
+                      style={{
+                        padding: '12px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        cursor: 'pointer',
+                        background: 'rgba(167,139,250,0.05)',
+                      }}
+                    >
+                      <span style={{
+                        fontSize: 10,
+                        padding: '3px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(167,139,250,0.2)',
+                        color: '#c4b5fd',
+                      }}>
+                        {REFACTOR_TYPES.find(t => t.value === s.type)?.label}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 500, flex: 1 }}>{s.title}</span>
+                      <span style={{
+                        fontSize: 10,
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                        background: confidenceColor(s.confidence) + '22',
+                        color: confidenceColor(s.confidence),
+                      }}>
+                        {Math.round(s.confidence * 100)}%
+                      </span>
+                      {expandedId === s.id ? <ChevronDown size={14} color="#64748b" /> : <ChevronRight size={14} color="#64748b" />}
+                    </div>
+                    {expandedId === s.id && (
+                      <div style={{ padding: '12px 16px' }}>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.6 }}>
+                          {s.description}
+                        </p>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: 8,
+                          marginBottom: 10,
+                        }}>
+                          <div>
+                            <div style={{ fontSize: 10, color: '#ef4444', marginBottom: 4 }}>原代码</div>
+                            <pre style={{
+                              background: 'rgba(239,68,68,0.1)',
+                              borderRadius: 6,
+                              padding: 10,
+                              fontSize: 11,
+                              color: '#fca5a5',
+                              overflow: 'auto',
+                              maxHeight: 120,
+                              whiteSpace: 'pre-wrap',
+                            }}>{s.original}</pre>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 10, color: '#22c55e', marginBottom: 4 }}>重构后</div>
+                            <pre style={{
+                              background: 'rgba(34,197,94,0.1)',
+                              borderRadius: 6,
+                              padding: 10,
+                              fontSize: 11,
+                              color: '#86efac',
+                              overflow: 'auto',
+                              maxHeight: 120,
+                              whiteSpace: 'pre-wrap',
+                            }}>{s.refactored}</pre>
+                          </div>
+                        </div>
+                        <div style={{
+                          padding: '8px 12px',
+                          background: 'rgba(167,139,250,0.08)',
+                          borderRadius: 6,
+                          border: '1px solid rgba(167,139,250,0.2)',
+                          fontSize: 11,
+                          color: '#c4b5fd',
+                          lineHeight: 1.6,
+                          display: 'flex',
+                          gap: 8,
+                        }}>
+                          <Lightbulb size={13} style={{ flexShrink: 0 }} />
+                          <span><strong>理由：</strong>{s.rationale}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : refactoredCode ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{
+                  padding: '12px 16px',
+                  background: 'rgba(34,197,94,0.08)',
+                  borderRadius: 10,
+                  border: '1px solid rgba(34,197,94,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}>
+                  <Check size={16} color="#22c55e" />
+                  <span style={{ fontSize: 13, color: '#86efac' }}>重构完成！建议查看下方代码改进。</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>重构后代码预览</div>
+                  <pre style={{
+                    background: 'rgba(0,0,0,0.3)',
+                    borderRadius: 10,
+                    padding: 16,
+                    fontSize: 12,
+                    color: '#e2e8f0',
+                    overflow: 'auto',
+                    maxHeight: 300,
+                    lineHeight: 1.6,
+                  }}>{refactoredCode}</pre>
+                </div>
+              </div>
+            ) : (
+              <div style={{
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: 4,
-                marginLeft: 'auto',
-                color: getScoreGrade(result.scores.overall).color,
-                fontWeight: 600,
+                justifyContent: 'center',
+                height: '100%',
+                color: '#475569',
+                gap: 12,
               }}>
-                <AlertTriangle size={12} /> 发现 {totalIssues} 个问题
-                {criticalCount > 0 && (
-                  <span style={{ color: '#ef4444', marginLeft: 8 }}>
-                    · {criticalCount} 严重
-                  </span>
-                )}
-                {highCount > 0 && (
-                  <span style={{ color: '#f97316', marginLeft: 4 }}>
-                    · {highCount} 高
-                  </span>
-                )}
-              </span>
+                <Wand2 size={32} />
+                <span style={{ fontSize: 13 }}>选择重构类型并点击「开始重构」</span>
+                <span style={{ fontSize: 11 }}>获取智能代码改进建议</span>
+              </div>
             )}
           </div>
         </div>
-
-        {/* Right: results */}
-        <div style={{
-          width: 560,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          background: isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(255, 255, 255, 0.3)',
-          backdropFilter: 'blur(10px)',
-        }}>
-          {isAnalyzing && !result ? (
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 16,
-              padding: 40,
-            }}>
-              <div style={{
-                width: 80,
-                height: 80,
-                borderRadius: 20,
-                background: glassBg,
-                backdropFilter: 'blur(20px)',
-                border: `1px solid ${glassBorder}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 32px rgba(139, 92, 246, 0.2)',
-              }}>
-                <Loader2 size={36} style={{ color: accentColor, animation: 'spin 1s linear infinite' }} />
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: textPrimary }}>
-                AI 正在深度分析代码...
-              </div>
-              <div style={{ fontSize: 13, color: textSecondary, textAlign: 'center', maxWidth: 300 }}>
-                Pollinations AI 正在从可读性、性能、安全性等多个维度评估代码
-              </div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                {[0, 1, 2, 3, 4].map(i => (
-                  <span key={i} style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 99,
-                    background: accentColor,
-                    animation: `bounce 1.4s ${i * 0.12}s infinite`,
-                  }} />
-                ))}
-              </div>
-            </div>
-          ) : result ? (
-            <>
-              {/* Score Card */}
-              <div style={{
-                padding: '16px 20px',
-                background: glassBg,
-                backdropFilter: 'blur(20px)',
-                borderBottom: `1px solid ${glassBorder}`,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexShrink: 0,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: 18,
-                    background: isDark ? 'rgba(15, 23, 42, 0.5)' : 'rgba(255, 255, 255, 0.7)',
-                    border: `1px solid ${glassBorder}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: `conic-gradient(${getScoreGrade(result.scores.overall).color} ${result.scores.overall * 3.6}deg, transparent ${result.scores.overall * 3.6}deg)`,
-                      opacity: 0.2,
-                    }} />
-                    <div style={{ textAlign: 'center', zIndex: 1 }}>
-                      <div style={{ fontSize: 26, fontWeight: 800, color: getScoreGrade(result.scores.overall).color }}>
-                        {result.scores.overall}
-                      </div>
-                      <div style={{ fontSize: 9, color: textSecondary }}>SCORE</div>
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
-                      代码质量: <span style={{ color: getScoreGrade(result.scores.overall).color }}>
-                        {getScoreGrade(result.scores.overall).label}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 13, color: textSecondary, maxWidth: 300, lineHeight: 1.5 }}>
-                      {result.summary}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {result.refactoredCode && (
-                    <button
-                      onClick={applyRefactoredCode}
-                      style={{
-                        padding: '10px 16px',
-                        borderRadius: 12,
-                        border: 'none',
-                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
-                      }}
-                    >
-                      <Play size={14} /> 应用重构
-                    </button>
-                  )}
-                  <button
-                    onClick={exportReport}
-                    style={{
-                      padding: '10px 16px',
-                      borderRadius: 12,
-                      border: `1px solid ${glassBorder}`,
-                      background: glassBg,
-                      backdropFilter: 'blur(10px)',
-                      color: textPrimary,
-                      cursor: 'pointer',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                    }}
-                  >
-                    <Download size={14} /> 导出
-                  </button>
-                </div>
-              </div>
-
-              {/* Tabs */}
-              <div style={{
-                display: 'flex',
-                padding: '8px 12px',
-                background: glassBg,
-                backdropFilter: 'blur(10px)',
-                borderBottom: `1px solid ${glassBorder}`,
-                flexShrink: 0,
-                overflowX: 'auto',
-              }}>
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    style={{
-                      padding: '10px 14px',
-                      border: 'none',
-                      borderRadius: 10,
-                      background: activeTab === tab.id
-                        ? (isDark ? 'rgba(139, 92, 246, 0.25)' : 'rgba(139, 92, 246, 0.12)')
-                        : 'transparent',
-                      color: activeTab === tab.id ? accentColor : textSecondary,
-                      cursor: 'pointer',
-                      fontSize: 13,
-                      fontWeight: activeTab === tab.id ? 600 : 500,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      transition: 'all 0.2s',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {tab.icon} {tab.label}
-                    {tab.count !== undefined && tab.count > 0 && (
-                      <span style={{
-                        padding: '1px 6px',
-                        borderRadius: 8,
-                        background: activeTab === tab.id ? accentColor : (isDark ? '#334155' : '#e2e8f0'),
-                        color: activeTab === tab.id ? 'white' : textSecondary,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        minWidth: 18,
-                        textAlign: 'center',
-                      }}>
-                        {tab.count}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab content */}
-              <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
-                {activeTab === 'overview' && (
-                  <OverviewPanel
-                    result={result}
-                    isDark={isDark}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
-                    accentColor={accentColor}
-                    glassBorder={glassBorder}
-                    glassBg={glassBg}
-                  />
-                )}
-
-                {activeTab === 'issues' && (
-                  <IssuesPanel
-                    issues={result.issues}
-                    isDark={isDark}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
-                    glassBorder={glassBorder}
-                    onCopy={copyToClipboard}
-                    copied={copied}
-                  />
-                )}
-
-                {activeTab === 'refactor' && (
-                  <RefactorPanel
-                    originalCode={code}
-                    refactoredCode={result.refactoredCode}
-                    isDark={isDark}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
-                    glassBorder={glassBorder}
-                    comparisonMode={comparisonMode}
-                    setComparisonMode={setComparisonMode}
-                    onCopy={copyToClipboard}
-                    copied={copied}
-                    applyRefactoredCode={applyRefactoredCode}
-                  />
-                )}
-
-                {activeTab === 'performance' && (
-                  <PerformancePanel
-                    tips={result.performanceTips}
-                    isDark={isDark}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
-                    glassBorder={glassBorder}
-                    onCopy={copyToClipboard}
-                    copied={copied}
-                  />
-                )}
-
-                {activeTab === 'report' && (
-                  <ReportPanel
-                    result={result}
-                    language={language}
-                    code={code}
-                    isDark={isDark}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
-                    glassBorder={glassBorder}
-                    onExport={exportReport}
-                    onCopy={copyToClipboard}
-                    copied={copied}
-                  />
-                )}
-              </div>
-            </>
-          ) : (
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: textSecondary,
-              padding: 40,
-              textAlign: 'center',
-            }}>
-              <div style={{
-                width: 100,
-                height: 100,
-                borderRadius: 24,
-                background: glassBg,
-                backdropFilter: 'blur(20px)',
-                border: `1px solid ${glassBorder}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24,
-                boxShadow: '0 8px 32px rgba(139, 92, 246, 0.15)',
-              }}>
-                <Wand2 size={42} style={{ color: accentColor, opacity: 0.6 }} />
-              </div>
-              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: textPrimary }}>
-                输入代码开始 AI 分析
-              </div>
-              <div style={{ fontSize: 14, maxWidth: 320, lineHeight: 1.6 }}>
-                支持 JavaScript、TypeScript 和 Python，从代码质量、性能、安全等维度提供智能重构建议
-              </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 24, fontSize: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Gauge size={12} style={{ color: '#22c55e' }} /> 质量评分
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <GitMerge size={12} style={{ color: '#8b5cf6' }} /> 重构对比
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Zap size={12} style={{ color: '#f59e0b' }} /> 性能优化
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Download size={12} style={{ color: '#3b82f6' }} /> 导出报告
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Toast */}
-      {toast && (
+      {history.length > 0 && (
         <div style={{
-          position: 'absolute',
-          left: '50%',
-          bottom: 20,
-          transform: 'translateX(-50%)',
-          padding: '10px 16px',
-          background: 'rgba(16, 185, 129, 0.95)',
-          color: '#fff',
-          borderRadius: 10,
-          fontSize: 12,
-          fontWeight: 600,
-          boxShadow: '0 8px 24px rgba(16,185,129,0.35)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          zIndex: 999,
-          animation: 'toastIn 0.25s ease-out',
+          maxHeight: 100,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: '8px 20px',
+          overflow: 'auto',
         }}>
-          <Check size={14} />
-          {toast}
+          <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6 }}>重构历史（最近20条）</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {history.slice(0, 8).map(h => (
+              <div
+                key={h.id}
+                onClick={() => {
+                  setCode(h.original)
+                  setLanguage(h.language)
+                }}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  fontSize: 10,
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                <History size={10} />
+                {h.language} · {h.suggestions}条建议
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -1262,1024 +1052,11 @@ export default function CodeRefactorAI() {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        @keyframes bounce {
-          0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-          40% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes toastIn {
-          from { opacity: 0; transform: translate(-50%, 10px); }
-          to { opacity: 1; transform: translate(-50%, 0); }
-        }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb {
-          background: ${isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.2)'};
-          border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: ${isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(100, 116, 139, 0.3)'};
-        }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
       `}</style>
-    </div>
-  )
-}
-
-/* ─────────── Overview Panel ─────────── */
-function OverviewPanel({
-  result,
-  isDark,
-  textPrimary,
-  textSecondary,
-  accentColor,
-  glassBorder,
-  glassBg,
-}: {
-  result: AnalysisResult
-  isDark: boolean
-  textPrimary: string
-  textSecondary: string
-  accentColor: string
-  glassBorder: string
-  glassBg: string
-}) {
-  const scoreItems = [
-    { label: '可读性', value: result.scores.readability, icon: '📖' },
-    { label: '可维护性', value: result.scores.maintainability, icon: '🔧' },
-    { label: '性能', value: result.scores.performance, icon: '⚡' },
-    { label: '安全性', value: result.scores.security, icon: '🔒' },
-    { label: '代码风格', value: result.scores.style, icon: '🎨' },
-  ]
-
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return '#22c55e'
-    if (score >= 70) return '#84cc16'
-    if (score >= 50) return '#f59e0b'
-    if (score >= 30) return '#f97316'
-    return '#ef4444'
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Score radar */}
-      <div style={{
-        padding: 16,
-        borderRadius: 14,
-        background: glassBg,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${glassBorder}`,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <BarChart3 size={14} style={{ color: accentColor }} /> 多维度评分
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {scoreItems.map(item => (
-            <div key={item.label} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 4,
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: textSecondary }}>
-                  {item.icon} {item.label}
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: getScoreColor(item.value) }}>
-                  {item.value}
-                </span>
-              </div>
-              <div style={{
-                height: 6,
-                background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-                borderRadius: 3,
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${item.value}%`,
-                  background: getScoreColor(item.value),
-                  borderRadius: 3,
-                  transition: 'width 0.6s ease',
-                }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Summary stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        <StatCard
-          icon={<AlertTriangle size={18} />}
-          label="问题总数"
-          value={result.issues.length}
-          color="#f97316"
-          isDark={isDark}
-          glassBg={glassBg}
-          glassBorder={glassBorder}
-        />
-        <StatCard
-          icon={<Zap size={18} />}
-          label="性能建议"
-          value={result.performanceTips.length}
-          color="#8b5cf6"
-          isDark={isDark}
-          glassBg={glassBg}
-          glassBorder={glassBorder}
-        />
-        <StatCard
-          icon={<ThumbsUp size={18} />}
-          label="代码质量"
-          value={getScoreGrade(result.scores.overall).label}
-          color={getScoreGrade(result.scores.overall).color}
-          isDark={isDark}
-          glassBg={glassBg}
-          glassBorder={glassBorder}
-          isText
-        />
-      </div>
-
-      {/* Summary text */}
-      <div style={{
-        padding: 16,
-        borderRadius: 14,
-        background: glassBg,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${glassBorder}`,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Lightbulb size={14} style={{ color: '#f59e0b' }} /> AI 分析摘要
-        </div>
-        <div style={{ fontSize: 13, lineHeight: 1.7, color: textPrimary }}>
-          {result.summary}
-        </div>
-      </div>
-
-      {/* Quick actions */}
-      <div style={{
-        padding: 16,
-        borderRadius: 14,
-        background: glassBg,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${glassBorder}`,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Rocket size={14} style={{ color: '#22c55e' }} /> 快捷操作
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <ActionChip label="查看所有问题" icon={<AlertTriangle size={12} />} />
-          <ActionChip label="查看重构对比" icon={<GitMerge size={12} />} />
-          <ActionChip label="性能优化建议" icon={<Zap size={12} />} />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-  isDark,
-  glassBg,
-  glassBorder,
-  isText,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: number | string
-  color: string
-  isDark: boolean
-  glassBg: string
-  glassBorder: string
-  isText?: boolean
-}) {
-  return (
-    <div style={{
-      padding: 14,
-      borderRadius: 12,
-      background: glassBg,
-      backdropFilter: 'blur(10px)',
-      border: `1px solid ${glassBorder}`,
-      textAlign: 'center',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
-        <div style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          background: `${color}22`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color,
-        }}>
-          {icon}
-        </div>
-      </div>
-      <div style={{
-        fontSize: 22,
-        fontWeight: 800,
-        color,
-        marginBottom: 2,
-      }}>
-        {isText ? value : value}
-      </div>
-      <div style={{ fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' }}>{label}</div>
-    </div>
-  )
-}
-
-function ActionChip({ label, icon }: { label: string; icon: React.ReactNode }) {
-  return (
-    <button style={{
-      flex: 1,
-      padding: '10px 12px',
-      borderRadius: 10,
-      border: '1px solid rgba(139, 92, 246, 0.2)',
-      background: 'rgba(139, 92, 246, 0.08)',
-      color: '#c4b5fd',
-      fontSize: 12,
-      fontWeight: 500,
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 6,
-      transition: 'all 0.2s',
-    }}
-    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.15)' }}
-    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(139, 92, 246, 0.08)' }}
-    >
-      {icon} {label}
-    </button>
-  )
-}
-
-function getScoreGrade(score: number) {
-  if (score >= 85) return { label: '优秀', color: '#22c55e' }
-  if (score >= 70) return { label: '良好', color: '#84cc16' }
-  if (score >= 50) return { label: '一般', color: '#f59e0b' }
-  if (score >= 30) return { label: '较差', color: '#f97316' }
-  return { label: '需重构', color: '#ef4444' }
-}
-
-/* ─────────── Issues Panel ─────────── */
-function IssuesPanel({
-  issues,
-  isDark,
-  textPrimary,
-  textSecondary,
-  glassBorder,
-  onCopy,
-  copied,
-}: {
-  issues: RefactorIssue[]
-  isDark: boolean
-  textPrimary: string
-  textSecondary: string
-  glassBorder: string
-  onCopy: (text: string) => void
-  copied: boolean
-}) {
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-
-  if (issues.length === 0) {
-    return (
-      <div style={{
-        textAlign: 'center',
-        padding: 40,
-        color: textSecondary,
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-        <div style={{ fontWeight: 600, fontSize: 16, color: textPrimary, marginBottom: 4 }}>
-          代码质量优秀
-        </div>
-        <div style={{ fontSize: 13 }}>AI 未发现需要改进的问题</div>
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {issues.map(issue => {
-        const sev = SEVERITY_CONFIG[issue.severity]
-        const cat = CATEGORY_CONFIG[issue.category]
-        const isExpanded = expandedId === issue.id
-
-        return (
-          <div key={issue.id} style={{
-            borderRadius: 12,
-            border: `1px solid ${glassBorder}`,
-            overflow: 'hidden',
-            transition: 'all 0.2s',
-          }}>
-            <button
-              onClick={() => setExpandedId(isExpanded ? null : issue.id)}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                background: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255,255,255,0.5)',
-                border: 'none',
-                color: textPrimary,
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <div style={{
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                background: cat.color + '22',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <span style={{ fontSize: 14 }}>{cat.icon}</span>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
-                  {issue.title}
-                </div>
-                <div style={{ fontSize: 11, color: textSecondary, display: 'flex', gap: 8 }}>
-                  <span>{cat.label}</span>
-                  {issue.line && <span>第 {issue.line} 行</span>}
-                </div>
-              </div>
-              <span style={{
-                padding: '4px 10px',
-                borderRadius: 6,
-                fontSize: 11,
-                fontWeight: 700,
-                background: sev.bg,
-                color: sev.color,
-              }}>
-                {sev.label}
-              </span>
-              <ChevronRight size={16} style={{
-                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s',
-                color: textSecondary,
-              }} />
-            </button>
-
-            {isExpanded && (
-              <div style={{
-                padding: '0 16px 16px',
-                background: isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(255,255,255,0.3)',
-              }}>
-                <div style={{
-                  padding: '10px 14px',
-                  borderRadius: 8,
-                  background: isDark ? 'rgba(139, 92, 246, 0.08)' : 'rgba(139, 92, 246, 0.06)',
-                  border: '1px solid rgba(139, 92, 246, 0.15)',
-                  marginBottom: 12,
-                  fontSize: 12,
-                  lineHeight: 1.6,
-                  color: textPrimary,
-                }}>
-                  {issue.description}
-                </div>
-
-                <div style={{
-                  padding: '10px 14px',
-                  borderRadius: 8,
-                  background: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)',
-                  border: '1px solid rgba(59, 130, 246, 0.15)',
-                  marginBottom: 12,
-                  fontSize: 12,
-                  lineHeight: 1.6,
-                  color: textPrimary,
-                }}>
-                  💡 <strong>建议:</strong> {issue.suggestion}
-                </div>
-
-                {issue.before && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: textSecondary, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ color: '#ef4444' }}>●</span> 优化前
-                    </div>
-                    <pre style={{
-                      margin: 0,
-                      padding: 12,
-                      borderRadius: 8,
-                      background: isDark ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.06)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      fontSize: 12,
-                      lineHeight: 1.6,
-                      color: textPrimary,
-                      overflow: 'auto',
-                      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                    }}>{issue.before}</pre>
-                  </div>
-                )}
-
-                {issue.after && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: textSecondary, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ color: '#22c55e' }}>●</span> 优化后
-                    </div>
-                    <pre style={{
-                      margin: 0,
-                      padding: 12,
-                      borderRadius: 8,
-                      background: isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)',
-                      border: '1px solid rgba(34, 197, 94, 0.2)',
-                      fontSize: 12,
-                      lineHeight: 1.6,
-                      color: textPrimary,
-                      overflow: 'auto',
-                      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                    }}>{issue.after}</pre>
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                  <button
-                    onClick={() => onCopy(issue.after || issue.suggestion)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 8,
-                      border: `1px solid ${glassBorder}`,
-                      background: isDark ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.08)',
-                      color: '#c4b5fd',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    {copied ? <Check size={12} /> : <Copy size={12} />}
-                    {copied ? '已复制' : '复制代码'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/* ─────────── Refactor Panel ─────────── */
-function RefactorPanel({
-  originalCode,
-  refactoredCode,
-  isDark,
-  textPrimary,
-  textSecondary,
-  glassBorder,
-  comparisonMode,
-  setComparisonMode,
-  onCopy,
-  copied,
-  applyRefactoredCode,
-}: {
-  originalCode: string
-  refactoredCode: string
-  isDark: boolean
-  textPrimary: string
-  textSecondary: string
-  glassBorder: string
-  comparisonMode: 'before' | 'after' | 'split'
-  setComparisonMode: (mode: 'before' | 'after' | 'split') => void
-  onCopy: (text: string) => void
-  copied: boolean
-  applyRefactoredCode: () => void
-}) {
-  if (!refactoredCode) {
-    return (
-      <div style={{
-        textAlign: 'center',
-        padding: 40,
-        color: textSecondary,
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-        <div style={{ fontWeight: 600, fontSize: 16, color: textPrimary, marginBottom: 4 }}>
-          暂无重构代码
-        </div>
-        <div style={{ fontSize: 13 }}>AI 没有提供重构后的代码</div>
-      </div>
-    )
-  }
-
-  const modeButtons: { key: 'before' | 'after' | 'split'; label: string; icon: React.ReactNode }[] = [
-    { key: 'before', label: '原代码', icon: <Eye size={12} /> },
-    { key: 'after', label: '重构后', icon: <GitMerge size={12} /> },
-    { key: 'split', label: '并排对比', icon: <Code size={12} /> },
-  ]
-
-  const codeBoxStyle = (): React.CSSProperties => ({
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    borderRadius: 12,
-    overflow: 'hidden',
-    border: `1px solid ${glassBorder}`,
-  })
-
-  const codeHeaderStyle = (color: string): React.CSSProperties => ({
-    padding: '10px 14px',
-    background: isDark ? `${color}15` : `${color}10`,
-    borderBottom: `1px solid ${glassBorder}`,
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  })
-
-  const codePreStyle: React.CSSProperties = {
-    margin: 0,
-    padding: 14,
-    fontSize: 12,
-    lineHeight: 1.7,
-    color: textPrimary,
-    whiteSpace: 'pre',
-    overflow: 'auto',
-    flex: 1,
-    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 12 }}>
-      <div style={{ display: 'flex', gap: 8 }}>
-        {modeButtons.map(m => (
-          <button
-            key={m.key}
-            onClick={() => setComparisonMode(m.key)}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 10,
-              border: 'none',
-              background: comparisonMode === m.key
-                ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-                : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
-              color: comparisonMode === m.key ? 'white' : textSecondary,
-              cursor: 'pointer',
-              fontSize: 12,
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              transition: 'all 0.2s',
-            }}
-          >
-            {m.icon} {m.label}
-          </button>
-        ))}
-        <div style={{ flex: 1 }} />
-        <button
-          onClick={applyRefactoredCode}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 10,
-            border: 'none',
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-            color: 'white',
-            cursor: 'pointer',
-            fontSize: 12,
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            boxShadow: '0 4px 14px rgba(34, 197, 94, 0.3)',
-          }}
-        >
-          <Play size={12} /> 应用到编辑器
-        </button>
-      </div>
-
-      {comparisonMode === 'split' ? (
-        <div style={{ display: 'flex', gap: 12, flex: 1, minHeight: 0 }}>
-          <div style={codeBoxStyle()}>
-            <div style={codeHeaderStyle('#ef4444')}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#ef4444' }}>
-                原代码
-              </span>
-              <button
-                onClick={() => onCopy(originalCode)}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: textSecondary,
-                  cursor: 'pointer',
-                  fontSize: 11,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                {copied ? <Check size={10} /> : <Copy size={10} />} 复制
-              </button>
-            </div>
-            <pre style={{
-              ...codePreStyle,
-              background: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255,255,255,0.5)',
-            }}>{originalCode}</pre>
-          </div>
-
-          <div style={codeBoxStyle()}>
-            <div style={codeHeaderStyle('#22c55e')}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#22c55e' }}>
-                重构后
-              </span>
-              <button
-                onClick={() => onCopy(refactoredCode)}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: textSecondary,
-                  cursor: 'pointer',
-                  fontSize: 11,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                {copied ? <Check size={10} /> : <Copy size={10} />} 复制
-              </button>
-            </div>
-            <pre style={{
-              ...codePreStyle,
-              background: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255,255,255,0.5)',
-            }}>{refactoredCode}</pre>
-          </div>
-        </div>
-      ) : comparisonMode === 'before' ? (
-        <div style={codeBoxStyle()}>
-          <div style={codeHeaderStyle('#ef4444')}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#ef4444' }}>原代码</span>
-          </div>
-          <pre style={{
-            ...codePreStyle,
-            background: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255,255,255,0.5)',
-          }}>{originalCode}</pre>
-        </div>
-      ) : (
-        <div style={codeBoxStyle()}>
-          <div style={codeHeaderStyle('#22c55e')}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#22c55e' }}>重构后代码</span>
-          </div>
-          <pre style={{
-            ...codePreStyle,
-            background: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255,255,255,0.5)',
-          }}>{refactoredCode}</pre>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ─────────── Performance Panel ─────────── */
-function PerformancePanel({
-  tips,
-  isDark,
-  textPrimary,
-  textSecondary,
-  glassBorder,
-  onCopy,
-  copied,
-}: {
-  tips: PerformanceTip[]
-  isDark: boolean
-  textPrimary: string
-  textSecondary: string
-  glassBorder: string
-  onCopy: (text: string) => void
-  copied: boolean
-}) {
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-
-  if (tips.length === 0) {
-    return (
-      <div style={{
-        textAlign: 'center',
-        padding: 40,
-        color: textSecondary,
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>⚡</div>
-        <div style={{ fontWeight: 600, fontSize: 16, color: textPrimary, marginBottom: 4 }}>
-          性能表现良好
-        </div>
-        <div style={{ fontSize: 13 }}>AI 未发现明显的性能优化机会</div>
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {tips.map(tip => {
-        const impact = PERFORMANCE_IMPACT[tip.impact]
-        const isExpanded = expandedId === tip.id
-
-        return (
-          <div key={tip.id} style={{
-            borderRadius: 12,
-            border: `1px solid ${glassBorder}`,
-            overflow: 'hidden',
-            transition: 'all 0.2s',
-          }}>
-            <button
-              onClick={() => setExpandedId(isExpanded ? null : tip.id)}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                background: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255,255,255,0.5)',
-                border: 'none',
-                color: textPrimary,
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <div style={{
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                background: impact.color + '22',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <Zap size={14} style={{ color: impact.color }} />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
-                  {tip.title}
-                </div>
-                <div style={{ fontSize: 11, color: textSecondary }}>
-                  {tip.description}
-                </div>
-              </div>
-              <span style={{
-                padding: '4px 10px',
-                borderRadius: 6,
-                fontSize: 11,
-                fontWeight: 700,
-                background: impact.color + '22',
-                color: impact.color,
-              }}>
-                {impact.label}
-              </span>
-              <ChevronRight size={16} style={{
-                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s',
-                color: textSecondary,
-              }} />
-            </button>
-
-            {isExpanded && (
-              <div style={{
-                padding: '0 16px 16px',
-                background: isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(255,255,255,0.3)',
-              }}>
-                {tip.before && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: textSecondary }}>
-                      <span style={{ color: '#ef4444' }}>●</span> 原实现
-                    </div>
-                    <pre style={{
-                      margin: 0,
-                      padding: 12,
-                      borderRadius: 8,
-                      background: isDark ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.06)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      fontSize: 12,
-                      lineHeight: 1.6,
-                      color: textPrimary,
-                      overflow: 'auto',
-                      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                    }}>{tip.before}</pre>
-                  </div>
-                )}
-                {tip.after && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: textSecondary }}>
-                      <span style={{ color: '#22c55e' }}>●</span> 优化实现
-                    </div>
-                    <pre style={{
-                      margin: 0,
-                      padding: 12,
-                      borderRadius: 8,
-                      background: isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)',
-                      border: '1px solid rgba(34, 197, 94, 0.2)',
-                      fontSize: 12,
-                      lineHeight: 1.6,
-                      color: textPrimary,
-                      overflow: 'auto',
-                      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                    }}>{tip.after}</pre>
-                  </div>
-                )}
-                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                  <button
-                    onClick={() => onCopy(tip.after)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 8,
-                      border: `1px solid ${glassBorder}`,
-                      background: isDark ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.08)',
-                      color: '#c4b5fd',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    {copied ? <Check size={12} /> : <Copy size={12} />}
-                    {copied ? '已复制' : '复制优化代码'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/* ─────────── Report Panel ─────────── */
-function ReportPanel({
-  result,
-  language,
-  code,
-  isDark,
-  textPrimary,
-  textSecondary,
-  glassBorder,
-  onExport,
-  onCopy,
-  copied,
-}: {
-  result: AnalysisResult
-  language: Language
-  code: string
-  isDark: boolean
-  textPrimary: string
-  textSecondary: string
-  glassBorder: string
-  onExport: () => void
-  onCopy: (text: string) => void
-  copied: boolean
-}) {
-  const [reportText, setReportText] = useState('')
-
-  useEffect(() => {
-    setReportText(generateMarkdownReport(result, language, code))
-  }, [result, language, code])
-
-  const scoreColor = result.scores.overall >= 85 ? '#22c55e' : result.scores.overall >= 70 ? '#84cc16' : result.scores.overall >= 50 ? '#f59e0b' : '#ef4444'
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
-      <div style={{
-        padding: 16,
-        borderRadius: 14,
-        background: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255,255,255,0.5)',
-        border: `1px solid ${glassBorder}`,
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FileText size={18} style={{ color: '#8b5cf6' }} />
-            <span style={{ fontSize: 14, fontWeight: 700 }}>重构分析报告</span>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={() => onCopy(reportText)}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 10,
-                border: `1px solid ${glassBorder}`,
-                background: isDark ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.08)',
-                color: '#c4b5fd',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? '已复制' : '复制报告'}
-            </button>
-            <button
-              onClick={onExport}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 10,
-                border: 'none',
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)',
-              }}
-            >
-              <Download size={14} /> 导出 MD
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            background: scoreColor + '15',
-            color: scoreColor,
-            fontSize: 12,
-            fontWeight: 600,
-          }}>
-            综合评分: {result.scores.overall}/100
-          </div>
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            background: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.08)',
-            color: '#ef4444',
-            fontSize: 12,
-            fontWeight: 600,
-          }}>
-            问题: {result.issues.length}
-          </div>
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            background: isDark ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.08)',
-            color: '#8b5cf6',
-            fontSize: 12,
-            fontWeight: 600,
-          }}>
-            性能建议: {result.performanceTips.length}
-          </div>
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            background: isDark ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.08)',
-            color: '#22c55e',
-            fontSize: 12,
-            fontWeight: 600,
-          }}>
-            语言: {LANGUAGE_META[language].label}
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        flex: 1,
-        borderRadius: 14,
-        border: `1px solid ${glassBorder}`,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <div style={{
-          padding: '10px 16px',
-          background: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255,255,255,0.5)',
-          borderBottom: `1px solid ${glassBorder}`,
-          fontSize: 12,
-          fontWeight: 600,
-          color: textSecondary,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}>
-          <FileText size={13} /> Markdown 预览
-        </div>
-        <pre style={{
-          margin: 0,
-          padding: 16,
-          fontSize: 12,
-          lineHeight: 1.7,
-          color: textPrimary,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-          overflow: 'auto',
-          flex: 1,
-          fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-          background: isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(255,255,255,0.3)',
-        }}>{reportText}</pre>
-      </div>
     </div>
   )
 }
