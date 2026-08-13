@@ -15,7 +15,7 @@ import {
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
-  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon
+  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon, BarChart3Icon
 } from './icons'
 
 
@@ -325,6 +325,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'api-lab-pro', name: 'API测试实验室', icon: <ApiLabIcon />, component: 'ApiLabPro', category: 'development', defaultWidth: 1280, defaultHeight: 850, minWidth: 980, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '10+合规公开API测试实验室：天气预报、汇率转换、加密货币、科技新闻、励志名言、编程笑话、维基搜索、IP查询、国家信息、GitHub趋势，零配置实时数据' },
   // === v85 新增创新应用 — ImageCompressor 图像压缩工具 ===
   { id: 'image-compressor', name: '图像压缩工具', icon: <ImageIcon />, component: 'ImageCompressor', category: 'utilities', defaultWidth: 1280, defaultHeight: 850, minWidth: 980, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '浏览器内图片压缩与处理：JPEG/PNG/WebP/AVIF格式转换、质量调整、尺寸缩放、黑白/复古/模糊/亮度/对比度/饱和度滤镜、批量处理、节省空间统计' },
+  // === v86 新增创新应用 ===
+  { id: 'ai-doc-analyzer-pro', name: 'AI文档智能分析器 Pro', icon: <SparklesIcon />, component: 'AIDocAnalyzerPro', category: 'utilities', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的文本分析工具：智能摘要、关键要点提取、情感分析、实体识别、多语言翻译、文本改写润色，基于Pollinations AI公开API' },
+  { id: 'global-economic-dashboard', name: '全球经济指标仪表板', icon: <TrendingUpIcon />, component: 'GlobalEconomicDashboard', category: 'internet', defaultWidth: 1320, defaultHeight: 900, minWidth: 1000, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '实时全球经济数据：汇率(Frankfurter API)、加密货币(CoinGecko API)、股指、大宗商品、经济指标、市场热力图，自动刷新，专业金融UI' },
+  { id: 'data-viz-studio', name: '数据可视化工作室', icon: <BarChart3Icon />, component: 'DataVizStudio', category: 'development', defaultWidth: 1300, defaultHeight: 880, minWidth: 980, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '专业数据可视化：9种图表类型（柱状/折线/面积/饼/环形/散点/雷达/进度/热力图），CSV/JSON导入导出，SVG矢量导出，10种配色方案，智能统计洞察' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

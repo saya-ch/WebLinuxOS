@@ -147,7 +147,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DataVisualizer: () => import('../../apps/DataVisualizer'),
   DataViz: () => import('../../apps/DataViz'),
   DataVizDashboard: () => import('../../apps/DataVizDashboard'),
-  DataVizStudio: () => import('../../apps/DataVizStudio'),
   DateCalculator: () => import('../../apps/DateCalculator'),
   DevBox: () => import('../../apps/DevBox'),
   DevAssistant: () => import('../../apps/DevAssistant'),
@@ -522,6 +521,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v85 新增创新应用 ===
   ApiLabPro: () => import('../../apps/ApiLabPro'),
   ImageCompressor: () => import('../../apps/ImageCompressor'),
+  // === v86 新增创新应用 ===
+  AIDocAnalyzerPro: () => import('../../apps/AIDocAnalyzerPro'),
+  GlobalEconomicDashboard: () => import('../../apps/GlobalEconomicDashboard'),
+  DataVizStudio: () => import('../../apps/DataVizStudio'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

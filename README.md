@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v85.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v86.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,40 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v86.0.0 更新亮点
+
+- **AI 文档智能分析器 Pro (AIDocAnalyzerPro)**：基于 Pollinations AI 公开 API 的文本分析工作台
+  - 智能摘要：文章自动生成精炼摘要，长度可调
+  - 关键要点：自动提取文本核心观点与关键事实
+  - 情感分析：识别文本情感倾向（正面/中性/负面）
+  - 实体识别：识别人名、地名、组织等命名实体
+  - 多语言翻译：中英互译、批量翻译、保留格式
+  - 文本改写：保持原意的多风格润色与改写
+  - 本地历史记录、历史对比、快速操作工具栏
+
+- **全球经济指标仪表板 (GlobalEconomicDashboard)**：专业金融数据终端
+  - 汇率转换：Frankfurter API，150+ 货币实时汇率，40+ 常用货币收藏
+  - 加密货币行情：CoinGecko API，Top 20 加密货币价格与 24h 变化
+  - 全球股指：10 大主要指数（S&P500、NASDAQ、道琼斯、上证、日经、富时、DAX 等）
+  - 大宗商品：黄金、白银、原油、天然气价格
+  - 经济指标：主要国家 GDP 与通胀概览
+  - 市场热力图、涨跌榜、自动刷新（60s）、专业金融 UI
+
+- **数据可视化工作室 (DataVizStudio)**：全功能数据可视化设计工具
+  - 9 种图表类型：柱状图、折线图、面积图、饼图、环形图、散点图、雷达图、进度条、热力图
+  - 数据导入：CSV / JSON 粘贴导入、示例数据快速上手
+  - 矢量导出：SVG 矢量导出、PNG 位图导出、SVG 代码复制
+  - 10 种专业配色方案：Classic、Ocean、Sunset、Forest、Candy、Vintage、Cyberpunk、Pastel、Oceanic、Spectrum
+  - 智能统计洞察：均值、中位数、总和、最大最小值、标准差、数据点计数
+  - 可定制样式：标题、颜色主题、数值格式（货币/百分比/小数）
+
+- **工程质量改进**
+  - 修复 `DataVizStudio` 组件在 WindowManager 中的重复注册
+  - 新增 `BarChart3Icon` 图标导出，用于图标命名一致性
+  - 清理多处未使用的 import，使 `tsc --noUnusedLocals` 通过
+  - 解决 `lucide-react` 的 `Image` 与 DOM `Image` 构造函数的命名冲突
+  - 重新安装依赖，修复 `@types/node` 类型声明缺失
 
 ## v85.0.0 更新亮点
 
