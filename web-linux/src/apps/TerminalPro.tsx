@@ -313,7 +313,8 @@ export default function TerminalPro() {
         try {
           const expr = args.join(' ')
           const sanitized = expr.replace(/[^-()\d/*+.%\s]/g, '')
-          const result = eval(sanitized)
+          if (!sanitized.trim()) throw new Error('空表达式')
+          const result = new Function(`return (${sanitized})`)()
           output = `${expr} = ${result}`
         } catch {
           output = '错误: 无效的表达式'

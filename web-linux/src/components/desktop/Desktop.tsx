@@ -110,50 +110,76 @@ const DesktopIcon = memo(function DesktopIcon({
   const [dragging, setDragging] = useState(false)
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
   const dragStartRef = useRef<{ mx: number; my: number; ix: number; iy: number } | null>(null)
+  const dragMovedRef = useRef(false)
+  const ICON_DRAG_THRESHOLD = 8
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return
-    e.preventDefault()
-    e.stopPropagation()
+    dragMovedRef.current = false
     dragStartRef.current = {
       mx: e.clientX,
       my: e.clientY,
       ix: icon.x,
       iy: icon.y,
     }
-    setDragging(true)
   }, [icon.x, icon.y])
 
-  useEffect(() => {
-    if (!dragging) return
-    const handleMove = (e: MouseEvent) => {
-      const start = dragStartRef.current
-      if (!start) return
-      const dx = e.clientX - start.mx
-      const dy = e.clientY - start.my
+  const handleMouseMove = useCallback((e: globalThis.MouseEvent) => {
+    const start = dragStartRef.current
+    if (!start) return
+    const dx = e.clientX - start.mx
+    const dy = e.clientY - start.my
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    
+    if (dist > ICON_DRAG_THRESHOLD) {
+      if (!dragMovedRef.current) {
+        dragMovedRef.current = true
+        setDragging(true)
+      }
       setDragPos({ x: start.ix + dx, y: start.iy + dy })
     }
-    const handleUp = (e: MouseEvent) => {
-      const start = dragStartRef.current
+  }, [])
+
+  const handleMouseUp = useCallback((e: globalThis.MouseEvent) => {
+    const start = dragStartRef.current
+    if (!start) return
+    
+    if (dragMovedRef.current) {
       setDragging(false)
       setDragPos(null)
+      const dx = e.clientX - start.mx
+      const dy = e.clientY - start.my
+      onDragEnd(icon.id, start.ix + dx, start.iy + dy)
+      dragMovedRef.current = false
       dragStartRef.current = null
-      if (start) {
-        const dx = e.clientX - start.mx
-        const dy = e.clientY - start.my
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist > 5) {
-          onDragEnd(icon.id, start.ix + dx, start.iy + dy)
-        }
-      }
+      return
     }
-    window.addEventListener('mousemove', handleMove)
-    window.addEventListener('mouseup', handleUp)
+    
+    dragStartRef.current = null
+  }, [icon.id, onDragEnd])
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
     return () => {
-      window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('mouseup', handleUp)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [dragging, icon.id, onDragEnd])
+  }, [handleMouseMove, handleMouseUp])
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (dragMovedRef.current) {
+      return
+    }
+    onClick(e)
+  }, [onClick])
+
+  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (dragMovedRef.current) {
+      return
+    }
+    onDoubleClick(e)
+  }, [onDoubleClick])
 
   const currentX = dragPos ? dragPos.x : icon.x
   const currentY = dragPos ? dragPos.y : icon.y
@@ -167,8 +193,8 @@ const DesktopIcon = memo(function DesktopIcon({
         top: currentY,
         '--boot-index': index,
       } as React.CSSProperties}
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       onMouseDown={handleMouseDown}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

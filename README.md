@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v93.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v94.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,22 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v94.0.0 更新亮点
+
+- **核心 Bug 修复：桌面图标交互恢复**
+  - 修复桌面图标点击/双击无响应的关键问题，确保所有应用可通过桌面图标正常启动
+  - 重写拖拽检测逻辑，引入 8px 阈值防止误判，实现平滑的拖拽与点击分离
+  - 优化事件处理顺序，移除 `mousedown` 上的 `preventDefault()`，恢复 click/doubleclick 事件正常触发
+
+- **终端安全增强**
+  - 计算器命令改用 `Function` 构造器替代 `eval()`，提升安全性
+  - 添加空表达式检查，防止无效输入
+
+- **代码质量改进**
+  - TypeScript 类型优化：事件处理函数使用正确的 `globalThis.MouseEvent` 类型
+  - 构建流程：零类型错误通过 `tsc -b` 严格检查
+  - 生产构建：20.67s 完成，代码分割合理
 
 ## v93.0.0 更新亮点
 
