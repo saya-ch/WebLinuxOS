@@ -26,6 +26,23 @@ WebLinuxOS is a complete Linux desktop environment that runs entirely in the bro
 
 ## v94.0.0 更新亮点
 
+- **新增实时协作代码片段管理器 (SnippetShare)**
+  - 17 种编程语言支持：JavaScript/TypeScript/Python/Java/C++/Go/Rust/PHP/Ruby/HTML/CSS/SQL/Bash/JSON/YAML/Markdown 等
+  - 标签分类与全文搜索：支持按标题、代码内容、描述、标签多维度检索
+  - 收藏管理：重要代码片段一键收藏，快速访问
+  - JSON 格式导入导出：支持批量导入导出，方便备份和迁移
+  - 分享链接生成：基于 Base64 编码的分享链接，一键复制
+  - 多标签页实时协作：基于 BroadcastChannel API 实现跨标签页同步
+  - 玻璃拟态 UI 设计：现代化深色主题界面
+
+- **新增 AI 智能文本改写工具 (AIRewriter)**
+  - 10+ 改写模式：润色改进、简化易懂、扩展内容、生成摘要、中英互译、专业/创意风格转换、要点列表、生成标题
+  - Pollinations AI 真实模型集成：无需配置密钥，开箱即用
+  - 历史记录与收藏：本地持久化，支持快速重用和收藏导出
+  - 6 种写作模板：商务邮件、博客文章、社交媒体、产品描述、简历要点、新闻稿
+  - Token 预估显示：实时显示字符数和预估 Token 数
+  - 玻璃拟态 UI 设计：现代化双栏布局，支持深色主题
+
 - **核心 Bug 修复：桌面图标交互恢复**
   - 修复桌面图标点击/双击无响应的关键问题，确保所有应用可通过桌面图标正常启动
   - 重写拖拽检测逻辑，引入 8px 阈值防止误判，实现平滑的拖拽与点击分离
@@ -38,7 +55,8 @@ WebLinuxOS is a complete Linux desktop environment that runs entirely in the bro
 - **代码质量改进**
   - TypeScript 类型优化：事件处理函数使用正确的 `globalThis.MouseEvent` 类型
   - 构建流程：零类型错误通过 `tsc -b` 严格检查
-  - 生产构建：20.67s 完成，代码分割合理
+  - 生产构建：20.48s 完成，代码分割合理
+  - 版本号统一：全项目版本号同步至 v94.0.0
 
 ## v93.0.0 更新亮点
 
