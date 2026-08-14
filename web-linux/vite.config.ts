@@ -205,6 +205,36 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/APILab')) {
               return 'app-apilab';
             }
+            if (id.includes('src/apps/LinkAnalyzer')) {
+              return 'app-linkanalyzer';
+            }
+            if (id.includes('src/apps/JsonToYamlConverter')) {
+              return 'app-jsontolint';
+            }
+            if (id.includes('src/apps/OnlineRegexTester')) {
+              return 'app-regextester';
+            }
+            if (id.includes('src/apps/APILoadTester')) {
+              return 'app-loadtester';
+            }
+            if (id.includes('src/apps/MarkdownToSlides')) {
+              return 'app-mk-slides';
+            }
+            if (id.includes('src/apps/ColorMixerPro')) {
+              return 'app-colormixer';
+            }
+            if (id.includes('src/apps/DateTimeCalculator')) {
+              return 'app-datetime';
+            }
+            if (id.includes('src/apps/PasswordGeneratorPro')) {
+              return 'app-passwordgen';
+            }
+            if (id.includes('src/apps/BatchImageProcessor')) {
+              return 'app-batchimg';
+            }
+            if (id.includes('src/apps/TerminalPro')) {
+              return 'app-terminalpro';
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }

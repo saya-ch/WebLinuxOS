@@ -26,6 +26,18 @@ WebLinuxOS is a complete Linux desktop environment that runs entirely in the bro
 
 ## v93.0.0 更新亮点
 
+- **10 个创新应用**：扩展应用生态，新增网络分析、开发工具、图形处理等领域应用
+  - URL 链接分析器 (LinkAnalyzer)：分析 URL 结构、域名信息、安全风险检测
+  - JSON/YAML 转换器 (JsonToYamlConverter)：双向转换、实时格式化、语法高亮
+  - 在线正则测试器 (OnlineRegexTester)：实时匹配、替换、多语言代码生成
+  - API 负载测试器 (APILoadTester)：并发请求、QPS 统计、性能指标分析
+  - Markdown 转幻灯片 (MarkdownToSlides)：Markdown 演示文稿、主题切换、演讲者模式
+  - 专业颜色混合器 (ColorMixerPro)：颜色调色、渐变生成、调色板导出
+  - 日期时间计算器 (DateTimeCalculator)：日期差计算、时区转换、倒计时
+  - 专业密码生成器 (PasswordGeneratorPro)：安全密码生成、强度评估、分类管理
+  - 批量图片处理器 (BatchImageProcessor)：批量压缩、格式转换、尺寸调整
+  - 增强终端 Pro (TerminalPro)：命令历史、自动补全、多标签支持
+
 - **HTTP客户端 Pro (RealHTTPClient)**：专业HTTP请求调试工具
   - 7种请求方法：GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS
   - Headers管理：键值对编辑器，支持启用/禁用

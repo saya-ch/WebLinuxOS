@@ -547,6 +547,17 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v93 新增创新应用套件 ===
   RealHTTPClient: () => import('../../apps/RealHTTPClient'),
   AITextAnalyzer: () => import('../../apps/AITextAnalyzer'),
+  // === v93.1 创新应用套件 ===
+  LinkAnalyzer: () => import('../../apps/LinkAnalyzer'),
+  JsonToYamlConverter: () => import('../../apps/JsonToYamlConverter'),
+  OnlineRegexTester: () => import('../../apps/OnlineRegexTester'),
+  APILoadTester: () => import('../../apps/APILoadTester'),
+  MarkdownToSlides: () => import('../../apps/MarkdownToSlides'),
+  ColorMixerPro: () => import('../../apps/ColorMixerPro'),
+  DateTimeCalculator: () => import('../../apps/DateTimeCalculator'),
+  PasswordGeneratorPro: () => import('../../apps/PasswordGeneratorPro'),
+  BatchImageProcessor: () => import('../../apps/BatchImageProcessor'),
+  TerminalPro: () => import('../../apps/TerminalPro'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
