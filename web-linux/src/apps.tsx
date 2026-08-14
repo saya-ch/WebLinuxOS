@@ -364,6 +364,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'real-time-data-hub', name: '实时数据聚合中心', icon: <GlobeIcon />, component: 'RealTimeDataHub', category: 'internet', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时多源数据聚合仪表板：天气(Open-Meteo)+加密货币(CoinGecko)+汇率(Frankfurter)+科技新闻(Hacker News)+励志名言(ZenQuotes)五大数据源，卡片式布局、自动刷新、缓存优化、收藏功能、深色/浅色主题、玻璃拟态UI' },
   // === v92 创新应用 — PromptEngineer AI 提示词工程工具 ===
   { id: 'prompt-engineer', name: 'PromptEngineer 提示词工程', icon: <WandIcon />, component: 'PromptEngineer', category: 'development', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 提示词工程工具：25+预设场景模板、{{variable}}变量系统、Pollinations AI实时测试、历史记录与收藏、Markdown导出、玻璃拟态UI' },
+  // === v93 创新应用套件 — RealHTTPClient & AITextAnalyzer ===
+  { id: 'real-http-client', name: 'HTTP客户端 Pro', icon: <ApiLabIcon />, component: 'RealHTTPClient', category: 'development', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业HTTP客户端：7种请求方法、Headers/Body管理、响应时间/状态码展示、历史记录、收藏夹、快速模板、代码复制、取消请求' },
+  { id: 'ai-text-analyzer', name: 'AI文本分析器', icon: <SparklesIcon />, component: 'AITextAnalyzer', category: 'utilities', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的文本深度分析：字数统计、可读性评分、关键词提取、AI改进建议、中英文混合支持、高频词分析、阅读/演讲时间估算、多标签页导航' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

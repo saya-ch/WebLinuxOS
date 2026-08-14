@@ -544,6 +544,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   APIDebugger: () => import('../../apps/APIDebugger'),
   // === v92 新增创新应用 ===
   PromptEngineer: () => import('../../apps/PromptEngineer'),
+  // === v93 新增创新应用套件 ===
+  RealHTTPClient: () => import('../../apps/RealHTTPClient'),
+  AITextAnalyzer: () => import('../../apps/AITextAnalyzer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

@@ -56,3 +56,6 @@ import './academicCommands'
 
 // 14. v90 增强系统命令集：fortune/battery/sysinfo/speedtest/weather-cli/hash/joke/cpu/nproc/free/system
 import './enhancedSystemCommands'
+
+// 15. v93 创新命令集：HTTP请求/文本分析/颜色工具/JSON验证/速度测试/哈希识别/加密货币
+import './v93Commands'

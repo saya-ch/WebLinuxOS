@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v91.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v93.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,42 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v93.0.0 更新亮点
+
+- **HTTP客户端 Pro (RealHTTPClient)**：专业HTTP请求调试工具
+  - 7种请求方法：GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS
+  - Headers管理：键值对编辑器，支持启用/禁用
+  - Body编辑：JSON实时格式化、Text模式
+  - 响应查看：响应状态码、响应时间、响应头、响应体
+  - 历史记录：自动保存最近请求到localStorage
+  - 收藏夹：收藏常用请求模板
+  - 快速模板：GitHub API、JSONPlaceholder等预设端点
+  - 代码复制：一键复制fetch/axios/curl代码
+  - 取消请求：支持AbortController取消进行中的请求
+
+- **AI文本分析器 (AITextAnalyzer)**：AI驱动的文本深度分析
+  - 字数统计：中英文字符数、词数、句子数
+  - 可读性评分：自动评估文本难度等级
+  - 关键词提取：高频词分析、Top 5关键词
+  - AI改进建议：文本优化建议
+  - 中英文混合支持：自动识别语言类型
+  - 阅读/演讲时间估算
+  - 多标签页导航：同时分析多段文本
+
+- **终端v93创新命令集**：新增7个实用终端命令
+  - `http <url> [method] [headers] [body]`：发送真实HTTP请求
+  - `text-analyze <文本>`：AI文本分析报告
+  - `color <颜色值>`：HEX/RGB/HSL颜色转换
+  - `json-validate <JSON>`：JSON验证和格式化
+  - `speedtest`：网络速度测试和API可达性检测
+  - `hash-types <哈希>`：哈希类型识别
+  - `crypto-info <coin>`：加密货币实时行情（CoinGecko API）
+
+- **代码质量改进**
+  - 版本号统一：全项目版本号同步至 v93.0.0
+  - TypeScript类型安全：零类型错误构建通过
+  - 组件懒加载优化：新应用独立chunk配置
 
 ## v91.0.0 更新亮点
 
