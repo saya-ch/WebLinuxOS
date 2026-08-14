@@ -301,6 +301,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   RealTimeDashboard: () => import('../../apps/RealTimeDashboard'),
   RealTimeDashboardEnhanced: () => import('../../apps/RealTimeDashboardEnhanced'),
   RealTimeDataDashboard: () => import('../../apps/RealTimeDataDashboard'),
+  RealTimeDataHub: () => import('../../apps/RealTimeDataHub'),
   RealtimeDocumentEditor: () => import('../../apps/RealtimeDocumentEditor'),
   RealTimeTranslator: () => import('../../apps/RealTimeTranslator'),
   RealTimeTranslatorEnhanced: () => import('../../apps/RealTimeTranslatorEnhanced'),
@@ -352,6 +353,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SystemOptimizer: () => import('../../apps/SystemOptimizer'),
   SystemPerformanceAnalyzer: () => import('../../apps/SystemPerformanceAnalyzer'),
   CodeRefactorAI: () => import('../../apps/CodeRefactorAI'),
+  SmartCodeReview: () => import('../../apps/SmartCodeReview'),
   LinuxCommandLab: () => import('../../apps/LinuxCommandLab'),
   SmartShell: () => import('../../apps/SmartShell'),
   AlgorithmVisualizer: () => import('../../apps/AlgorithmVisualizer'),
@@ -540,6 +542,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   LinuxCommandPlayground: () => import('../../apps/LinuxCommandPlayground'),
   SystemDiagnostics: () => import('../../apps/SystemDiagnostics'),
   APIDebugger: () => import('../../apps/APIDebugger'),
+  // === v92 新增创新应用 ===
+  PromptEngineer: () => import('../../apps/PromptEngineer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

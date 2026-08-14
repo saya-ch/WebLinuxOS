@@ -358,6 +358,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'collaboration-enhanced', name: '实时协作增强', icon: <UsersIcon />, component: 'CollaborationEnhanced', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '增强版实时协作平台：跨标签页白板绘制、协作代码编辑、实时笔记同步、房间系统、玻璃拟态UI' },
   { id: 'web-content-extractor', name: '网页内容提取器', icon: <GlobeIcon />, component: 'WebContentExtractor', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '网页元数据提取与内容分析：Open Graph检测、关键词密度分析、情感分析、智能摘要生成、历史记录管理' },
   { id: 'system-performance-analyzer', name: '系统性能分析器', icon: <ActivityIcon />, component: 'SystemPerformanceAnalyzer', category: 'system', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '深度浏览器性能分析：CPU/内存/渲染/网络/存储五维分析、Canvas实时图表、FPS监控、内存泄漏检测、性能评分' },
+  // === v91 创新应用套件 — SmartCodeReview AI 代码审查与重构 ===
+  { id: 'smart-code-review', name: 'SmartCodeReview AI代码审查', icon: <Code2Icon />, component: 'SmartCodeReview', category: 'development', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的代码审查与重构工具：Pollinations AI真实代码分析、JS/TS/Python三语言支持、代码质量评分(0-100)、安全性/性能/风格检查、重构Before/After对比、批量分析、历史记录持久化、Markdown报告导出、玻璃拟态深色UI' },
+  // === 创新应用 — RealTimeDataHub 实时多源数据聚合仪表板 ===
+  { id: 'real-time-data-hub', name: '实时数据聚合中心', icon: <GlobeIcon />, component: 'RealTimeDataHub', category: 'internet', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时多源数据聚合仪表板：天气(Open-Meteo)+加密货币(CoinGecko)+汇率(Frankfurter)+科技新闻(Hacker News)+励志名言(ZenQuotes)五大数据源，卡片式布局、自动刷新、缓存优化、收藏功能、深色/浅色主题、玻璃拟态UI' },
+  // === v92 创新应用 — PromptEngineer AI 提示词工程工具 ===
+  { id: 'prompt-engineer', name: 'PromptEngineer 提示词工程', icon: <WandIcon />, component: 'PromptEngineer', category: 'development', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 提示词工程工具：25+预设场景模板、{{variable}}变量系统、Pollinations AI实时测试、历史记录与收藏、Markdown导出、玻璃拟态UI' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

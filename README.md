@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v87.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v91.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,39 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v91.0.0 更新亮点
+
+- **AI 智能代码审查 (SmartCodeReview)**：基于 Pollinations AI 公开 API 的智能代码审查与重构工具
+  - 三语言支持：JavaScript、TypeScript、Python 代码智能分析
+  - AI 代码审查：安全性检查、性能优化建议、代码风格改进
+  - 代码质量评分：0-100 分环形可视化评分，含安全/性能/可读性/可维护性四维指标
+  - 重构对比：Before/After 代码对比面板，展示优化后的代码
+  - 批量代码分析：支持多代码片段批量分析
+  - 历史记录：localStorage 持久化，支持快速加载和清空
+  - Markdown 报告导出：完整报告预览、复制到剪贴板、下载 .md 文件
+
+- **实时数据聚合中心 (RealTimeDataHub)**：多源实时数据聚合仪表板
+  - 天气预报：Open-Meteo API，6个预置城市实时天气查询
+  - 加密货币行情：CoinGecko API，BTC/ETH/SOL 实时价格与24h涨跌幅
+  - 汇率转换：Frankfurter API，USD 对 CNY/EUR/JPY 实时汇率
+  - 科技新闻：Hacker News API，Top Stories 列表与加载更多
+  - 励志名言：ZenQuotes API，随机名言与作者
+  - 自动刷新：可配置间隔（15s/30s/1min/2min/5min）
+  - 玻璃拟态 UI：深色/浅色主题切换
+
+- **AI 提示词工程工具 (PromptEngineer)**：专业 AI 提示词构建与测试平台
+  - 25+ 预设场景模板：代码生成器、Bug诊断、算法解析、SQL优化、创意写作、数据分析等
+  - 变量系统：{{variable}} 变量替换，每个模板自动生成变量输入表单
+  - AI 实时测试：Pollinations AI API 流式响应测试提示词效果
+  - 历史记录与收藏：localStorage 持久化，支持复制、加载、删除
+  - Markdown 导出：一键导出提示词+AI响应为 .md 文件
+
+- **代码质量改进**
+  - 版本号统一：全项目版本号同步至 v91.0.0
+  - 组件懒加载优化：新应用独立 chunk 配置
+  - TypeScript 类型安全：零类型错误构建通过
+  - Meta 标签更新：更新 SEO 描述和社交媒体标签
 
 ## v87.0.0 更新亮点
 
