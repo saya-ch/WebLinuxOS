@@ -15,7 +15,8 @@ import {
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
-  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon, BarChart3Icon
+  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon, BarChart3Icon,
+  GlobeIcon
 } from './icons'
 
 
@@ -352,6 +353,11 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'browser-perf-analyzer', name: '浏览器性能分析器', icon: <ActivityIcon />, component: 'PerformanceMonitor', category: 'system', defaultWidth: 1200, defaultHeight: 780, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时浏览器性能深度分析：FPS监控、内存泄漏检测、渲染管线分析、长任务追踪、Layout/Style/Paint耗时、优化建议' },
   { id: 'scientific-calculator', name: '科学计算器', icon: <CalculatorIcon />, component: 'QuantumCalculator', category: 'utilities', defaultWidth: 480, defaultHeight: 620, minWidth: 380, minHeight: 520, resizable: true, multiple: false, isNew: true, description: '功能完备的科学计算器：三角/对数/阶乘/矩阵/方程求解、历史记录、常量库、单位转换、编程模式（进制/位运算）' },
   { id: 'color-scheme-designer', name: '配色方案设计师', icon: <PaletteIcon />, component: 'ColorPaletteGenerator', category: 'graphics', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业配色方案设计工具：色轮Harmony、HSL/RGB/HEX、WCAG对比度检查、色盲模拟、Tailwind/VS Code主题导出、一键复制' },
+  // === v90 创新应用套件 ===
+  { id: 'ai-prompt-library', name: 'AI提示词库', icon: <SparklesIcon />, component: 'AIPromptLibrary', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业AI提示词管理工具：30+精选模板覆盖7大类别、变量系统、分类浏览搜索、收藏管理、JSON导入导出、玻璃拟态设计' },
+  { id: 'collaboration-enhanced', name: '实时协作增强', icon: <UsersIcon />, component: 'CollaborationEnhanced', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '增强版实时协作平台：跨标签页白板绘制、协作代码编辑、实时笔记同步、房间系统、玻璃拟态UI' },
+  { id: 'web-content-extractor', name: '网页内容提取器', icon: <GlobeIcon />, component: 'WebContentExtractor', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '网页元数据提取与内容分析：Open Graph检测、关键词密度分析、情感分析、智能摘要生成、历史记录管理' },
+  { id: 'system-performance-analyzer', name: '系统性能分析器', icon: <ActivityIcon />, component: 'SystemPerformanceAnalyzer', category: 'system', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '深度浏览器性能分析：CPU/内存/渲染/网络/存储五维分析、Canvas实时图表、FPS监控、内存泄漏检测、性能评分' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

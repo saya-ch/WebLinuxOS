@@ -53,3 +53,6 @@ import './aiCreativeCommands'
 
 // 13. 学术研究命令集：arXiv、Semantic Scholar 论文搜索
 import './academicCommands'
+
+// 14. v90 增强系统命令集：fortune/battery/sysinfo/speedtest/weather-cli/hash/joke/cpu/nproc/free/system
+import './enhancedSystemCommands'

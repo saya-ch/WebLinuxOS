@@ -11372,4 +11372,342 @@ button:active:not(:disabled),
   }
 }
 
+/* === v90 增强：微交互与动画效果 === */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+    animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* 增强的玻璃拟态效果 */
+.glass-enhanced {
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+/* 渐变边框效果 */
+.gradient-border {
+  position: relative;
+  background: var(--window-bg);
+  border-radius: var(--radius-lg);
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: var(--accent-gradient);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* 增强的按钮悬停效果 */
+.btn-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-enhanced::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+
+.btn-enhanced:hover::after {
+  transform: translateX(100%);
+}
+
+/* 卡片3D悬浮效果 */
+.card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+}
+
+.card-3d:hover {
+  transform: translateY(-8px) rotateX(2deg) rotateY(2deg);
+  box-shadow: var(--shadow-strong), 0 0 40px var(--accent-glow);
+}
+
+/* 进度条动画 */
+.progress-animated {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-animated::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* 浮动标签效果 */
+.float-label {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 打字机光标效果 */
+.typing-cursor {
+  border-right: 2px solid currentColor;
+  animation: blink 0.75s step-end infinite;
+}
+
+/* 渐变文字效果 */
+.gradient-text {
+  background: var(--accent-gradient);
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 增强滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* 选择样式 */
+::selection {
+  background: var(--accent-bg);
+  color: var(--text-primary);
+}
+
+/* 焦点可见性增强 */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 增强的过渡效果 */
+.window,
+.launcher,
+.desktop-icon,
+.taskbar-button,
+.context-menu-item {
+  transition: 
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+/* 加载动画 */
+.loading-skeleton {
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* 通知动画 */
+.notification-enter {
+  animation: slideInRight 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+/* 模态框动画 */
+.modal-enter {
+  animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* 列表项入场动画 */
+.list-item-enter {
+  animation: slideInLeft 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+/* 增强的活跃状态指示 */
+.active-indicator {
+  position: relative;
+}
+
+.active-indicator::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.active-indicator.active::before {
+  transform: scaleX(1);
+}
+
+/* 图标悬停效果 */
+.icon-hover {
+  transition: 
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.2s ease;
+}
+
+.icon-hover:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px var(--accent-glow-color));
+}
+
+/* 分割线美化 */
+.gradient-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--glass-border),
+    transparent
+  );
+}
+
+/* 版本徽章样式 */
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 性能优化：GPU加速动画 */
+.gpu-animated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 
