@@ -378,6 +378,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'password-generator-pro', name: '密码生成器 Pro', icon: <LockIcon />, component: 'PasswordGeneratorPro', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '专业密码生成器：真随机生成、强度评估、熵计算、批量生成' },
   { id: 'batch-image-processor', name: '批量图片处理', icon: <ImageIcon />, component: 'BatchImageProcessor', category: 'graphics', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '批量图片处理：尺寸调整、格式转换、水印添加、滤镜批量应用' },
   { id: 'terminal-pro', name: '增强终端 Pro', icon: <TerminalIcon />, component: 'TerminalPro', category: 'system', defaultWidth: 1000, defaultHeight: 700, minWidth: 750, minHeight: 500, resizable: true, multiple: true, isNew: true, description: '增强版终端：多会话管理、语法高亮、主题切换、会话录制' },
+  // === v94 创新应用 — 实时协作代码片段管理器 ===
+  { id: 'snippet-share', name: '实时协作代码片段', icon: <CodeSnapIcon />, component: 'SnippetShare', category: 'development', defaultWidth: 1300, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时协作代码片段管理器：17种语言支持、标签分类、收藏管理、导入导出JSON、分享链接、多标签页实时协作、玻璃拟态UI' },
+  // === v94 创新应用 — AI 智能文本改写工具 ===
+  { id: 'ai-rewriter', name: 'AI 文本改写工具', icon: <LanguagesIcon />, component: 'AIRewriter', category: 'utilities', defaultWidth: 1300, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的文本改写工具：润色改进、简化易懂、扩展内容、生成摘要、中英互译、专业/创意风格转换、10+改写模式、历史记录与收藏、Pollinations AI 真实模型' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
