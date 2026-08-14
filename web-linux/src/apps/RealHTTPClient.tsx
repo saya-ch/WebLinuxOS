@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useRef, type CSSProperties } from 'react'
 import {
-  Send, Trash2, Copy, Download, Upload, History, Star,
-  ChevronDown, ChevronRight, X, Plus, Search, Clock,
-  Zap, Globe, Shield, Code, FileJson, Eye, EyeOff,
-  Maximize2, Minimize2, RotateCw, Bookmark, Filter
-} from './icons'
+  Send, Trash2, Copy, History, Star,
+  X, Plus, Clock,
+  Zap, Globe, Code, FileJson, Eye, EyeOff,
+  Maximize2, Minimize2, RotateCw, Filter
+} from 'lucide-react'
 
 interface HistoryItem {
   id: string

@@ -1,10 +1,10 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import {
-  FileText, Sparkles, Copy, Download, Upload,
+  FileText, Sparkles, Copy,
   Search, BarChart3, Clock, Hash, Type,
-  Maximize2, Sparkle, Wand2, Lightbulb,
-  TrendingUp, AlertCircle, CheckCircle
-} from './icons'
+  Wand2, Lightbulb,
+  TrendingUp, CheckCircle
+} from 'lucide-react'
 
 interface AnalysisResult {
   wordCount: number
@@ -331,7 +331,7 @@ ${aiSuggestions.map((s, i) => `${i + 1}. ${s}`).join('\n')}`
                     <StatCard label="总字符数" value={analysis.charCount} icon={Hash} color="#10b981" />
                     <StatCard label="段落数" value={analysis.paragraphCount} icon={FileText} color="#f59e0b" />
                     <StatCard label="句子数" value={analysis.sentenceCount} icon={Search} color="#0ea5e9" />
-                    <StatCard label="唯一词汇" value={analysis.uniqueWords} icon={Sparkle} color="#ec4899" />
+                    <StatCard label="唯一词汇" value={analysis.uniqueWords} icon={Sparkles} color="#ec4899" />
                     <StatCard label="平均句长" value={analysis.avgSentenceLength} icon={BarChart3} color="#8b5cf6" />
                   </div>
 
