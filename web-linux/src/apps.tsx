@@ -16,7 +16,7 @@ import {
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
   BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon, BarChart3Icon,
-  GlobeIcon, HashIcon
+  GlobeIcon, HashIcon, MonitorIcon
 } from './icons'
 
 
@@ -392,6 +392,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'cookie-manager', name: 'Cookie 管理器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="8.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="15.5" cy="9.5" r="0.5" fill="currentColor"/><circle cx="14.5" cy="14.5" r="0.5" fill="currentColor"/><circle cx="9.5" cy="15.5" r="0.5" fill="currentColor"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>, component: 'CookieManager', category: 'utilities', defaultWidth: 1000, defaultHeight: 720, minWidth: 750, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '浏览器Cookie管理工具：查看、添加、编辑、删除Cookie，搜索过滤，统计分析，导出JSON' },
   // === 创新应用 — WebSocket 客户端 ===
   { id: 'websocket-client', name: 'WebSocket 客户端', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M4 12a16 16 0 0 1 16 0"/><path d="M7 14a11 11 0 0 1 10 0"/><path d="M10 16a6 6 0 0 1 4 0"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>, component: 'WebSocketClient', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'WebSocket连接测试工具：连接管理、消息收发、实时日志、JSON格式化、心跳检测、预设测试服务器' },
+  // === v95 创新应用套件 — AI背景移除、网页转Markdown、智能主题生成器、代码截图生成器、智能RSS阅读器 ===
+  { id: 'ai-background-remover', name: 'AI 背景移除', icon: <LayersIcon />, component: 'AIBackgroundRemover', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于Pollinations AI的智能背景移除工具：支持批量处理、对比预览、历史记录，自动保留主体内容' },
+  { id: 'web-to-markdown', name: '网页转 Markdown', icon: <FileTextIcon />, component: 'WebToMarkdown', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '网页内容转Markdown工具：自动提取正文、移除广告、语法高亮支持，支持多种导出格式' },
+  { id: 'smart-theme-generator', name: '智能主题生成器', icon: <PaletteIcon />, component: 'SmartThemeGenerator', category: 'system', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的主题生成工具：关键词生成配色、色彩和谐算法、WCAG对比度检查、CSS变量导出' },
+  { id: 'code-screenshotter', name: '代码截图生成器', icon: <MonitorIcon />, component: 'CodeScreenshotter', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '代码美化截图工具：支持多种语言高亮、主题切换、窗口样式、PNG/SVG导出' },
+  { id: 'smart-rss-reader', name: '智能 RSS 阅读器', icon: <Link2Icon />, component: 'SmartRSSReader', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '功能完备的RSS阅读器：多源订阅、离线缓存、文章收藏、分类阅读、未读管理' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
