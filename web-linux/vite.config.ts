@@ -241,6 +241,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/WebSocketClient')) {
               return 'app-websocket';
             }
+            if (id.includes('src/apps/ZenBreath') || id.includes('src/apps/DeepFocus')) {
+              return 'app-mindfulness';
+            }
+            if (id.includes('src/apps/AIUpscaler') || id.includes('src/apps/AIBackgroundRemover')) {
+              return 'app-ai-images';
+            }
+            if (id.includes('src/apps/SmartWebClipper') || id.includes('src/apps/WebToMarkdown')) {
+              return 'app-web-tools';
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }

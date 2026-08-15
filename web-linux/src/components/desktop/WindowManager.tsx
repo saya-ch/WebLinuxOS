@@ -566,6 +566,11 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v96 新增创新应用 ===
   DailyQuote: () => import('../../apps/DailyQuote'),
   NumberBaseConverter: () => import('../../apps/NumberBaseConverter'),
+  // === v97 新增创新应用 ===
+  ZenBreath: () => import('../../apps/ZenBreath'),
+  DeepFocus: () => import('../../apps/DeepFocus'),
+  AIUpscaler: () => import('../../apps/AIUpscaler'),
+  SmartWebClipper: () => import('../../apps/SmartWebClipper'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
