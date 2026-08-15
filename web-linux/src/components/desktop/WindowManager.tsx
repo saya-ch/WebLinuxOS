@@ -563,6 +563,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   LocalStorageInspector: () => import('../../apps/LocalStorageInspector'),
   CookieManager: () => import('../../apps/CookieManager'),
   WebSocketClient: () => import('../../apps/WebSocketClient'),
+  // === v96 新增创新应用 ===
+  DailyQuote: () => import('../../apps/DailyQuote'),
+  NumberBaseConverter: () => import('../../apps/NumberBaseConverter'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

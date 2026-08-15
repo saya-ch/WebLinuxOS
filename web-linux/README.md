@@ -1,12 +1,12 @@
 # WebLinuxOS
 
-一款完全运行于浏览器中的 Linux 桌面环境模拟器。基于 React 19、TypeScript、Zustand 与 Vite 构建，内置 240+ 应用程序、虚拟文件系统、终端模拟器及 Python 运行时，全部在客户端执行，无需后端服务。
+一款完全运行于浏览器中的 Linux 桌面环境模拟器。基于 React 19、TypeScript、Zustand 与 Vite 构建，内置 350+ 应用程序、虚拟文件系统、终端模拟器及 Python 运行时，全部在客户端执行，无需后端服务。
 
 **在线体验**: <https://saya-ch.github.io/WebLinuxOS/>
 
 [![GitHub Actions Workflow Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-86.0.0-7c3aed.svg)](./package.json)
+[![Version](https://img.shields.io/badge/version-95.0.0-7c3aed.svg)](./package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs)](https://nodejs.org/)
 
@@ -33,7 +33,7 @@
 
 ## 项目简介
 
-大多数"Web 桌面"项目仅停留在视觉外壳层面，缺乏真正的实用价值。WebLinuxOS 的目标不同——它提供了一个完整的操作环境，包含真正可用的终端（100+ 命令）、由 localStorage 驱动的虚拟文件系统、通过 Pyodide 实现的 Python 运行时，以及 240+ 个解决实际问题的应用程序，涵盖从 Cron 表达式生成到 PII 脱敏等场景。
+大多数"Web 桌面"项目仅停留在视觉外壳层面，缺乏真正的实用价值。WebLinuxOS 的目标不同——它提供了一个完整的操作环境，包含真正可用的终端（100+ 命令）、由 localStorage 驱动的虚拟文件系统、通过 Pyodide 实现的 Python 运行时，以及 350+ 个解决实际问题的应用程序，涵盖从 Cron 表达式生成到 PII 脱敏等场景。
 
 一切皆在浏览器中运行。无需后端，无需账号，无数据收集。
 
@@ -69,6 +69,7 @@
 - **正则构建器 / 测试器**：内置模式库
 - **GitHub 趋势与仓库浏览器**
 - **代码片段管理器**：支持导入 / 导出
+- **进制转换器**：支持 2/8/10/16/32/64 进制互转，浮点数与大数处理
 
 ### 生产力应用
 
@@ -90,6 +91,11 @@
 - GitHub 热门仓库
 - RSS 阅读器
 - 实时翻译器（100+ 语言）
+- 每日一言：集成真实名言 API，支持收藏、分类浏览与中文翻译
+
+### 实用工具
+
+- 随机工具集：密码生成器、随机数、UUID、Luhn 校验、骰子、随机选择与打乱
 
 ### 多媒体与游戏
 
@@ -117,7 +123,7 @@
 
 ## 应用概览
 
-WebLinuxOS 内置 240+ 应用程序，按以下分类组织：
+WebLinuxOS 内置 350+ 应用程序，按以下分类组织：
 
 | 分类 | 说明 | 典型应用 |
 | --- | --- | --- |
@@ -125,8 +131,8 @@ WebLinuxOS 内置 240+ 应用程序，按以下分类组织：
 | **办公** | 办公与生产力 | Markdown 编辑器、笔记、日历、演示文稿、思维导图、电子表格 |
 | **互联网** | 网络与信息服务 | 浏览器、天气、新闻、GitHub 趋势、Wikipedia、加密货币 |
 | **多媒体** | 音视频与图形 | 绘图、图像查看器、音乐播放器、视频播放器、摄像头 |
-| **开发工具** | 开发者工具链 | 代码编辑器、REST 测试器、JSON 工具箱、正则实验室、Cron 实验室 |
-| **实用工具** | 通用工具 | 计算器、单位换算、密码生成、哈希生成、二维码生成 |
+| **开发工具** | 开发者工具链 | 代码编辑器、REST 测试器、JSON 工具箱、正则实验室、Cron 实验室、进制转换器 |
+| **实用工具** | 通用工具 | 计算器、单位换算、密码生成、哈希生成、二维码生成、每日一言、随机工具集 |
 | **游戏** | 娱乐与休闲 | 贪吃蛇、俄罗斯方块、2048、记忆翻牌、打砖块 |
 | **图形** | 图形与设计 | 色彩转换器、色彩提取器、字体查看器、调色板生成 |
 

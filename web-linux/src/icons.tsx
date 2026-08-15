@@ -12,7 +12,7 @@ import {
   Flame, Coffee, Database, Link, Link2, Bug, Binary, Hash, TypeOutline, Bell, Code2,
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
   Star, Tag, Save, Monitor, Power, Target, TrendingUp, TrendingDown, Lightbulb, Bookmark, ArrowRight,
-  BarChart3, Layers, HeartOff, Wallet, PieChart, RotateCcw,
+  BarChart3, Layers, HeartOff, Wallet, PieChart, RotateCcw, Dices,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -128,6 +128,7 @@ export const Link2Icon = Link2
 export const BugIcon = Bug
 export const BinaryIcon = Binary
 export const HashIcon = Hash
+export const DiceIcon = Dices
 export const TypeOutlineIcon = TypeOutline
 export const PlayIcon = Play
 export const PauseIcon = Pause
