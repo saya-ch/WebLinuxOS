@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v98.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v99.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -108,6 +108,29 @@ WebLinuxOS/
 1. 修改 `web-linux/vite.config.ts` 中的 `base` 配置，默认为 `/WebLinuxOS/`
 2. 运行 `npm run build` 生成 `dist` 目录
 3. 将 `dist` 目录内容推送到 `gh-pages` 分支，或配置自定义域名
+
+## v99.0.0 创新亮点
+
+### 隐私与安全中心
+
+- 浏览器隐私状态实时监控与分析
+- 权限状态检测（地理位置、摄像头、麦克风、通知等）
+- 存储使用分析（LocalStorage、SessionStorage、Cookie数量）
+- 智能隐私评分（0-100分）与改进建议
+- 扫描历史记录追踪
+
+### 智能地理定位优化
+
+- 移除硬编码坐标，实现智能IP定位
+- 地理位置缓存机制（30分钟TTL）
+- 优先使用IP API获取用户实际位置
+- 降级策略确保兼容性
+
+### 架构改进
+
+- 组件懒加载优化，按需加载策略
+- 错误边界完善，防止应用崩溃
+- 预加载策略升级，提升首次加载体验
 
 ## v98.0.0 创新亮点
 

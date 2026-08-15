@@ -800,6 +800,33 @@ export class ApiService {
     }
   }
 
+  // 新增：地理位置缓存
+  private cachedCoords: { lat: number; lon: number; timestamp: number } | null = null
+  private readonly COORDS_CACHE_TTL = 30 * 60 * 1000 // 30分钟
+
+  // 智能获取坐标：优先使用缓存，然后尝试IP定位，最后使用默认
+  private async getSmartCoords(): Promise<{ latitude: number; longitude: number }> {
+    const now = Date.now()
+    if (this.cachedCoords && (now - this.cachedCoords.timestamp) < this.COORDS_CACHE_TTL) {
+      return { latitude: this.cachedCoords.lat, longitude: this.cachedCoords.lon }
+    }
+
+    // 尝试从IP API获取位置
+    try {
+      const ipInfo = await this.fetchIPInfo()
+      if (ipInfo && ipInfo.latitude && ipInfo.longitude) {
+        const coords = { latitude: ipInfo.latitude, longitude: ipInfo.longitude }
+        this.cachedCoords = { lat: coords.latitude, lon: coords.longitude, timestamp: now }
+        return coords
+      }
+    } catch {
+      // 忽略错误，使用默认值
+    }
+
+    // 默认使用中心坐标（北京）
+    return { latitude: 39.9042, longitude: 116.4074 }
+  }
+
   // 新增：聚合查询
   async fetchDailySummary(): Promise<{
     weather: WeatherData | null;
@@ -807,8 +834,9 @@ export class ApiService {
     advice: string | null;
     activity: BoredActivity | null;
   }> {
+    const coords = await this.getSmartCoords()
     const [weather, quote, advice, activity] = await Promise.all([
-      this.fetchWeather(39.9, 116.4), // 北京坐标
+      this.fetchWeather(coords.latitude, coords.longitude),
       this.fetchRandomQuote(),
       this.fetchAdvice(),
       this.fetchRandomActivity()

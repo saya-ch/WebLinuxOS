@@ -462,6 +462,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SecureVault: () => import('../../apps/SecureVault'),
   CryptoPriceTracker: () => import('../../apps/CryptoPriceTracker'),
   SystemHealthCheck: () => import('../../apps/SystemHealthCheck'),
+  PrivacyDashboard: () => import('../../apps/PrivacyDashboard'),
   JsonWorkbench: () => import('../../apps/JsonWorkbench'),
   TimeTravel: () => import('../../apps/TimeTravel'),
   ColorLab: () => import('../../apps/ColorLab'),

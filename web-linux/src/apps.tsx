@@ -406,6 +406,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v98 创新应用套件 — 系统分析器、快捷键定制中心 ===
   { id: 'system-analytics', name: '系统分析器', icon: <SystemAnalyticsIcon />, component: 'SystemAnalytics', category: 'system', defaultWidth: 1100, defaultHeight: 780, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '应用使用统计追踪与数据分析：实时仪表盘、Top 10排行榜、24小时使用热力图、JSON/CSV数据导出' },
   { id: 'shortcut-customizer', name: '快捷键定制中心', icon: <ShortcutCustomizerIcon />, component: 'ShortcutCustomizer', category: 'system', defaultWidth: 980, defaultHeight: 720, minWidth: 780, minHeight: 560, resizable: true, multiple: false, isNew: true, description: '自定义系统快捷键绑定：冲突检测、实时按键捕获测试器、导入导出配置、恢复默认设置' },
+  // === v99 创新应用套件 — 隐私与安全中心 ===
+  { id: 'privacy-dashboard', name: '隐私与安全中心', icon: <ShieldIcon />, component: 'PrivacyDashboard', category: 'system', defaultWidth: 1000, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '浏览器隐私状态实时监控：权限分析、存储检测、隐私评分、问题诊断与改进建议' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
