@@ -445,3 +445,22 @@ export const DailyPaperIcon = ({ size = 18 }: { size?: number }) => (
     <path d="M12 14l1.5 3 3.5.5-2.5 2.5.5 3.5L12 21l-3 2 1-3.5-2.5-2.5 3.5-.5z" fill="currentColor" opacity="0.3"/>
   </svg>
 )
+
+export const SystemAnalyticsIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18"/>
+    <path d="M7 16l4-8 4 4 5-9"/>
+    <circle cx="7" cy="16" r="1.5" fill="currentColor"/>
+    <circle cx="11" cy="8" r="1.5" fill="currentColor"/>
+    <circle cx="15" cy="12" r="1.5" fill="currentColor"/>
+    <circle cx="20" cy="3" r="1.5" fill="currentColor"/>
+  </svg>
+)
+
+export const ShortcutCustomizerIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="2"/>
+    <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>
+    <path d="M22 8l-2-2M2 8l2-2M22 16l-2 2M2 16l2 2"/>
+  </svg>
+)

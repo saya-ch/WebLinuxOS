@@ -16,7 +16,7 @@ import {
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
   BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon, BarChart3Icon,
-  GlobeIcon, HashIcon, MonitorIcon
+  GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon
 } from './icons'
 
 
@@ -403,6 +403,9 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'deep-focus', name: 'DeepFocus 专注模式', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'DeepFocus', category: 'utilities', defaultWidth: 1200, defaultHeight: 860, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '深度专注番茄钟：可调节时长、任务列表追踪、统计热力图、桌面通知、Web Audio提示音、LocalStorage持久化' },
   { id: 'ai-upscaler', name: 'AI 图像放大', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 7h4v4H7zM13 13h4v4h-4zM14 3v2M18 3h2M14 17v2M18 17h2"/></svg>, component: 'AIUpscaler', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI智能图像放大：Pollinations AI API、1.5-4倍放大、5种增强预设、滑动对比预览、历史记录、PNG下载' },
   { id: 'smart-web-clipper', name: '网页内容提取器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h8M8 14h5"/></svg>, component: 'SmartWebClipper', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '智能网页内容提取：URL抓取、正文提取、图片/链接/元数据分离、结构可视化、关键词搜索、Markdown导出、历史收藏' },
+  // === v98 创新应用套件 — 系统分析器、快捷键定制中心 ===
+  { id: 'system-analytics', name: '系统分析器', icon: <SystemAnalyticsIcon />, component: 'SystemAnalytics', category: 'system', defaultWidth: 1100, defaultHeight: 780, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '应用使用统计追踪与数据分析：实时仪表盘、Top 10排行榜、24小时使用热力图、JSON/CSV数据导出' },
+  { id: 'shortcut-customizer', name: '快捷键定制中心', icon: <ShortcutCustomizerIcon />, component: 'ShortcutCustomizer', category: 'system', defaultWidth: 980, defaultHeight: 720, minWidth: 780, minHeight: 560, resizable: true, multiple: false, isNew: true, description: '自定义系统快捷键绑定：冲突检测、实时按键捕获测试器、导入导出配置、恢复默认设置' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

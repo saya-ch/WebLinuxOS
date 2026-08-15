@@ -59,3 +59,6 @@ import './enhancedSystemCommands'
 
 // 15. v93 创新命令集：HTTP请求/文本分析/颜色工具/JSON验证/速度测试/哈希识别/加密货币
 import './v93Commands'
+
+// 16. v98 创新命令集：系统分析、应用管理、主题切换、快捷键、ASCII艺术
+import './v98Commands'

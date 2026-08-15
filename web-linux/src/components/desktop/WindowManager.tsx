@@ -571,6 +571,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DeepFocus: () => import('../../apps/DeepFocus'),
   AIUpscaler: () => import('../../apps/AIUpscaler'),
   SmartWebClipper: () => import('../../apps/SmartWebClipper'),
+  // === v98 新增创新应用 ===
+  SystemAnalytics: () => import('../../apps/SystemAnalytics'),
+  ShortcutCustomizer: () => import('../../apps/ShortcutCustomizer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

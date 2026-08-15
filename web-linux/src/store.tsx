@@ -257,7 +257,6 @@ function trimHistory(history: FileOperation[], historyIndex: number): {
 }
 
 let lastStatsPerfTime = 0
-let cpuBaseline = 1
 
 export const useStore = create<Store>((set, get) => ({
   windows: [],
@@ -343,32 +342,33 @@ export const useStore = create<Store>((set, get) => ({
 
     let cpuUsage: number
     try {
-      const testStart = performance.now()
-      let counter = 0
-      for (let i = 0; i < 10000; i++) {
-        counter += Math.sqrt(i)
-      }
-      const testDuration = performance.now() - testStart
+      const delta = now - lastStatsPerfTime
+      const expectedDelta = 5000
 
-      if (cpuBaseline === 1) {
-        cpuBaseline = testDuration || 0.1
+      if (lastStatsPerfTime === 0) {
         cpuUsage = 5
       } else {
-        const slowdownRatio = testDuration / cpuBaseline
-        const delta = now - lastStatsPerfTime
-        const expectedDelta = 5000
         const deltaRatio = delta > 0 ? expectedDelta / delta : 1
-        const deltaContention = deltaRatio > 1 ? Math.min(1, (deltaRatio - 1) * 2) : 0
-        const executionPressure = slowdownRatio > 1.5 ? Math.min(1, (slowdownRatio - 1) * 2) : 0
-        cpuUsage = Math.round(Math.min(100, (deltaContention * 0.6 + executionPressure * 0.4) * 100))
-        if (lastStatsPerfTime === 0) {
-          cpuUsage = Math.round(executionPressure * 100)
-        }
-      }
+        const timerDrift = deltaRatio > 1 ? Math.min(1, (deltaRatio - 1) * 2) : 0
 
-      if (cpuUsage < 0) cpuUsage = 0
-      if (cpuUsage === 0 && lastStatsPerfTime !== 0) {
-        cpuUsage = Math.round(5 + Math.random() * 5)
+        let fpsImpact = 0
+        if (typeof window !== 'undefined' && 'performance' in window) {
+          const navEntry = performance.getEntriesByType('navigation')[0] as
+            | { domContentLoadedTime?: number; loadTime?: number; responseEnd?: number }
+            | undefined
+          if (navEntry && navEntry.loadTime) {
+            const loadProgress = Math.min(1, (now - navEntry.loadTime) / 60000)
+            fpsImpact = loadProgress > 0.8 ? Math.random() * 0.15 : 0
+          }
+        }
+
+        const memoryPressure = memoryUsage > 85 ? 0.2 : memoryUsage > 70 ? 0.1 : 0
+
+        cpuUsage = Math.round(Math.min(100, (timerDrift * 0.5 + fpsImpact + memoryPressure) * 100))
+        if (cpuUsage < 0) cpuUsage = 0
+        if (cpuUsage === 0) {
+          cpuUsage = Math.round(3 + Math.random() * 8)
+        }
       }
     } catch {
       cpuUsage = Math.round(10 + Math.random() * 15)
