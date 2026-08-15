@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v94.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v95.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -23,6 +23,38 @@
 WebLinuxOS 是一个完全运行在浏览器中的 Linux 桌面环境。它不是模拟器或演示项目——每一个应用都提供真实的功能：终端执行真实命令，代码编辑器编写真实代码，API 测试器发送真实请求，AI 图像工作室通过公开 API 生成真实图像，隐私工具在本地检测真实敏感信息。基于 React 19 和 TypeScript 构建，内置 400+ 应用，覆盖开发、办公、网络、多媒体、AI 和游戏等领域，将任何拥有浏览器的设备变成完整的工作站。
 
 WebLinuxOS is a complete Linux desktop environment that runs entirely in the browser. It is not a simulator or demo project — every app provides real functionality: the terminal executes real commands, the code editor writes real code, the API tester sends real requests, the AI studio generates real images via public APIs, and the privacy tools detect real sensitive information locally. Built with React 19 and TypeScript, it ships with 400+ apps covering development, office, networking, multimedia, AI, and gaming, turning any device with a browser into a full workstation.
+
+## v95.0.0 更新亮点
+
+- **新增本地存储管理器 (LocalStorageInspector)**
+  - LocalStorage / SessionStorage 完整管理：查看、编辑、删除、搜索过滤
+  - 智能类型检测：自动识别字符串、JSON、数字、布尔值等类型
+  - 使用量统计：实时显示存储配额、使用百分比、各分类大小
+  - JSON 预览：格式化展示 JSON 类型数据，支持折叠展开
+  - 数据导出：一键导出全部存储项为 JSON 文件
+  - IndexedDB 浏览：支持列出数据库、对象存储、记录查看与删除
+
+- **新增 Cookie 管理器 (CookieManager)**
+  - 实时 Cookie 列表：显示名称、值、大小、路径等元信息
+  - CRUD 操作：添加新 Cookie、编辑值、删除单项、清空全部
+  - 搜索过滤：按名称或值实时搜索
+  - 统计面板：Cookie 总数与总大小统计
+  - JSON 导出：导出全部 Cookie 为 JSON 文件
+  - 安全提示：明确说明 HttpOnly Cookie 的浏览器安全限制
+
+- **新增 WebSocket 客户端 (WebSocketClient)**
+  - 连接管理：支持 ws:// 和 wss:// 协议，实时连接状态指示
+  - 预设测试服务器：echo.websocket.org、Postman Echo、Piesocket 等
+  - 消息收发：支持纯文本、JSON 自动格式化、Base64 二进制编码
+  - 实时消息日志：毫秒级时间戳、方向标签、消息类型分类
+  - 心跳检测：可配置心跳间隔，自动测量连接延迟
+  - 统计面板：发送/接收消息计数、连接时长、实时延迟显示
+  - 键盘快捷键：Ctrl/Cmd + Enter 快捷发送
+
+- **代码质量改进**
+  - 新增应用独立代码分割：app-storage、app-websocket chunk
+  - TypeScript 类型安全：所有新应用完整类型定义
+  - 组件懒加载优化：新应用通过 React.lazy 按需加载
 
 ## v94.0.0 更新亮点
 

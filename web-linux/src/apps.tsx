@@ -382,6 +382,12 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'snippet-share', name: '实时协作代码片段', icon: <CodeSnapIcon />, component: 'SnippetShare', category: 'development', defaultWidth: 1300, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时协作代码片段管理器：17种语言支持、标签分类、收藏管理、导入导出JSON、分享链接、多标签页实时协作、玻璃拟态UI' },
   // === v94 创新应用 — AI 智能文本改写工具 ===
   { id: 'ai-rewriter', name: 'AI 文本改写工具', icon: <LanguagesIcon />, component: 'AIRewriter', category: 'utilities', defaultWidth: 1300, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI 驱动的文本改写工具：润色改进、简化易懂、扩展内容、生成摘要、中英互译、专业/创意风格转换、10+改写模式、历史记录与收藏、Pollinations AI 真实模型' },
+  // === 创新应用 — 本地存储管理器 ===
+  { id: 'local-storage-inspector', name: '本地存储管理器', icon: <DatabaseIcon />, component: 'LocalStorageInspector', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '浏览器本地存储分析与管理工具：LocalStorage/SessionStorage查看、编辑、删除、导出、搜索、类型检测、使用量统计、JSON预览' },
+  // === 创新应用 — Cookie 管理器 ===
+  { id: 'cookie-manager', name: 'Cookie 管理器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="8.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="15.5" cy="9.5" r="0.5" fill="currentColor"/><circle cx="14.5" cy="14.5" r="0.5" fill="currentColor"/><circle cx="9.5" cy="15.5" r="0.5" fill="currentColor"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>, component: 'CookieManager', category: 'utilities', defaultWidth: 1000, defaultHeight: 720, minWidth: 750, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '浏览器Cookie管理工具：查看、添加、编辑、删除Cookie，搜索过滤，统计分析，导出JSON' },
+  // === 创新应用 — WebSocket 客户端 ===
+  { id: 'websocket-client', name: 'WebSocket 客户端', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M4 12a16 16 0 0 1 16 0"/><path d="M7 14a11 11 0 0 1 10 0"/><path d="M10 16a6 6 0 0 1 4 0"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>, component: 'WebSocketClient', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'WebSocket连接测试工具：连接管理、消息收发、实时日志、JSON格式化、心跳检测、预设测试服务器' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

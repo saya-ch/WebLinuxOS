@@ -560,6 +560,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   PasswordGeneratorPro: () => import('../../apps/PasswordGeneratorPro'),
   BatchImageProcessor: () => import('../../apps/BatchImageProcessor'),
   TerminalPro: () => import('../../apps/TerminalPro'),
+  LocalStorageInspector: () => import('../../apps/LocalStorageInspector'),
+  CookieManager: () => import('../../apps/CookieManager'),
+  WebSocketClient: () => import('../../apps/WebSocketClient'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

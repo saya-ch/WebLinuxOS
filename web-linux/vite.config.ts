@@ -235,6 +235,12 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/TerminalPro')) {
               return 'app-terminalpro';
             }
+            if (id.includes('src/apps/LocalStorageInspector') || id.includes('src/apps/CookieManager')) {
+              return 'app-storage';
+            }
+            if (id.includes('src/apps/WebSocketClient')) {
+              return 'app-websocket';
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }
