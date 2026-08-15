@@ -31,7 +31,7 @@ const DEFAULT_LAYOUT: WidgetLayout[] = [
   { id: 'clock', visible: true, x: 24, y: 24, width: WIDGET_DEFAULT_WIDTH, height: 140 },
   { id: 'weather', visible: true, x: 24, y: 188, width: WIDGET_DEFAULT_WIDTH, height: 160 },
   { id: 'pulse', visible: true, x: 328, y: 24, width: WIDGET_DEFAULT_WIDTH, height: 160 },
-  { id: 'focus', visible: true, x: 328, y: 208, width: WIDGET_DEFAULT_WIDTH, height: 200 },
+  { id: 'focus', visible: false, x: 328, y: 208, width: WIDGET_DEFAULT_WIDTH, height: 200 },
   { id: 'airQuality', visible: false, x: 632, y: 24, width: WIDGET_DEFAULT_WIDTH, height: 160 },
   { id: 'dailyPoem', visible: false, x: 632, y: 212, width: WIDGET_DEFAULT_WIDTH, height: 180 },
   { id: 'note', visible: false, x: 24, y: 432, width: WIDGET_DEFAULT_WIDTH, height: 180 },

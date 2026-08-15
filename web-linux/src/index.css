@@ -3274,6 +3274,10 @@ button, input, textarea, select {
   z-index: 5;
 }
 
+.desktop-icon {
+  z-index: 10;
+}
+
 .dw-shell {
   position: absolute;
   pointer-events: auto;

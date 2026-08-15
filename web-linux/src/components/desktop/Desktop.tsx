@@ -504,10 +504,14 @@ const Desktop = memo(function Desktop() {
   }, [])
 
   const handleIconClick = useCallback(
-    (iconId: string) => {
-      setSelectedIconId(iconId)
+    (iconId: string, appId: string) => {
+      if (selectedIconId === iconId) {
+        openApp(appId)
+      } else {
+        setSelectedIconId(iconId)
+      }
     },
-    [],
+    [selectedIconId, openApp],
   )
 
   const handleIconDoubleClick = useCallback(
@@ -828,7 +832,7 @@ const Desktop = memo(function Desktop() {
           onDragEnd={handleIconDragEnd}
           onClick={(e) => {
             e.stopPropagation()
-            handleIconClick(icon.id)
+            handleIconClick(icon.id, icon.appId)
           }}
           onDoubleClick={(e) => {
             e.stopPropagation()

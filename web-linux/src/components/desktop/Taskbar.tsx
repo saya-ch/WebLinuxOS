@@ -861,6 +861,39 @@ const Taskbar = memo(function Taskbar() {
             </span>
           )}
         </TrayItem>
+        <TrayItem
+          title={`活跃窗口: ${windows.filter(w => !w.minimized).length} / 共 ${windows.length} 个`}
+          onClick={(e) => {
+            e.stopPropagation()
+            const visible = windows.filter(w => !w.minimized)
+            if (visible.length > 0) {
+              minimizeWindow(visible[visible.length - 1].id)
+            }
+          }}
+          style={{ cursor: 'pointer', position: 'relative' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <div style={{ 
+              width: '12px', 
+              height: '12px', 
+              borderRadius: '3px',
+              background: windows.length > 0 ? 'var(--accent)' : 'rgba(255,255,255,0.15)',
+              opacity: windows.filter(w => !w.minimized).length > 0 ? 1 : 0.4,
+              transition: 'all 0.2s ease'
+            }} />
+            {windows.length > 0 && (
+              <span style={{ 
+                fontSize: '9px', 
+                fontWeight: 600,
+                color: 'var(--text-secondary)',
+                minWidth: '8px',
+                textAlign: 'center'
+              }}>
+                {windows.filter(w => !w.minimized).length}
+              </span>
+            )}
+          </div>
+        </TrayItem>
         <div
           className="taskbar-clock"
           style={{
