@@ -413,6 +413,16 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'gif-explorer', name: 'GIF 探索器', icon: <ImageIcon />, component: 'GifExplorer', category: 'multimedia', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'GIF搜索和浏览应用：Giphy API真实搜索、热门趋势、分类浏览（反应/动物/运动/游戏等）、瀑布流布局、大图查看、分享与收藏、玻璃拟态UI' },
   // === v101 创新应用 — AI翻译大师 ===
   { id: 'ai-translator', name: 'AI 翻译大师', icon: <LanguagesIcon />, component: 'AITranslator', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的多语言翻译工具：Pollinations AI真实翻译、14种语言互译、自动语言检测、常用短语预设、历史记录与收藏、Web Speech API语音朗读、玻璃拟态UI' },
+  // === v102 创新应用 — DevToolkit Ultra 开发者工具箱 ===
+  { id: 'devtoolkit-ultra', name: 'DevToolkit Ultra', icon: <WrenchIcon />, component: 'DevToolkitUltra', category: 'development', defaultWidth: 1200, defaultHeight: 860, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '终极开发者工具箱：代码片段管理（收藏/标签/搜索/分页）、UUID/NanoID/CUID 生成器（批量生成）、JSON/SQL/HTML/CSS 格式化、代码模板库（JS/Python/TS/Bash）、数据导入导出' },
+  // === v102 创新应用 — 实时汇率转换器 Pro ===
+  { id: 'currency-converter-pro', name: '实时汇率 Pro', icon: <GlobeIcon />, component: 'CurrencyLive', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '实时汇率转换工具：Frankfurter API真实数据、150+货币支持、历史走势图、常用货币对、收藏夹、离线缓存' },
+  // === v102 创新应用 — 开发者ASCII艺术生成器 ===
+  { id: 'ascii-art-generator', name: 'ASCII 艺术生成器', icon: <SparklesIcon />, component: 'AsciiArtGenerator', category: 'multimedia', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: 'ASCII艺术文本生成器：多种字体样式（标准/复古/科幻/装饰）、自定义宽度、实时预览、复制下载、装饰边框、banner生成' },
+  // === v102 创新应用 — 网页元数据提取器 ===
+  { id: 'web-meta-extractor', name: '网页元数据提取器', icon: <SearchIcon />, component: 'WebMetaExtractor', category: 'development', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '网页元数据提取器：输入URL即可获取页面标题、描述、Open Graph标签、Twitter卡片、favicon、语言等信息，支持复制JSON导出' },
+  // === v102 创新应用 — 系统资源监控面板 ===
+  { id: 'resource-monitor', name: '资源监控面板', icon: <ActivityIcon />, component: 'ResourceMonitor', category: 'system', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '实时系统资源监控：内存使用、CPU估算、网络状态、存储用量、FPS帧率、页面性能指标、趋势图表、告警阈值设置' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
