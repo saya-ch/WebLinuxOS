@@ -14,7 +14,7 @@
   /* UI 主体字体：Chakra Petch 替代默认，带科技感且可读性强 */
   --font-ui: 'Chakra Petch', 'Exo 2', 'Sora', 'Noto Sans SC', -apple-system, sans-serif;
   /* Monospace：强化JetBrains Mono，等宽字重升级 */
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'Noto Sans SC Mono', 'Sarasa Mono SC', ui-monospace, monospace;
   /* Serif 装饰：用于引文、特殊文本 */
   --font-serif: 'Fraunces', 'Noto Serif SC', Georgia, serif;
 
