@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v101.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v102.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -35,9 +35,9 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 
 | Category | Examples |
 |----------|---------|
-| **Development** | Code editor, terminal, JSON tools, regex tester, API client, Git visualizer |
+| **Development** | Code editor, terminal, JSON tools, regex tester, API client, Git visualizer, snippet manager |
 | **Office** | Markdown editor, spreadsheet, PDF viewer, presentation, flashcards |
-| **AI & Creative** | AI chat, image generation, code analyzer, translation, prompt engineering |
+| **AI & Creative** | AI chat, image generation, background removal, code analyzer, translation, prompt engineering |
 | **Internet & APIs** | Weather, crypto, news, Wikipedia, GitHub trends, exchange rates |
 | **System & Utilities** | File manager, settings, system monitor, password vault, clipboard |
 | **Multimedia** | Music player, visualizer, paint, screen recorder, camera |
@@ -193,6 +193,15 @@ For manual deployment or custom domains:
 | New Terminal | `Ctrl/Cmd + Shift + N` |
 
 ## Version History
+
+### v102.0.0
+- AI background removal tool with Canvas-based processing
+- Professional code snippet manager with syntax highlighting
+- Three removal modes: auto-detect, color selection, edge detection
+- Manual eraser tool with adjustable brush size
+- Import/export JSON support for snippets
+- Enhanced UI with compare mode and progress indicators
+- Optimized component loading and caching
 
 ### v101.0.0
 - CJK font rendering fix for terminal and code editor

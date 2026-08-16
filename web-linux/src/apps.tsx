@@ -423,6 +423,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'web-meta-extractor', name: '网页元数据提取器', icon: <SearchIcon />, component: 'WebMetaExtractor', category: 'development', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '网页元数据提取器：输入URL即可获取页面标题、描述、Open Graph标签、Twitter卡片、favicon、语言等信息，支持复制JSON导出' },
   // === v102 创新应用 — 系统资源监控面板 ===
   { id: 'resource-monitor', name: '资源监控面板', icon: <ActivityIcon />, component: 'ResourceMonitor', category: 'system', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '实时系统资源监控：内存使用、CPU估算、网络状态、存储用量、FPS帧率、页面性能指标、趋势图表、告警阈值设置' },
+  { id: 'background-remover', name: 'AI 背景移除', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>, component: 'BackgroundRemover', category: 'graphics', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, description: 'AI 背景移除工具：智能自动/颜色选择/边缘检测三种模式，支持手动擦除、撤销、对比预览，导出透明 PNG' },
+  { id: 'code-snippet-manager', name: '代码片段管理器', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>, component: 'CodeSnippetManager', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, description: '专业代码片段管理：增删改查、语法高亮、标签分类、收藏管理、导入导出、一键复制下载、多种视图模式' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
