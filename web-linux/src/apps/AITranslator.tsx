@@ -146,16 +146,14 @@ export default function AITranslator() {
     const fromLabel = srcLang === 'auto' ? '自动检测' : getLangLabel(srcLang)
     const toLabel = getLangLabel(tgtLang)
 
-    const systemPrompt = `You are a professional translator. Translate the user's text from ${fromLabel} to ${toLabel}. Only output the translated text, no explanations, no quotes, no additional comments. Ensure natural, fluent translation that sounds native in the target language.`
-
-    const fullPrompt = `<|im_start|>system\n${systemPrompt}\n<|im_end|>\n<|im_start|>user\n${text}\n<|im_end|>\n<|im_start|>assistant\n`
-
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 45000)
+    const timeoutId = setTimeout(() => controller.abort(), 30000)
 
     try {
+      // 直接使用简单的prompt格式调用Pollinations AI
+      const prompt = `Translate this text from ${fromLabel} to ${toLabel}. Only provide the translation, nothing else: "${text}"`
       const seed = Math.floor(Math.random() * 1000000)
-      const url = `https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?model=openai&seed=${seed}&temperature=0.3`
+      const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&seed=${seed}&temperature=0.1`
 
       const response = await fetch(url, {
         headers: { Accept: 'text/plain' },
@@ -166,36 +164,64 @@ export default function AITranslator() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const resultText = (await response.text()).trim()
 
-      if (resultText) {
+      if (resultText && !resultText.startsWith('I apologize')) {
         setOutput(resultText)
         addToHistory(text, resultText, fromLabel, toLabel)
         return
       }
-      throw new Error('空响应')
+      throw new Error('翻译结果无效')
     } catch (err) {
       clearTimeout(timeoutId)
       if ((err as Error).name === 'AbortError') {
         setError('翻译请求超时，正在尝试备用方案...')
       }
-      // 尝试备用翻译
+      // 尝试备用翻译 - 使用libretranslate公共API
       try {
-        const resultText = await fallbackTranslate(text, srcLang, tgtLang, controller.signal)
+        const resultText = await libreTranslate(text, srcLang, tgtLang, controller.signal)
         if (resultText) {
           setOutput(resultText)
           setError(null)
           addToHistory(text, resultText, fromLabel, toLabel)
-        } else {
-          setError('翻译失败：无法连接到翻译服务，请稍后重试')
+          return
         }
-      } catch (fallbackErr) {
-        if ((fallbackErr as Error).name !== 'AbortError') {
-          setError(`翻译失败：${fallbackErr instanceof Error ? fallbackErr.message : '网络错误'}`)
-        }
-      }
+      } catch {}
+      
+      // 最终备用：返回一个友好的错误提示
+      setError('翻译服务暂时不可用，请稍后重试或检查网络连接')
     } finally {
       setLoading(false)
     }
   }, [input, loading, srcLang, tgtLang, detectedLang])
+
+  const libreTranslate = async (text: string, from: LangCode, to: LangCode, signal: AbortSignal): Promise<string | null> => {
+    try {
+      const langMap: Record<string, string> = {
+        'auto': 'auto', 'zh': 'zh', 'en': 'en', 'ja': 'ja', 'ko': 'ko',
+        'fr': 'fr', 'de': 'de', 'es': 'es', 'it': 'it', 'pt': 'pt',
+        'ru': 'ru', 'ar': 'ar', 'th': 'th'
+      }
+      const sourceLang = langMap[from] || 'auto'
+      const targetLang = langMap[to] || 'en'
+      
+      const response = await fetch('https://libretranslate.de/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          q: text,
+          source: sourceLang,
+          target: targetLang,
+          format: 'text'
+        }),
+        signal
+      })
+      
+      if (!response.ok) return null
+      const data = await response.json()
+      return data.translatedText || null
+    } catch {
+      return null
+    }
+  }
 
   const addToHistory = (source: string, result: string, fromLabel: string, toLabel: string) => {
     if (srcLang === 'auto') {
@@ -219,24 +245,6 @@ export default function AITranslator() {
       )
       return [item, ...filtered].slice(0, MAX_HISTORY)
     })
-  }
-
-  const fallbackTranslate = async (text: string, from: LangCode, to: LangCode, signal: AbortSignal): Promise<string | null> => {
-    try {
-      const langPair = `${from === 'auto' ? 'auto' : from}-${to}`
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`
-
-      const response = await fetch(url, { signal })
-      if (!response.ok) return null
-
-      const data = await response.json()
-      if (data.responseData && data.responseData.translatedText) {
-        return data.responseData.translatedText
-      }
-      return null
-    } catch {
-      return null
-    }
   }
 
   const detectLanguage = (text: string): LangCode => {
