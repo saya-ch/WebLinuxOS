@@ -17,6 +17,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const apps = useStore((s) => s.apps)
   const setWindowSnapshot = useStore((s) => s.setWindowSnapshot)
   const removeWindowSnapshot = useStore((s) => s.removeWindowSnapshot)
+  const snapWindow = useStore((s) => s.snapWindow)
+  const tileWindow = useStore((s) => s.tileWindow)
   
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -27,6 +29,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const [dragOpacity, setDragOpacity] = useState(1)
   const [snapHint, setSnapHint] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState(false)
+  const [showTileMenu, setShowTileMenu] = useState(false)
   const [alignmentGuides, setAlignmentGuides] = useState<{ vertical: number[]; horizontal: number[] }>({ vertical: [], horizontal: [] })
   
   const stateRef = useRef({
@@ -193,6 +196,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     
     const isMod = e.ctrlKey || e.metaKey
     const isShift = e.shiftKey
+    const isAlt = e.altKey
     
     if (isMod && e.key === 'w') {
       e.preventDefault()
@@ -211,12 +215,34 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       maximizeWindow(win.id)
       return
     }
+
+    if (isMod && isAlt) {
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault()
+          tileWindow(win.id, 'left')
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          tileWindow(win.id, 'right')
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          tileWindow(win.id, 'top')
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          tileWindow(win.id, 'bottom')
+          break
+      }
+      return
+    }
     
     if (e.key === 'Escape' && win.maximized) {
       e.preventDefault()
       maximizeWindow(win.id)
     }
-  }, [win.focused, win.id, win.maximized, handleClose, handleMinimize, maximizeWindow])
+  }, [win.focused, win.id, win.maximized, handleClose, handleMinimize, maximizeWindow, tileWindow])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyboardShortcuts)
@@ -612,6 +638,31 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
     }
   }, [win, isHovered, dragging, resizing, dragOpacity])
 
+  const tileButtonStyle: React.CSSProperties = {
+    padding: '8px 10px',
+    border: '1px solid var(--window-border, rgba(255,255,255,0.1))',
+    background: 'transparent',
+    color: 'inherit',
+    borderRadius: 6,
+    cursor: 'pointer',
+    fontSize: 11,
+    transition: 'all 0.15s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  }
+
+  const handleTileHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = 'var(--window-border, rgba(139,124,240,0.2))'
+    e.currentTarget.style.borderColor = 'rgba(139,124,240,0.5)'
+  }
+
+  const handleTileLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = 'transparent'
+    e.currentTarget.style.borderColor = 'var(--window-border, rgba(255,255,255,0.1))'
+  }
+
   return (
     <div
       className={`window ${win.focused ? 'focused' : ''} ${win.maximized ? 'maximized' : ''} ${isClosing ? 'closing' : ''} ${isMinimizing ? 'minimizing' : ''} ${isOpening ? 'opening' : ''}`}
@@ -661,6 +712,24 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
             {win.maximized ? '❐' : '□'}
           </button>
           <button
+            className="window-titlebar-button"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowTileMenu((v) => !v)
+              setShowMenu(false)
+            }}
+            aria-label="窗口平铺"
+            title="窗口平铺 (Ctrl+Alt+方向键)"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="1" y="1" width="5" height="5" rx="1"/>
+              <rect x="8" y="1" width="5" height="5" rx="1"/>
+              <rect x="1" y="8" width="5" height="5" rx="1"/>
+              <rect x="8" y="8" width="5" height="5" rx="1"/>
+            </svg>
+          </button>
+          <button
             className="window-titlebar-button close"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={handleClose}
@@ -692,10 +761,10 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           />
         </>
       )}
-      {showMenu && (
+      {(showMenu || showTileMenu) && (
         <>
           <div
-            onClick={() => setShowMenu(false)}
+            onClick={() => { setShowMenu(false); setShowTileMenu(false) }}
             style={{
               position: 'fixed',
               top: 0,
@@ -705,124 +774,255 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
               zIndex: win.zIndex + 1,
             }}
           />
-          <div
-            className="window-menu"
-            style={{
-              position: 'absolute',
-              top: 32,
-              left: 8,
-              background: 'var(--window-bg, #1a1a1a)',
-              border: '1px solid var(--window-border, rgba(255,255,255,0.1))',
-              borderRadius: 8,
-              padding: 4,
-              zIndex: win.zIndex + 2,
-              minWidth: 140,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-              fontSize: 12,
-              color: 'var(--text-primary, #fff)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => {
-                handleMinimize()
-                setShowMenu(false)
-              }}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: 'none',
-                background: 'transparent',
-                color: 'inherit',
-                textAlign: 'left',
-                borderRadius: 4,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-              }}
-            >
-              <span>—</span>
-              <span>最小化</span>
-              <span style={{ marginLeft: 'auto', opacity: 0.5 }}>Ctrl+M</span>
-            </button>
-            <button
-              onClick={() => {
-                maximizeWindow(win.id)
-                setShowMenu(false)
-              }}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: 'none',
-                background: 'transparent',
-                color: 'inherit',
-                textAlign: 'left',
-                borderRadius: 4,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-              }}
-            >
-              <span>{win.maximized ? '❐' : '□'}</span>
-              <span>{win.maximized ? '还原' : '最大化'}</span>
-              <span style={{ marginLeft: 'auto', opacity: 0.5 }}>
-                {win.maximized ? 'Esc' : 'Ctrl+Shift+M'}
-              </span>
-            </button>
+          {showMenu && (
             <div
+              className="window-menu"
               style={{
-                height: 1,
-                background: 'var(--window-border, rgba(255,255,255,0.1))',
-                margin: '4px 8px',
+                position: 'absolute',
+                top: 32,
+                left: 8,
+                background: 'var(--window-bg, #1a1a1a)',
+                border: '1px solid var(--window-border, rgba(255,255,255,0.1))',
+                borderRadius: 8,
+                padding: 4,
+                zIndex: win.zIndex + 2,
+                minWidth: 160,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                fontSize: 12,
+                color: 'var(--text-primary, #fff)',
               }}
-            />
-            <button
-              onClick={() => {
-                handleClose()
-                setShowMenu(false)
-              }}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: 'none',
-                background: 'transparent',
-                color: '#ff6b6b',
-                textAlign: 'left',
-                borderRadius: 4,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,107,107,0.1)'
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-              }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <span>✕</span>
-              <span>关闭</span>
-              <span style={{ marginLeft: 'auto', opacity: 0.5 }}>Ctrl+W</span>
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  handleMinimize()
+                  setShowMenu(false)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'inherit',
+                  textAlign: 'left',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                }}
+              >
+                <span>—</span>
+                <span>最小化</span>
+                <span style={{ marginLeft: 'auto', opacity: 0.5 }}>Ctrl+M</span>
+              </button>
+              <button
+                onClick={() => {
+                  maximizeWindow(win.id)
+                  setShowMenu(false)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'inherit',
+                  textAlign: 'left',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                }}
+              >
+                <span>{win.maximized ? '❐' : '□'}</span>
+                <span>{win.maximized ? '还原' : '最大化'}</span>
+                <span style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                  {win.maximized ? 'Esc' : 'Ctrl+Shift+M'}
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowTileMenu(true)
+                  setShowMenu(false)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'inherit',
+                  textAlign: 'left',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'var(--window-border, rgba(255,255,255,0.08))'
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                }}
+              >
+                <span>▦</span>
+                <span>平铺窗口</span>
+                <span style={{ marginLeft: 'auto', opacity: 0.5 }}>›</span>
+              </button>
+              <div
+                style={{
+                  height: 1,
+                  background: 'var(--window-border, rgba(255,255,255,0.1))',
+                  margin: '4px 8px',
+                }}
+              />
+              <button
+                onClick={() => {
+                  handleClose()
+                  setShowMenu(false)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#ff6b6b',
+                  textAlign: 'left',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,107,107,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                }}
+              >
+                <span>✕</span>
+                <span>关闭</span>
+                <span style={{ marginLeft: 'auto', opacity: 0.5 }}>Ctrl+W</span>
+              </button>
+            </div>
+          )}
+          {showTileMenu && (
+            <div
+              className="window-menu tile-menu"
+              style={{
+                position: 'absolute',
+                top: showMenu ? 32 : 32,
+                left: showMenu ? 168 : 8,
+                background: 'var(--window-bg, #1a1a1a)',
+                border: '1px solid var(--window-border, rgba(255,255,255,0.1))',
+                borderRadius: 8,
+                padding: 8,
+                zIndex: win.zIndex + 3,
+                minWidth: 200,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                fontSize: 12,
+                color: 'var(--text-primary, #fff)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ padding: '4px 12px 8px', color: 'var(--text-secondary, #888)', fontSize: 11 }}>
+                半屏平铺
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                <button
+                  onClick={() => { snapWindow(win.id, 'left-half'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ◀ 左侧
+                </button>
+                <button
+                  onClick={() => { snapWindow(win.id, 'right-half'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ▶ 右侧
+                </button>
+                <button
+                  onClick={() => { snapWindow(win.id, 'top-half'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ▲ 顶部
+                </button>
+                <button
+                  onClick={() => { snapWindow(win.id, 'bottom-half'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ▼ 底部
+                </button>
+              </div>
+              <div style={{ height: 1, background: 'var(--window-border, rgba(255,255,255,0.1))', margin: '8px 0' }} />
+              <div style={{ padding: '4px 12px 8px', color: 'var(--text-secondary, #888)', fontSize: 11 }}>
+                四分之一平铺
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                <button
+                  onClick={() => { snapWindow(win.id, 'quadrant-tl'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ◀▲ 左上
+                </button>
+                <button
+                  onClick={() => { snapWindow(win.id, 'quadrant-tr'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ▶▲ 右上
+                </button>
+                <button
+                  onClick={() => { snapWindow(win.id, 'quadrant-bl'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ◀▼ 左下
+                </button>
+                <button
+                  onClick={() => { snapWindow(win.id, 'quadrant-br'); setShowTileMenu(false) }}
+                  style={tileButtonStyle}
+                  onMouseEnter={handleTileHover}
+                  onMouseLeave={handleTileLeave}
+                >
+                  ▶▼ 右下
+                </button>
+              </div>
+              <div style={{ padding: '8px 12px 4px', color: 'var(--text-secondary, #666)', fontSize: 10, textAlign: 'center' }}>
+                快捷键: Ctrl+Alt+方向键
+              </div>
+            </div>
+          )}
         </>
       )}
       {snapHint && (

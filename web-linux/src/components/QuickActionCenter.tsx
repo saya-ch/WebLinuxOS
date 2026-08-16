@@ -17,6 +17,10 @@ import {
   Layers,
   Zap,
   Thermometer,
+  LayoutGrid,
+  Save,
+  Maximize2,
+  Split,
 } from 'lucide-react'
 
 interface QuickActionCenterProps {
@@ -33,6 +37,12 @@ const QuickActionCenter = memo(function QuickActionCenter({ isOpen, onClose }: Q
   const liveWallpaperEnabled = useStore((s) => s.liveWallpaperEnabled)
   const openApp = useStore((s) => s.openApp)
   const resetToDefaults = useStore((s) => s.resetToDefaults)
+  const windows = useStore((s) => s.windows)
+  const tileWindowsGrid = useStore((s) => s.tileWindowsGrid)
+  const maximizeAllWindows = useStore((s) => s.maximizeAllWindows)
+  const minimizeAllWindows = useStore((s) => s.minimizeAllWindows)
+  const saveWorkspace = useStore((s) => s.saveWorkspace)
+  const addNotification = useStore((s) => s.addNotification)
 
   if (!isOpen) return null
 
@@ -208,6 +218,66 @@ const QuickActionCenter = memo(function QuickActionCenter({ isOpen, onClose }: Q
               >
                 <Thermometer size={20} className="text-error" />
                 <span className="text-xs text-gray-300">监控</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-400 mb-3">窗口管理</h3>
+            <div className="grid grid-cols-4 gap-3">
+              <button
+                onClick={() => {
+                  const activeWindows = windows.filter(w => !w.minimized)
+                  if (activeWindows.length >= 2) {
+                    tileWindowsGrid(activeWindows.map(w => w.id))
+                    addNotification({ title: '窗口平铺', message: `已平铺 ${activeWindows.length} 个窗口`, type: 'success', duration: 2000 })
+                  } else {
+                    addNotification({ title: '提示', message: '需要至少2个打开的窗口才能平铺', type: 'info', duration: 2000 })
+                  }
+                  onClose()
+                }}
+                className="flex flex-col items-center gap-2 p-3 bg-surface-light rounded-xl hover:bg-surface-dark transition-colors"
+                disabled={windows.filter(w => !w.minimized).length < 2}
+              >
+                <LayoutGrid size={20} className={windows.filter(w => !w.minimized).length >= 2 ? 'text-secondary' : 'text-gray-600'} />
+                <span className="text-xs text-gray-300">网格平铺</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  maximizeAllWindows()
+                  onClose()
+                }}
+                className="flex flex-col items-center gap-2 p-3 bg-surface-light rounded-xl hover:bg-surface-dark transition-colors"
+                disabled={windows.length === 0}
+              >
+                <Maximize2 size={20} className={windows.length > 0 ? 'text-primary' : 'text-gray-600'} />
+                <span className="text-xs text-gray-300">全部最大化</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  minimizeAllWindows()
+                  onClose()
+                }}
+                className="flex flex-col items-center gap-2 p-3 bg-surface-light rounded-xl hover:bg-surface-dark transition-colors"
+                disabled={windows.length === 0}
+              >
+                <Split size={20} className={windows.length > 0 ? 'text-warning' : 'text-gray-600'} />
+                <span className="text-xs text-gray-300">全部最小化</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  saveWorkspace()
+                  addNotification({ title: '工作区已保存', message: `保存了 ${windows.length} 个窗口布局`, type: 'success', duration: 2000 })
+                  onClose()
+                }}
+                className="flex flex-col items-center gap-2 p-3 bg-surface-light rounded-xl hover:bg-surface-dark transition-colors"
+                disabled={windows.length === 0}
+              >
+                <Save size={20} className={windows.length > 0 ? 'text-success' : 'text-gray-600'} />
+                <span className="text-xs text-gray-300">保存布局</span>
               </button>
             </div>
           </div>

@@ -221,6 +221,12 @@ interface Store {
   closeQuickActionCenter: () => void
   setSystemStatus: (status: 'online' | 'offline' | 'warning') => void
   refreshSystemStats: () => void
+  tileWindow: (id: string, direction: 'left' | 'right' | 'top' | 'bottom') => void
+  tileWindowsGrid: (windowIds: string[]) => void
+  snapWindow: (id: string, snap: 'left-half' | 'right-half' | 'top-half' | 'bottom-half' | 'quadrant-tl' | 'quadrant-tr' | 'quadrant-bl' | 'quadrant-br') => void
+  maximizeAllWindows: () => void
+  minimizeAllWindows: () => void
+  saveWorkspace: () => void
 }
 
 let windowIdCounter = 0
@@ -256,7 +262,20 @@ function trimHistory(history: FileOperation[], historyIndex: number): {
   }
 }
 
-let lastStatsPerfTime = 0
+// 使用闭包封装的统计时间戳，避免模块级变量在多实例场景下的竞态条件
+let statsPerfTime = 0
+const getAndUpdateStatsPerfTime = () => {
+  const current = performance.now()
+  const delta = current - statsPerfTime
+  statsPerfTime = current
+  return { current, delta }
+}
+
+// 清理所有通知定时器的工具函数，用于 store 重置时释放资源
+const clearAllNotificationTimers = () => {
+  notificationTimers.forEach(timer => clearTimeout(timer))
+  notificationTimers.clear()
+}
 
 export const useStore = create<Store>((set, get) => ({
   windows: [],
@@ -309,7 +328,7 @@ export const useStore = create<Store>((set, get) => ({
   setSystemStatus: (status) => set({ systemStatus: status }),
 
   refreshSystemStats: () => {
-    const now = performance.now()
+    const { current: now, delta } = getAndUpdateStatsPerfTime()
     const uptime = Math.floor(Date.now() / 1000)
 
     const perf = performance as unknown as {
@@ -342,10 +361,9 @@ export const useStore = create<Store>((set, get) => ({
 
     let cpuUsage: number
     try {
-      const delta = now - lastStatsPerfTime
       const expectedDelta = 5000
 
-      if (lastStatsPerfTime === 0) {
+      if (delta === 0 || delta > 60000) {
         cpuUsage = 5
       } else {
         const deltaRatio = delta > 0 ? expectedDelta / delta : 1
@@ -373,7 +391,6 @@ export const useStore = create<Store>((set, get) => ({
     } catch {
       cpuUsage = Math.round(10 + Math.random() * 15)
     }
-    lastStatsPerfTime = now
 
     const localStorageSize = (() => {
       try {
@@ -457,6 +474,143 @@ export const useStore = create<Store>((set, get) => ({
         uptime,
       },
     })
+  },
+
+  tileWindow: (id, direction) => {
+    const screenW = window.innerWidth
+    const screenH = window.innerHeight - 40
+    const halfW = Math.floor(screenW / 2)
+    const halfH = Math.floor(screenH / 2)
+    let x = 0, y = 0, width = halfW, height = screenH
+
+    switch (direction) {
+      case 'left':
+        x = 0; y = 0; width = halfW; height = screenH; break
+      case 'right':
+        x = halfW; y = 0; width = halfW; height = screenH; break
+      case 'top':
+        x = 0; y = 0; width = screenW; height = halfH; break
+      case 'bottom':
+        x = 0; y = halfH; width = screenW; height = halfH; break
+    }
+
+    set((s) => ({
+      windows: s.windows.map((w) =>
+        w.id === id
+          ? { ...w, x, y, width, height, maximized: false, minimized: false, focused: true, zIndex: s.nextZIndex + 1 }
+          : { ...w, focused: false }
+      ),
+      nextZIndex: s.nextZIndex + 1,
+    }))
+  },
+
+  snapWindow: (id, snap) => {
+    const screenW = window.innerWidth
+    const screenH = window.innerHeight - 40
+    const halfW = Math.floor(screenW / 2)
+    const halfH = Math.floor(screenH / 2)
+    let x = 0, y = 0, width = screenW, height = screenH
+
+    switch (snap) {
+      case 'left-half': x = 0; y = 0; width = halfW; height = screenH; break
+      case 'right-half': x = halfW; y = 0; width = halfW; height = screenH; break
+      case 'top-half': x = 0; y = 0; width = screenW; height = halfH; break
+      case 'bottom-half': x = 0; y = halfH; width = screenW; height = halfH; break
+      case 'quadrant-tl': x = 0; y = 0; width = halfW; height = halfH; break
+      case 'quadrant-tr': x = halfW; y = 0; width = halfW; height = halfH; break
+      case 'quadrant-bl': x = 0; y = halfH; width = halfW; height = halfH; break
+      case 'quadrant-br': x = halfW; y = halfH; width = halfW; height = halfH; break
+    }
+
+    set((s) => ({
+      windows: s.windows.map((w) =>
+        w.id === id
+          ? { ...w, x, y, width, height, maximized: false, minimized: false, focused: true, zIndex: s.nextZIndex + 1 }
+          : { ...w, focused: false }
+      ),
+      nextZIndex: s.nextZIndex + 1,
+    }))
+  },
+
+  tileWindowsGrid: (windowIds) => {
+    const count = windowIds.length
+    if (count === 0) return
+    const screenW = window.innerWidth
+    const screenH = window.innerHeight - 40
+
+    let cols = Math.ceil(Math.sqrt(count))
+    let rows = Math.ceil(count / cols)
+    if (count <= 2) { cols = count; rows = 1 }
+    else if (count <= 4) { cols = 2; rows = Math.ceil(count / 2) }
+    else if (count <= 6) { cols = 3; rows = 2 }
+    else if (count <= 9) { cols = 3; rows = 3 }
+
+    const cellW = Math.floor(screenW / cols)
+    const cellH = Math.floor(screenH / rows)
+
+    set((s) => {
+      const newWindows = s.windows.map((w) => {
+        const idx = windowIds.indexOf(w.id)
+        if (idx === -1) return w
+        const col = idx % cols
+        const row = Math.floor(idx / cols)
+        return {
+          ...w,
+          x: col * cellW,
+          y: row * cellH,
+          width: cellW,
+          height: cellH,
+          maximized: false,
+          minimized: false,
+          focused: false,
+        }
+      })
+      const maxZ = Math.max(...newWindows.map(w => w.zIndex), s.nextZIndex)
+      return { windows: newWindows, nextZIndex: maxZ + 1 }
+    })
+  },
+
+  maximizeAllWindows: () => {
+    set((s) => ({
+      windows: s.windows.map((w) => ({
+        ...w,
+        maximized: true,
+        minimized: false,
+      })),
+    }))
+  },
+
+  minimizeAllWindows: () => {
+    set((s) => ({
+      windows: s.windows.map((w) => ({
+        ...w,
+        minimized: true,
+        maximized: false,
+      })),
+    }))
+  },
+
+  saveWorkspace: () => {
+    const state = get()
+    const workspaceData = state.windows.map((w) => ({
+      id: w.id,
+      appId: w.appId,
+      title: w.title,
+      x: w.x,
+      y: w.y,
+      width: w.width,
+      height: w.height,
+      maximized: w.maximized,
+      minimized: w.minimized,
+      zIndex: w.zIndex,
+    }))
+    try {
+      const savedWorkspaces = loadFromStorage<typeof workspaceData[]>('weblinux_saved_workspaces', [])
+      savedWorkspaces.push({ timestamp: Date.now(), windows: workspaceData } as never)
+      saveToStorage('weblinux_saved_workspaces', savedWorkspaces)
+    } catch {
+      // 静默处理存储错误
+    }
   },
 
   // 添加一条通知消息：对同一消息标题做去重限制，避免短时间内刷屏
@@ -577,7 +731,6 @@ export const useStore = create<Store>((set, get) => ({
   // 重置到默认状态：清空本地存储并恢复默认值，操作前会发通知警告
   resetToDefaults: () => {
     try {
-      // 先发出警告通知，告知用户将进行重置操作
       get().addNotification({
         title: '系统重置',
         message: '正在将系统恢复为默认配置，所有本地数据将被清空…',
@@ -587,6 +740,7 @@ export const useStore = create<Store>((set, get) => ({
 
       invalidateCache()
       clearAllStorage()
+      clearAllNotificationTimers()
       set({
         files: defaultFiles,
         desktopIcons: defaultDesktopIcons,
