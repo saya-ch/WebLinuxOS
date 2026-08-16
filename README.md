@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v99.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v101.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -108,6 +108,49 @@ WebLinuxOS/
 1. 修改 `web-linux/vite.config.ts` 中的 `base` 配置，默认为 `/WebLinuxOS/`
 2. 运行 `npm run build` 生成 `dist` 目录
 3. 将 `dist` 目录内容推送到 `gh-pages` 分支，或配置自定义域名
+
+## v101.0.0 创新亮点
+
+### AI 翻译大师
+
+基于 Pollinations AI 的专业翻译应用，支持 14 种语言互译：
+
+- 主翻译引擎：Pollinations AI（真实 AI 翻译，支持自然流畅表达）
+- 备用翻译引擎：MyMemory API（主引擎不可用时自动切换）
+- 自动语言检测：识别中/英/日/韩/法/德/西/意/葡/俄/阿/泰等语言
+- 常用短语预设：问候、旅行、商务、日常四大类
+- 历史记录与收藏：本地存储翻译历史，支持快速复用
+- Web Speech API 语音朗读：支持原文和译文朗读
+- 玻璃拟态 UI 设计：深色/浅色主题自适应
+
+### GIF 探索器
+
+双源 GIF 搜索引擎，流畅的瀑布流浏览体验：
+
+- 主搜索源：Giphy API（海量 GIF 资源）
+- 备用搜索源：Pixabay API（Giphy 不可用时自动切换）
+- 分类浏览：热门/反应/动物/运动/游戏/动漫/表情包/自然/爱情/舞蹈
+- 关键词搜索：实时搜索结果，支持分页加载
+- 收藏功能：本地存储收藏的 GIF，支持快速访问
+- 大图预览：点击查看原始尺寸 GIF
+
+### 应用架构改进
+
+- 组件懒加载优化：新应用全部采用 `React.lazy` + `Suspense` 按需加载
+- 错误边界增强：API 失败时自动尝试备用方案，提升用户体验
+- 代码分割：每个应用独立打包，首屏加载更快
+
+## v100.0.0 创新亮点
+
+### Markdown 转 PDF
+
+专业的 Markdown 文档处理工具：
+
+- 实时预览：编辑即时渲染，支持 GitHub Flavored Markdown
+- 代码高亮：支持 180+ 编程语言语法高亮
+- 多主题：提供明亮、暗黑、优雅、极简等主题切换
+- PDF 导出：浏览器原生 print 功能，无需后端
+- 自定义页面设置：纸张大小、边距、页眉页脚配置
 
 ## v99.0.0 创新亮点
 

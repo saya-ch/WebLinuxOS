@@ -354,6 +354,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'api-debugger', name: 'API调试器 Pro', icon: <ApiLabIcon />, component: 'APIDebugger', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '专业HTTP调试工具：5种请求方法、Headers/Body管理、响应高亮查看、历史记录、10+常用API模板、代码生成(fetch/axios/curl)' },
   // === v89 创新应用套件 ===
   { id: 'md-html-generator', name: 'Markdown转HTML生成器', icon: <CodeIcon />, component: 'MarkdownToHTML', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: 'Markdown转独立HTML生成器：5种精美主题模板、实时预览、代码高亮、数学公式、Mermaid图表、导出完整HTML文件（带样式）' },
+  { id: 'md-pdf-converter', name: 'Markdown转PDF', icon: <FileTextIcon />, component: 'MarkdownToPDF', category: 'office', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: 'Markdown转PDF实用工具：3种精美主题（经典/现代/极简）、代码高亮、实时预览、自定义纸张大小与边距、简历/报告/笔记模板、PDF与HTML双格式导出' },
   { id: 'browser-perf-analyzer', name: '浏览器性能分析器', icon: <ActivityIcon />, component: 'PerformanceMonitor', category: 'system', defaultWidth: 1200, defaultHeight: 780, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: '实时浏览器性能深度分析：FPS监控、内存泄漏检测、渲染管线分析、长任务追踪、Layout/Style/Paint耗时、优化建议' },
   { id: 'scientific-calculator', name: '科学计算器', icon: <CalculatorIcon />, component: 'QuantumCalculator', category: 'utilities', defaultWidth: 480, defaultHeight: 620, minWidth: 380, minHeight: 520, resizable: true, multiple: false,  description: '功能完备的科学计算器：三角/对数/阶乘/矩阵/方程求解、历史记录、常量库、单位转换、编程模式（进制/位运算）' },
   { id: 'color-scheme-designer', name: '配色方案设计师', icon: <PaletteIcon />, component: 'ColorPaletteGenerator', category: 'graphics', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业配色方案设计工具：色轮Harmony、HSL/RGB/HEX、WCAG对比度检查、色盲模拟、Tailwind/VS Code主题导出、一键复制' },
@@ -408,6 +409,10 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'shortcut-customizer', name: '快捷键定制中心', icon: <ShortcutCustomizerIcon />, component: 'ShortcutCustomizer', category: 'system', defaultWidth: 980, defaultHeight: 720, minWidth: 780, minHeight: 560, resizable: true, multiple: false, isNew: true, description: '自定义系统快捷键绑定：冲突检测、实时按键捕获测试器、导入导出配置、恢复默认设置' },
   // === v99 创新应用套件 — 隐私与安全中心 ===
   { id: 'privacy-dashboard', name: '隐私与安全中心', icon: <ShieldIcon />, component: 'PrivacyDashboard', category: 'system', defaultWidth: 1000, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '浏览器隐私状态实时监控：权限分析、存储检测、隐私评分、问题诊断与改进建议' },
+  // === v100 创新应用 — GifExplorer GIF探索器 ===
+  { id: 'gif-explorer', name: 'GIF 探索器', icon: <ImageIcon />, component: 'GifExplorer', category: 'multimedia', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'GIF搜索和浏览应用：Giphy API真实搜索、热门趋势、分类浏览（反应/动物/运动/游戏等）、瀑布流布局、大图查看、分享与收藏、玻璃拟态UI' },
+  // === v101 创新应用 — AI翻译大师 ===
+  { id: 'ai-translator', name: 'AI 翻译大师', icon: <LanguagesIcon />, component: 'AITranslator', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的多语言翻译工具：Pollinations AI真实翻译、14种语言互译、自动语言检测、常用短语预设、历史记录与收藏、Web Speech API语音朗读、玻璃拟态UI' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

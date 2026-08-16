@@ -237,6 +237,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   MarkdownPreviewer: () => import('../../apps/MarkdownPreviewer'),
   MarkdownSlides: () => import('../../apps/MarkdownSlides'),
   MarkdownToHTML: () => import('../../apps/MarkdownToHTML'),
+  MarkdownToPDF: () => import('../../apps/MarkdownToPDF'),
   MindMap: () => import('../../apps/MindMap'),
   MusicPlayer: () => import('../../apps/MusicPlayer'),
   MusicStudio: () => import('../../apps/MusicStudio'),
@@ -575,6 +576,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v98 新增创新应用 ===
   SystemAnalytics: () => import('../../apps/SystemAnalytics'),
   ShortcutCustomizer: () => import('../../apps/ShortcutCustomizer'),
+  // === v100 新增创新应用 ===
+  GifExplorer: () => import('../../apps/GifExplorer'),
+  // === v101 新增创新应用 ===
+  AITranslator: () => import('../../apps/AITranslator'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
