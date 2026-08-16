@@ -12,6 +12,7 @@ import CommandPalette from './components/CommandPalette'
 import ShortcutPanel from './components/ShortcutPanel'
 import SmartCommandCenter from './components/SmartCommandCenter'
 import QuickNoteOverlay from './components/QuickNoteOverlay'
+import { getSyncService } from './services/syncService'
 import './styles/cyberpunk-theme.css'
 import './styles/quantum-theme.css'
 
@@ -145,6 +146,56 @@ const App = memo(function App() {
     const interval = setInterval(refreshSystemStats, 5000)
     return () => clearInterval(interval)
   }, [refreshSystemStats])
+
+  // === 跨标签页实时同步（v99 新特性）===
+  useEffect(() => {
+    const sync = getSyncService()
+    if (!sync) return
+    const unsubTheme = sync.subscribe<string>('theme-change', (msg) => {
+      if (msg.tabId === sync.getTabId()) return
+      const t = msg.payload
+      if (t === 'light' || t === 'dark' || t === 'auto') {
+        useStore.getState().setTheme(t)
+      }
+    })
+    const unsubAccent = sync.subscribe<string>('accent-change', (msg) => {
+      if (msg.tabId === sync.getTabId()) return
+      const a = msg.payload
+      useStore.getState().setAccentColor?.(a as never)
+    })
+    const unsubFile = sync.subscribe('file-change', () => {
+      useStore.getState().refreshSystemStats?.()
+    })
+    const unsubPresence = sync.subscribe('presence', () => {
+      // 通知栏可选择展示 peer 变化，这里暂不做 UI 打扰
+    })
+    return () => {
+      unsubTheme()
+      unsubAccent()
+      unsubFile()
+      unsubPresence()
+    }
+  }, [])
+
+  // 主题/强调色变更时广播到其它标签页
+  const lastThemeRef = useRef(theme)
+  const lastAccentRef = useRef(accentColor)
+  useEffect(() => {
+    const sync = getSyncService()
+    if (!sync) return
+    if (lastThemeRef.current !== theme) {
+      lastThemeRef.current = theme
+      sync.broadcast('theme-change', theme)
+    }
+  }, [theme])
+  useEffect(() => {
+    const sync = getSyncService()
+    if (!sync) return
+    if (lastAccentRef.current !== accentColor) {
+      lastAccentRef.current = accentColor
+      sync.broadcast('accent-change', accentColor)
+    }
+  }, [accentColor])
 
   // === v58 全局 API 暴露（同步阶段提前挂载 + useEffect 负责生命周期）
   const handleLaunchAppRef = useRef<EventListener | null>(null)

@@ -1,5 +1,6 @@
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
+import { getSyncService } from '../../services/syncService'
 
 // === v98 新功能命令集 ===
 
@@ -770,3 +771,105 @@ registerCommand('version', {
   usage: 'version',
   examples: ['version'],
 }, { force: true, source: 'v98Commands' })
+
+// sync-status - 跨标签页同步状态
+registerCommand('sync-status', {
+  handler: (): CommandResult => {
+    try {
+      const sync = getSyncService()
+
+      const color = '\x1b[36m'
+      const bold = '\x1b[1m'
+      const green = '\x1b[32m'
+      const yellow = '\x1b[33m'
+      const magenta = '\x1b[35m'
+      const reset = '\x1b[0m'
+
+      const lines: string[] = []
+      lines.push(`${bold}${color}╔══════════════════════════════════════════════════════╗${reset}`)
+      lines.push(`${bold}${color}║      WebLinuxOS 跨标签同步状态 (sync-status)          ║${reset}`)
+      lines.push(`${bold}${color}╚══════════════════════════════════════════════════════╝${reset}`)
+      lines.push('')
+
+      if (!sync) {
+        lines.push(`${yellow}同步服务未初始化（可能处于非浏览器环境或初始化失败）${reset}`)
+        lines.push('')
+        lines.push('提示：跨标签同步基于 BroadcastChannel + localStorage 构建，需要 HTTPS 或 localhost 访问。')
+        return { output: lines.join('\n') }
+      }
+
+      const peers = sync.getPeers()
+      const selfId = sync.getTabId()
+      const selfName = sync.getPeerName()
+
+      lines.push(`${bold}── 本标签页 ──${reset}`)
+      lines.push(`  tabId:      ${magenta}${selfId}${reset}`)
+      lines.push(`  昵称:       ${green}${selfName}${reset}`)
+      lines.push(`  在线数量:   ${peers.length}`)
+      lines.push('')
+
+      lines.push(`${bold}── 在线标签页 (${peers.length}) ──${reset}`)
+      peers.forEach((p, i) => {
+        const self = p.tabId === selfId
+        const tag = self ? `${green}[本页]${reset}` : `${yellow}[Peer]${reset}`
+        lines.push(`  ${i + 1}. ${tag} ${p.name}`)
+        lines.push(`     tabId=${p.tabId.slice(-8)}…  主题=${p.theme}  lastSeen=${new Date(p.lastSeen).toLocaleTimeString('zh-CN')}`)
+      })
+
+      lines.push('')
+      lines.push(`${bold}── 提示 ──${reset}`)
+      lines.push('  • 打开多个标签页可观察 peers 实时变化')
+      lines.push('  • 切换主题/强调色会在所有标签页中自动联动')
+      lines.push('  • 使用 sync-broadcast <topic> [payload] 广播一条自定义消息')
+      lines.push('')
+
+      return { output: lines.join('\n') }
+    } catch (err) {
+      return { output: `sync-status 错误: ${err instanceof Error ? err.message : String(err)}` }
+    }
+  },
+  description: '查看跨标签页同步状态与在线 peer',
+  usage: 'sync-status',
+  examples: ['sync-status'],
+})
+
+// sync-broadcast - 向其它标签页广播一条自定义消息
+registerCommand('sync-broadcast', {
+  handler: (ctx: CommandContext): CommandResult => {
+    try {
+      const topic = (ctx.args[0] || 'broadcast').trim()
+      const payloadRaw = ctx.args.slice(1).join(' ')
+
+      const sync = getSyncService()
+      if (!sync) {
+        return { output: 'sync-broadcast 失败: 同步服务未初始化。' }
+      }
+
+      const allowedTopics: Parameters<typeof sync.broadcast>[0][] = [
+        'broadcast', 'theme-change', 'accent-change', 'file-change',
+        'note-change', 'desktop-icon-change', 'pinned-change',
+        'window-event', 'clipboard-add', 'clipboard-remove',
+      ]
+      const finalTopic = allowedTopics.includes(topic as never) ? topic : 'broadcast'
+
+      let payload: unknown = payloadRaw
+      if (payloadRaw) {
+        try { payload = JSON.parse(payloadRaw) } catch { payload = payloadRaw }
+      }
+
+      sync.broadcast(finalTopic as never, payload as never)
+
+      const lines: string[] = []
+      lines.push(`已广播消息到其它标签页:`)
+      lines.push(`  topic:   ${finalTopic}`)
+      lines.push(`  payload: ${payloadRaw || '(空)'}`)
+      lines.push(`  peers:   ${sync.getPeerCount()}`)
+      return { output: lines.join('\n') }
+    } catch (err) {
+      return { output: `sync-broadcast 错误: ${err instanceof Error ? err.message : String(err)}` }
+    }
+  },
+  description: '向其它标签页广播自定义消息 (sync-broadcast <topic> [payload])',
+  usage: 'sync-broadcast',
+  examples: ['sync-broadcast', 'sync-broadcast hello', 'sync-broadcast window-event {"action":"focus"}'],
+})

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useStore } from '../../store'
-import { SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon, NoteIcon, GridIcon } from '../../icons'
+import { SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon, NoteIcon, GridIcon, UsersIcon } from '../../icons'
+import { getSyncService } from '../../services/syncService'
+import type { PeerInfo } from '../../services/syncService'
 
 // 进场/指示器/提示框动画 —— 通过 <style> 注入，避免新增依赖
 const TASKBAR_ENHANCEMENTS_CSS = `
@@ -447,6 +449,26 @@ const Taskbar = memo(function Taskbar() {
   const [hoveredWinId, setHoveredWinId] = useState<string | null>(null)
   const [hoveredButtonRect, setHoveredButtonRect] = useState<DOMRect | null>(null)
   const [tooltip, setTooltip] = useState<{ text: string; x: number } | null>(null)
+  const [peers, setPeers] = useState<PeerInfo[]>([])
+  const [showPeersPanel, setShowPeersPanel] = useState(false)
+
+  // 订阅跨标签页实时同步服务
+  useEffect(() => {
+    const sync = getSyncService()
+    if (!sync) return
+    const refresh = () => setPeers(sync.getPeers())
+    refresh()
+    const timer = setInterval(refresh, 3000)
+    const unsubPresence = sync.subscribe('presence', refresh)
+    const unsubLeave = sync.subscribe('presence-leave', refresh)
+    const unsubFile = sync.subscribe('file-change', refresh)
+    return () => {
+      clearInterval(timer)
+      unsubPresence()
+      unsubLeave()
+      unsubFile()
+    }
+  }, [])
 
   useEffect(() => {
     document.documentElement.style.filter = `brightness(${brightness}%)`
@@ -824,6 +846,34 @@ const Taskbar = memo(function Taskbar() {
           <NoteIcon size={14} />
         </TrayItem>
         <TrayItem
+          title={`跨标签页同步 · 当前 ${peers.length} 个标签页在线`}
+          onClick={(e) => {
+            e.stopPropagation()
+            setShowPeersPanel((v) => !v)
+          }}
+          style={{ cursor: 'pointer', position: 'relative' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <UsersIcon size={14} />
+            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              {peers.length}
+            </span>
+          </div>
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 2,
+              right: 2,
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: 'var(--accent)',
+              boxShadow: '0 0 6px var(--accent)',
+            }}
+          />
+        </TrayItem>
+        <TrayItem
           title={`电池: ${Math.round(battery)}% ${isCharging ? '(充电中)' : ''}`}
           onClick={() => openApp('power-manager')}
           style={{ cursor: 'pointer' }}
@@ -1164,6 +1214,110 @@ const Taskbar = memo(function Taskbar() {
             <span style={{ minWidth: '45px', textAlign: 'right', fontSize: 12 }}>
               {Math.round(battery)}%{isCharging ? ' ⚡' : ''}
             </span>
+          </div>
+        </div>
+      )}
+
+      {showPeersPanel && (
+        <div
+          className="peers-panel"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            right: 120,
+            bottom: 60,
+            minWidth: 260,
+            maxWidth: 320,
+            background: 'var(--context-menu-bg)',
+            border: '1px solid var(--window-border)',
+            borderRadius: '12px',
+            padding: '14px 14px 10px',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(16px)',
+            zIndex: 99999,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600 }}>
+              <UsersIcon size={15} />
+              <span>跨标签页同步</span>
+            </div>
+            <button
+              onClick={() => setShowPeersPanel(false)}
+              style={{ background: 'transparent', border: 0, color: 'var(--text-secondary)', cursor: 'pointer' }}
+              aria-label="关闭"
+            >
+              <XIcon size={14} />
+            </button>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 8 }}>
+            当前共有 <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{peers.length}</span> 个标签页在线
+            ·主题/强调色/文件变更会实时广播
+          </div>
+          <div
+            style={{
+              maxHeight: 220,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              paddingRight: 4,
+            }}
+          >
+            {peers.map((p) => (
+              <div
+                key={p.tabId}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--accent), #38bdf8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  {p.name.slice(0, 1)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {p.name}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                    {p.theme} · {new Date(p.lastSeen).toLocaleTimeString()}
+                  </div>
+                </div>
+                <div
+                  aria-hidden
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: '#22c55e',
+                    boxShadow: '0 0 6px #22c55e',
+                    flexShrink: 0,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            提示：在其它标签页打开同一网址，即可看到跨标签页同步效果。主题切换、收藏、文件变动会自动广播。
           </div>
         </div>
       )}
