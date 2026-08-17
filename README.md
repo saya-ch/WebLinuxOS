@@ -40,7 +40,9 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 | **AI & Creative** | AI chat, image generation, background removal, code analyzer, translation, prompt engineering |
 | **Internet & APIs** | Weather, crypto, news, Wikipedia, GitHub trends, exchange rates |
 | **System & Utilities** | File manager, settings, system monitor, password vault, clipboard |
-| **Multimedia** | Music player, visualizer, paint, screen recorder, camera |
+| **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera |
+| **Smart Home** | IoT dashboard, device control, energy monitoring, scene automation |
+| **Education** | Language lab, flashcards, code challenges, learning paths |
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
 
 ### Real API Integrations
@@ -57,6 +59,12 @@ All data comes from legitimate, public APIs — no mock data, no empty shells:
 - **Open Library** — book discovery
 - **NASA APOD** — astronomy imagery
 - **IP-API** — geolocation services
+- **Frankfurter** — European Central Bank exchange rates
+- **NewsAPI** — global news aggregation
+- **Giphy** — GIF search and discovery
+- **MyMemory** — free translation service
+- **Web Speech API** — speech synthesis and recognition
+- **Web Audio API** — music synthesis and audio processing
 
 ### Technical Highlights
 - **Lazy loading** — every application loads on demand via `React.lazy` + `Suspense`

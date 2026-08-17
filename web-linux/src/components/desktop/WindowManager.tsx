@@ -582,6 +582,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   GifExplorer: () => import('../../apps/GifExplorer'),
   // === v101 新增创新应用 ===
   AITranslator: () => import('../../apps/AITranslator'),
+  // === v103 新增创新应用 ===
+  SmartHomeDashboard: () => import('../../apps/SmartHomeDashboard'),
+  LanguageLab: () => import('../../apps/LanguageLab'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
