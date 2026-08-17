@@ -34,6 +34,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // v104 创新功能 — SmartWorkspace 智能工作空间：多布局自定义、收藏夹、应用快捷启动
+  { id: 'smart-workspace', name: '智能工作空间', icon: <GridIcon />, component: 'SmartWorkspace', category: 'utilities', defaultWidth: 1280, defaultHeight: 820, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '智能工作空间：多布局自定义（开发/设计/学习/办公）、应用收藏夹、一键启动、实时时钟、全局搜索' },
+  // v104 创新功能 — 开发者效率仪表板：系统性能、待办、快捷入口三合一
+  { id: 'dev-efficiency-dashboard', name: '开发者效率仪表板', icon: <ZapIcon />, component: 'DevEfficiencyDashboard', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '开发者效率仪表板：系统性能监控、待办事项、快捷应用入口、每日励志、工作统计' },
   // v78 创新功能 — AI研究助手：arXiv + Semantic Scholar 学术论文搜索
   { id: 'research-assistant', name: 'AI研究助手', icon: <ResearchIcon />, component: 'ResearchAssistant', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false,  description: '学术论文研究助手：arXiv + Semantic Scholar 双源搜索、每日论文精选、引用关系分析、相关论文推荐、收藏与历史' },
   // v73 创新功能 — 终极在线工具箱 & 真实AI聊天

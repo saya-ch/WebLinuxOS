@@ -62,3 +62,6 @@ import './v93Commands'
 
 // 16. v98 创新命令集：系统分析、应用管理、主题切换、快捷键、ASCII艺术
 import './v98Commands'
+
+// 17. v104 增强终端命令集：apt/app/theme/shortcut/neofetch/speedtest/sysinfo/banner
+import './enhancedTerminalCommands'

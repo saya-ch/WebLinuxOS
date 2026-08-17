@@ -585,6 +585,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v103 新增创新应用 ===
   SmartHomeDashboard: () => import('../../apps/SmartHomeDashboard'),
   LanguageLab: () => import('../../apps/LanguageLab'),
+  // === v104 新增创新应用 ===
+  SmartWorkspace: () => import('../../apps/SmartWorkspace'),
+  DevEfficiencyDashboard: () => import('../../apps/DevEfficiencyDashboard'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

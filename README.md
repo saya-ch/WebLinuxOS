@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v103.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v104.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -201,6 +201,15 @@ For manual deployment or custom domains:
 | New Terminal | `Ctrl/Cmd + Shift + N` |
 
 ## Version History
+
+### v104.0.0
+- SmartWorkspace 智能工作空间：多布局自定义（开发/设计/学习/办公）、应用收藏夹、一键启动
+- 开发者效率仪表板：系统性能监控、待办事项、快捷应用入口
+- 增强终端命令：apt包管理、app应用管理、theme主题切换、快捷键查看、neofetch系统展示
+- 网络速度测试：真实网络延迟和带宽检测
+- 详细系统信息：CPU/内存/屏幕/网络/特性检测
+- ASCII横幅生成器
+- 改进的组件映射自动生成脚本
 
 ### v103.0.0
 - AI 编程学院：基于 Pollinations AI 和 Pyodide 的真实编程学习平台
