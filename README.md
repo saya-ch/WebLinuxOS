@@ -7,14 +7,39 @@
 [Live Demo](https://saya-ch.github.io/WebLinuxOS/) · [Changelog](CHANGELOG.md) · [Wiki](https://github.com/saya-ch/WebLinuxOS/wiki) · [Report Issue](https://github.com/saya-ch/WebLinuxOS/issues)
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
+[![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v104.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v105.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Platform](https://img.shields.io/badge/platform-web-lightgrey?style=for-the-badge)](https://saya-ch.github.io/WebLinuxOS/)
 
 </div>
+
+---
+
+## Table of Contents
+
+- [What is WebLinuxOS](#what-is-weblinuxos)
+- [Features](#features)
+  - [Desktop Environment](#desktop-environment)
+  - [500+ Integrated Applications](#500-integrated-applications)
+  - [Real API Integrations](#real-api-integrations)
+  - [Technical Highlights](#technical-highlights)
+- [Architecture](#architecture)
+- [Screenshots](#screenshots)
+- [Quick Start](#quick-start)
+  - [Online Demo](#online-demo)
+  - [Local Development](#local-development)
+  - [Production Build](#production-build)
+- [Deployment](#deployment)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Technology Stack](#technology-stack)
+- [Version History](#version-history)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -22,15 +47,17 @@
 
 WebLinuxOS is a fully functional Linux desktop environment that runs entirely in your browser. It is not a demo or simulation — every application performs real work: the terminal executes actual commands, the code editor writes real code with syntax highlighting, the API tester sends real HTTP requests, and the AI image studio generates images through public APIs. Built on React 19 and TypeScript, it ships with 500+ integrated applications spanning development, office, networking, multimedia, AI, and gaming — turning any browser-equipped device into a complete workstation.
 
-## Key Features
+## Features
 
 ### Desktop Environment
-- **Full window management** — drag, resize, minimize, maximize, snap, tile, and cascade windows
+
+- **Full window management** — drag, resize, minimize, maximize, snap, tile, and cascade windows with smooth spring-based animations
 - **Multiple virtual desktops** — up to 9 workspaces with independent content and wallpaper
-- **Taskbar & start menu** — application launcher, system tray, and window switcher
+- **Taskbar & start menu** — application launcher, system tray, and window switcher with glass-morphism styling
 - **Command palette** — search and launch any app with a universal quick-open interface
 - **Global keyboard shortcuts** — 30+ customizable shortcuts for power users
-- **Smooth animations** — particle effects, gradient backgrounds, fluid transitions
+- **Aurora & particle effects** — animated gradient backgrounds with floating particles and nebula layers
+- **Cross-tab synchronization** — real-time theme, file, and presence sync across browser tabs
 
 ### 500+ Integrated Applications
 
@@ -46,9 +73,17 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 | **Education** | Language lab, flashcards, code challenges, learning paths |
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
 | **Collaboration** | Real-time whiteboard, document editor, code collaboration |
-| **AI Tools** | AI workspace, voice assistant, code analyzer, doc generator |
+
+#### New & Notable (v105)
+
+- **WebSandboxIDE** — browser-based sandbox IDE for safe code experimentation and prototyping
+- **Enhanced Terminal Commands** — 200+ commands including neofetch, theme switching, weather, crypto prices, programming jokes, app management, shortcut lookup, and AI-powered assistance
+- **AI Workspace** — unified AI assistant with chat, notes summarization, task planning, and code snippet generation
+- **Voice Assistant** — Web Speech API integration with 12 language support
+- **Realtime Collaboration** — cross-tab whiteboard, code editor, and document collaboration
 
 ### Real API Integrations
+
 All data comes from legitimate, public APIs — no mock data, no empty shells:
 
 - **Open-Meteo** — global weather forecasts
@@ -70,30 +105,87 @@ All data comes from legitimate, public APIs — no mock data, no empty shells:
 - **Web Audio API** — music synthesis and audio processing
 
 ### Technical Highlights
+
 - **Lazy loading** — every application loads on demand via `React.lazy` + `Suspense`
 - **Cross-tab synchronization** — real-time theme, file, and presence sync across browser tabs
 - **Content Security Policy** — comprehensive CSP headers for safe script execution
 - **Service Worker** — offline caching with auto-update detection
 - **Error boundaries** — graceful failure isolation per application
 - **Keyboard-first design** — power-user workflows with 30+ global shortcuts
+- **GPU-accelerated rendering** — `transform: translateZ(0)` for compositor promotion, `contain` for layout isolation
+- **Accessibility** — focus-visible indicators, reduced-motion support, semantic keyboard navigation
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        WebLinuxOS                           │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │   Apps (500+) │  │  Components  │  │    Services       │  │
+│  │              │  │              │  │                   │  │
+│  │ ┌──────────┐ │  │ ┌──────────┐ │  │ ┌──────────────┐ │  │
+│  │ │ Terminal  │ │  │ │  Desktop  │ │  │ │  AI Service │ │  │
+│  │ │ (200+ cmds)│  │ │  Window   │ │  │ │  API Service│ │  │
+│  │ ├──────────┤ │  │ │  Taskbar  │ │  │ │  Sync Service│ │  │
+│  │ │ CodeEditor│ │  │ │  Launcher │ │  │ └──────────────┘ │  │
+│  │ ├──────────┤ │  │ └──────────┘ │  │                   │  │
+│  │ │ AI Tools  │ │  ├──────────────┤  │ ┌──────────────┐ │  │
+│  │ ├──────────┤ │  │ │  Store      │  │ │  Icons       │ │  │
+│  │ │ DevTools  │ │  │ │  (Zustand) │  │ │  Registry    │ │  │
+│  │ └──────────┘ │  │ └──────────┘ │  │ └──────────────┘ │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│                                                              │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │              Theme & Design Token System              │  │
+│  │   CSS Variables · Dark/Light · Aurora · Glass         │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                              │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │              Public APIs (Real Data)                  │  │
+│  │   Weather · Crypto · News · AI · Translate · More    │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Directory Structure
+
+```
+WebLinuxOS/
+├── web-linux/
+│   ├── src/
+│   │   ├── apps/               # 500+ application implementations
+│   │   │   └── terminal/       # Terminal command system (200+ commands)
+│   │   ├── components/         # Core UI (Desktop, Window, Taskbar, StartMenu)
+│   │   │   └── desktop/        # WindowManager with lazy-loaded components
+│   │   ├── store/              # Zustand state, file system, storage utilities
+│   │   ├── services/           # API service layer, AI service, sync service
+│   │   ├── config/             # API endpoint configuration
+│   │   ├── apps.tsx            # Application registry (metadata + icons + dimensions)
+│   │   └── icons.tsx           # Custom icon components
+│   ├── public/                 # Static assets, PWA manifest, Service Worker
+│   └── vite.config.ts          # Vite configuration (base path, code splitting)
+├── .github/workflows/          # CI/CD: auto-build and deploy to GitHub Pages
+└── README.md
+```
 
 ## Screenshots
 
 <div align="center">
 
-![Desktop](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/01-desktop.png)
+![Desktop](web-linux/screenshots/01-desktop.png)
 
 **Clean desktop with widgets**
 
-![Launcher](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/02-launcher.png)
+![Launcher](web-linux/screenshots/02-launcher.png)
 
 **Application launcher with categories**
 
-![Terminal](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/04-terminal.png)
+![Terminal](web-linux/screenshots/04-terminal.png)
 
 **Fully functional terminal emulator**
 
-![Code Editor](https://raw.githubusercontent.com/saya-ch/WebLinuxOS/main/web-linux/screenshots/05-text-editor.png)
+![Code Editor](web-linux/screenshots/05-text-editor.png)
 
 **Monaco-based code editor with syntax highlighting**
 
@@ -127,55 +219,6 @@ npm run build
 
 The build runs `tsc -b` for type checking first — zero type errors are a release gate.
 
-## Architecture
-
-```
-WebLinuxOS/
-├── web-linux/
-│   ├── src/
-│   │   ├── apps/               # 500+ application implementations
-│   │   │   └── terminal/       # Terminal command system (200+ commands)
-│   │   ├── components/         # Core UI (Desktop, Window, Taskbar, StartMenu)
-│   │   │   └── desktop/        # WindowManager with lazy-loaded components
-│   │   ├── store/              # Zustand state, file system, storage utilities
-│   │   ├── services/           # API service layer, AI service, sync service
-│   │   ├── styles/             # Theme system and global styles
-│   │   ├── config/             # API endpoint configuration
-│   │   ├── apps.tsx            # Application registry (metadata + icons + dimensions)
-│   │   └── icons.tsx           # Custom icon components
-│   ├── public/                 # Static assets, PWA manifest, Service Worker
-│   └── vite.config.ts          # Vite configuration (base path, code splitting)
-├── .github/workflows/          # CI/CD: auto-build and deploy to GitHub Pages
-└── README.md
-```
-
-### Technology Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 + TypeScript |
-| Build | Vite 8 |
-| State | Zustand |
-| Editor | Monaco Editor |
-| Icons | Lucide Icons |
-| Runtime | Web APIs, Pyodide |
-
-### Application Registration
-
-Adding a new application requires three steps:
-
-1. **Create the component** in `web-linux/src/apps/YourAppName.tsx`
-2. **Register metadata** in `apps.tsx` — icon, category, dimensions, description
-3. **Add lazy-load mapping** in `WindowManager.tsx` componentMap
-
-```typescript
-// apps.tsx
-{ id: 'my-app', name: 'My App', component: 'MyApp', category: 'utilities', ... }
-
-// WindowManager.tsx
-MyApp: () => import('../../apps/MyApp'),
-```
-
 ## Deployment
 
 ### GitHub Pages
@@ -203,61 +246,40 @@ For manual deployment or custom domains:
 | Close Window | `Ctrl/Cmd + Q` |
 | New Terminal | `Ctrl/Cmd + Shift + N` |
 
+## Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 + TypeScript |
+| Build | Vite 8 |
+| State | Zustand |
+| Editor | Monaco Editor |
+| Icons | Lucide Icons |
+| Runtime | Web APIs, Pyodide |
+| Styling | CSS Variables, Design Tokens |
+| Deployment | GitHub Actions Pages |
+| CI/CD | GitHub Actions |
+
 ## Version History
 
 ### v105.0.0
-- **AI 智能工作台 (AIWorkspace)**：AI对话助手、快速笔记总结、任务规划助手、代码片段生成与解释，四大核心模块
-- **语音助手 (VoiceAssistant)**：基于Web Speech API的语音识别与合成、语音命令控制、12种语言支持
-- **实时协作白板 (RealtimeWhiteboard)**：6种绘制工具、跨标签页实时协作、PNG导出、撤销重做
-- **代码性能分析器 (CodePerfAnalyzer)**：基准测试、执行时间统计、内存分析、FPS测试、代码对比
-- **AI文档生成器 (AIDocGenerator)**：6种语言支持、5种注释风格、AI辅助生成、Markdown/HTML导出
-- **增强终端命令**：neofetch系统展示、theme主题切换、weather天气查询、quote每日名言、crypto加密货币价格、joke编程笑话、app应用管理、shortcut快捷键速查
-- 优化启动动画：粒子背景、丰富启动消息、流畅进度条
-- 桌面交互优化和UI细节改进
+
+- **WebSandboxIDE**: Browser-based sandbox IDE for safe code experimentation
+- **Enhanced Terminal Commands**: neofetch, theme, weather, quote, crypto, joke, app, shortcut, and AI command sets
+- **AI Workspace**: Unified AI assistant with chat, notes, task planning, and code generation
+- **Voice Assistant**: Web Speech API with 12 language support
+- **Realtime Collaboration**: Cross-tab whiteboard, document, and code collaboration
+- **Desktop Visuals**: Enhanced aurora effects, particle system, glass-morphism taskbar
+- **Accessibility**: Keyboard focus indicators, reduced-motion support
+- **Performance**: GPU-accelerated rendering, lazy loading, code splitting
 
 ### v104.0.0
-- SmartWorkspace 智能工作空间：多布局自定义（开发/设计/学习/办公）、应用收藏夹、一键启动
-- 开发者效率仪表板：系统性能监控、待办事项、快捷应用入口
-- 增强终端命令：apt包管理、app应用管理、theme主题切换、快捷键查看、neofetch系统展示
-- 网络速度测试：真实网络延迟和带宽检测
-- 详细系统信息：CPU/内存/屏幕/网络/特性检测
-- ASCII横幅生成器
-- 改进的组件映射自动生成脚本
-- 创新工具命令集：科学计算器(calc)、密码生成器(password-gen)、单位转换器(unit)、IP地址查询(ip-info)、UUID生成器(uuid-gen)、颜色转换工具(color-info)、表情符号查询(emoji-search)、每日运势占卜(fortune-today)、URL缩短器(short-link)、随机名言(quote-random)
-- 桌面交互优化：图标单击打开应用，提升用户体验
 
-### v103.0.0
-- AI 编程学院：基于 Pollinations AI 和 Pyodide 的真实编程学习平台
-- 5种编程语言课程（Python / JavaScript / HTML / CSS / SQL）
-- 实时 Python 代码执行（Pyodide WebAssembly 运行时）
-- AI 代码解释与参考答案生成
-- 进度追踪与课程完成标记
-- 增强的 API 服务层：密码检查、汇率实时转换、颜色调色板生成
-- 高级终端命令扩展（AI 命令、API 命令、创意命令）
-- 学术研究助手：arXiv + Semantic Scholar 双源论文搜索
-- 网络工具箱 Pro：IP 查询、DNS 查找、端口扫描等
-
-### v102.0.0
-- AI background removal tool with Canvas-based processing
-- Professional code snippet manager with syntax highlighting
-- Three removal modes: auto-detect, color selection, edge detection
-- Manual eraser tool with adjustable brush size
-- Import/export JSON support for snippets
-- Enhanced UI with compare mode and progress indicators
-- Optimized component loading and caching
-
-### v101.0.0
-- CJK font rendering fix for terminal and code editor
-- Noto Sans SC Mono integration for proper Chinese character display
-- Enhanced global transitions and animations
-
-### Recent Major Releases
-
-- **v100.0.0** — Markdown to PDF, enhanced window tiling system
-- **v99.0.0** — Cross-tab real-time sync, presence awareness, privacy center
-- **v98.0.0** — System analyzer, shortcut customization, CPU performance optimization
-- **v97.0.0** — AI translation master, GIF explorer, architecture improvements
-- **v96.0.0** — DevToolkit Ultra, real-time exchange rates, ASCII art generator
+- SmartWorkspace: multi-layout customization (Developer/Design/Learning/Office)
+- Enhanced terminal commands: apt, app management, theme, shortcut lookup, neofetch
+- Network speed test, detailed system information, ASCII banner generator
+- Improved component mapping auto-generation scripts
+- Innovation tool commands: calculator, password generator, unit converter, IP lookup, UUID generator, color tools, fortune, URL shortener, quotes
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
@@ -279,6 +301,14 @@ Contributions are welcome — bug fixes, new applications, and feature enhanceme
 cd web-linux
 npm run build   # Must pass: zero type errors
 ```
+
+### Reporting Issues
+
+When filing a bug, please include:
+- Browser and OS version
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 

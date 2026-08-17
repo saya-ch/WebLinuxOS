@@ -579,6 +579,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v104 新增创新应用 ===
   SmartWorkspace: () => import('../../apps/SmartWorkspace'),
   DevEfficiencyDashboard: () => import('../../apps/DevEfficiencyDashboard'),
+  // === v105 新增创新应用 ===
+  WebSandboxIDE: () => import('../../apps/WebSandboxIDE'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

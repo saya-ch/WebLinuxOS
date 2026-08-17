@@ -4,7 +4,7 @@ import {
   NoteIcon, ImageIcon, VideoIcon, PDFIcon, CodeIcon,
   PackageIcon, ShoppingCartIcon, HardDriveIcon, ListTodoIcon, ServerIcon,
   WifiIcon, ShieldIcon, UserIcon, CameraIcon, PaintIcon, GridIcon,
-  PresentationIcon, MailIcon, MessageIcon, ContactsIcon, CheckListIcon,
+  PresentationIcon, MailIcon, MessageIcon, ContactsIcon,
   LockIcon, BackupIcon, ZipIcon, FileSearchIcon, TypeIcon,
   LanguagesIcon, MapPinIcon, VideoRecorderIcon, MicIcon,
   BluetoothIcon, BatteryIcon, InfoIcon, HelpIcon, CommandIcon,
@@ -15,7 +15,7 @@ import {
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
-  BarChartIcon, CloudIcon as CloudLucide, ResearchIcon, DatabaseIcon, BarChart3Icon,
+  BarChartIcon, ResearchIcon, DatabaseIcon, BarChart3Icon,
   GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon
 } from './icons'
 
@@ -38,6 +38,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'smart-workspace', name: '智能工作空间', icon: <GridIcon />, component: 'SmartWorkspace', category: 'utilities', defaultWidth: 1280, defaultHeight: 820, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '智能工作空间：多布局自定义（开发/设计/学习/办公）、应用收藏夹、一键启动、实时时钟、全局搜索' },
   // v104 创新功能 — 开发者效率仪表板：系统性能、待办、快捷入口三合一
   { id: 'dev-efficiency-dashboard', name: '开发者效率仪表板', icon: <ZapIcon />, component: 'DevEfficiencyDashboard', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '开发者效率仪表板：系统性能监控、待办事项、快捷应用入口、每日励志、工作统计' },
+  // v105 创新功能 — WebSandbox 代码沙盒 IDE：浏览器内真实 JavaScript 执行环境
+  { id: 'web-sandbox-ide', name: 'WebSandbox 代码沙盒', icon: <Code2Icon />, component: 'WebSandboxIDE', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '浏览器内代码沙盒 IDE：真实 JavaScript 执行（iframe sandbox）、控制台输出捕获带时间戳、代码模板库（数组方法/async/DOM/Fetch/数据结构）、代码片段持久化、执行耗时与内存统计、导出与分享' },
   // v78 创新功能 — AI研究助手：arXiv + Semantic Scholar 学术论文搜索
   { id: 'research-assistant', name: 'AI研究助手', icon: <ResearchIcon />, component: 'ResearchAssistant', category: 'utilities', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false,  description: '学术论文研究助手：arXiv + Semantic Scholar 双源搜索、每日论文精选、引用关系分析、相关论文推荐、收藏与历史' },
   // v73 创新功能 — 终极在线工具箱 & 真实AI聊天
@@ -521,18 +523,6 @@ function DevPortalIcon() {
   )
 }
 
-function SmartNotesIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-      <polyline points="14 2 14 8 20 8"></polyline>
-      <line x1="16" y1="13" x2="8" y2="13"></line>
-      <line x1="16" y1="17" x2="8" y2="17"></line>
-      <polyline points="10 9 9 9 8 9"></polyline>
-    </svg>
-  )
-}
-
 function FocusIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -784,19 +774,6 @@ function StockTrackerIcon() {
       <path d="M12 4v16" />
       <path d="M4 14l4 4 4-4" />
       <path d="M20 10l-4 4-4-4" />
-    </svg>
-  );
-}
-
-function MarkdownSlidesIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="2" y="3" width="20" height="14" rx="2" />
-      <path d="M8 21h8" />
-      <path d="M12 17v4" />
-      <line x1="6" y1="7" x2="18" y2="7" />
-      <line x1="6" y1="11" x2="14" y2="11" />
-      <polyline points="16 11 18 9 20 11" />
     </svg>
   );
 }
@@ -1248,16 +1225,6 @@ function NotesAppIcon() {
   )
 }
 
-function TodoAppIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M9 12l2 2 4-4" />
-      <line x1="8" y1="7" x2="16" y2="7" />
-    </svg>
-  )
-}
-
 function CodeDiffIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1453,17 +1420,6 @@ function CodeFormatterIcon() {
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
       <polyline points="14 2 14 8 20 8"></polyline>
       <polyline points="16 14 12 18 8 14"></polyline>
-    </svg>
-  )
-}
-
-function DevToolboxIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="2" y="7" width="14" height="12" rx="2" />
-      <path d="M6 7V4h10a2 2 0 0 1 2 2v10" />
-      <circle cx="9" cy="13" r="2" />
-      <path d="M12 11l4 4M16 11l-4 4" />
     </svg>
   )
 }
