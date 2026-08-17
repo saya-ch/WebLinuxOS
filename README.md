@@ -8,7 +8,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v102.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v103.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -193,6 +193,17 @@ For manual deployment or custom domains:
 | New Terminal | `Ctrl/Cmd + Shift + N` |
 
 ## Version History
+
+### v103.0.0
+- AI 编程学院：基于 Pollinations AI 和 Pyodide 的真实编程学习平台
+- 5种编程语言课程（Python / JavaScript / HTML / CSS / SQL）
+- 实时 Python 代码执行（Pyodide WebAssembly 运行时）
+- AI 代码解释与参考答案生成
+- 进度追踪与课程完成标记
+- 增强的 API 服务层：密码检查、汇率实时转换、颜色调色板生成
+- 高级终端命令扩展（AI 命令、API 命令、创意命令）
+- 学术研究助手：arXiv + Semantic Scholar 双源论文搜索
+- 网络工具箱 Pro：IP 查询、DNS 查找、端口扫描等
 
 ### v102.0.0
 - AI background removal tool with Canvas-based processing
