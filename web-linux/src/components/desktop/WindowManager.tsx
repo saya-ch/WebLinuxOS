@@ -18,8 +18,6 @@ interface WindowComponent {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
   OnlineCodeRunnerPro: () => import('../../apps/OnlineCodeRunnerPro'),
-  WeatherLive: () => import('../../apps/WeatherLive'),
-  WeatherDashboard: () => import('../../apps/WeatherDashboard'),
   PromptEngineeringLab: () => import('../../apps/PromptEngineeringLab'),
   WebsitePerformanceTester: () => import('../../apps/WebsitePerformanceTester'),
   JsonCrusher: () => import('../../apps/JsonCrusher'),
@@ -162,8 +160,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevHub: () => import('../../apps/DevHub'),
   DevKit: () => import('../../apps/DevKit'),
   DevOpsTools: () => import('../../apps/DevOpsTools'),
-  DevToolbox: () => import('../../apps/DevToolbox'),
-  DevToolboxCentral: () => import('../../apps/DevToolboxCentral'),
   DevToolboxPro: () => import('../../apps/DevToolboxPro'),
   DevToolkit: () => import('../../apps/DevToolkit'),
   DevTools: () => import('../../apps/DevTools'),
@@ -233,11 +229,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   Magnifier: () => import('../../apps/Magnifier'),
   Maps: () => import('../../apps/Maps'),
   MarkdownCollaborator: () => import('../../apps/MarkdownCollaborator'),
-  MarkdownEditor: () => import('../../apps/MarkdownEditor'),
   MarkdownEditorPro: () => import('../../apps/MarkdownEditorPro'),
-  MarkdownPreview: () => import('../../apps/MarkdownPreview'),
   MarkdownPreviewer: () => import('../../apps/MarkdownPreviewer'),
-  MarkdownSlides: () => import('../../apps/MarkdownSlides'),
   MarkdownToHTML: () => import('../../apps/MarkdownToHTML'),
   MarkdownToPDF: () => import('../../apps/MarkdownToPDF'),
   MindMap: () => import('../../apps/MindMap'),
@@ -329,8 +322,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SmartDevFlow: () => import('../../apps/SmartDevFlow'),
   SmartHub: () => import('../../apps/SmartHub'),
   SmartNewsReader: () => import('../../apps/SmartNewsReader'),
-  SmartNotes: () => import('../../apps/SmartNotes'),
-  SmartNotesEnhanced: () => import('../../apps/SmartNotesEnhanced'),
   SmartNotesPro: () => import('../../apps/SmartNotesPro'),
   SmartOverview: () => import('../../apps/SmartOverview'),
   SmartPasswordManager: () => import('../../apps/SmartPasswordManager'),
@@ -388,8 +379,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   TextFormatter: () => import('../../apps/TextFormatter'),
   TimeManagementMaster: () => import('../../apps/TimeManagementMaster'),
   TimerApp: () => import('../../apps/TimerApp'),
-  TodoApp: () => import('../../apps/TodoApp'),
-  TodoList: () => import('../../apps/TodoList'),
   Translator: () => import('../../apps/Translator'),
   UnifiedDashboard: () => import('../../apps/UnifiedDashboard'),
   UnitConverter: () => import('../../apps/UnitConverter'),
@@ -406,7 +395,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   VoiceTranscriber: () => import('../../apps/VoiceTranscriber'),
   WallpaperGallery: () => import('../../apps/WallpaperGallery'),
   Weather: () => import('../../apps/Weather'),
-  WeatherApp: () => import('../../apps/WeatherApp'),
   WebAssemblyPlayground: () => import('../../apps/WebAssemblyPlayground'),
   WebBrowser: () => import('../../apps/WebBrowser'),
   WebClipper: () => import('../../apps/WebClipper'),
@@ -459,7 +447,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIWikiSearch: () => import('../../apps/AIWikiSearch'),
   CodeSnapShare: () => import('../../apps/CodeSnapShare'),
   WebSummarizer: () => import('../../apps/WebSummarizer'),
-  MarkdownSlidesPro: () => import('../../apps/MarkdownSlidesPro'),
   OpenSourceHub: () => import('../../apps/OpenSourceHub'),
   // === v62 三大创新应用套件 ===
   NebulaDashboard: () => import('../../apps/NebulaDashboard'),
@@ -490,7 +477,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DailyChallenge: () => import('../../apps/DailyChallenge'),
   DevProductivitySuite: () => import('../../apps/DevProductivitySuite'),
   // === v69 创新应用 ===
-  FocusFlow: () => import('../../apps/FocusFlow'),
   QuickShare: () => import('../../apps/QuickShare'),
   RegexMaster: () => import('../../apps/RegexMaster'),
   // === v71 创新应用 ===
@@ -777,7 +763,6 @@ function preloadComponents(): () => void {
     'Base64Tools',
     'UnitConverter',
     'RESTClient',
-    'DevToolbox',
     'CodeSnippetPlayground',
     'FontPairing',
     'DailyChallenge',
@@ -819,7 +804,6 @@ function preloadComponents(): () => void {
           'Paint',
           'Translator',
           'ChatAI',
-          'MarkdownEditor',
           'KanbanBoard',
         ]
         loadWithPriority(additionalComponents.filter(c => !preloadedComponents.has(c)), 0)
