@@ -30,6 +30,7 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 - **Taskbar & start menu** — application launcher, system tray, and window switcher
 - **Command palette** — search and launch any app with a universal quick-open interface
 - **Global keyboard shortcuts** — 30+ customizable shortcuts for power users
+- **Smooth animations** — particle effects, gradient backgrounds, fluid transitions
 
 ### 500+ Integrated Applications
 
@@ -44,6 +45,8 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 | **Smart Home** | IoT dashboard, device control, energy monitoring, scene automation |
 | **Education** | Language lab, flashcards, code challenges, learning paths |
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
+| **Collaboration** | Real-time whiteboard, document editor, code collaboration |
+| **AI Tools** | AI workspace, voice assistant, code analyzer, doc generator |
 
 ### Real API Integrations
 All data comes from legitimate, public APIs — no mock data, no empty shells:
@@ -201,6 +204,16 @@ For manual deployment or custom domains:
 | New Terminal | `Ctrl/Cmd + Shift + N` |
 
 ## Version History
+
+### v105.0.0
+- **AI 智能工作台 (AIWorkspace)**：AI对话助手、快速笔记总结、任务规划助手、代码片段生成与解释，四大核心模块
+- **语音助手 (VoiceAssistant)**：基于Web Speech API的语音识别与合成、语音命令控制、12种语言支持
+- **实时协作白板 (RealtimeWhiteboard)**：6种绘制工具、跨标签页实时协作、PNG导出、撤销重做
+- **代码性能分析器 (CodePerfAnalyzer)**：基准测试、执行时间统计、内存分析、FPS测试、代码对比
+- **AI文档生成器 (AIDocGenerator)**：6种语言支持、5种注释风格、AI辅助生成、Markdown/HTML导出
+- **增强终端命令**：neofetch系统展示、theme主题切换、weather天气查询、quote每日名言、crypto加密货币价格、joke编程笑话、app应用管理、shortcut快捷键速查
+- 优化启动动画：粒子背景、丰富启动消息、流畅进度条
+- 桌面交互优化和UI细节改进
 
 ### v104.0.0
 - SmartWorkspace 智能工作空间：多布局自定义（开发/设计/学习/办公）、应用收藏夹、一键启动
