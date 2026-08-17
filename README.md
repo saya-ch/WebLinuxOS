@@ -210,6 +210,8 @@ For manual deployment or custom domains:
 - 详细系统信息：CPU/内存/屏幕/网络/特性检测
 - ASCII横幅生成器
 - 改进的组件映射自动生成脚本
+- 创新工具命令集：科学计算器(calc)、密码生成器(password-gen)、单位转换器(unit)、IP地址查询(ip-info)、UUID生成器(uuid-gen)、颜色转换工具(color-info)、表情符号查询(emoji-search)、每日运势占卜(fortune-today)、URL缩短器(short-link)、随机名言(quote-random)
+- 桌面交互优化：图标单击打开应用，提升用户体验
 
 ### v103.0.0
 - AI 编程学院：基于 Pollinations AI 和 Pyodide 的真实编程学习平台

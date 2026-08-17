@@ -504,14 +504,10 @@ const Desktop = memo(function Desktop() {
   }, [])
 
   const handleIconClick = useCallback(
-    (iconId: string, appId: string) => {
-      if (selectedIconId === iconId) {
-        openApp(appId)
-      } else {
-        setSelectedIconId(iconId)
-      }
+    (_iconId: string, appId: string) => {
+      openApp(appId)
     },
-    [selectedIconId, openApp],
+    [openApp],
   )
 
   const handleIconDoubleClick = useCallback(

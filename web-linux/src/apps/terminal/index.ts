@@ -65,3 +65,6 @@ import './v98Commands'
 
 // 17. v104 增强终端命令集：apt/app/theme/shortcut/neofetch/speedtest/sysinfo/banner
 import './enhancedTerminalCommands'
+
+// 18. 创新命令集：calc/password-gen/unit/ip-info/uuid-gen/color-info/emoji-search/fortune-today/short-link/quote-random
+import './innovativeCommands'
