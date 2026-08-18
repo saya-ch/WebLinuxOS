@@ -1,1083 +1,2392 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
-import {
-  Search, Copy, Check, ExternalLink, RefreshCw,
-  Globe, Cloud, DollarSign, Newspaper, Zap,
-  TrendingUp, Star, Users,
-  ChevronRight, Download, History,
-  Code, Hash, Link2, QrCode
-} from 'lucide-react'
+import { useState, memo, useEffect } from 'react'
+import { useStore } from '../store'
+import { apiService } from '../services/apiService'
 
-type TabType = 'weather' | 'exchange' | 'news' | 'github' | 'qr' | 'translate' | 'hash' | 'url'
-
-interface WeatherData {
-  temp: number
-  feelsLike: number
-  humidity: number
-  windSpeed: number
-  description: string
+interface ToolTab {
+  id: string
+  name: string
   icon: string
-  location: string
-}
-
-interface ExchangeRate {
-  code: string
-  name: string
-  rate: number
-  change: number
-}
-
-interface NewsItem {
-  title: string
   description: string
-  url: string
-  source: string
-  publishedAt: string
-  urlToImage?: string
 }
 
-interface GitHubTrending {
-  name: string
-  description: string
-  stars: number
-  forks: number
-  language: string
-  url: string
-}
+const h3TitleStyle = { margin: '0 0 16px 0', fontSize: '14px', color: 'var(--text-secondary)' } as const
 
-const TABS: { id: TabType; label: string; icon: typeof Globe }[] = [
-  { id: 'weather', label: '天气', icon: Cloud },
-  { id: 'exchange', label: '汇率', icon: DollarSign },
-  { id: 'news', label: '新闻', icon: Newspaper },
-  { id: 'github', label: 'GitHub热', icon: Code },
-  { id: 'qr', label: '二维码', icon: QrCode },
-  { id: 'translate', label: '翻译', icon: Globe },
-  { id: 'hash', label: '哈希', icon: Hash },
-  { id: 'url', label: '短链', icon: Link2 },
-]
-
-const PopularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'HKD', 'SGD', 'KRW']
-
-export default memo(function OnlineToolkitPro() {
-  const [activeTab, setActiveTab] = useState<TabType>('weather')
-  const [copied, setCopied] = useState<string | null>(null)
-
-  const copyToClipboard = useCallback((text: string, id: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(id)
-    setTimeout(() => setCopied(null), 2000)
-  }, [])
-
-  const renderTab = () => {
-    switch (activeTab) {
-      case 'weather':
-        return <WeatherPanel copyToClipboard={copyToClipboard} copied={copied} />
-      case 'exchange':
-        return <ExchangePanel copyToClipboard={copyToClipboard} copied={copied} />
-      case 'news':
-        return <NewsPanel copyToClipboard={copyToClipboard} copied={copied} />
-      case 'github':
-        return <GitHubPanel copyToClipboard={copyToClipboard} copied={copied} />
-      case 'qr':
-        return <QRPanel />
-      case 'translate':
-        return <TranslatePanel copyToClipboard={copyToClipboard} copied={copied} />
-      case 'hash':
-        return <HashPanel copyToClipboard={copyToClipboard} copied={copied} />
-      case 'url':
-        return <URLPanel copyToClipboard={copyToClipboard} copied={copied} />
-      default:
-        return null
-    }
-  }
-
-  return (
-    <div className="online-toolkit-pro">
-      <div className="otp-header">
-        <div className="otp-header-left">
-          <Zap size={24} className="otp-logo" />
-          <div>
-            <h2>在线工具箱 Pro</h2>
-            <p className="otp-subtitle">集成真实公共API的实用工具集</p>
-          </div>
-        </div>
-        <div className="otp-header-right">
-          <span className="otp-version">v67.0</span>
-        </div>
-      </div>
-
-      <div className="otp-tabs">
-        {TABS.map((tab) => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              className={`otp-tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <Icon size={16} />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="otp-content">
-        {renderTab()}
-      </div>
-
-      <style>{`
-        .online-toolkit-pro {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-          color: #e0e0e0;
-          overflow: hidden;
-        }
-        .otp-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 24px;
-          background: rgba(255,255,255,0.05);
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .otp-header-left {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .otp-logo {
-          color: #00d4ff;
-          filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.5));
-        }
-        .otp-header h2 {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 600;
-          background: linear-gradient(90deg, #00d4ff, #7c3aed);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .otp-subtitle {
-          margin: 2px 0 0;
-          font-size: 12px;
-          color: #888;
-        }
-        .otp-version {
-          font-size: 12px;
-          color: #666;
-          padding: 4px 8px;
-          background: rgba(0, 212, 255, 0.1);
-          border-radius: 4px;
-        }
-        .otp-tabs {
-          display: flex;
-          gap: 4px;
-          padding: 8px 16px;
-          background: rgba(0,0,0,0.2);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          overflow-x: auto;
-        }
-        .otp-tab {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 14px;
-          background: transparent;
-          border: 1px solid transparent;
-          border-radius: 8px;
-          color: #888;
-          cursor: pointer;
-          font-size: 13px;
-          font-weight: 500;
-          transition: all 0.2s ease;
-          white-space: nowrap;
-        }
-        .otp-tab:hover {
-          background: rgba(255,255,255,0.05);
-          color: #ccc;
-        }
-        .otp-tab.active {
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
-          border-color: rgba(0, 212, 255, 0.3);
-          color: #00d4ff;
-          box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
-        }
-        .otp-content {
-          flex: 1;
-          overflow-y: auto;
-          padding: 24px;
-        }
-        .otp-content::-webkit-scrollbar {
-          width: 8px;
-        }
-        .otp-content::-webkit-scrollbar-track {
-          background: rgba(0,0,0,0.2);
-        }
-        .otp-content::-webkit-scrollbar-thumb {
-          background: rgba(0, 212, 255, 0.3);
-          border-radius: 4px;
-        }
-        .otp-content::-webkit-scrollbar-thumb:hover {
-          background: rgba(0, 212, 255, 0.5);
-        }
-      `}</style>
-    </div>
-  )
-})
-
-/* ============ Weather Panel ============ */
-function WeatherPanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
-  const [city, setCity] = useState('Shanghai')
-  const [weather, setWeather] = useState<WeatherData | null>(null)
+const OnlineToolkitPro = memo(function OnlineToolkitPro() {
+  const [activeTab, setActiveTab] = useState<string>('currency')
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [history, setHistory] = useState<string[]>([])
-
-  const fetchWeather = useCallback(async (cityName: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch(`https://wttr.in/${encodeURIComponent(cityName)}?format=j1`)
-      if (!response.ok) throw new Error('City not found')
-      const data = await response.json()
-      const current = data.current_condition[0]
-      const weatherData: WeatherData = {
-        temp: parseInt(current.temp_C),
-        feelsLike: parseInt(current.FeelsLikeC),
-        humidity: parseInt(current.humidity),
-        windSpeed: parseInt(current.windspeedKmph),
-        description: current.lang_zh?.[0]?.value || current.weatherDesc[0].value,
-        icon: current.weatherDesc[0].value.toLowerCase().includes('sun') ? '☀️' : 
-              current.weatherDesc[0].value.toLowerCase().includes('rain') ? '🌧️' :
-              current.weatherDesc[0].value.toLowerCase().includes('cloud') ? '☁️' : '⛅',
-        location: data.nearest_area[0].areaName[0].value,
-      }
-      setWeather(weatherData)
-      setHistory(prev => [cityName, ...prev.filter(c => c !== cityName)].slice(0, 5))
-    } catch (err) {
-      setError('无法获取天气数据，请检查城市名称')
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    fetchWeather(city)
-  }, [])
-
-  return (
-    <div className="weather-panel">
-      <div className="panel-section">
-        <h3><Cloud size={18} /> 天气查询</h3>
-        <div className="search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchWeather(city)}
-            placeholder="输入城市名称（英文或中文）"
-          />
-          <button onClick={() => fetchWeather(city)} disabled={loading}>
-            <RefreshCw size={16} className={loading ? 'spin' : ''} />
-          </button>
-        </div>
-        {history.length > 0 && (
-          <div className="history-chips">
-            <span>历史:</span>
-            {history.map((c, i) => (
-              <button key={i} onClick={() => { setCity(c); fetchWeather(c) }} className="chip">{c}</button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {error && <div className="error-msg">{error}</div>}
-
-      {weather && (
-        <div className="weather-card">
-          <div className="weather-main">
-            <span className="weather-icon">{weather.icon}</span>
-            <div>
-              <div className="weather-temp">{weather.temp}°C</div>
-              <div className="weather-desc">{weather.description}</div>
-            </div>
-          </div>
-          <div className="weather-details">
-            <div className="detail-item">
-              <span>体感温度</span>
-              <strong>{weather.feelsLike}°C</strong>
-            </div>
-            <div className="detail-item">
-              <span>湿度</span>
-              <strong>{weather.humidity}%</strong>
-            </div>
-            <div className="detail-item">
-              <span>风速</span>
-              <strong>{weather.windSpeed} km/h</strong>
-            </div>
-            <div className="detail-item">
-              <span>位置</span>
-              <strong>{weather.location}</strong>
-            </div>
-          </div>
-          <button className="copy-btn" onClick={() => copyToClipboard(`${weather.location}: ${weather.temp}°C, ${weather.description}`, 'weather')}>
-            {copied === 'weather' ? <Check size={14} /> : <Copy size={14} />}
-            {copied === 'weather' ? '已复制' : '复制信息'}
-          </button>
-        </div>
-      )}
-
-      <style>{`
-        .weather-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .search-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 16px; }
-        .search-box input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 14px; }
-        .search-box input::placeholder { color: #666; }
-        .search-box button { background: rgba(0, 212, 255, 0.2); border: none; color: #00d4ff; border-radius: 6px; padding: 6px; cursor: pointer; display: flex; }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .history-chips { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; font-size: 12px; color: #888; }
-        .chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 4px 12px; color: #ccc; cursor: pointer; }
-        .chip:hover { background: rgba(0, 212, 255, 0.1); border-color: rgba(0, 212, 255, 0.3); }
-        .error-msg { background: rgba(255, 50, 50, 0.2); color: #ff6b6b; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255, 50, 50, 0.3); }
-        .weather-card { background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1)); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 16px; padding: 24px; }
-        .weather-main { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .weather-icon { font-size: 64px; }
-        .weather-temp { font-size: 48px; font-weight: 700; background: linear-gradient(90deg, #00d4ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .weather-desc { font-size: 16px; color: #ccc; }
-        .weather-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .detail-item { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px 14px; border-radius: 8px; }
-        .detail-item span { color: #888; font-size: 13px; }
-        .detail-item strong { color: #fff; font-weight: 600; }
-        .copy-btn { display: flex; align-items: center; gap: 6px; margin-top: 16px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: #00d4ff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        .copy-btn:hover { background: rgba(0, 212, 255, 0.25); }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ Exchange Panel ============ */
-function ExchangePanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
-  const [baseCurrency, setBaseCurrency] = useState('USD')
-  const [rates, setRates] = useState<ExchangeRate[]>([])
-  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<any>(null)
+  const [history, setHistory] = useState<Array<{ input: string; output: string; timestamp: number }>>([])
+  const [fromCurrency, setFromCurrency] = useState('USD')
+  const [toCurrency, setToCurrency] = useState('CNY')
   const [amount, setAmount] = useState('100')
+  const [selectedColor, setSelectedColor] = useState('#7c3aed')
+  const [selectedText, setSelectedText] = useState('')
+  const [unitType, setUnitType] = useState('length')
+  const [unitFrom, setUnitFrom] = useState('meter')
+  const [unitTo, setUnitTo] = useState('kilometer')
+  const [unitValue, setUnitValue] = useState('1000')
+  const [passwordInput, setPasswordInput] = useState('')
+  const [timestampSeconds, setTimestampSeconds] = useState('')
+  const [timestampMs, setTimestampMs] = useState('')
+  const [timestampDateInput, setTimestampDateInput] = useState('')
+  
+  const [emojiCategory, setEmojiCategory] = useState('smile')
+  const [emojiSearch, setEmojiSearch] = useState('')
+  const [converterType, setConverterType] = useState('json-yaml')
+  const [converterInput, setConverterInput] = useState('')
+  const [converterOutput, setConverterOutput] = useState('')
+  const [regexPattern, setRegexPattern] = useState('')
+  const [regexText, setRegexText] = useState('')
+  const [regexFlags, setRegexFlags] = useState('g')
+  const [hashInput, setHashInput] = useState('')
+  const [hashAlgorithm, setHashAlgorithm] = useState('SHA-256')
+  const [hashOutput, setHashOutput] = useState('')
+  const addNotification = useStore((s) => s.addNotification)
 
-  const fetchRates = useCallback(async () => {
+  const tabs: ToolTab[] = [
+    { id: 'currency', name: '汇率转换', icon: '💱', description: '实时汇率查询与转换' },
+    { id: 'color', name: '颜色工具', icon: '🎨', description: '颜色转换与调色板生成' },
+    { id: 'text', name: '文本分析', icon: '📊', description: '文本统计与分析工具' },
+    { id: 'network', name: '网络工具', icon: '🌐', description: '网络检测与诊断' },
+    { id: 'code', name: '编码工具', icon: '💻', description: '编解码与格式化' },
+    { id: 'generator', name: '生成器', icon: '✨', description: '密码/UUID/哈希生成' },
+    { id: 'units', name: '单位转换', icon: '📏', description: '长度/重量/温度/体积转换' },
+    { id: 'password', name: '密码检测', icon: '🔐', description: '密码强度实时分析' },
+    { id: 'timestamp', name: '时间戳', icon: '⏱️', description: '时间戳转换工具' },
+    { id: 'emoji', name: '表情符号', icon: '😀', description: 'Emoji 分类浏览与复制' },
+    { id: 'converter', name: '格式转换', icon: '🔄', description: 'JSON/YAML/CSV/进制转换' },
+    { id: 'regex', name: '正则测试', icon: '🔍', description: '正则表达式测试器' },
+    { id: 'hash', name: '哈希工具', icon: '#️⃣', description: 'MD5/SHA 哈希生成' },
+  ]
+
+  const currencies = apiService.getSupportedCurrencies()
+
+  // 汇率转换
+  const handleConvertCurrency = async () => {
+    const numAmount = parseFloat(amount)
+    if (isNaN(numAmount) || numAmount <= 0) {
+      addNotification({ title: '输入错误', message: '请输入有效金额', type: 'error', duration: 2000 })
+      return
+    }
+
     setLoading(true)
     try {
-      const response = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`)
-      const data = await response.json()
-      if (data.result === 'success') {
-        const currencies = PopularCurrencies.filter(c => c !== baseCurrency)
-        const newRates: ExchangeRate[] = currencies.map(code => ({
-          code,
-          name: getCurrencyName(code),
-          rate: data.rates[code] || 0,
-          change: 0,
-        }))
-        setRates(newRates)
+      const result = await apiService.convertCurrencyRealTime(numAmount, fromCurrency, toCurrency)
+      if (result) {
+        setResult(result)
+        setOutput(`${numAmount} ${fromCurrency} = ${result.result} ${toCurrency}\n汇率: 1 ${fromCurrency} = ${result.rate} ${toCurrency}\n日期: ${result.date}`)
+        addNotification({ title: '转换成功', message: '实时汇率转换完成', type: 'success', duration: 2000 })
+      } else {
+        setOutput('转换失败，请稍后重试')
       }
-    } catch (err) {
-      console.error('Failed to fetch rates:', err)
+    } catch (e) {
+      setOutput(`错误: ${e instanceof Error ? e.message : '未知错误'}`)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }, [baseCurrency])
+  }
 
+  // 颜色分析
+  const handleAnalyzeColor = () => {
+    const rgb = apiService.hexToRGB(selectedColor)
+    if (!rgb) {
+      addNotification({ title: '输入错误', message: '请输入有效颜色值', type: 'error', duration: 2000 })
+      return
+    }
+
+    const hsl = apiService.rgbToHSL(rgb.r, rgb.g, rgb.b)
+    const contrastColor = apiService.getContrastColor(selectedColor)
+    
+    const palette = [
+      selectedColor,
+      apiService.rgbToHex(Math.min(255, rgb.r + 40), rgb.g, rgb.b),
+      apiService.rgbToHex(rgb.r, Math.min(255, rgb.g + 40), rgb.b),
+      apiService.rgbToHex(rgb.r, rgb.g, Math.min(255, rgb.b + 40)),
+      apiService.rgbToHex(Math.max(0, rgb.r - 40), rgb.g, rgb.b),
+    ]
+
+    const complementary = apiService.rgbToHex(
+      255 - rgb.r,
+      255 - rgb.g,
+      255 - rgb.b
+    )
+
+    setResult({ rgb, hsl, contrastColor, palette, complementary })
+    setOutput(`HEX: ${selectedColor.toUpperCase()}\nRGB: rgb(${rgb.r}, ${rgb.g}, ${rgb.b})\nHSL: hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)\n\n对比色: ${contrastColor}\n互补色: ${complementary}\n\n调色板:\n${palette.join('\n')}`)
+    addNotification({ title: '分析完成', message: '颜色分析结果已生成', type: 'success', duration: 2000 })
+  }
+
+  // 文本分析
+  const handleAnalyzeText = () => {
+    if (!selectedText.trim()) {
+      addNotification({ title: '输入错误', message: '请输入文本内容', type: 'error', duration: 2000 })
+      return
+    }
+
+    const analysis = apiService.analyzeText(selectedText)
+    setResult(analysis)
+    setOutput(`字符数: ${analysis.characters}\n不含空格: ${analysis.charactersNoSpaces}\n单词数: ${analysis.words}\n行数: ${analysis.lines}\n段落数: ${analysis.paragraphs}\n预计阅读时间: ${analysis.readingTime} 分钟`)
+    addNotification({ title: '分析完成', message: '文本统计结果已生成', type: 'success', duration: 2000 })
+  }
+
+  // 网络状态检测
+  const handleNetworkCheck = async () => {
+    setLoading(true)
+    try {
+      const online = navigator.onLine
+      const conn = (navigator as Navigator & { connection?: { effectiveType?: string; downlink?: number; rtt?: number } }).connection
+      
+      const results: string[] = []
+      results.push(`在线状态: ${online ? '✅ 在线' : '❌ 离线'}`)
+      
+      if (conn) {
+        results.push(`网络类型: ${conn.effectiveType || '未知'}`)
+        results.push(`下行速度: ${conn.downlink ? `${conn.downlink} Mbps` : '未知'}`)
+        results.push(`往返时间: ${conn.rtt ? `${conn.rtt} ms` : '未知'}`)
+      } else {
+        results.push('网络API不可用')
+      }
+
+      // 尝试获取IP信息
+      const ipInfo = await apiService.fetchIPInfo()
+      if (ipInfo) {
+        results.push(`\nIP信息:`)
+        results.push(`IP地址: ${ipInfo.ip}`)
+        if (ipInfo.city) results.push(`城市: ${ipInfo.city}`)
+        if (ipInfo.country_name) results.push(`国家: ${ipInfo.country_name}`)
+        if (ipInfo.org) results.push(`组织: ${ipInfo.org}`)
+      }
+
+      setOutput(results.join('\n'))
+      addNotification({ title: '检测完成', message: '网络状态已检测', type: 'success', duration: 2000 })
+    } catch (e) {
+      setOutput(`检测错误: ${e instanceof Error ? e.message : '未知错误'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 在线状态监听
   useEffect(() => {
-    fetchRates()
-  }, [baseCurrency])
-
-  const getCurrencyName = (code: string): string => {
-    const names: Record<string, string> = {
-      USD: '美元', EUR: '欧元', GBP: '英镑', JPY: '日元', AUD: '澳元',
-      CAD: '加元', CHF: '瑞郎', HKD: '港币', SGD: '新元', KRW: '韩元',
-      CNY: '人民币', NZD: '纽元', INR: '卢比',
+    const handleOnline = () => {
+      addNotification({ title: '网络恢复', message: '已重新连接到网络', type: 'success', duration: 2000 })
     }
-    return names[code] || code
+    const handleOffline = () => {
+      addNotification({ title: '网络中断', message: '已断开网络连接', type: 'warning', duration: 2000 })
+    }
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [addNotification])
+
+  // 编码工具
+  const handleEncode = (type: string) => {
+    if (!input.trim()) {
+      addNotification({ title: '输入错误', message: '请输入要编码的内容', type: 'error', duration: 2000 })
+      return
+    }
+
+    try {
+      let result = ''
+      switch (type) {
+        case 'base64':
+          result = input.startsWith('base64:') 
+            ? apiService.base64Decode(input.replace('base64:', ''))
+            : apiService.base64Encode(input)
+          break
+        case 'url':
+          result = input.startsWith('decoded:')
+            ? apiService.urlDecode(input.replace('decoded:', ''))
+            : apiService.urlEncode(input)
+          break
+        case 'json':
+          result = apiService.formatJSON(input)
+          break
+        case 'json-min':
+          result = apiService.minifyJSON(input)
+          break
+        case 'uuid':
+          result = apiService.generateUUID()
+          break
+        case 'timestamp':
+          result = apiService.formatTimestamp(Date.now(), 'absolute')
+          break
+        case 'password':
+          result = apiService.generateStrongPassword(parseInt(input) || 16)
+          break
+        case 'hash-info':
+          result = JSON.stringify(apiService.getHttpStatusInfo(parseInt(input) || 200), null, 2)
+          break
+        default:
+          result = '未知操作'
+      }
+      setOutput(result)
+      setHistory(prev => [{ input, output: result, timestamp: Date.now() }, ...prev].slice(0, 10))
+      addNotification({ title: '执行成功', message: `${type} 操作完成`, type: 'success', duration: 2000 })
+    } catch (e) {
+      setOutput(`错误: ${e instanceof Error ? e.message : '未知错误'}`)
+    }
   }
 
-  const convertAmount = (rate: number) => {
-    const n = parseFloat(amount) || 0
-    return (n * rate).toFixed(2)
+  // 单位转换
+  const handleConvertUnits = () => {
+    const numValue = parseFloat(unitValue)
+    if (isNaN(numValue)) {
+      addNotification({ title: '输入错误', message: '请输入有效数值', type: 'error', duration: 2000 })
+      return
+    }
+    const result = apiService.convertUnits(numValue, unitFrom, unitTo)
+    if (result !== null) {
+      setResult({ value: result, from: unitFrom, to: unitTo })
+      setOutput(`${numValue} ${unitLabels[unitFrom] || unitFrom} = ${result} ${unitLabels[unitTo] || unitTo}`)
+      addNotification({ title: '转换成功', message: '单位转换完成', type: 'success', duration: 2000 })
+    } else {
+      setOutput('转换失败，请检查单位选择')
+    }
   }
 
-  return (
-    <div className="exchange-panel">
-      <div className="panel-section">
-        <h3><DollarSign size={18} /> 实时汇率</h3>
-        <div className="exchange-controls">
-          <div className="amount-input">
+  // 密码生成
+  const handleGeneratePassword = () => {
+    const pwd = apiService.generateStrongPassword(16)
+    setPasswordInput(pwd)
+    addNotification({ title: '生成成功', message: '强密码已生成', type: 'success', duration: 2000 })
+  }
+
+  // 时间戳转换
+  const handleTimestampToDate = () => {
+    const ts = parseFloat(timestampSeconds)
+    if (isNaN(ts)) {
+      addNotification({ title: '输入错误', message: '请输入有效时间戳', type: 'error', duration: 2000 })
+      return
+    }
+    const ms = ts < 1e12 ? ts * 1000 : ts
+    setTimestampMs(String(ms))
+    const date = new Date(ms)
+    setOutput(`时间戳: ${ts}\n日期: ${date.toLocaleString('zh-CN')}\nISO: ${date.toISOString()}\n相对: ${apiService.formatTimestamp(ms, 'relative')}`)
+  }
+
+  const handleDateToTimestamp = () => {
+    if (!timestampDateInput) {
+      addNotification({ title: '输入错误', message: '请选择日期', type: 'error', duration: 2000 })
+      return
+    }
+    const date = new Date(timestampDateInput)
+    const sec = Math.floor(date.getTime() / 1000)
+    setTimestampSeconds(String(sec))
+    setTimestampMs(String(date.getTime()))
+    setOutput(`日期: ${date.toLocaleString('zh-CN')}\n秒级时间戳: ${sec}\n毫秒时间戳: ${date.getTime()}`)
+  }
+
+  const handleGetCurrentTimestamp = () => {
+    const now = Date.now()
+    setTimestampSeconds(String(Math.floor(now / 1000)))
+    setTimestampMs(String(now))
+    setOutput(`当前时间戳:\n秒: ${Math.floor(now / 1000)}\n毫秒: ${now}\n日期: ${new Date(now).toLocaleString('zh-CN')}`)
+  }
+
+  // 数据格式转换
+  const handleConverter = () => {
+    if (!converterInput.trim()) {
+      addNotification({ title: '输入错误', message: '请输入要转换的内容', type: 'error', duration: 2000 })
+      return
+    }
+    try {
+      let result = ''
+      switch (converterType) {
+        case 'json-yaml':
+          result = jsonToYaml(converterInput)
+          break
+        case 'yaml-json':
+          result = yamlToJson(converterInput)
+          break
+        case 'json-csv':
+          result = jsonToCsv(converterInput)
+          break
+        case 'csv-json':
+          result = csvToJson(converterInput)
+          break
+        case 'bin-dec':
+          result = String(parseInt(converterInput, 2))
+          break
+        case 'oct-dec':
+          result = String(parseInt(converterInput, 8))
+          break
+        case 'hex-dec':
+          result = String(parseInt(converterInput, 16))
+          break
+        case 'dec-bin':
+          result = (parseInt(converterInput, 10) >>> 0).toString(2)
+          break
+        case 'dec-oct':
+          result = (parseInt(converterInput, 10) >>> 0).toString(8)
+          break
+        case 'dec-hex':
+          result = (parseInt(converterInput, 10) >>> 0).toString(16).toUpperCase()
+          break
+        default:
+          result = '未知转换类型'
+      }
+      setOutput(result)
+      setConverterOutput(result)
+      addNotification({ title: '转换成功', message: '格式转换完成', type: 'success', duration: 2000 })
+    } catch (e) {
+      setOutput(`转换错误: ${e instanceof Error ? e.message : '无效输入'}`)
+    }
+  }
+
+  // 正则测试
+  const handleRegexTest = () => {
+    if (!regexPattern) {
+      addNotification({ title: '输入错误', message: '请输入正则表达式', type: 'error', duration: 2000 })
+      return
+    }
+    try {
+      const regex = new RegExp(regexPattern, regexFlags)
+      const matches: string[] = []
+      let match
+      if (regexFlags.includes('g')) {
+        while ((match = regex.exec(regexText)) !== null) {
+          matches.push(match[0])
+          if (match.index === regex.lastIndex) regex.lastIndex++
+        }
+      } else {
+        match = regex.exec(regexText)
+        if (match) matches.push(match[0])
+      }
+      setResult({ matches, count: matches.length })
+      setOutput(`匹配数: ${matches.length}\n匹配内容: ${matches.join(', ') || '无'}`)
+    } catch (e) {
+      setOutput(`正则错误: ${e instanceof Error ? e.message : '无效的正则表达式'}`)
+    }
+  }
+
+  // 哈希生成
+  const handleHashGenerate = async () => {
+    if (!hashInput) {
+      addNotification({ title: '输入错误', message: '请输入要哈希的内容', type: 'error', duration: 2000 })
+      return
+    }
+    setLoading(true)
+    try {
+      const encoder = new TextEncoder()
+      const data = encoder.encode(hashInput)
+      const algorithm = hashAlgorithm.toLowerCase().replace('-', '')
+      const hashBuffer = await crypto.subtle.digest(algorithm, data)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+      setHashOutput(hashHex)
+      setOutput(hashHex)
+      addNotification({ title: '生成成功', message: `${hashAlgorithm} 哈希已生成`, type: 'success', duration: 2000 })
+    } catch (e) {
+      setOutput(`哈希错误: ${e instanceof Error ? e.message : '不支持的算法'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 单位标签映射
+  const unitLabels: Record<string, string> = {
+    meter: '米', kilometer: '千米', centimeter: '厘米', millimeter: '毫米',
+    mile: '英里', yard: '码', foot: '英尺', inch: '英寸',
+    kilogram: '千克', gram: '克', milligram: '毫克',
+    pound: '磅', ounce: '盎司', ton: '公吨',
+    celsius: '摄氏度', fahrenheit: '华氏度', kelvin: '开尔文',
+    liter: '升', milliliter: '毫升', gallon: '加仑',
+    quart: '夸脱', cup: '杯'
+  }
+
+  const unitOptions: Record<string, string[]> = {
+    length: ['meter', 'kilometer', 'centimeter', 'millimeter', 'mile', 'yard', 'foot', 'inch'],
+    weight: ['kilogram', 'gram', 'milligram', 'pound', 'ounce', 'ton'],
+    temperature: ['celsius', 'fahrenheit', 'kelvin'],
+    volume: ['liter', 'milliliter', 'gallon', 'quart', 'cup']
+  }
+
+  // Emoji 数据
+  const emojiData: Record<string, string[]> = {
+    smile: ['smile1','smile2','smile3','smile4','smile5','smile6','smile7','smile8','smile9','smile10','smile11','smile12','smile13','smile14','smile15','smile16','smile17','smile18','smile19','smile20','smile21','smile22','smile23','smile24','smile25','smile26','smile27','smile28','smile29','smile30','smile31','smile32','smile33','smile34','smile35','smile36','smile37','smile38','smile39','smile40','smile41','smile42','smile43','smile44','smile45','smile46','smile47','smile48','smile49','smile50','smile51','smile52','smile53','smile54','smile55','smile56','smile57','smile58']
+    , gesture: ['gesture1','gesture2','gesture3','gesture4','gesture5','gesture6','gesture7','gesture8','gesture9','gesture10','gesture11','gesture12','gesture13','gesture14','gesture15','gesture16','gesture17','gesture18','gesture19','gesture20','gesture21','gesture22','gesture23','gesture24','gesture25','gesture26','gesture27','gesture28','gesture29','gesture30','gesture31','gesture32','gesture33','gesture34']
+    , heart: ['heart1','heart2','heart3','heart4','heart5','heart6','heart7','heart8','heart9','heart10','heart11','heart12','heart13','heart14','heart15','heart16','heart17','heart18','heart19','heart20']
+    , animal: ['animal1','animal2','animal3','animal4','animal5','animal6','animal7','animal8','animal9','animal10','animal11','animal12','animal13','animal14','animal15','animal16','animal17','animal18','animal19','animal20','animal21','animal22','animal23','animal24','animal25','animal26','animal27','animal28','animal29','animal30','animal31','animal32','animal33','animal34','animal35','animal36','animal37','animal38','animal39','animal40','animal41','animal42','animal43','animal44','animal45','animal46','animal47','animal48','animal49','animal50','animal51','animal52','animal53','animal54','animal55','animal56','animal57','animal58','animal59','animal60','animal61','animal62','animal63','animal64','animal65','animal66','animal67']
+    , food: ['food1','food2','food3','food4','food5','food6','food7','food8','food9','food10','food11','food12','food13','food14','food15','food16','food17','food18','food19','food20','food21','food22','food23','food24','food25','food26','food27','food28','food29','food30','food31','food32','food33','food34','food35','food36','food37','food38','food39','food40','food41','food42','food43','food44','food45','food46','food47','food48','food49','food50','food51','food52','food53','food54','food55','food56','food57','food58','food59','food60','food61','food62','food63','food64','food65','food66','food67','food68','food69','food70','food71','food72','food73','food74','food75','food76','food77','food78','food79','food80','food81','food82','food83','food84','food85','food86','food87','food88','food89','food90','food91','food92','food93','food94','food95','food96','food97','food98','food99','food100','food101','food102','food103']
+    , symbol: ['symbol1','symbol2','symbol3','symbol4','symbol5','symbol6','symbol7','symbol8','symbol9','symbol10','symbol11','symbol12','symbol13','symbol14','symbol15','symbol16','symbol17','symbol18','symbol19','symbol20','symbol21','symbol22','symbol23','symbol24','symbol25','symbol26','symbol27','symbol28','symbol29','symbol30','symbol31','symbol32','symbol33','symbol34','symbol35','symbol36','symbol37','symbol38','symbol39','symbol40','symbol41','symbol42','symbol43','symbol44','symbol45','symbol46','symbol47','symbol48','symbol49','symbol50','symbol51','symbol52','symbol53','symbol54','symbol55','symbol56','symbol57','symbol58','symbol59','symbol60','symbol61','symbol62','symbol63','symbol64','symbol65','symbol66','symbol67','symbol68','symbol69','symbol70','symbol71','symbol72','symbol73','symbol74','symbol75','symbol76','symbol77','symbol78','symbol79','symbol80','symbol81','symbol82','symbol83','symbol84','symbol85','symbol86']
+  }
+
+  const emojiCategories = [
+    { id: 'smile', name: '笑脸', icon: '😀' },
+    { id: 'gesture', name: '手势', icon: '👍' },
+    { id: 'heart', name: '爱心', icon: '❤️' },
+    { id: 'animal', name: '动物', icon: '🐶' },
+    { id: 'food', name: '食物', icon: '🍎' },
+    { id: 'symbol', name: '符号', icon: '⭐' }
+  ]
+
+  // JSON ↔ YAML 简易转换
+  const jsonToYaml = (jsonStr: string): string => {
+    try {
+      const obj = JSON.parse(jsonStr)
+      const toYaml = (node: any, indent: number = 0): string => {
+        const spaces = ' '.repeat(indent)
+        if (node === null || node === undefined) return 'null'
+        if (typeof node === 'string') return `"${node}"`
+        if (typeof node === 'number' || typeof node === 'boolean') return String(node)
+        if (Array.isArray(node)) {
+          if (node.length === 0) return '[]'
+          return '\n' + node.map(item => {
+            const val = toYaml(item, indent + 2)
+            if (typeof item === 'object' && item !== null) {
+              return `${spaces}-${val.startsWith('\n') ? val : ' ' + val}`
+            }
+            return `${spaces}- ${val}`
+          }).join('\n')
+        }
+        if (typeof node === 'object') {
+          const keys = Object.keys(node)
+          if (keys.length === 0) return '{}'
+          return '\n' + keys.map(key => {
+            const val = toYaml(node[key], indent + 2)
+            if (typeof node[key] === 'object' && node[key] !== null) {
+              return `${spaces}${key}:${val.startsWith('\n') ? val : ' ' + val}`
+            }
+            return `${spaces}${key}: ${val}`
+          }).join('\n')
+        }
+        return String(node)
+      }
+      return toYaml(obj).trim()
+    } catch {
+      return '无效的 JSON 字符串'
+    }
+  }
+
+  const yamlToJson = (yamlStr: string): string => {
+    try {
+      const lines = yamlStr.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'))
+      const parseValue = (val: string): any => {
+        val = val.trim()
+        if (val === 'null' || val === '~') return null
+        if (val === 'true') return true
+        if (val === 'false') return false
+        if (!isNaN(Number(val))) return Number(val)
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          return val.slice(1, -1)
+        }
+        return val
+      }
+      const root: any = {}
+      const stack: Array<{ indent: number; obj: any }> = [{ indent: -1, obj: root }]
+      for (const line of lines) {
+        const trimmed = line.replace(/\s+$/, '')
+        if (!trimmed.trim()) continue
+        const indent = trimmed.length - trimmed.trimStart().length
+        while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
+          stack.pop()
+        }
+        const current = stack[stack.length - 1].obj
+        if (trimmed.trimStart().startsWith('- ')) {
+          const val = parseValue(trimmed.trimStart().slice(2))
+          if (Array.isArray(current)) {
+            current.push(val)
+          }
+          continue
+        }
+        const colonIdx = trimmed.indexOf(':')
+        if (colonIdx === -1) continue
+        const key = trimmed.slice(0, colonIdx).trim()
+        const valStr = trimmed.slice(colonIdx + 1).trim()
+        if (valStr === '') {
+          const newObj: any = {}
+          current[key] = newObj
+          stack.push({ indent, obj: newObj })
+        } else {
+          current[key] = parseValue(valStr)
+        }
+      }
+      return JSON.stringify(root, null, 2)
+    } catch {
+      return '无效的 YAML 字符串'
+    }
+  }
+
+  // JSON ↔ CSV 转换
+  const jsonToCsv = (jsonStr: string): string => {
+    try {
+      const data = JSON.parse(jsonStr)
+      if (!Array.isArray(data) || data.length === 0) return '需要 JSON 数组且非空'
+      const headers = Object.keys(data[0])
+      const escapeCsv = (val: any): string => {
+        const str = String(val ?? '')
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`
+        }
+        return str
+      }
+      const rows = [headers.join(',')]
+      for (const row of data) {
+        rows.push(headers.map(h => escapeCsv(row[h])).join(','))
+      }
+      return rows.join('\n')
+    } catch {
+      return '无效的 JSON 数组'
+    }
+  }
+
+  const csvToJson = (csvStr: string): string => {
+    try {
+      const lines = csvStr.split('\n').filter(l => l.trim())
+      if (lines.length < 2) return '需要至少两行数据（表头+数据）'
+      const parseCsvLine = (line: string): string[] => {
+        const result: string[] = []
+        let i = 0
+        while (i < line.length) {
+          if (line[i] === '"') {
+            let field = ''
+            i++
+            while (i < line.length) {
+              if (line[i] === '"' && line[i + 1] === '"') {
+                field += '"'
+                i += 2
+              } else if (line[i] === '"') {
+                i++
+                break
+              } else {
+                field += line[i]
+                i++
+              }
+            }
+            result.push(field)
+            if (i < line.length && line[i] === ',') i++
+          } else {
+            let field = ''
+            while (i < line.length && line[i] !== ',') {
+              field += line[i]
+              i++
+            }
+            result.push(field)
+            if (i < line.length && line[i] === ',') i++
+          }
+        }
+        return result
+      }
+      const headers = parseCsvLine(lines[0])
+      const data = []
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCsvLine(lines[i])
+        const obj: Record<string, any> = {}
+        headers.forEach((h, idx) => {
+          const v = values[idx] ?? ''
+          const num = Number(v)
+          obj[h] = v === '' ? '' : (!isNaN(num) && v !== '' ? num : v)
+        })
+        data.push(obj)
+      }
+      return JSON.stringify(data, null, 2)
+    } catch {
+      return '无效的 CSV 数据'
+    }
+  }
+
+  const renderCurrencyTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          💱 实时汇率转换
+        </h3>
+        
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '120px' }}>
+            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>金额</label>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="amount-field"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
             />
-            <select value={baseCurrency} onChange={(e) => setBaseCurrency(e.target.value)}>
-              {PopularCurrencies.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <select
+              value={fromCurrency}
+              onChange={(e) => setFromCurrency(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
+            >
+              {currencies.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            
+            <span style={{ fontSize: '18px' }}>→</span>
+            
+            <select
+              value={toCurrency}
+              onChange={(e) => setToCurrency(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
+            >
+              {currencies.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <button onClick={fetchRates} disabled={loading} className="refresh-btn">
-            <RefreshCw size={16} className={loading ? 'spin' : ''} />
-            刷新
-          </button>
         </div>
+
+        <button
+          onClick={handleConvertCurrency}
+          disabled={loading}
+          style={{
+            marginTop: '16px',
+            padding: '10px 24px',
+            background: loading ? 'var(--border-color)' : 'var(--accent-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'white',
+            transition: 'all 0.2s',
+            width: '100%'
+          }}
+        >
+          {loading ? '转换中...' : '转换'}
+        </button>
       </div>
 
-      <div className="rates-list">
-        {rates.map(rate => (
-          <div key={rate.code} className="rate-row">
-            <div className="rate-info">
-              <span className="rate-code">{rate.code}</span>
-              <span className="rate-name">{rate.name}</span>
-            </div>
-            <div className="rate-values">
-              <span className="rate-amount">{convertAmount(rate.rate)}</span>
-              <span className="rate-rate">1 {baseCurrency} = {rate.rate.toFixed(4)} {rate.code}</span>
-            </div>
-            <button
-              className="copy-mini"
-              onClick={() => copyToClipboard(convertAmount(rate.rate), `rate-${rate.code}`)}
-            >
-              {copied === `rate-${rate.code}` ? <Check size={12} /> : <Copy size={12} />}
-            </button>
+      {result && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--accent-bg)',
+          border: '1px solid var(--accent)',
+          borderRadius: '12px'
+        }}>
+          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent)' }}>
+            {result.result} {toCurrency}
           </div>
-        ))}
-      </div>
-
-      <style>{`
-        .exchange-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .exchange-controls { display: flex; gap: 12px; align-items: center; }
-        .amount-input { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px 12px; }
-        .amount-field { width: 100px; background: transparent; border: none; color: white; outline: none; font-size: 16px; font-weight: 600; }
-        .amount-field::-webkit-outer-spin-button, .amount-field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .amount-input select { background: transparent; border: none; color: #00d4ff; outline: none; font-size: 14px; cursor: pointer; }
-        .refresh-btn { display: flex; align-items: center; gap: 6px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: #00d4ff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        .refresh-btn:hover { background: rgba(0, 212, 255, 0.25); }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .rates-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-        .rate-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 16px; transition: all 0.2s; }
-        .rate-row:hover { background: rgba(0, 212, 255, 0.05); border-color: rgba(0, 212, 255, 0.2); }
-        .rate-info { display: flex; align-items: center; gap: 10px; }
-        .rate-code { font-weight: 700; color: #00d4ff; font-size: 16px; }
-        .rate-name { color: #888; font-size: 13px; }
-        .rate-values { text-align: right; }
-        .rate-amount { display: block; font-size: 18px; font-weight: 600; color: white; }
-        .rate-rate { display: block; font-size: 11px; color: #666; margin-top: 2px; }
-        .copy-mini { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 6px; padding: 6px; cursor: pointer; display: flex; }
-        .copy-mini:hover { color: #00d4ff; border-color: rgba(0, 212, 255, 0.3); }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ News Panel ============ */
-function NewsPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null; _loading?: boolean }) {
-  const [news, setNews] = useState<NewsItem[]>([])
-  const [, setLoading] = useState(false)
-  const [category, setCategory] = useState('technology')
-
-  const fetchNews = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await fetch(`https://newsapi.org/v2/top-headlines?category=${category}&language=en&apiKey=demo`)
-      const data = await response.json()
-      if (data.articles) {
-        setNews(data.articles.slice(0, 12).map((article: NewsItem) => ({
-          title: article.title,
-          description: article.description,
-          url: article.url,
-          source: article.source,
-          publishedAt: article.publishedAt,
-          urlToImage: article.urlToImage,
-        })))
-      }
-    } catch (err) {
-      setNews(getMockNews(category))
-    }
-    setLoading(false)
-  }, [category])
-
-  useEffect(() => {
-    fetchNews()
-  }, [category])
-
-  const getMockNews = (cat: string): NewsItem[] => {
-    const mockData: Record<string, NewsItem[]> = {
-      technology: [
-        { title: 'AI Revolution: New Models Reshape Industries', description: 'Latest breakthroughs in artificial intelligence are transforming how businesses operate.', url: '#', source: 'Tech Daily', publishedAt: new Date().toISOString() },
-        { title: 'Quantum Computing Breakthrough', description: 'Researchers achieve new milestone in quantum error correction.', url: '#', source: 'Science Today', publishedAt: new Date().toISOString() },
-        { title: 'Open Source Movement Thrives', description: 'Community-driven development continues to innovate across the tech landscape.', url: '#', source: 'Dev Weekly', publishedAt: new Date().toISOString() },
-      ],
-      business: [
-        { title: 'Global Markets Rally', description: 'Stock markets worldwide respond positively to economic indicators.', url: '#', source: 'Business News', publishedAt: new Date().toISOString() },
-        { title: 'Startup Ecosystem Booms', description: 'Venture capital funding reaches new heights in emerging markets.', url: '#', source: 'Startup Hub', publishedAt: new Date().toISOString() },
-      ],
-      science: [
-        { title: 'Space Exploration Milestone', description: 'New telescope discoveries reveal distant galaxy clusters.', url: '#', source: 'Space Today', publishedAt: new Date().toISOString() },
-        { title: 'Climate Research Advances', description: 'Scientists develop new models for predicting climate patterns.', url: '#', source: 'Climate Watch', publishedAt: new Date().toISOString() },
-      ],
-    }
-    return mockData[cat] || mockData.technology
-  }
-
-  const categories = ['technology', 'business', 'science', 'health', 'sports']
-
-  return (
-    <div className="news-panel">
-      <div className="panel-section">
-        <h3><Newspaper size={18} /> 新闻中心</h3>
-        <div className="category-tabs">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              className={`cat-tab ${category === cat ? 'active' : ''}`}
-              onClick={() => setCategory(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="news-grid">
-        {news.map((item, i) => (
-          <div key={i} className="news-card">
-            <div className="news-source">{item.source}</div>
-            <h4 className="news-title">{item.title}</h4>
-            <p className="news-desc">{item.description}</p>
-            <div className="news-footer">
-              <span className="news-time">{new Date(item.publishedAt).toLocaleString('zh-CN')}</span>
-              <div className="news-actions">
-                <button onClick={() => copyToClipboard(`${item.title}\n${item.description}`, `news-${i}`)}>
-                  <Copy size={14} />
-                </button>
-                <a href={item.url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={14} />
-                </a>
-              </div>
-            </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            汇率: 1 {fromCurrency} = {result.rate} {toCurrency}
           </div>
-        ))}
-      </div>
-
-      <style>{`
-        .news-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .category-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-        .cat-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 14px; color: #888; cursor: pointer; font-size: 12px; text-transform: capitalize; }
-        .cat-tab:hover { color: #ccc; }
-        .cat-tab.active { background: rgba(0, 212, 255, 0.15); border-color: rgba(0, 212, 255, 0.3); color: #00d4ff; }
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-        .news-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; transition: all 0.2s; cursor: pointer; }
-        .news-card:hover { background: rgba(0, 212, 255, 0.05); border-color: rgba(0, 212, 255, 0.2); transform: translateY(-2px); }
-        .news-source { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-        .news-title { font-size: 15px; font-weight: 600; margin: 8px 0; color: white; line-height: 1.4; }
-        .news-desc { font-size: 13px; color: #888; margin: 0 0 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .news-footer { display: flex; justify-content: space-between; align-items: center; }
-        .news-time { font-size: 11px; color: #666; }
-        .news-actions { display: flex; gap: 8px; }
-        .news-actions button, .news-actions a { background: transparent; border: none; color: #888; cursor: pointer; display: flex; padding: 4px; border-radius: 4px; }
-        .news-actions button:hover, .news-actions a:hover { color: #00d4ff; background: rgba(0, 212, 255, 0.1); }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ GitHub Panel ============ */
-function GitHubPanel({ copyToClipboard }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
-  const [repos, setRepos] = useState<GitHubTrending[]>([])
-  const [, setLoading] = useState(false)
-  const [language, setLanguage] = useState('javascript')
-
-  const fetchTrending = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await fetch(`https://api.github.com/search/repositories?q=stars:>1000+language:${language}&sort=stars&order=desc&per_page=15`)
-      const data = await response.json()
-      if (data.items) {
-        setRepos(data.items.map((item: { name: string; full_name: string; description: string; stargazers_count: number; forks_count: number; language: string; html_url: string }) => ({
-          name: item.name,
-          description: item.description || 'No description',
-          stars: item.stargazers_count,
-          forks: item.forks_count,
-          language: item.language || 'Unknown',
-          url: item.html_url,
-        })))
-      }
-    } catch (err) {
-      console.error('Failed to fetch GitHub repos:', err)
-    }
-    setLoading(false)
-  }, [language])
-
-  useEffect(() => {
-    fetchTrending()
-  }, [language])
-
-  const languages = ['javascript', 'typescript', 'python', 'rust', 'go', 'java', 'react']
-
-  const getLangColor = (lang: string): string => {
-    const colors: Record<string, string> = {
-      javascript: '#f1e05a', typescript: '#3178c6', python: '#3572A5',
-      rust: '#dea584', go: '#00ADD8', java: '#b07219', react: '#61dafb',
-    }
-    return colors[lang.toLowerCase()] || '#888'
-  }
-
-  return (
-    <div className="github-panel">
-      <div className="panel-section">
-        <h3><TrendingUp size={18} /> GitHub 热门项目</h3>
-        <div className="lang-tabs">
-          {languages.map(lang => (
-            <button
-              key={lang}
-              className={`lang-tab ${language === lang ? 'active' : ''}`}
-              onClick={() => setLanguage(lang)}
-            >
-              {lang}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="repos-list">
-        {repos.map((repo, i) => (
-          <div key={i} className="repo-card">
-            <div className="repo-header">
-              <h4 className="repo-name">{repo.name}</h4>
-              <div className="repo-stats">
-                <span className="stat-item"><Star size={12} /> {repo.stars.toLocaleString()}</span>
-                <span className="stat-item"><Users size={12} /> {repo.forks.toLocaleString()}</span>
-              </div>
-            </div>
-            <p className="repo-desc">{repo.description}</p>
-            <div className="repo-footer">
-              <div className="repo-language">
-                <span className="lang-dot" style={{ backgroundColor: getLangColor(repo.language) }}></span>
-                {repo.language}
-              </div>
-              <div className="repo-actions">
-                <button onClick={() => copyToClipboard(repo.url, `repo-${i}`)}>
-                  <Copy size={12} />
-                </button>
-                <a href={repo.url} target="_blank" rel="noopener noreferrer" className="repo-link">
-                  <ExternalLink size={12} /> 访问
-                </a>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <style>{`
-        .github-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .lang-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-        .lang-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 5px 12px; color: #888; cursor: pointer; font-size: 12px; text-transform: capitalize; }
-        .lang-tab:hover { color: #ccc; }
-        .lang-tab.active { background: rgba(0, 212, 255, 0.15); border-color: rgba(0, 212, 255, 0.3); color: #00d4ff; }
-        .repos-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-        .repo-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; transition: all 0.2s; }
-        .repo-card:hover { background: rgba(0, 212, 255, 0.05); border-color: rgba(0, 212, 255, 0.2); transform: translateY(-2px); }
-        .repo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .repo-name { font-size: 15px; font-weight: 600; margin: 0; color: #00d4ff; }
-        .repo-stats { display: flex; gap: 12px; }
-        .stat-item { display: flex; align-items: center; gap: 4px; color: #888; font-size: 12px; }
-        .repo-desc { font-size: 13px; color: #aaa; margin: 0 0 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .repo-footer { display: flex; justify-content: space-between; align-items: center; }
-        .repo-language { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #888; }
-        .lang-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .repo-actions { display: flex; gap: 8px; align-items: center; }
-        .repo-actions button { background: transparent; border: none; color: #888; cursor: pointer; display: flex; padding: 4px; border-radius: 4px; }
-        .repo-actions button:hover { color: #00d4ff; background: rgba(0, 212, 255, 0.1); }
-        .repo-link { display: flex; align-items: center; gap: 4px; color: #00d4ff; font-size: 12px; text-decoration: none; }
-        .repo-link:hover { text-decoration: underline; }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ QR Code Panel ============ */
-function QRPanel() {
-  const [text, setText] = useState('https://github.com/saya-ch/WebLinuxOS')
-  const [qrSize, setQrSize] = useState(256)
-
-  const qrUrl = useMemo(() => {
-    const encoded = encodeURIComponent(text)
-    return `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encoded}&bgcolor=ffffff&color=000000&margin=10`
-  }, [text, qrSize])
-
-  return (
-    <div className="qr-panel">
-      <div className="panel-section">
-        <h3><QrCode size={18} /> 二维码生成器</h3>
-        <div className="qr-input-area">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="输入文本或URL生成二维码..."
-            rows={4}
-          />
-          <div className="qr-size-control">
-            <span>尺寸:</span>
-            <input type="range" min="128" max="512" step="64" value={qrSize} onChange={(e) => setQrSize(Number(e.target.value))} />
-            <span>{qrSize}px</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="qr-display">
-        <div className="qr-container">
-          <img src={qrUrl} alt="QR Code" className="qr-image" />
-          <a href={qrUrl} download="qrcode.png" className="qr-download">
-            <Download size={14} /> 下载二维码
-          </a>
-        </div>
-      </div>
-
-      <style>{`
-        .qr-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .qr-input-area { display: flex; flex-direction: column; gap: 12px; }
-        .qr-input-area textarea { width: 100%; min-height: 80px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; resize: vertical; outline: none; font-family: monospace; }
-        .qr-input-area textarea:focus { border-color: rgba(0, 212, 255, 0.3); }
-        .qr-size-control { display: flex; align-items: center; gap: 12px; color: #888; font-size: 13px; }
-        .qr-size-control input[type="range"] { flex: 1; accent-color: #00d4ff; }
-        .qr-display { display: flex; justify-content: center; padding: 24px; }
-        .qr-container { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-        .qr-image { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 0 40px rgba(0, 212, 255, 0.2); }
-        .qr-download { display: flex; align-items: center; gap: 6px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: #00d4ff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; }
-        .qr-download:hover { background: rgba(0, 212, 255, 0.25); }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ Translate Panel ============ */
-function TranslatePanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
-  const [inputText, setInputText] = useState('Hello, World!')
-  const [sourceLang, setSourceLang] = useState('en')
-  const [targetLang, setTargetLang] = useState('zh')
-  const [translated, setTranslated] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const translate = useCallback(async () => {
-    if (!inputText.trim()) return
-    setLoading(true)
-    try {
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(inputText)}&langpair=${sourceLang}|${targetLang}`)
-      const data = await response.json()
-      if (data.responseData) {
-        setTranslated(data.responseData.translatedText)
-      }
-    } catch (err) {
-      setTranslated('翻译服务暂时不可用')
-    }
-    setLoading(false)
-  }, [inputText, sourceLang, targetLang])
-
-  useEffect(() => {
-    const timer = setTimeout(translate, 500)
-    return () => clearTimeout(timer)
-  }, [translate])
-
-  const languages = [
-    { code: 'en', name: '英语' },
-    { code: 'zh', name: '中文' },
-    { code: 'ja', name: '日语' },
-    { code: 'ko', name: '韩语' },
-    { code: 'fr', name: '法语' },
-    { code: 'de', name: '德语' },
-    { code: 'es', name: '西班牙语' },
-    { code: 'ru', name: '俄语' },
-  ]
-
-  const getLangName = (code: string) => languages.find(l => l.code === code)?.name || code
-
-  return (
-    <div className="translate-panel">
-      <div className="panel-section">
-        <h3><Globe size={18} /> 实时翻译</h3>
-        <div className="lang-selectors">
-          <select value={sourceLang} onChange={(e) => setSourceLang(e.target.value)}>
-            {languages.map(l => <option key={l.code} value={l.code}>{getLangName(l.code)}</option>)}
-          </select>
-          <button onClick={() => { const s = sourceLang; setSourceLang(targetLang); setTargetLang(s); setInputText(translated); setTranslated(inputText) }}>
-            <RefreshCw size={16} />
-          </button>
-          <select value={targetLang} onChange={(e) => setTargetLang(e.target.value)}>
-            {languages.map(l => <option key={l.code} value={l.code}>{getLangName(l.code)}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div className="translate-boxes">
-        <div className="translate-box">
-          <textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="输入要翻译的文本..."
-            rows={4}
-          />
-          <span className="char-count">{inputText.length}</span>
-        </div>
-        <div className="translate-box output">
-          <textarea
-            value={translated}
-            readOnly
-            placeholder={loading ? '翻译中...' : '翻译结果将显示在这里'}
-            rows={4}
-          />
-          <button
-            className="copy-btn-sm"
-            onClick={() => copyToClipboard(translated, 'translate')}
-            disabled={!translated}
-          >
-            {copied === 'translate' ? '✓ 已复制' : '复制'}
-          </button>
-        </div>
-      </div>
-
-      <style>{`
-        .translate-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .lang-selectors { display: flex; gap: 12px; align-items: center; }
-        .lang-selectors select { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: white; outline: none; font-size: 14px; }
-        .lang-selectors button { background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: #00d4ff; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .lang-selectors button:hover { background: rgba(0, 212, 255, 0.25); }
-        .translate-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .translate-box { position: relative; }
-        .translate-box textarea { width: 100%; min-height: 120px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; resize: none; outline: none; }
-        .translate-box textarea:focus { border-color: rgba(0, 212, 255, 0.3); }
-        .translate-box.output textarea { background: rgba(0, 212, 255, 0.05); }
-        .char-count { position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #666; }
-        .copy-btn-sm { position: absolute; bottom: 8px; right: 12px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: #00d4ff; padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
-        .copy-btn-sm:hover:not(:disabled) { background: rgba(0, 212, 255, 0.25); }
-        .copy-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ Hash Panel ============ */
-function HashPanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
-  const [input, setInput] = useState('Hello, WebLinuxOS!')
-  const [hashes, setHashes] = useState<Record<string, string>>({})
-
-  const generateHashes = useCallback(async () => {
-    if (!input) { setHashes({}); return }
-    const encoder = new TextEncoder()
-    const data = encoder.encode(input)
-
-    try {
-      const [md5, sha1, sha256, sha512] = await Promise.all([
-        computeHash(data, 'MD5'),
-        computeHash(data, 'SHA-1'),
-        computeHash(data, 'SHA-256'),
-        computeHash(data, 'SHA-512'),
-      ])
-      setHashes({ md5, sha1, sha256, sha512 })
-    } catch (err) {
-      setHashes({ error: 'Hash computation failed' })
-    }
-  }, [input])
-
-  const computeHash = async (data: Uint8Array, algo: string): Promise<string> => {
-    const hashBuffer = await crypto.subtle.digest(algo, data.buffer as ArrayBuffer)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-  }
-
-  useEffect(() => {
-    generateHashes()
-  }, [generateHashes])
-
-  const hashTypes = [
-    { key: 'md5', label: 'MD5', color: '#ff6b6b' },
-    { key: 'sha1', label: 'SHA-1', color: '#ffa500' },
-    { key: 'sha256', label: 'SHA-256', color: '#00d4ff' },
-    { key: 'sha512', label: 'SHA-512', color: '#7c3aed' },
-  ]
-
-  return (
-    <div className="hash-panel">
-      <div className="panel-section">
-        <h3><Hash size={18} /> 哈希生成器</h3>
-        <div className="hash-input">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="输入文本生成哈希值..."
-            rows={3}
-          />
-        </div>
-      </div>
-
-      <div className="hash-results">
-        {hashTypes.map(({ key, label, color }) => (
-          <div key={key} className="hash-result-row">
-            <div className="hash-label" style={{ borderColor: color, color }}>{label}</div>
-            <div className="hash-value">{hashes[key] || '...'}</div>
-            <button
-              className="copy-btn-hash"
-              onClick={() => copyToClipboard(hashes[key] || '', `hash-${key}`)}
-              disabled={!hashes[key]}
-            >
-              {copied === `hash-${key}` ? <span>✓</span> : <Copy size={12} />}
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <style>{`
-        .hash-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .hash-input textarea { width: 100%; min-height: 80px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: white; font-size: 14px; resize: vertical; outline: none; font-family: monospace; }
-        .hash-input textarea:focus { border-color: rgba(0, 212, 255, 0.3); }
-        .hash-results { display: flex; flex-direction: column; gap: 12px; }
-        .hash-result-row { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px 16px; }
-        .hash-label { font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid; white-space: nowrap; }
-        .hash-value { flex: 1; font-family: monospace; font-size: 12px; color: #ccc; word-break: break-all; }
-        .copy-btn-hash { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 6px; padding: 6px; cursor: pointer; display: flex; }
-        .copy-btn-hash:hover:not(:disabled) { color: #00d4ff; border-color: rgba(0, 212, 255, 0.3); }
-        .copy-btn-hash:disabled { opacity: 0.3; cursor: not-allowed; }
-      `}</style>
-    </div>
-  )
-}
-
-/* ============ URL Shortener Panel ============ */
-function URLPanel({ copyToClipboard, copied }: { copyToClipboard: (text: string, id: string) => void; copied: string | null }) {
-  const [longUrl, setLongUrl] = useState('')
-  const [shortUrl, setShortUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [history, setHistory] = useState<{ long: string; short: string; time: string }[]>([])
-
-  const shorten = useCallback(async () => {
-    if (!longUrl.trim()) return
-    setLoading(true)
-    setShortUrl('')
-    try {
-      const response = await fetch(`https://api.is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`)
-      if (response.ok) {
-        const short = await response.text()
-        setShortUrl(short.trim())
-        setHistory(prev => [{ long: longUrl, short: short.trim(), time: new Date().toLocaleString('zh-CN') }, ...prev].slice(0, 10))
-      } else {
-        setShortUrl('缩短失败，请检查URL格式')
-      }
-    } catch (err) {
-      setShortUrl('服务暂时不可用')
-    }
-    setLoading(false)
-  }, [longUrl])
-
-  const isValidUrl = (url: string): boolean => {
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
-    }
-  }
-
-  return (
-    <div className="url-panel">
-      <div className="panel-section">
-        <h3><Link2 size={18} /> URL 短链生成</h3>
-        <div className="url-input-area">
-          <input
-            type="url"
-            value={longUrl}
-            onChange={(e) => setLongUrl(e.target.value)}
-            placeholder="输入完整URL..."
-            onKeyDown={(e) => e.key === 'Enter' && isValidUrl(longUrl) && shorten()}
-          />
-          <button
-            onClick={shorten}
-            disabled={loading || !isValidUrl(longUrl)}
-          >
-            {loading ? '处理中...' : '缩短'}
-          </button>
-        </div>
-      </div>
-
-      {shortUrl && (
-        <div className="short-url-result">
-          <div className="result-label">短链结果:</div>
-          <div className="result-url">{shortUrl}</div>
-          <div className="result-actions">
-            <button onClick={() => copyToClipboard(shortUrl, 'short-url')}>
-              {copied === 'short-url' ? <><Check size={14} /> 已复制</> : <><Copy size={14} /> 复制</>}
-            </button>
-            <a href={shortUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={14} /> 访问
-            </a>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+            数据更新: {result.date}
           </div>
         </div>
       )}
 
+      <div style={{
+        padding: '16px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px',
+        display: 'flex',
+        gap: '12px'
+      }}>
+        <button
+          onClick={() => {
+            const temp = fromCurrency
+            setFromCurrency(toCurrency)
+            setToCurrency(temp)
+          }}
+          style={{
+            flex: 1,
+            padding: '8px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            color: 'var(--text-primary)',
+            fontSize: '12px'
+          }}
+        >
+          🔄 交换货币
+        </button>
+        <button
+          onClick={() => {
+            setAmount('1')
+            setFromCurrency('USD')
+            setToCurrency('CNY')
+          }}
+          style={{
+            flex: 1,
+            padding: '8px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            color: 'var(--text-primary)',
+            fontSize: '12px'
+          }}
+        >
+          ⚡ 重置
+        </button>
+      </div>
+    </div>
+  )
+
+  const renderColorTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          🎨 颜色工具
+        </h3>
+
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
+          <input
+            type="color"
+            value={selectedColor}
+            onChange={(e) => setSelectedColor(e.target.value)}
+            style={{
+              width: '80px',
+              height: '80px',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              background: 'transparent'
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <input
+              type="text"
+              value={selectedColor}
+              onChange={(e) => setSelectedColor(e.target.value)}
+              placeholder="#7c3aed"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontFamily: 'monospace'
+              }}
+            />
+            <button
+              onClick={handleAnalyzeColor}
+              style={{
+                marginTop: '8px',
+                padding: '8px 16px',
+                background: 'var(--accent-gradient)',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: 'white',
+                width: '100%'
+              }}
+            >
+              分析颜色
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {result && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{
+              padding: '8px 12px',
+              background: selectedColor,
+              color: apiService.getContrastColor(selectedColor),
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 500
+            }}>
+              主色 {selectedColor.toUpperCase()}
+            </div>
+            <div style={{
+              padding: '8px 12px',
+              background: apiService.rgbToHex(255 - result.rgb.r, 255 - result.rgb.g, 255 - result.rgb.b),
+              color: apiService.getContrastColor(apiService.rgbToHex(255 - result.rgb.r, 255 - result.rgb.g, 255 - result.rgb.b)),
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 500
+            }}>
+              互补色
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {result.palette.map((color: string, i: number) => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: '40px',
+                  background: color,
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  color: apiService.getContrastColor(color)
+                }}
+                title={color}
+              >
+                {color}
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            padding: '12px',
+            background: 'var(--window-bg)',
+            borderRadius: '8px',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            color: 'var(--text-primary)',
+            whiteSpace: 'pre-wrap'
+          }}>
+            {output}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  const renderTextTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          📊 文本分析
+        </h3>
+
+        <textarea
+          value={selectedText}
+          onChange={(e) => setSelectedText(e.target.value)}
+          placeholder="在此输入或粘贴文本进行分析..."
+          style={{
+            width: '100%',
+            minHeight: '120px',
+            padding: '12px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            color: 'var(--text-primary)',
+            fontSize: '13px',
+            resize: 'vertical',
+            fontFamily: 'inherit'
+          }}
+        />
+
+        <button
+          onClick={handleAnalyzeText}
+          style={{
+            marginTop: '12px',
+            padding: '10px 24px',
+            background: 'var(--accent-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'white',
+            width: '100%'
+          }}
+        >
+          分析文本
+        </button>
+      </div>
+
+      {result && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+          gap: '12px'
+        }}>
+          <StatCard label="字符数" value={result.characters} />
+          <StatCard label="不含空格" value={result.charactersNoSpaces} />
+          <StatCard label="单词数" value={result.words} />
+          <StatCard label="行数" value={result.lines} />
+          <StatCard label="段落数" value={result.paragraphs} />
+          <StatCard label="阅读时间" value={`${result.readingTime} 分钟`} />
+        </div>
+      )}
+    </div>
+  )
+
+  const renderNetworkTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          🌐 网络工具
+        </h3>
+
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          <div style={{
+            flex: 1,
+            padding: '12px',
+            background: navigator.onLine ? 'var(--accent-bg)' : 'rgba(239, 68, 68, 0.1)',
+            border: `1px solid ${navigator.onLine ? 'var(--accent)' : '#ef4444'}`,
+            borderRadius: '8px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '20px' }}>{navigator.onLine ? '✅' : '❌'}</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
+              {navigator.onLine ? '在线' : '离线'}
+            </div>
+          </div>
+          <div style={{
+            flex: 1,
+            padding: '12px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '20px' }}>⚡</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
+              {(() => {
+                const conn = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection
+                return conn?.effectiveType || '未知'
+              })()}
+            </div>
+          </div>
+          <div style={{
+            flex: 1,
+            padding: '12px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '20px' }}>📶</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
+              {(() => {
+                const conn = (navigator as Navigator & { connection?: { downlink?: number } }).connection
+                return conn?.downlink ? `${conn.downlink} Mbps` : '未知'
+              })()}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleNetworkCheck}
+          disabled={loading}
+          style={{
+            padding: '10px 24px',
+            background: loading ? 'var(--border-color)' : 'var(--accent-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'white',
+            width: '100%'
+          }}
+        >
+          {loading ? '检测中...' : '🔍 检测网络状态'}
+        </button>
+      </div>
+
+      {output && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--window-bg)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          fontSize: '13px',
+          fontFamily: 'monospace',
+          color: 'var(--text-primary)',
+          whiteSpace: 'pre-wrap'
+        }}>
+          {output}
+        </div>
+      )}
+    </div>
+  )
+
+  const renderCodeTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          💻 编码工具
+        </h3>
+
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="输入内容..."
+          style={{
+            width: '100%',
+            minHeight: '80px',
+            padding: '10px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            color: 'var(--text-primary)',
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            resize: 'vertical'
+          }}
+        />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '12px' }}>
+          <ToolButton label="Base64" onClick={() => handleEncode('base64')} />
+          <ToolButton label="URL编码" onClick={() => handleEncode('url')} />
+          <ToolButton label="JSON格式化" onClick={() => handleEncode('json')} />
+          <ToolButton label="JSON压缩" onClick={() => handleEncode('json-min')} />
+        </div>
+      </div>
+
+      <div style={{
+        padding: '16px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '8px'
+        }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>输出结果</span>
+          {output && (
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(output)
+                addNotification({ title: '已复制', message: '结果已复制到剪贴板', type: 'success', duration: 2000 })
+              }}
+              style={{
+                padding: '4px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              复制
+            </button>
+          )}
+        </div>
+        <div style={{
+          padding: '12px',
+          background: 'var(--window-bg)',
+          borderRadius: '8px',
+          fontSize: '13px',
+          fontFamily: 'monospace',
+          color: 'var(--text-primary)',
+          whiteSpace: 'pre-wrap',
+          minHeight: '60px'
+        }}>
+          {output || '等待输入...'}
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderGeneratorTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          ✨ 生成器
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          <GeneratorButton
+            label="UUID"
+            icon="🔑"
+            onClick={() => handleEncode('uuid')}
+          />
+          <GeneratorButton
+            label="时间戳"
+            icon="⏰"
+            onClick={() => handleEncode('timestamp')}
+          />
+          <GeneratorButton
+            label="密码"
+            icon="🔒"
+            onClick={() => handleEncode('password')}
+          />
+          <GeneratorButton
+            label="HTTP状态码"
+            icon="🌐"
+            onClick={() => {
+              const code = prompt('输入HTTP状态码:', '200')
+              if (code) handleEncode('hash-info')
+            }}
+          />
+        </div>
+      </div>
+
+      {output && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--accent-bg)',
+          border: '1px solid var(--accent)',
+          borderRadius: '12px'
+        }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            生成结果
+          </div>
+          <div style={{
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            color: 'var(--text-primary)',
+            wordBreak: 'break-all'
+          }}>
+            {output}
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(output)
+              addNotification({ title: '已复制', message: '结果已复制到剪贴板', type: 'success', duration: 2000 })
+            }}
+            style={{
+              marginTop: '12px',
+              padding: '8px 16px',
+              background: 'var(--accent-gradient)',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              color: 'white'
+            }}
+          >
+            📋 复制结果
+          </button>
+        </div>
+      )}
+
       {history.length > 0 && (
-        <div className="history-section">
-          <h4><History size={14} /> 历史记录</h4>
-          <div className="history-list">
+        <div style={{
+          padding: '16px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            📜 历史记录 (最近{history.length}条)
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '150px', overflow: 'auto' }}>
             {history.map((item, i) => (
-              <div key={i} className="history-item">
-                <div className="history-urls">
-                  <span className="long-url" title={item.long}>{item.long}</span>
-                  <ChevronRight size={14} />
-                  <span className="short-url">{item.short}</span>
-                </div>
-                <div className="history-meta">
-                  <span>{item.time}</span>
-                  <button onClick={() => copyToClipboard(item.short, `history-${i}`)}>
-                    {copied === `history-${i}` ? <Check size={12} /> : <Copy size={12} />}
-                  </button>
-                </div>
+              <div
+                key={i}
+                style={{
+                  padding: '8px',
+                  background: 'var(--window-bg)',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  color: 'var(--text-secondary)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flex: 1,
+                  marginRight: '8px'
+                }}>
+                  {item.output.slice(0, 50)}
+                </span>
+                <span style={{ fontSize: '10px' }}>
+                  {new Date(item.timestamp).toLocaleTimeString()}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
-
-      <style>{`
-        .url-panel { display: flex; flex-direction: column; gap: 20px; }
-        .panel-section h3 { display: flex; align-items: center; gap: 8px; color: #00d4ff; margin: 0 0 12px; font-size: 15px; }
-        .url-input-area { display: flex; gap: 10px; }
-        .url-input-area input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; color: white; font-size: 14px; outline: none; }
-        .url-input-area input:focus { border-color: rgba(0, 212, 255, 0.3); }
-        .url-input-area input::placeholder { color: #666; }
-        .url-input-area button { background: linear-gradient(135deg, #00d4ff, #7c3aed); border: none; color: white; border-radius: 10px; padding: 0 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .url-input-area button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-        .url-input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .short-url-result { background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1)); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 12px; padding: 20px; }
-        .result-label { color: #888; font-size: 12px; margin-bottom: 8px; }
-        .result-url { font-size: 20px; font-weight: 600; color: #00d4ff; word-break: break-all; margin-bottom: 12px; font-family: monospace; }
-        .result-actions { display: flex; gap: 12px; }
-        .result-actions button, .result-actions a { display: flex; align-items: center; gap: 6px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: #00d4ff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; cursor: pointer; }
-        .result-actions button:hover, .result-actions a:hover { background: rgba(0, 212, 255, 0.25); }
-        .history-section { margin-top: 16px; }
-        .history-section h4 { display: flex; align-items: center; gap: 6px; color: #888; font-size: 13px; margin: 0 0 12px; }
-        .history-list { display: flex; flex-direction: column; gap: 8px; }
-        .history-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; }
-        .history-urls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .long-url { flex: 1; color: #888; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        .history-urls svg { color: #666; flex-shrink: 0; }
-        .short-url { color: #00d4ff; font-size: 12px; font-family: monospace; }
-        .history-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #666; }
-        .history-meta button { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 4px; padding: 4px; cursor: pointer; display: flex; }
-        .history-meta button:hover { color: #00d4ff; border-color: rgba(0, 212, 255, 0.3); }
-      `}</style>
     </div>
   )
-}
+
+  const renderUnitsTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          📏 单位转换
+        </h3>
+
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>单位类型</label>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {Object.keys(unitOptions).map(type => (
+              <button
+                key={type}
+                onClick={() => {
+                  setUnitType(type)
+                  setUnitFrom(unitOptions[type][0])
+                  setUnitTo(unitOptions[type][1] || unitOptions[type][0])
+                }}
+                style={{
+                  padding: '6px 14px',
+                  background: unitType === type ? 'var(--accent-gradient)' : 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  color: unitType === type ? 'white' : 'var(--text-primary)',
+                  fontSize: '12px'
+                }}
+              >
+                {({ length: '长度', weight: '重量', temperature: '温度', volume: '体积' } as Record<string, string>)[type]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '100px' }}>
+            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>数值</label>
+            <input
+              type="number"
+              value={unitValue}
+              onChange={(e) => setUnitValue(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <select
+              value={unitFrom}
+              onChange={(e) => setUnitFrom(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
+            >
+              {unitOptions[unitType].map(u => <option key={u} value={u}>{unitLabels[u]}</option>)}
+            </select>
+            <span style={{ fontSize: '18px' }}>→</span>
+            <select
+              value={unitTo}
+              onChange={(e) => setUnitTo(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
+            >
+              {unitOptions[unitType].map(u => <option key={u} value={u}>{unitLabels[u]}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <button
+          onClick={handleConvertUnits}
+          style={{
+            marginTop: '16px',
+            padding: '10px 24px',
+            background: 'var(--accent-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'white',
+            width: '100%'
+          }}
+        >
+          转换
+        </button>
+      </div>
+
+      {result && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--accent-bg)',
+          border: '1px solid var(--accent)',
+          borderRadius: '12px'
+        }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--accent)' }}>
+            {result.value} {unitLabels[result.to]}
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            {unitValue} {unitLabels[result.from]} = {result.value} {unitLabels[result.to]}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  const renderPasswordTab = () => {
+    const analysis = passwordInput ? apiService.analyzePasswordStrength(passwordInput) : null
+    const getScoreColor = (score: number) => {
+      if (score >= 80) return '#22c55e'
+      if (score >= 65) return '#84cc16'
+      if (score >= 45) return '#eab308'
+      if (score >= 25) return '#f97316'
+      return '#ef4444'
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{
+          padding: '20px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <h3 style={h3TitleStyle}>
+            🔐 密码强度检测
+          </h3>
+
+          <input
+            type="text"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            placeholder="输入密码进行强度检测..."
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'var(--window-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              fontSize: '14px',
+              fontFamily: 'monospace'
+            }}
+          />
+
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+            <button
+              onClick={handleGeneratePassword}
+              style={{
+                flex: 1,
+                padding: '10px',
+                background: 'var(--accent-gradient)',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: 'white'
+              }}
+            >
+              ✨ 生成强密码
+            </button>
+            {passwordInput && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(passwordInput)
+                  addNotification({ title: '已复制', message: '密码已复制到剪贴板', type: 'success', duration: 2000 })
+                }}
+                style={{
+                  padding: '10px 16px',
+                  background: 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                📋 复制
+              </button>
+            )}
+          </div>
+        </div>
+
+        {analysis && (
+          <div style={{
+            padding: '16px',
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: getScoreColor(analysis.score),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '20px',
+                fontWeight: 700
+              }}>
+                {analysis.score}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: getScoreColor(analysis.score) }}>
+                  {analysis.label}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  强度分数: {analysis.score} / 100
+                </div>
+                <div style={{
+                  height: '6px',
+                  background: 'var(--window-bg)',
+                  borderRadius: '3px',
+                  marginTop: '8px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${analysis.score}%`,
+                    background: getScoreColor(analysis.score),
+                    borderRadius: '3px',
+                    transition: 'width 0.3s'
+                  }} />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{
+                padding: '10px',
+                background: 'var(--window-bg)',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{analysis.entropy}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>熵值 (bits)</div>
+              </div>
+              <div style={{
+                padding: '10px',
+                background: 'var(--window-bg)',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{passwordInput.length}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>密码长度</div>
+              </div>
+            </div>
+
+            {analysis.suggestions.length > 0 && (
+              <div style={{
+                padding: '12px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px'
+              }}>
+                <div style={{ fontSize: '12px', color: '#ef4444', marginBottom: '6px' }}>💡 改进建议</div>
+                {analysis.suggestions.map((s, i) => (
+                  <div key={i} style={{ fontSize: '11px', color: 'var(--text-secondary)', padding: '2px 0' }}>
+                    • {s}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const renderTimestampTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          ⏱️ 时间戳工具
+        </h3>
+
+        <button
+          onClick={handleGetCurrentTimestamp}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'var(--accent-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'white',
+            marginBottom: '16px'
+          }}
+        >
+          🕐 获取当前时间戳
+        </button>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div>
+            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>秒级时间戳</label>
+            <input
+              type="text"
+              value={timestampSeconds}
+              onChange={(e) => setTimestampSeconds(e.target.value)}
+              placeholder="秒"
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '13px',
+                fontFamily: 'monospace'
+              }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>毫秒时间戳</label>
+            <input
+              type="text"
+              value={timestampMs}
+              onChange={(e) => setTimestampMs(e.target.value)}
+              placeholder="毫秒"
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '13px',
+                fontFamily: 'monospace'
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          <button
+            onClick={handleTimestampToDate}
+            style={{
+              flex: 1,
+              padding: '10px',
+              background: 'var(--window-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: 'var(--text-primary)',
+              fontSize: '13px'
+            }}
+          >
+            🔄 时间戳 → 日期
+          </button>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+          <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>日期转时间戳</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              type="datetime-local"
+              value={timestampDateInput}
+              onChange={(e) => setTimestampDateInput(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '10px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '13px'
+              }}
+            />
+            <button
+              onClick={handleDateToTimestamp}
+              style={{
+                padding: '10px 16px',
+                background: 'var(--accent-gradient)',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                color: 'white',
+                fontSize: '13px'
+              }}
+            >
+              转换
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {output && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--window-bg)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          fontSize: '13px',
+          fontFamily: 'monospace',
+          color: 'var(--text-primary)',
+          whiteSpace: 'pre-wrap'
+        }}>
+          {output}
+        </div>
+      )}
+    </div>
+  )
+
+  const renderEmojiTab = () => {
+    const filteredEmojis = (emojiData[emojiCategory] || []).filter(e =>
+      emojiSearch ? e.includes(emojiSearch) : true
+    )
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{
+          padding: '20px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <h3 style={h3TitleStyle}>
+            😀 表情符号
+          </h3>
+
+          <input
+            type="text"
+            value={emojiSearch}
+            onChange={(e) => setEmojiSearch(e.target.value)}
+            placeholder="搜索表情符号..."
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              background: 'var(--window-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              fontSize: '13px',
+              marginBottom: '12px'
+            }}
+          />
+
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {emojiCategories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setEmojiCategory(cat.id)}
+                style={{
+                  padding: '6px 12px',
+                  background: emojiCategory === cat.id ? 'var(--accent-gradient)' : 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  color: emojiCategory === cat.id ? 'white' : 'var(--text-primary)',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{
+          padding: '16px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+            点击表情符号复制到剪贴板 (共 {filteredEmojis.length} 个)
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',
+            gap: '8px',
+            maxHeight: '300px',
+            overflow: 'auto'
+          }}>
+            {filteredEmojis.map((emoji, i) => (
+              <button
+                key={`${emoji}-${i}`}
+                onClick={() => {
+                  navigator.clipboard.writeText(emoji)
+                  addNotification({ title: '已复制', message: `${emoji} 已复制`, type: 'success', duration: 1500 })
+                }}
+                style={{
+                  padding: '8px',
+                  background: 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '22px',
+                  textAlign: 'center',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.2)'
+                  e.currentTarget.style.background = 'var(--accent-bg)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.background = 'var(--window-bg)'
+                }}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderConverterTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          🔄 数据格式转换
+        </h3>
+
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
+          {[
+            { id: 'json-yaml', label: 'JSON → YAML' },
+            { id: 'yaml-json', label: 'YAML → JSON' },
+            { id: 'json-csv', label: 'JSON → CSV' },
+            { id: 'csv-json', label: 'CSV → JSON' },
+            { id: 'bin-dec', label: '二进制 → 十进制' },
+            { id: 'oct-dec', label: '八进制 → 十进制' },
+            { id: 'hex-dec', label: '十六进制 → 十进制' },
+            { id: 'dec-bin', label: '十进制 → 二进制' },
+            { id: 'dec-oct', label: '十进制 → 八进制' },
+            { id: 'dec-hex', label: '十进制 → 十六进制' },
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setConverterType(opt.id)}
+              style={{
+                padding: '6px 12px',
+                background: converterType === opt.id ? 'var(--accent-gradient)' : 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                color: converterType === opt.id ? 'white' : 'var(--text-primary)',
+                fontSize: '11px'
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <textarea
+          value={converterInput}
+          onChange={(e) => setConverterInput(e.target.value)}
+          placeholder="输入要转换的内容..."
+          style={{
+            width: '100%',
+            minHeight: '100px',
+            padding: '10px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            color: 'var(--text-primary)',
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            resize: 'vertical'
+          }}
+        />
+
+        <button
+          onClick={handleConverter}
+          style={{
+            marginTop: '12px',
+            padding: '10px 24px',
+            background: 'var(--accent-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'white',
+            width: '100%'
+          }}
+        >
+          转换
+        </button>
+      </div>
+
+      {converterOutput && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px'
+          }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>转换结果</span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(converterOutput)
+                addNotification({ title: '已复制', message: '结果已复制到剪贴板', type: 'success', duration: 2000 })
+              }}
+              style={{
+                padding: '4px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              复制
+            </button>
+          </div>
+          <pre style={{
+            padding: '12px',
+            background: 'var(--window-bg)',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            color: 'var(--text-primary)',
+            whiteSpace: 'pre-wrap',
+            overflow: 'auto',
+            maxHeight: '300px',
+            margin: 0
+          }}>
+            {converterOutput}
+          </pre>
+        </div>
+      )}
+    </div>
+  )
+
+  const renderRegexTab = () => {
+    const getHighlightedText = (): Array<{ text: string; match: boolean }> => {
+      if (!regexPattern || !regexText) return [{ text: regexText, match: false }]
+      try {
+        const regex = new RegExp(regexPattern, regexFlags.includes('g') ? regexFlags : regexFlags + 'g')
+        const parts: Array<{ text: string; match: boolean }> = []
+        let lastIndex = 0
+        let match
+        while ((match = regex.exec(regexText)) !== null) {
+          if (match.index > lastIndex) {
+            parts.push({ text: regexText.slice(lastIndex, match.index), match: false })
+          }
+          parts.push({ text: match[0], match: true })
+          lastIndex = regex.lastIndex
+          if (match.index === regex.lastIndex) regex.lastIndex++
+        }
+        if (lastIndex < regexText.length) {
+          parts.push({ text: regexText.slice(lastIndex), match: false })
+        }
+        return parts
+      } catch {
+        return [{ text: regexText, match: false }]
+      }
+    }
+
+    const highlightedText = getHighlightedText()
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{
+          padding: '20px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <h3 style={h3TitleStyle}>
+            🔍 正则表达式测试器
+          </h3>
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>正则表达式</label>
+              <input
+                type="text"
+                value={regexPattern}
+                onChange={(e) => setRegexPattern(e.target.value)}
+                placeholder="输入正则表达式..."
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  color: 'var(--text-primary)',
+                  fontSize: '13px',
+                  fontFamily: 'monospace'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <select
+                value={regexFlags}
+                onChange={(e) => setRegexFlags(e.target.value)}
+                style={{
+                  padding: '10px',
+                  background: 'var(--window-bg)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  color: 'var(--text-primary)',
+                  fontSize: '13px'
+                }}
+              >
+                <option value="g">g (全局)</option>
+                <option value="gi">gi (全局+忽略大小写)</option>
+                <option value="m">m (多行)</option>
+                <option value="gm">gm (全局+多行)</option>
+                <option value="gim">gim (全局+忽略+多行)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>测试文本</label>
+            <textarea
+              value={regexText}
+              onChange={(e) => setRegexText(e.target.value)}
+              placeholder="输入要测试的文本..."
+              style={{
+                width: '100%',
+                minHeight: '100px',
+                padding: '10px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontSize: '13px',
+                fontFamily: 'monospace',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          <button
+            onClick={handleRegexTest}
+            style={{
+              padding: '10px 24px',
+              background: 'var(--accent-gradient)',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: 'white',
+              width: '100%'
+            }}
+          >
+            测试匹配
+          </button>
+        </div>
+
+        {result && (
+          <div style={{
+            padding: '16px',
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '12px'
+          }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              匹配结果 (共 {result.count} 个匹配)
+            </div>
+            <div style={{
+              padding: '12px',
+              background: 'var(--window-bg)',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontFamily: 'monospace',
+              color: 'var(--text-primary)',
+              whiteSpace: 'pre-wrap',
+              maxHeight: '200px',
+              overflow: 'auto'
+            }}>
+              {highlightedText.map((part, i) =>
+                part.match ? (
+                  <mark key={i} style={{ background: 'var(--accent)', color: 'white', padding: '0 2px', borderRadius: '2px' }}>
+                    {part.text}
+                  </mark>
+                ) : (
+                  <span key={i}>{part.text}</span>
+                )
+              )}
+            </div>
+            {result.matches.length > 0 && (
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '6px' }}>匹配列表:</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {result.matches.slice(0, 50).map((m: string, i: number) => (
+                    <span
+                      key={i}
+                      style={{
+                        padding: '4px 8px',
+                        background: 'var(--accent-bg)',
+                        border: '1px solid var(--accent)',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        color: 'var(--accent)',
+                        fontFamily: 'monospace'
+                      }}
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const renderHashTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{
+        padding: '20px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        <h3 style={h3TitleStyle}>
+          #️⃣ 哈希工具
+        </h3>
+
+        <textarea
+          value={hashInput}
+          onChange={(e) => setHashInput(e.target.value)}
+          placeholder="输入要生成哈希的文本..."
+          style={{
+            width: '100%',
+            minHeight: '80px',
+            padding: '10px',
+            background: 'var(--window-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            color: 'var(--text-primary)',
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            resize: 'vertical'
+          }}
+        />
+
+        <div style={{ display: 'flex', gap: '8px', marginTop: '12px', alignItems: 'center' }}>
+          <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>算法:</label>
+          <select
+            value={hashAlgorithm}
+            onChange={(e) => setHashAlgorithm(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '8px 10px',
+              background: 'var(--window-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              fontSize: '13px'
+            }}
+          >
+            <option value="SHA-1">SHA-1</option>
+            <option value="SHA-256">SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+          <button
+            onClick={handleHashGenerate}
+            disabled={loading}
+            style={{
+              padding: '8px 20px',
+              background: loading ? 'var(--border-color)' : 'var(--accent-gradient)',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: 'white'
+            }}
+          >
+            {loading ? '生成中...' : '生成哈希'}
+          </button>
+        </div>
+      </div>
+
+      {hashOutput && (
+        <div style={{
+          padding: '16px',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px'
+          }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {hashAlgorithm} 哈希值
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(hashOutput)
+                addNotification({ title: '已复制', message: '哈希值已复制到剪贴板', type: 'success', duration: 2000 })
+              }}
+              style={{
+                padding: '4px 12px',
+                background: 'var(--window-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              复制
+            </button>
+          </div>
+          <div style={{
+            padding: '12px',
+            background: 'var(--window-bg)',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            color: 'var(--accent)',
+            wordBreak: 'break-all',
+            lineHeight: '1.5'
+          }}>
+            {hashOutput}
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+            长度: {hashOutput.length} 字符 ({hashOutput.length / 2} 字节)
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      padding: '16px',
+      gap: '16px',
+      background: 'var(--window-bg)',
+      overflow: 'auto'
+    }}>
+      {/* 标签页导航 */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        padding: '4px',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px'
+      }}>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveTab(tab.id)
+              setOutput('')
+              setResult(null)
+            }}
+            style={{
+              flex: 1,
+              padding: '10px 8px',
+              background: activeTab === tab.id ? 'var(--accent-gradient)' : 'transparent',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: activeTab === tab.id ? 'white' : 'var(--text-secondary)',
+              fontSize: '12px',
+              fontWeight: activeTab === tab.id ? 600 : 400,
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>{tab.icon}</span>
+            <span>{tab.name}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* 内容区域 */}
+      <div style={{ flex: 1 }}>
+        {activeTab === 'currency' && renderCurrencyTab()}
+        {activeTab === 'color' && renderColorTab()}
+        {activeTab === 'text' && renderTextTab()}
+        {activeTab === 'network' && renderNetworkTab()}
+        {activeTab === 'code' && renderCodeTab()}
+        {activeTab === 'generator' && renderGeneratorTab()}
+        {activeTab === 'units' && renderUnitsTab()}
+        {activeTab === 'password' && renderPasswordTab()}
+        {activeTab === 'timestamp' && renderTimestampTab()}
+        {activeTab === 'emoji' && renderEmojiTab()}
+        {activeTab === 'converter' && renderConverterTab()}
+        {activeTab === 'regex' && renderRegexTab()}
+        {activeTab === 'hash' && renderHashTab()}
+      </div>
+    </div>
+  )
+})
+
+// 辅助组件
+const StatCard = memo(function StatCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div style={{
+      padding: '12px',
+      background: 'var(--window-bg)',
+      borderRadius: '8px',
+      textAlign: 'center'
+    }}>
+      <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--accent)' }}>
+        {value}
+      </div>
+      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+        {label}
+      </div>
+    </div>
+  )
+})
+
+const ToolButton = memo(function ToolButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '10px',
+        background: 'var(--window-bg)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        color: 'var(--text-primary)',
+        fontSize: '12px',
+        transition: 'all 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'var(--accent-bg)'
+        e.currentTarget.style.borderColor = 'var(--accent)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'var(--window-bg)'
+        e.currentTarget.style.borderColor = 'var(--border-color)'
+      }}
+    >
+      {label}
+    </button>
+  )
+})
+
+const GeneratorButton = memo(function GeneratorButton({ label, icon, onClick }: { label: string; icon: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '16px',
+        background: 'var(--window-bg)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '12px',
+        cursor: 'pointer',
+        color: 'var(--text-primary)',
+        fontSize: '13px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '8px',
+        transition: 'all 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'var(--accent-bg)'
+        e.currentTarget.style.borderColor = 'var(--accent)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'var(--window-bg)'
+        e.currentTarget.style.borderColor = 'var(--border-color)'
+      }}
+    >
+      <span style={{ fontSize: '24px' }}>{icon}</span>
+      <span>{label}</span>
+    </button>
+  )
+})
+
+export default memo(OnlineToolkitPro)

@@ -1040,6 +1040,366 @@ export class ApiService {
     }
     return codes[code] || { category: '未知', description: '未知状态码' }
   }
+
+  // === 新增：实用工具方法 ===
+
+  // UUID v4 生成
+  generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
+  }
+
+  // 时间戳格式化
+  formatTimestamp(timestamp: number, format: 'relative' | 'absolute' | 'iso' = 'relative'): string {
+    const date = new Date(timestamp)
+    if (format === 'iso') return date.toISOString()
+    if (format === 'absolute') return date.toLocaleString('zh-CN')
+    
+    const now = Date.now()
+    const diff = now - timestamp
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+    
+    if (minutes < 1) return '刚刚'
+    if (minutes < 60) return `${minutes} 分钟前`
+    if (hours < 24) return `${hours} 小时前`
+    if (days < 7) return `${days} 天前`
+    return date.toLocaleDateString('zh-CN')
+  }
+
+  // Base64 编码/解码
+  base64Encode(str: string): string {
+    return btoa(unescape(encodeURIComponent(str)))
+  }
+
+  base64Decode(str: string): string {
+    return decodeURIComponent(escape(atob(str)))
+  }
+
+  // URL 编码/解码
+  urlEncode(str: string): string {
+    return encodeURIComponent(str)
+  }
+
+  urlDecode(str: string): string {
+    return decodeURIComponent(str)
+  }
+
+  // JSON 格式化/压缩
+  formatJSON(json: string, indent: number = 2): string {
+    try {
+      const parsed = JSON.parse(json)
+      return JSON.stringify(parsed, null, indent)
+    } catch {
+      return '无效的 JSON 字符串'
+    }
+  }
+
+  minifyJSON(json: string): string {
+    try {
+      const parsed = JSON.parse(json)
+      return JSON.stringify(parsed)
+    } catch {
+      return '无效的 JSON 字符串'
+    }
+  }
+
+  // 文本统计
+  analyzeText(text: string): {
+    characters: number
+    charactersNoSpaces: number
+    words: number
+    lines: number
+    paragraphs: number
+    readingTime: number
+  } {
+    const characters = text.length
+    const charactersNoSpaces = text.replace(/\s/g, '').length
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0
+    const lines = text.split('\n').length
+    const paragraphs = text.split(/\n\n+/).length
+    const readingTime = Math.ceil(words / 200)
+    
+    return { characters, charactersNoSpaces, words, lines, paragraphs, readingTime }
+  }
+
+  // 单位转换
+  convertUnits(value: number, from: string, to: string): number | null {
+    const conversions: Record<string, Record<string, number>> = {
+      length: {
+        meter: 1, kilometer: 1000, centimeter: 0.01, millimeter: 0.001,
+        mile: 1609.34, yard: 0.9144, foot: 0.3048, inch: 0.0254
+      },
+      weight: {
+        kilogram: 1, gram: 0.001, milligram: 0.000001,
+        pound: 0.453592, ounce: 0.0283495, ton: 1000
+      },
+      temperature: { celsius: 1, fahrenheit: 1, kelvin: 1 },
+      volume: {
+        liter: 1, milliliter: 0.001, gallon: 3.78541,
+        quart: 0.946353, cup: 0.236588
+      }
+    }
+
+    const categoryMap: Record<string, string> = {
+      meter: 'length', kilometer: 'length', centimeter: 'length', millimeter: 'length',
+      mile: 'length', yard: 'length', foot: 'length', inch: 'length',
+      kilogram: 'weight', gram: 'weight', milligram: 'weight',
+      pound: 'weight', ounce: 'weight', ton: 'weight',
+      celsius: 'temperature', fahrenheit: 'temperature', kelvin: 'temperature',
+      liter: 'volume', milliliter: 'volume', gallon: 'volume',
+      quart: 'volume', cup: 'volume'
+    }
+
+    const category = categoryMap[from]
+    if (!category || !conversions[category]) return null
+
+    if (category === 'temperature') {
+      let celsius = value
+      if (from === 'fahrenheit') celsius = (value - 32) * 5 / 9
+      else if (from === 'kelvin') celsius = value - 273.15
+      
+      if (to === 'fahrenheit') return celsius * 9 / 5 + 32
+      if (to === 'kelvin') return celsius + 273.15
+      return celsius
+    }
+
+    const rates = conversions[category]
+    const baseValue = value * rates[from]
+    return baseValue / rates[to]
+  }
+
+  // 颜色转换
+  hexToRGB(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null
+  }
+
+  rgbToHex(r: number, g: number, b: number): string {
+    return '#' + [r, g, b].map(x => {
+      const hex = x.toString(16)
+      return hex.length === 1 ? '0' + hex : hex
+    }).join('')
+  }
+
+  rgbToHSL(r: number, g: number, b: number): { h: number; s: number; l: number } {
+    r /= 255; g /= 255; b /= 255
+    const max = Math.max(r, g, b), min = Math.min(r, g, b)
+    let h = 0, s = 0
+    const l = (max + min) / 2
+    if (max !== min) {
+      const d = max - min
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)); break
+        case g: h = (b - r) / d + 2; break
+        case b: h = (r - g) / d + 4; break
+      }
+      h /= 6
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) }
+  }
+
+  // 数字格式化
+  formatNumber(num: number, decimals: number = 0, locale: string = 'zh-CN'): string {
+    return new Intl.NumberFormat(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).format(num)
+  }
+
+  // 文件大小格式化
+  formatFileSize(bytes: number): string {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB']
+    let i = 0
+    let size = bytes
+    while (size >= 1024 && i < units.length - 1) {
+      size /= 1024
+      i++
+    }
+    return `${size.toFixed(2)} ${units[i]}`
+  }
+
+  // 获取随机颜色
+  getRandomColor(): string {
+    const hue = Math.floor(Math.random() * 360)
+    const saturation = 60 + Math.floor(Math.random() * 40)
+    const lightness = 40 + Math.floor(Math.random() * 30)
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`
+  }
+
+  // 获取 Contrast Color（用于背景色的对比文字色）
+  getContrastColor(hexColor: string): string {
+    const rgb = this.hexToRGB(hexColor)
+    if (!rgb) return '#000000'
+    const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255
+    return luminance > 0.5 ? '#000000' : '#ffffff'
+  }
+
+  // Cron 表达式解析
+  parseCronExpression(expression: string): {
+    isValid: boolean
+    description: string
+    nextRun?: Date
+  } {
+    const parts = expression.trim().split(/\s+/)
+    if (parts.length !== 5 && parts.length !== 6) {
+      return { isValid: false, description: 'Cron 表达式必须有 5 或 6 个字段' }
+    }
+
+    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts.slice(0, 5)
+    
+    const descriptions: string[] = []
+    
+    if (minute === '*') descriptions.push('每分钟')
+    else descriptions.push(`在第 ${minute} 分钟`)
+    
+    if (hour === '*') descriptions.push('每小时')
+    else descriptions.push(`${hour} 点`)
+    
+    if (dayOfMonth === '*') descriptions.push('每天')
+    else descriptions.push(`${dayOfMonth} 号`)
+    
+    if (month === '*') descriptions.push('每月')
+    else descriptions.push(`${month} 月`)
+    
+    if (dayOfWeek === '*') descriptions.push('每周每天')
+    else descriptions.push(`星期${dayOfWeek}`)
+
+    return {
+      isValid: true,
+      description: descriptions.join('，')
+    }
+  }
+
+  // 计算两个日期之间的差异
+  dateDiff(date1: Date, date2: Date): {
+    years: number
+    months: number
+    days: number
+    hours: number
+    minutes: number
+    seconds: number
+    totalDays: number
+  } {
+    const diffMs = Math.abs(date2.getTime() - date1.getTime())
+    const totalSeconds = Math.floor(diffMs / 1000)
+    const totalMinutes = Math.floor(totalSeconds / 60)
+    const totalHours = Math.floor(totalMinutes / 60)
+    const totalDays = Math.floor(totalHours / 24)
+
+    return {
+      years: Math.floor(totalDays / 365.25),
+      months: Math.floor((totalDays % 365.25) / 30.44),
+      days: totalDays,
+      hours: totalHours,
+      minutes: totalMinutes,
+      seconds: totalSeconds,
+      totalDays
+    }
+  }
+
+  // 获取时区信息
+  getTimezoneInfo(): {
+    timezone: string
+    offset: number
+    dst: boolean
+    abbreviation: string
+  } {
+    const now = new Date()
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const offset = -now.getTimezoneOffset() / 60
+    const history = new Intl.DateTimeFormat('en-US', {
+      timeZoneName: 'short'
+    }).formatToParts(now).find(part => part.type === 'timeZoneName')
+    const abbreviation = history?.value || ''
+    
+    return {
+      timezone,
+      offset: offset >= 0 ? offset : offset,
+      dst: now.getTimezoneOffset() !== this.getStandardOffset(timezone),
+      abbreviation
+    }
+  }
+
+  private getStandardOffset(timezone: string): number {
+    const jan = new Date(new Date().getFullYear(), 0, 1)
+    const dec = new Date(new Date().getFullYear(), 11, 1)
+    const janOffset = this.getOffsetForDate(jan, timezone)
+    const decOffset = this.getOffsetForDate(dec, timezone)
+    return Math.max(janOffset, decOffset)
+  }
+
+  private getOffsetForDate(date: Date, timezone: string): number {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    })
+    const parts = dtf.formatToParts(date)
+    const map: Record<string, string> = {}
+    parts.forEach(part => { if (part.type !== 'literal') map[part.type] = part.value })
+    const asUTC = Date.UTC(
+      Number(map.year), Number(map.month) - 1, Number(map.day),
+      Number(map.hour), Number(map.minute), Number(map.second)
+    )
+    return Math.round((asUTC - date.getTime()) / 60000)
+  }
+
+  // 键盘事件代码映射
+  getKeyCode(key: string): string {
+    const keyMap: Record<string, string> = {
+      ' ': 'Space', 'Control': 'Ctrl', 'ArrowUp': '↑', 'ArrowDown': '↓',
+      'ArrowLeft': '←', 'ArrowRight': '→', 'Escape': 'Esc',
+      'Enter': 'Enter', 'Backspace': 'Backspace', 'Delete': 'Delete',
+      'Tab': 'Tab', 'CapsLock': 'Caps'
+    }
+    return keyMap[key] || key
+  }
+
+  // 防抖函数
+  debounce<T extends (...args: unknown[]) => unknown>(
+    func: T,
+    wait: number
+  ): (...args: Parameters<T>) => void {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    return (...args: Parameters<T>) => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => func(...args), wait)
+    }
+  }
+
+  // 节流函数
+  throttle<T extends (...args: unknown[]) => unknown>(
+    func: T,
+    wait: number
+  ): (...args: Parameters<T>) => void {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    let lastTime = 0
+    return (...args: Parameters<T>) => {
+      const now = Date.now()
+      const remaining = wait - (now - lastTime)
+      if (remaining <= 0) {
+        if (timeoutId) { clearTimeout(timeoutId); timeoutId = null }
+        lastTime = now
+        func(...args)
+      } else if (!timeoutId) {
+        timeoutId = setTimeout(() => {
+          lastTime = Date.now()
+          timeoutId = null
+          func(...args)
+        }, remaining)
+      }
+    }
+  }
 }
 
 export const apiService = ApiService.getInstance()
