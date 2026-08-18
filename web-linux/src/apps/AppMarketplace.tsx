@@ -479,7 +479,6 @@ export default function AppMarketplace() {
             onClick={() => setCategory(cat.id)}
             style={{
               padding: '5px 14px',
-              border: 'none',
               borderRadius: '20px',
               cursor: 'pointer',
               fontSize: '12px',
@@ -930,7 +929,7 @@ export default function AppMarketplace() {
                     <button
                       onClick={() => { uninstallApp(selectedApp.id); setSelectedApp(null) }}
                       style={{
-                        flex: 1, padding: '10px', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                        flex: 1, padding: '10px', borderRadius: '8px', cursor: 'pointer',
                         background: `${COLORS.red}22`, color: COLORS.red,
                         fontSize: '13px', fontWeight: 600,
                         border: `1px solid ${COLORS.red}44`,

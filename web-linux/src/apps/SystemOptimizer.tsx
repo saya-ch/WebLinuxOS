@@ -104,7 +104,7 @@ const MONO = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const uid = () => Math.random().toString(36).slice(2, 10)
+const _uid = () => Math.random().toString(36).slice(2, 10)
 const formatSize = (bytes: number) => bytes < 1024 ? `${bytes}B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)}KB` : `${(bytes / 1048576).toFixed(1)}MB`
 const formatTime = (ms: number) => ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(2)}s`
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
@@ -212,7 +212,7 @@ export default function SystemOptimizer() {
   // ── Storage ──
   const [storageItems, setStorageItems] = useState<StorageItem[]>([])
   const [storageTotal, setStorageTotal] = useState(0)
-  const [selectedStorageKey, setSelectedStorageKey] = useState<string | null>(null)
+  const [_selectedStorageKey, _setSelectedStorageKey] = useState<string | null>(null)
 
   // ── Cache ──
   const [caches, setCaches] = useState<CacheInfo[]>([])
@@ -222,7 +222,7 @@ export default function SystemOptimizer() {
   const [audit, setAudit] = useState<PerformanceAudit | null>(null)
   const [isAuditing, setIsAuditing] = useState(false)
   const [fpsHistory, setFpsHistory] = useState<number[]>([])
-  const rafRef = useRef<number | null>(null)
+  const _rafRef = useRef<number | null>(null)
 
   // ── Memory ──
   const [memoryInfo, setMemoryInfo] = useState({ used: 0, total: 0, percent: 0 })
@@ -285,11 +285,11 @@ export default function SystemOptimizer() {
     setCacheLoading(true)
     try {
       if ('caches' in window) {
-        const cacheNames = await caches.keys()
+        const cacheNames = await window.caches.keys()
         const results: CacheInfo[] = []
         for (const name of cacheNames) {
           try {
-            const cache = await caches.open(name)
+            const cache = await window.caches.open(name)
             const keys = await cache.keys()
             const entries: CacheEntry[] = []
             let totalSize = 0
@@ -329,7 +329,7 @@ export default function SystemOptimizer() {
 
   const runAudit = useCallback(async () => {
     setIsAuditing(true)
-    const now = performance.now()
+    const _now = performance.now()
 
     // Nav timing
     let navTiming: NavTiming | null = null
@@ -532,10 +532,10 @@ export default function SystemOptimizer() {
     // 4. Clear old caches
     try {
       if ('caches' in window) {
-        const keys = await caches.keys()
+        const keys = await window.caches.keys()
         for (const key of keys) {
           if (key.includes('old') || key.includes('v1') || key.includes('temp')) {
-            await caches.delete(key)
+            await window.caches.delete(key)
           }
         }
       }
@@ -567,7 +567,7 @@ export default function SystemOptimizer() {
   const clearCache = useCallback(async (name: string) => {
     try {
       if ('caches' in window) {
-        await caches.delete(name)
+        await window.caches.delete(name)
         await scanCaches()
       }
     } catch { /* ignore */ }
@@ -1172,7 +1172,7 @@ export default function SystemOptimizer() {
         </button>
         <button onClick={async () => {
           if ('caches' in window) {
-            try { const keys = await caches.keys(); for (const k of keys) await caches.delete(k); await scanCaches() } catch { /* ignore */ }
+            try { const keys = await window.caches.keys(); for (const k of keys) await window.caches.delete(k); await scanCaches() } catch { /* ignore */ }
           }
         }} style={{
           padding: '12px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',

@@ -56,7 +56,7 @@ const TEMPLATES: Template[] = [
 
 // ─── Markdown Renderer ──────────────────────────────────────────────────────
 
-function renderMarkdown(text: string, onWikiLink?: (name: string) => void): string {
+function renderMarkdown(text: string, _onWikiLink?: (name: string) => void): string {
   if (!text) return ''
   let html = text
     // Code blocks

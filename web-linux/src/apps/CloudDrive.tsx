@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   Cloud, Folder, File, FileText, Image, Download, Upload, Search,
-  Plus, Trash2, Edit3, Copy, Move, Share2, RefreshCw, ChevronRight,
-  ChevronDown, Home, Grid3X3, List, X, Eye, Link, CheckCircle,
-  AlertCircle, Clock, HardDrive, Globe, Key, Settings, PieChart,
-  FolderPlus, MoreHorizontal, Archive, Music, Video, Code,
-  ArrowLeft, ArrowRight, Loader, AlertTriangle, Wifi, WifiOff,
-  ExternalLink, Star, PanelLeft, PanelRight
+  Plus, Trash2, Edit3, Copy, Share2, RefreshCw, ChevronRight,
+  Home, Grid3X3, List, X, Eye, Link, CheckCircle,
+  AlertCircle, Clock, Globe, PieChart,
+  FolderPlus, Archive, Music, Video, Code,
+  ArrowLeft, Loader, AlertTriangle, WifiOff,
+  Star, PanelLeft, PanelRight
 } from 'lucide-react';
 
 // ============ 类型定义 ============
@@ -348,7 +348,7 @@ const styles = {
       : variant === 'danger' ? '#ef4444' : 'rgba(255,255,255,0.1)',
     color: variant === 'secondary' ? '#cbd5e1' : '#fff',
   }),
-  progressBar: (pct: number): React.CSSProperties => ({
+  progressBar: (_pct: number): React.CSSProperties => ({
     height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', width: '100%',
   }),
   progressFill: (pct: number): React.CSSProperties => ({
@@ -423,8 +423,8 @@ export default function CloudDrive() {
   const [currentFolderId, setCurrentFolderId] = useState('root');
   const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState<SortKey>('name');
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortBy, _setSortBy] = useState<SortKey>('name');
+  const [sortAsc, _setSortAsc] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchMatch[]>([]);
@@ -633,7 +633,7 @@ export default function CloudDrive() {
     setFiles(prev => [...prev, ...newFiles]);
   }, [selectedFileIds, files, currentFolderId]);
 
-  const handleMove = useCallback((fileId: string, targetFolderId: string) => {
+  const _handleMove = useCallback((fileId: string, targetFolderId: string) => {
     setFiles(prev => prev.map(f => {
       if (f.id === fileId) {
         const parent = prev.find(p => p.id === targetFolderId);

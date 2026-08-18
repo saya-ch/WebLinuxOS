@@ -91,7 +91,7 @@ const CYAN = '#06b6d4'
 const ROSE = '#f43f5e'
 const BG = '#0a0e17'
 const BG_CARD = '#111827'
-const BG_CARD_HOVER = '#1a2332'
+const _BG_CARD_HOVER = '#1a2332'
 const BORDER = '#1e293b'
 const TEXT = '#e2e8f0'
 const TEXT_DIM = '#64748b'
@@ -155,7 +155,7 @@ const formatTime = (ts: number) => new Date(ts).toLocaleTimeString('zh-CN', { ho
 const formatDate = (ts: number) => new Date(ts).toLocaleDateString('zh-CN', { hour12: false })
 const formatDuration = (ms: number) => ms < 1000 ? `${ms}ms` : ms < 60000 ? `${(ms / 1000).toFixed(1)}s` : `${(ms / 60000).toFixed(1)}m`
 
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+const _clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
 
 const levelColor = (level: string) => {
   switch (level) {
@@ -270,7 +270,7 @@ function MiniSparkline({ data, color, height = 30 }: { data: number[]; color: st
     ctx.stroke()
     // fill gradient
     const lastX = (data.length - 1) * step
-    const lastY = h - ((data[data.length - 1] - min) / range) * (h - 4) - 2
+    const _lastY = h - ((data[data.length - 1] - min) / range) * (h - 4) - 2
     ctx.lineTo(lastX, h)
     ctx.lineTo(0, h)
     ctx.closePath()
@@ -721,7 +721,7 @@ export default function DevOpsDashboard() {
             return (
               <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                 {items.map(([label, dur]) => (
-                  <span key={String(label)} style={{ fontSize: 12, color: TEXT_MID }}>{label}: <b style={{ color: CYAN }}>{Math.round(dur)}ms</b></span>
+                  <span key={String(label)} style={{ fontSize: 12, color: TEXT_MID }}>{label}: <b style={{ color: CYAN }}>{Math.round(Number(dur))}ms</b></span>
                 ))}
               </div>
             )
