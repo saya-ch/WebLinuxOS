@@ -633,16 +633,6 @@ export default function CloudDrive() {
     setFiles(prev => [...prev, ...newFiles]);
   }, [selectedFileIds, files, currentFolderId]);
 
-  const _handleMove = useCallback((fileId: string, targetFolderId: string) => {
-    setFiles(prev => prev.map(f => {
-      if (f.id === fileId) {
-        const parent = prev.find(p => p.id === targetFolderId);
-        return { ...f, parentId: targetFolderId, path: (parent?.path || '/') + '/' + f.name, modified: Date.now(), syncStatus: 'syncing' as SyncStatus };
-      }
-      return f;
-    }));
-  }, []);
-
   const handleShare = useCallback((fileId: string) => {
     const file = files.find(f => f.id === fileId);
     if (!file) return;

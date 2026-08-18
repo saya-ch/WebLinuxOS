@@ -460,6 +460,8 @@ function executeCommand(
     const cmd = tokens[0]
     const args = tokens.slice(1).map(a => a.replace(/^["']|["']$/g, ''))
 
+    if (!cmd) continue
+
     if (pipeIdx > 0 && pipedInput) {
       // Simulate piping by passing previous output
       if (cmd === 'grep') {
@@ -503,9 +505,7 @@ function runSingleCommand(
   const bold = (s: string) => `${ESC}[1m${s}${ESC}[0m`
   const blue = (s: string) => `${ESC}[1;34m${s}${ESC}[0m`
   const green = (s: string) => `${ESC}[1;32m${s}${ESC}[0m`
-  const red = (s: string) => `${ESC}[1;31m${s}${ESC}[0m`
   const cyan = (s: string) => `${ESC}[1;36m${s}${ESC}[0m`
-  const yellow = (s: string) => `${ESC}[1;33m${s}${ESC}[0m`
   const dim = (s: string) => `${ESC}[2m${s}${ESC}[0m`
 
   const getPipeInput = (): string | null => {
@@ -767,7 +767,6 @@ function runSingleCommand(
 
     case 'echo': {
       const noNewline = args.includes('-n')
-      const escapeSeqs = args.includes('-e')
       let text = args.filter(a => !a.startsWith('-')).join(' ')
       // Handle $() subshells minimally
       text = text.replace(/\$\(whoami\)/g, shell.user)
@@ -916,9 +915,9 @@ function runSingleCommand(
         `MiB Mem :  16000.0 total,   8234.4 free,   3072.0 used,   4693.6 buff/cache`,
         `MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.  12056.0 avail Mem`,
         '',
-        `${'PID'.padStart(7)} ${'USER'.padEnd(8)} ${'PR'.padStart(3)} ${'NI'.padStart(3)}    ${'VIRT'.padRight(5)} ${'RES'.padRight(5)} ${'SHR'.padRight(5)} S ${'%CPU'.padStart(4)} ${'%MEM'.padStart(4)}    ${'COMMAND'.padRight(5)}`,
+        `${'PID'.padStart(7)} ${'USER'.padEnd(8)} ${'PR'.padStart(3)} ${'NI'.padStart(3)}    ${'VIRT'.padEnd(5)} ${'RES'.padEnd(5)} ${'SHR'.padEnd(5)} S ${'%CPU'.padStart(4)} ${'%MEM'.padStart(4)}    ${'COMMAND'.padEnd(5)}`,
         ...shell.processes.map(p =>
-          `${String(p.pid).padStart(7)} ${p.user.padEnd(8)}  20   0    ${String(Math.floor(Math.random() * 500 + 50) * 4).padRight(5)} ${String(Math.floor(p.mem * 10 + 1) * 4).padRight(5)} ${String(Math.floor(Math.random() * 20 + 1) * 4).padRight(5)} S ${p.cpu.toFixed(1).padStart(4)} ${p.mem.toFixed(1).padStart(4)}    ${p.command}`
+          `${String(p.pid).padStart(7)} ${p.user.padEnd(8)}  20   0    ${String(Math.floor(Math.random() * 500 + 50) * 4).padEnd(5)} ${String(Math.floor(p.mem * 10 + 1) * 4).padEnd(5)} ${String(Math.floor(Math.random() * 20 + 1) * 4).padEnd(5)} S ${p.cpu.toFixed(1).padStart(4)} ${p.mem.toFixed(1).padStart(4)}    ${p.command}`
         ),
       ]
       return lines.join('\n')
@@ -1345,7 +1344,6 @@ function runSingleCommand(
     }
 
     case 'tee': {
-      const content = args.includes('-a') ? '' : ''
       const files = args.filter(a => !a.startsWith('-'))
       return `tee: simulated. Output would be written to: ${files.join(', ')}`
     }
@@ -1360,7 +1358,6 @@ function runSingleCommand(
       return 'Changing password for user.\n(current) UNIX password: \nNew password: \nRetype new password: \npasswd: password updated successfully'
 
     case 'su': {
-      const target = args[0] || 'root'
       return `Password: \nsu: Authentication failure (simulated)\nHint: Use 'sudo' for elevated privileges`
     }
 
@@ -1407,7 +1404,6 @@ function runSingleCommand(
     }
 
     case 'tar': {
-      const verbose = args.includes('-v') || args.includes('-cvf') || args.includes('-tvf')
       const extract = args.includes('-x') || args.includes('-xvf')
       const list = args.includes('-t') || args.includes('-tvf')
       if (list) return `drwxr-xr-x user/user     0 2026-08-15 10:30 ./\n-rw-r--r-- user/user   256 2026-08-15 10:30 ./readme.txt\n-rw-r--r-- user/user   128 2026-08-15 10:30 ./config.json`
@@ -1725,10 +1721,9 @@ export default function WebSSHTerminal() {
   const [showConnectDialog, setShowConnectDialog] = useState(true)
   const [connectForm, setConnectForm] = useState({ host: '', port: '22', username: 'root', authMethod: 'password' as AuthMethod, password: '', privateKey: '', name: '' })
   const [connectionLogs, setConnectionLogs] = useState<ConnectionLogEntry[]>([])
-  const [logCounter, setLogCounter] = useState(0)
+  const [, setLogCounter] = useState(0)
   const [portForwards, setPortForwards] = useState<PortForwardRule[]>([])
   const [sftpPath, setSftpPath] = useState('/')
-  const [showProfileManager, setShowProfileManager] = useState(false)
   const [cursorVisible, setCursorVisible] = useState(true)
   const [fontSize, setFontSize] = useState(14)
 

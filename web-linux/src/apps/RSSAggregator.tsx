@@ -52,8 +52,6 @@ const ST_SOURCES = 'rss-agg-sources-v2'
 const ST_READ = 'rss-agg-read-v2'
 const ST_STAR = 'rss-agg-star-v2'
 const ST_CACHE = 'rss-agg-cache-v2'
-const _ST_SETTINGS = 'rss-agg-settings-v2'
-
 const CACHE_TTL = 30 * 60 * 1000
 const DEFAULT_REFRESH = 15
 

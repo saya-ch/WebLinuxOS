@@ -592,9 +592,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WebSSHTerminal: () => import('../../apps/WebSSHTerminal'),
   WorkspaceLayout: () => import('../../apps/WorkspaceLayout'),
   RSSAggregator: () => import('../../apps/RSSAggregator'),
-  SmartNotesPro: () => import('../../apps/SmartNotesPro'),
   DevOpsDashboard: () => import('../../apps/DevOpsDashboard'),
-  SystemOptimizer: () => import('../../apps/SystemOptimizer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

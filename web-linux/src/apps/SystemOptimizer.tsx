@@ -104,7 +104,6 @@ const MONO = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const _uid = () => Math.random().toString(36).slice(2, 10)
 const formatSize = (bytes: number) => bytes < 1024 ? `${bytes}B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)}KB` : `${(bytes / 1048576).toFixed(1)}MB`
 const formatTime = (ms: number) => ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(2)}s`
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
@@ -212,7 +211,7 @@ export default function SystemOptimizer() {
   // ── Storage ──
   const [storageItems, setStorageItems] = useState<StorageItem[]>([])
   const [storageTotal, setStorageTotal] = useState(0)
-  const [_selectedStorageKey, _setSelectedStorageKey] = useState<string | null>(null)
+  useState<string | null>(null)
 
   // ── Cache ──
   const [caches, setCaches] = useState<CacheInfo[]>([])
@@ -222,7 +221,7 @@ export default function SystemOptimizer() {
   const [audit, setAudit] = useState<PerformanceAudit | null>(null)
   const [isAuditing, setIsAuditing] = useState(false)
   const [fpsHistory, setFpsHistory] = useState<number[]>([])
-  const _rafRef = useRef<number | null>(null)
+  useRef<number | null>(null)
 
   // ── Memory ──
   const [memoryInfo, setMemoryInfo] = useState({ used: 0, total: 0, percent: 0 })
@@ -329,7 +328,7 @@ export default function SystemOptimizer() {
 
   const runAudit = useCallback(async () => {
     setIsAuditing(true)
-    const _now = performance.now()
+    performance.now()
 
     // Nav timing
     let navTiming: NavTiming | null = null

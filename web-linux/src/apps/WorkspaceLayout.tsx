@@ -202,7 +202,7 @@ export default function WorkspaceLayout() {
     loadFromStorage<boolean>(AUTOSAVE_KEY, true)
   )
   const [importText, setImportText] = useState('')
-  const [showImportModal, setShowImportModal] = useState(false)
+  const [, setShowImportModal] = useState(false)
   const [quickSwitchNum, setQuickSwitchNum] = useState<number | null>(null)
 
   const autoSaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
