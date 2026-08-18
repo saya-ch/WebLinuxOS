@@ -190,6 +190,31 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/ColorName')) {
               return 'app-colors';
             }
+            // v107 新增组件 chunk 分割
+            if (id.includes('src/apps/AppMarketplace')) {
+              return 'app-marketplace';
+            }
+            if (id.includes('src/apps/CloudDrive')) {
+              return 'app-cloud-drive';
+            }
+            if (id.includes('src/apps/WebSSHTerminal')) {
+              return 'app-web-ssh';
+            }
+            if (id.includes('src/apps/WorkspaceLayout')) {
+              return 'app-workspace-layout';
+            }
+            if (id.includes('src/apps/RSSAggregator')) {
+              return 'app-rss-aggregator';
+            }
+            if (id.includes('src/apps/SmartNotesPro')) {
+              return 'app-smart-notes-pro';
+            }
+            if (id.includes('src/apps/DevOpsDashboard')) {
+              return 'app-devops-dashboard';
+            }
+            if (id.includes('src/apps/SystemOptimizer')) {
+              return 'app-system-optimizer';
+            }
             if (id.includes('src/apps/FontPairing')) {
               return 'app-fonts';
             }

@@ -586,6 +586,15 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   EnhancedApiDebugger: () => import('../../apps/EnhancedApiDebugger'),
   // === v106 DailyDashboard 每日仪表盘 ===
   DailyDashboard: () => import('../../apps/DailyDashboard'),
+  // === v107 新增组件 ===
+  AppMarketplace: () => import('../../apps/AppMarketplace'),
+  CloudDrive: () => import('../../apps/CloudDrive'),
+  WebSSHTerminal: () => import('../../apps/WebSSHTerminal'),
+  WorkspaceLayout: () => import('../../apps/WorkspaceLayout'),
+  RSSAggregator: () => import('../../apps/RSSAggregator'),
+  SmartNotesPro: () => import('../../apps/SmartNotesPro'),
+  DevOpsDashboard: () => import('../../apps/DevOpsDashboard'),
+  SystemOptimizer: () => import('../../apps/SystemOptimizer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

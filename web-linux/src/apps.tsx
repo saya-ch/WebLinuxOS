@@ -35,6 +35,22 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // v107 创新功能 — AppMarketplace 应用市场：安装/卸载/评分/更新
+  { id: 'app-marketplace', name: 'AppMarketplace 应用市场', icon: <ShoppingCartIcon />, component: 'AppMarketplace', category: 'system', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '应用市场：550+应用浏览、搜索、分类筛选、安装/卸载管理、五星评分、下载量统计、更新检测、精选推荐' },
+  // v107 创新功能 — CloudDrive 云盘客户端：IndexedDB本地云+WebDAV远程云
+  { id: 'cloud-drive', name: 'CloudDrive 云盘', icon: <CloudRainIcon />, component: 'CloudDrive', category: 'internet', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '多云盘客户端：IndexedDB本地云存储+WebDAV远程云+文件浏览/上传/下载/预览/分享+存储分析+同步状态+收藏' },
+  // v107 创新功能 — WebSSHTerminal 远程SSH终端：虚拟Linux Shell+50+命令
+  { id: 'web-ssh-terminal', name: 'WebSSH 远程终端', icon: <TerminalIcon />, component: 'WebSSHTerminal', category: 'system', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Web SSH终端：虚拟Linux Shell、50+命令、完整虚拟文件系统、多会话标签、SFTP面板、端口转发、5种配色、管道支持' },
+  // v107 创新功能 — WorkspaceLayout 工作区布局管理：保存/恢复/模板/自动保存
+  { id: 'workspace-layout', name: 'Workspace 布局管理', icon: <LayersIcon />, component: 'WorkspaceLayout', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '工作区布局管理：保存/恢复窗口布局、6种预设模板、可视化编辑器、自动保存、导入/导出JSON、窗口吸附预设、快捷切换' },
+  // v107 创新功能 — RSSAggregator RSS订阅聚合器：真实RSS解析+9个预设源
+  { id: 'rss-aggregator', name: 'RSS 订阅聚合', icon: <MailIcon />, component: 'RSSAggregator', category: 'internet', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: 'RSS订阅聚合器：真实RSS/Atom解析、9个预设源、文章阅读器、已读/未读/收藏、分类管理、自动刷新、离线缓存、CORS代理回退' },
+  // v107 创新功能 — SmartNotesPro 增强智能笔记：维基链接+知识图谱+Markdown
+  { id: 'smart-notes-pro', name: 'SmartNotes 智能笔记', icon: <NoteIcon />, component: 'SmartNotesPro', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '增强智能笔记：[[维基链接]]、反向链接追踪、知识图谱可视化、Markdown渲染、标签云、文件夹、5种模板、导出、回收站' },
+  // v107 创新功能 — DevOpsDashboard DevOps仪表盘：服务监控+部署流水线+容器管理
+  { id: 'devops-dashboard', name: 'DevOps 仪表盘', icon: <ServerIcon />, component: 'DevOpsDashboard', category: 'development', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: 'DevOps基础设施仪表盘：真实服务健康监控、CI/CD部署流水线、容器管理、日志聚合、Canvas指标图表、告警管理、环境配置、API网关' },
+  // v107 创新功能 — SystemOptimizer 系统优化器：真实浏览器性能审计+一键优化
+  { id: 'system-optimizer', name: 'SystemOptimizer 优化器', icon: <ActivityIcon />, component: 'SystemOptimizer', category: 'system', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '系统优化器：真实存储/缓存/性能审计、健康评分、一键清理、内存/网络/启动优化、Performance API数据、优化前后对比' },
   // v106 创新功能 — DailyDashboard 每日仪表盘：聚合天气+空气质量+节假日+新闻+加密货币+每日名言
   { id: 'daily-dashboard', name: '每日仪表盘', icon: <DailyDashboardIcon />, component: 'DailyDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '每日信息聚合仪表盘：实时天气+5天预报、空气质量指数AQI、近期节假日倒计时、Hacker News热门资讯、加密货币行情、每日励志名言，一站式获取每日所需信息' },
   // v104 创新功能 — SmartWorkspace 智能工作空间：多布局自定义、收藏夹、应用快捷启动

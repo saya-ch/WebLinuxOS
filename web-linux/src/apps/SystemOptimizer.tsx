@@ -1,53 +1,66 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import {
-  Zap, Activity, HardDrive, Gauge as GaugeIcon,
-  RefreshCw, AlertTriangle, CheckCircle,
-  Play, Pause, Sparkles, Rocket, Eye, Clock,
-  Trash2, Wrench, BarChart3, PieChart, Timer, Server
-} from 'lucide-react'
 
-interface SystemMetrics {
-  fps: number
-  fpsMin: number
-  fpsMax: number
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface StorageItem {
+  key: string
+  size: number
+  source: 'localStorage' | 'sessionStorage'
+  value: string
+}
+
+interface CacheEntry {
+  name: string
+  url: string
+  size: number
+}
+
+interface CacheInfo {
+  name: string
+  entries: CacheEntry[]
+  totalSize: number
+}
+
+interface NavTiming {
+  dns: number
+  tcp: number
+  ttfb: number
+  download: number
+  domParse: number
+  domReady: number
+  loadComplete: number
+  total: number
+}
+
+interface ResourceEntry {
+  name: string
+  type: string
+  duration: number
+  size: number
+  startTime: number
+}
+
+interface PerformanceAudit {
+  pageLoadTime: number
+  domReadyTime: number
+  ttfb: number
   memoryUsed: number
   memoryTotal: number
   memoryPercent: number
-  memoryTrend: 'stable' | 'up' | 'down'
-  storageUsed: number
-  storageQuota: number
-  storagePercent: number
-  startupTime: number
-  domReadyTime: number
-  loadTime: number
-  ttfbTime: number
-  resourceCount: number
-  resourceTypes: Record<string, number>
-  networkType: string
-  downlink: number
-  online: boolean
-  cores: number
-  deviceMemory: number
-  dpr: number
-  screenWidth: number
-  screenHeight: number
-  colorDepth: number
-  batteryLevel: number | null
-  batteryCharging: boolean | null
-  hasWebGL: boolean
-  hasWebGPU: boolean
-  hasWASM: boolean
-  hasServiceWorker: boolean
-  hasFileSystemAccess: boolean
-  cpuEstimate: number
+  longTasksCount: number
   longTasks: PerformanceEntry[]
+  resources: ResourceEntry[]
+  navTiming: NavTiming | null
+  fps: number
+  timestamp: number
 }
 
-interface HistoryPoint {
-  time: number
-  fps: number
-  memory: number
-  cpu: number
+interface ConnectionInfo {
+  effectiveType: string
+  downlink: number
+  rtt: number
+  saveData: boolean
+  type: string
 }
 
 interface Recommendation {
@@ -55,1302 +68,1216 @@ interface Recommendation {
   title: string
   description: string
   severity: 'info' | 'warning' | 'critical'
-  category: 'performance' | 'memory' | 'startup' | 'cleanup' | 'network'
+  category: 'storage' | 'performance' | 'memory' | 'network' | 'startup' | 'cleanup'
+  impact: 'low' | 'medium' | 'high'
   action?: string
 }
 
-interface GaugeProps {
-  value: number
-  max: number
-  label: string
-  unit: string
-  size?: number
-  sublabel?: string
+interface BeforeAfter {
+  storageBefore: number
+  storageAfter: number
+  memoryBefore: number
+  memoryAfter: number
+  itemsBefore: number
+  itemsAfter: number
+  scoreBefore: number
+  scoreAfter: number
 }
 
-const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
+type TabKey = 'overview' | 'storage' | 'cache' | 'audit' | 'memory' | 'network' | 'startup' | 'cleanup'
 
-const getGaugeGradient = (percent: number): string => {
-  if (percent >= 80) return '#ef4444'
-  if (percent >= 60) return '#f59e0b'
-  return '#22c55e'
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const GREEN = '#22c55e'
+const BLUE = '#3b82f6'
+const BG = '#0c1220'
+const BG_CARD = '#111a2e'
+const BORDER = '#1e293b'
+const TEXT = '#e2e8f0'
+const TEXT_DIM = '#64748b'
+const TEXT_MID = '#94a3b8'
+const RED = '#ef4444'
+const YELLOW = '#eab308'
+const ORANGE = '#f97316'
+const CYAN = '#06b6d4'
+const MONO = "'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace"
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const uid = () => Math.random().toString(36).slice(2, 10)
+const formatSize = (bytes: number) => bytes < 1024 ? `${bytes}B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)}KB` : `${(bytes / 1048576).toFixed(1)}MB`
+const formatTime = (ms: number) => ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(2)}s`
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+
+const getByteLength = (str: string): number => {
+  try { return new Blob([str]).size } catch { return str.length * 2 }
 }
 
-function Gauge({ value, max, label, unit, size = 120, sublabel }: GaugeProps) {
+const scoreColor = (score: number) => score >= 80 ? GREEN : score >= 60 ? YELLOW : score >= 40 ? ORANGE : RED
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function TabBar({ active, onChange }: { active: TabKey; onChange: (k: TabKey) => void }) {
+  const tabs: { key: TabKey; label: string; icon: string }[] = [
+    { key: 'overview', label: '总览', icon: '◉' },
+    { key: 'storage', label: '存储分析', icon: '▣' },
+    { key: 'cache', label: '缓存管理', icon: '▤' },
+    { key: 'audit', label: '性能审计', icon: '◈' },
+    { key: 'memory', label: '内存优化', icon: '◆' },
+    { key: 'network', label: '网络优化', icon: '⇌' },
+    { key: 'startup', label: '启动优化', icon: '▷' },
+    { key: 'cleanup', label: '清理工具', icon: '✦' },
+  ]
+  return (
+    <div style={{ display: 'flex', gap: 2, background: BG, padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, overflowX: 'auto' }}>
+      {tabs.map(t => (
+        <button key={t.key} onClick={() => onChange(t.key)} style={{
+          display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+          background: active === t.key ? `${BLUE}22` : 'transparent',
+          border: active === t.key ? `1px solid ${BLUE}44` : '1px solid transparent',
+          borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: active === t.key ? 600 : 400,
+          color: active === t.key ? BLUE : TEXT_MID, whiteSpace: 'nowrap', transition: 'all 0.2s',
+        }}>
+          <span style={{ fontSize: 10 }}>{t.icon}</span>{t.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Card({ title, children, accent, rightHeader }: { title: string; children: React.ReactNode; accent?: string; rightHeader?: React.ReactNode }) {
+  return (
+    <div style={{ background: BG_CARD, borderRadius: 10, border: `1px solid ${BORDER}`, overflow: 'hidden', marginBottom: 12 }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '10px 16px', borderBottom: `1px solid ${BORDER}`,
+        background: `${accent || BLUE}08`,
+      }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: TEXT, fontFamily: MONO }}>{title}</span>
+        {rightHeader}
+      </div>
+      <div style={{ padding: 16 }}>{children}</div>
+    </div>
+  )
+}
+
+function ProgressBar({ value, max, color, height = 8, label }: { value: number; max: number; color: string; height?: number; label?: string }) {
+  const pct = clamp((value / max) * 100, 0, 100)
+  return (
+    <div>
+      <div style={{ width: '100%', height, borderRadius: height / 2, background: `${BORDER}`, overflow: 'hidden' }}>
+        <div style={{
+          width: `${pct}%`, height: '100%', borderRadius: height / 2,
+          background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+          transition: 'width 0.5s ease',
+        }} />
+      </div>
+      {label && <div style={{ fontSize: 11, color: TEXT_DIM, marginTop: 2 }}>{label}</div>}
+    </div>
+  )
+}
+
+function HealthGauge({ score, size = 140 }: { score: number; size?: number }) {
   const radius = (size - 16) / 2
   const circumference = 2 * Math.PI * radius
-  const percent = clamp((value / max) * 100, 0, 100)
-  const offset = circumference - (percent / 100) * circumference
-  const strokeColor = getGaugeGradient(percent)
-
+  const offset = circumference - (score / 100) * circumference
+  const color = scoreColor(score)
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{ position: 'relative', width: size, height: size, margin: '0 auto' }}>
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle
-            cx={size / 2} cy={size / 2} r={radius}
-            fill="none"
-            stroke="rgba(255,255,255,0.08)"
-            strokeWidth="10"
-          />
-          <circle
-            cx={size / 2} cy={size / 2} r={radius}
-            fill="none"
-            stroke={strokeColor}
-            strokeWidth="10"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.5s ease, stroke 0.3s ease' }}
-          />
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth="10"
+            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 0.6s ease, stroke 0.3s ease' }} />
         </svg>
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: strokeColor }}>
-            {Math.round(value)}
-          </div>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{unit}</div>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: 32, fontWeight: 800, color, fontFamily: MONO }}>{score}</div>
+          <div style={{ fontSize: 10, color: TEXT_DIM, marginTop: 1 }}>健康评分</div>
         </div>
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, color: '#cbd5e1', fontWeight: 600 }}>{label}</div>
-      {sublabel && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{sublabel}</div>}
     </div>
   )
 }
 
+function StatusIcon({ ok }: { ok: boolean }) {
+  return <span style={{ color: ok ? GREEN : RED, fontSize: 14 }}>{ok ? '✓' : '✗'}</span>
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+
 export default function SystemOptimizer() {
-  const [metrics, setMetrics] = useState<SystemMetrics | null>(null)
-  const [history, setHistory] = useState<HistoryPoint[]>([])
-  const [isMonitoring, setIsMonitoring] = useState(false)
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'optimize' | 'benchmark' | 'cleanup'>('dashboard')
-  const [benchmarkResult, setBenchmarkResult] = useState<number | null>(null)
-  const [isBenchmarking, setIsBenchmarking] = useState(false)
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([])
-  const [performanceScore, setPerformanceScore] = useState(0)
-  const [startupAnalysis, setStartupAnalysis] = useState<string[]>([])
-  const frameCountRef = useRef(0)
-  const lastFpsTimeRef = useRef(performance.now())
+  const [activeTab, setActiveTab] = useState<TabKey>('overview')
+
+  // ── Storage ──
+  const [storageItems, setStorageItems] = useState<StorageItem[]>([])
+  const [storageTotal, setStorageTotal] = useState(0)
+  const [selectedStorageKey, setSelectedStorageKey] = useState<string | null>(null)
+
+  // ── Cache ──
+  const [caches, setCaches] = useState<CacheInfo[]>([])
+  const [cacheLoading, setCacheLoading] = useState(false)
+
+  // ── Performance Audit ──
+  const [audit, setAudit] = useState<PerformanceAudit | null>(null)
+  const [isAuditing, setIsAuditing] = useState(false)
+  const [fpsHistory, setFpsHistory] = useState<number[]>([])
   const rafRef = useRef<number | null>(null)
-  const frameCallbackRef = useRef<((time: number) => void) | null>(null)
-  const fpsValuesRef = useRef<number[]>([])
-  const memoryValuesRef = useRef<number[]>([])
-  const navigationEntryRef = useRef<PerformanceNavigationTiming | null>(null)
-  const longTaskObserverRef = useRef<PerformanceObserver | null>(null)
 
-  const computePerformanceScore = useCallback((m: SystemMetrics): number => {
-    let score = 100
+  // ── Memory ──
+  const [memoryInfo, setMemoryInfo] = useState({ used: 0, total: 0, percent: 0 })
 
-    if (m.fps < 60) score -= (60 - m.fps) * 0.8
-    if (m.fps < 30) score -= 15
+  // ── Network ──
+  const [connectionInfo, setConnectionInfo] = useState<ConnectionInfo | null>(null)
 
-    if (m.memoryPercent > 50) score -= (m.memoryPercent - 50) * 0.6
-    if (m.memoryPercent > 80) score -= 20
+  // ── Startup ──
+  const [startupMetrics, setStartupMetrics] = useState<NavTiming | null>(null)
+  const [resourceWaterfall, setResourceWaterfall] = useState<ResourceEntry[]>([])
 
-    if (m.cpuEstimate > 50) score -= (m.cpuEstimate - 50) * 0.5
-    if (m.cpuEstimate > 80) score -= 15
+  // ── Health Score ──
+  const [healthScore, setHealthScore] = useState(0)
 
-    if (m.startupTime > 3000) score -= 15
-    else if (m.startupTime > 1500) score -= 8
+  // ── Recommendations ──
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([])
 
-    if (m.longTasks.length > 3) score -= 10
+  // ── Before/After ──
+  const [beforeAfter, setBeforeAfter] = useState<BeforeAfter | null>(null)
+  const [isOptimizing, setIsOptimizing] = useState(false)
 
-    if (m.storagePercent > 80) score -= 5
+  // ──────────── Scan Storage ────────────
 
-    return clamp(Math.round(score), 0, 100)
+  const scanStorage = useCallback(() => {
+    const items: StorageItem[] = []
+    let total = 0
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key) {
+          const val = localStorage.getItem(key) || ''
+          const size = getByteLength(key) + getByteLength(val)
+          items.push({ key, size, source: 'localStorage', value: val })
+          total += size
+        }
+      }
+    } catch { /* ignore */ }
+
+    try {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i)
+        if (key) {
+          const val = sessionStorage.getItem(key) || ''
+          const size = getByteLength(key) + getByteLength(val)
+          items.push({ key, size, source: 'sessionStorage', value: val })
+          total += size
+        }
+      }
+    } catch { /* ignore */ }
+
+    items.sort((a, b) => b.size - a.size)
+    setStorageItems(items)
+    setStorageTotal(total)
   }, [])
 
-  const generateRecommendations = useCallback((m: SystemMetrics): Recommendation[] => {
+  // ──────────── Scan Caches ────────────
+
+  const scanCaches = useCallback(async () => {
+    setCacheLoading(true)
+    try {
+      if ('caches' in window) {
+        const cacheNames = await caches.keys()
+        const results: CacheInfo[] = []
+        for (const name of cacheNames) {
+          try {
+            const cache = await caches.open(name)
+            const keys = await cache.keys()
+            const entries: CacheEntry[] = []
+            let totalSize = 0
+            for (const req of keys.slice(0, 50)) {
+              try {
+                const response = await cache.match(req)
+                const size = response ? parseInt(response.headers.get('content-length') || '0') : 0
+                entries.push({ name: req.url.split('/').pop() || req.url, url: req.url, size })
+                totalSize += size
+              } catch { /* ignore */ }
+            }
+            results.push({ name, entries, totalSize })
+          } catch { /* ignore */ }
+        }
+        setCaches(results)
+      }
+    } catch { /* ignore */ }
+    setCacheLoading(false)
+  }, [])
+
+  // ──────────── FPS Measurement ────────────
+
+  const measureFps = useCallback((): Promise<number> => {
+    return new Promise(resolve => {
+      let frames = 0
+      const start = performance.now()
+      const count = () => {
+        frames++
+        if (performance.now() - start >= 1000) resolve(Math.round(frames))
+        else requestAnimationFrame(count)
+      }
+      requestAnimationFrame(count)
+    })
+  }, [])
+
+  // ──────────── Performance Audit ────────────
+
+  const runAudit = useCallback(async () => {
+    setIsAuditing(true)
+    const now = performance.now()
+
+    // Nav timing
+    let navTiming: NavTiming | null = null
+    try {
+      const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[]
+      if (navEntries.length > 0) {
+        const nav = navEntries[0]
+        navTiming = {
+          dns: nav.domainLookupEnd - nav.domainLookupStart,
+          tcp: nav.connectEnd - nav.connectStart,
+          ttfb: nav.responseStart - nav.requestStart,
+          download: nav.responseEnd - nav.responseStart,
+          domParse: nav.domInteractive - nav.responseEnd,
+          domReady: nav.domContentLoadedEventEnd - nav.startTime,
+          loadComplete: nav.loadEventEnd - nav.startTime,
+          total: nav.loadEventEnd - nav.startTime,
+        }
+      }
+    } catch { /* ignore */ }
+
+    // Memory
+    const perfAny = performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }
+    let memUsed = 0, memTotal = 0, memPct = 0
+    if (perfAny.memory) {
+      memUsed = Math.round(perfAny.memory.usedJSHeapSize / 1024 / 1024)
+      memTotal = Math.round(perfAny.memory.jsHeapSizeLimit / 1024 / 1024)
+      memPct = Math.round((perfAny.memory.usedJSHeapSize / perfAny.memory.jsHeapSizeLimit) * 100)
+      setMemoryInfo({ used: memUsed, total: memTotal, percent: memPct })
+    }
+
+    // Long tasks
+    let longTasks: PerformanceEntry[] = []
+    try {
+      longTasks = performance.getEntriesByType('longtask')
+    } catch { /* ignore */ }
+
+    // Resources
+    const resources: ResourceEntry[] = []
+    try {
+      const resEntries = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
+      for (const r of resEntries.slice(-50)) {
+        resources.push({
+          name: r.name.split('/').pop() || r.name,
+          type: r.initiatorType || 'unknown',
+          duration: Math.round(r.duration),
+          size: r.transferSize || 0,
+          startTime: Math.round(r.startTime),
+        })
+      }
+      resources.sort((a, b) => a.startTime - b.startTime)
+    } catch { /* ignore */ }
+
+    // FPS
+    const fps = await measureFps()
+    setFpsHistory(prev => [...prev.slice(-29), fps])
+
+    const result: PerformanceAudit = {
+      pageLoadTime: navTiming ? navTiming.total : 0,
+      domReadyTime: navTiming ? navTiming.domReady : 0,
+      ttfb: navTiming ? navTiming.ttfb : 0,
+      memoryUsed: memUsed,
+      memoryTotal: memTotal,
+      memoryPercent: memPct,
+      longTasksCount: longTasks.length,
+      longTasks: longTasks.slice(-10),
+      resources,
+      navTiming,
+      fps,
+      timestamp: Date.now(),
+    }
+    setAudit(result)
+    setIsAuditing(false)
+  }, [measureFps])
+
+  // ──────────── Compute Health Score ────────────
+
+  const computeScore = useCallback((): number => {
+    let score = 100
+
+    // Storage factor
+    if (storageTotal > 2 * 1024 * 1024) score -= 10
+    else if (storageTotal > 1024 * 1024) score -= 5
+
+    // Memory factor
+    if (memoryInfo.percent > 80) score -= 20
+    else if (memoryInfo.percent > 60) score -= 10
+    else if (memoryInfo.percent > 40) score -= 5
+
+    // FPS factor
+    const lastFps = fpsHistory.length > 0 ? fpsHistory[fpsHistory.length - 1] : 60
+    if (lastFps < 30) score -= 20
+    else if (lastFps < 50) score -= 10
+
+    // Audit factors
+    if (audit) {
+      if (audit.pageLoadTime > 3000) score -= 10
+      else if (audit.pageLoadTime > 1500) score -= 5
+      if (audit.longTasksCount > 5) score -= 10
+      else if (audit.longTasksCount > 2) score -= 5
+      if (audit.resources.length > 40) score -= 5
+    }
+
+    return clamp(Math.round(score), 0, 100)
+  }, [storageTotal, memoryInfo, fpsHistory, audit])
+
+  // ──────────── Generate Recommendations ────────────
+
+  const generateRecs = useCallback((): Recommendation[] => {
     const recs: Recommendation[] = []
 
-    if (m.fps < 30) {
-      recs.push({
-        id: 'fps-critical',
-        title: '帧率严重过低',
-        description: `当前 FPS 仅 ${m.fps}，远低于 60 FPS 标准。可能存在大量重计算或渲染瓶颈。`,
-        severity: 'critical',
-        category: 'performance',
-        action: '建议关闭其他标签页，或检查是否存在占用资源的脚本'
-      })
-    } else if (m.fps < 50) {
-      recs.push({
-        id: 'fps-warning',
-        title: '帧率低于标准',
-        description: `当前 FPS 为 ${m.fps}，低于 60 FPS 标准。`,
-        severity: 'warning',
-        category: 'performance',
-        action: '考虑减少页面动画和复杂 DOM 操作'
-      })
+    if (storageTotal > 2 * 1024 * 1024) {
+      recs.push({ id: 'r-storage', title: '存储空间过大', description: `总存储占用 ${formatSize(storageTotal)}，超过 2MB 建议值`, severity: 'warning', category: 'storage', impact: 'medium', action: '清理大型或过期存储项' })
+    }
+    if (storageItems.length > 50) {
+      recs.push({ id: 'r-items', title: '存储项过多', description: `共 ${storageItems.length} 个存储项，可能影响查询性能`, severity: 'info', category: 'storage', impact: 'low', action: '清理不再使用的存储项' })
     }
 
-    if (m.memoryPercent > 85) {
-      recs.push({
-        id: 'memory-critical',
-        title: '内存使用率过高',
-        description: `JavaScript 堆内存使用率已达 ${m.memoryPercent}%，有内存泄漏风险。`,
-        severity: 'critical',
-        category: 'memory',
-        action: '建议立即刷新页面或关闭浏览器标签页，防止内存溢出'
-      })
-    } else if (m.memoryPercent > 70) {
-      recs.push({
-        id: 'memory-warning',
-        title: '内存使用率偏高',
-        description: `当前内存使用率 ${m.memoryPercent}%，建议关注内存增长趋势。`,
-        severity: 'warning',
-        category: 'memory',
-        action: '尝试关闭不必要的标签页或使用内存清理工具'
-      })
+    if (memoryInfo.percent > 80) {
+      recs.push({ id: 'r-mem', title: '内存使用率过高', description: `JS 堆内存 ${memoryInfo.percent}%，有泄漏风险`, severity: 'critical', category: 'memory', impact: 'high', action: '清理缓存或刷新页面' })
+    } else if (memoryInfo.percent > 60) {
+      recs.push({ id: 'r-mem2', title: '内存使用率偏高', description: `当前 ${memoryInfo.percent}%，建议关注增长趋势`, severity: 'warning', category: 'memory', impact: 'medium' })
     }
 
-    if (m.startupTime > 3000) {
-      recs.push({
-        id: 'startup-slow',
-        title: '页面启动时间过长',
-        description: `启动耗时 ${Math.round(m.startupTime)}ms，远超 3 秒标准。TTFB: ${Math.round(m.ttfbTime)}ms, DOM 就绪: ${Math.round(m.domReadyTime)}ms。`,
-        severity: 'warning',
-        category: 'startup',
-        action: '优化首屏加载资源，考虑代码分割和懒加载'
-      })
-    } else if (m.startupTime > 1500) {
-      recs.push({
-        id: 'startup-moderate',
-        title: '页面启动时间偏长',
-        description: `启动耗时 ${Math.round(m.startupTime)}ms。`,
-        severity: 'info',
-        category: 'startup',
-        action: '可考虑优化关键资源加载顺序'
-      })
+    const lastFps = fpsHistory.length > 0 ? fpsHistory[fpsHistory.length - 1] : 60
+    if (lastFps < 30) {
+      recs.push({ id: 'r-fps', title: '帧率严重不足', description: `仅 ${lastFps} FPS，严重影响交互体验`, severity: 'critical', category: 'performance', impact: 'high', action: '减少 DOM 操作和动画' })
+    } else if (lastFps < 50) {
+      recs.push({ id: 'r-fps2', title: '帧率偏低', description: `${lastFps} FPS，低于 60 标准`, severity: 'warning', category: 'performance', impact: 'medium' })
     }
 
-    if (m.longTasks.length > 5) {
-      recs.push({
-        id: 'long-tasks',
-        title: '检测到大量长任务',
-        description: `检测到 ${m.longTasks.length} 个超过 50ms 的长任务，主线程存在阻塞。`,
-        severity: 'warning',
-        category: 'performance',
-        action: '使用 Performance 面板分析长任务来源，考虑代码分块执行'
-      })
+    if (connectionInfo && (connectionInfo.effectiveType === '2g' || connectionInfo.effectiveType === 'slow-2g')) {
+      recs.push({ id: 'r-net', title: '网络连接缓慢', description: `当前 ${connectionInfo.effectiveType}，建议减少资源请求`, severity: 'warning', category: 'network', impact: 'medium', action: '启用数据压缩和懒加载' })
     }
 
-    if (m.storagePercent > 80) {
-      recs.push({
-        id: 'storage-full',
-        title: '存储空间即将耗尽',
-        description: `浏览器存储已使用 ${m.storagePercent}% (${m.storageUsed}MB / ${m.storageQuota}MB)。`,
-        severity: 'warning',
-        category: 'cleanup',
-        action: '清理不必要的 localStorage/sessionStorage 数据'
-      })
+    if (audit && audit.pageLoadTime > 3000) {
+      recs.push({ id: 'r-start', title: '页面加载过慢', description: `加载耗时 ${formatTime(audit.pageLoadTime)}，超过 3 秒`, severity: 'warning', category: 'startup', impact: 'high', action: '优化关键渲染路径，代码分割' })
     }
 
-    if (m.resourceCount > 50) {
-      recs.push({
-        id: 'resource-heavy',
-        title: '页面资源过多',
-        description: `当前页面加载了 ${m.resourceCount} 个资源，可能影响加载速度。`,
-        severity: 'info',
-        category: 'cleanup',
-        action: '检查是否有未使用的脚本和样式文件'
-      })
+    if (audit && audit.longTasksCount > 3) {
+      recs.push({ id: 'r-lt', title: '主线程阻塞', description: `检测到 ${audit.longTasksCount} 个长任务 (>50ms)`, severity: 'warning', category: 'performance', impact: 'medium', action: '将长计算拆分为小块' })
     }
 
-    if (m.deviceMemory > 0 && m.memoryPercent < 30) {
-      recs.push({
-        id: 'memory-good',
-        title: '内存状态良好',
-        description: `当前内存使用率 ${m.memoryPercent}%，状态健康。`,
-        severity: 'info',
-        category: 'memory'
-      })
+    if (caches.length > 5) {
+      recs.push({ id: 'r-cache', title: '缓存数量过多', description: `${caches.length} 个 Service Worker 缓存`, severity: 'info', category: 'cleanup', impact: 'low', action: '清理旧版缓存' })
     }
 
     if (recs.length === 0) {
-      recs.push({
-        id: 'all-good',
-        title: '系统状态优良',
-        description: '所有指标均在正常范围内，系统运行状态良好。',
-        severity: 'info',
-        category: 'performance'
-      })
+      recs.push({ id: 'r-ok', title: '系统状态良好', description: '所有指标均在正常范围', severity: 'info', category: 'performance', impact: 'low' })
     }
 
     return recs
-  }, [])
+  }, [storageTotal, storageItems, memoryInfo, fpsHistory, connectionInfo, audit, caches])
 
-  const analyzeStartup = useCallback((nav: PerformanceNavigationTiming | null): string[] => {
-    const findings: string[] = []
-    if (!nav) {
-      findings.push('无法获取导航时序数据，可能由于浏览器限制或跨域原因。')
-      return findings
-    }
+  // ──────────── Cleanup Actions ────────────
 
-    const ttfb = nav.responseStart - nav.requestStart
-    if (ttfb > 600) findings.push(`⚠️ TTFB (首字节时间) 为 ${Math.round(ttfb)}ms，超过 600ms 建议标准。`)
-    else findings.push(`✅ TTFB 正常: ${Math.round(ttfb)}ms`)
+  const performCleanup = useCallback(async () => {
+    setIsOptimizing(true)
+    const scoreBefore = healthScore
+    const memBefore = memoryInfo.percent
+    const itemsBefore = storageItems.length
+    const storageBefore = storageTotal
 
-    const domContentLoaded = nav.domContentLoadedEventEnd - nav.startTime
-    if (domContentLoaded > 2500) findings.push(`⚠️ DOM 就绪耗时 ${Math.round(domContentLoaded)}ms，建议优化关键渲染路径。`)
-    else findings.push(`✅ DOM 就绪正常: ${Math.round(domContentLoaded)}ms`)
+    // 1. Clear sessionStorage
+    try { sessionStorage.clear() } catch { /* ignore */ }
 
-    const loadTime = nav.loadEventEnd - nav.startTime
-    if (loadTime > 3000) findings.push(`⚠️ 页面加载耗时 ${Math.round(loadTime)}ms，属于慢速加载。`)
-    else findings.push(`✅ 页面加载正常: ${Math.round(loadTime)}ms`)
-
-    const parseTime = nav.domInteractive - nav.startTime
-    if (parseTime > 1500) findings.push(`💡 HTML 解析耗时 ${Math.round(parseTime)}ms，建议检查 DOM 复杂度。`)
-
-    const connTime = nav.connectEnd - nav.connectStart
-    if (connTime > 500) findings.push(`💡 网络连接耗时 ${Math.round(connTime)}ms，可能受网络延迟影响。`)
-
-    return findings
-  }, [])
-
-  const collectMetrics = useCallback((): SystemMetrics => {
-    const nav = navigator as Navigator & {
-      connection?: { effectiveType?: string; downlink?: number; saveData?: boolean; type?: string }
-      hardwareConcurrency?: number
-      deviceMemory?: number
-      getBattery?: () => Promise<{ level: number; charging: boolean }>
-    }
-
-    const perf = performance as unknown as {
-      memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number }
-    }
-
-    let memoryUsed = 0
-    let memoryTotal = 0
-    let memoryPercent = 0
-    let memoryTrend: 'stable' | 'up' | 'down' = 'stable'
-
-    if (perf.memory) {
-      memoryUsed = Math.round(perf.memory.usedJSHeapSize / 1024 / 1024)
-      memoryTotal = Math.round(perf.memory.jsHeapSizeLimit / 1024 / 1024)
-      memoryPercent = Math.round((perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit) * 100)
-
-      const prev = memoryValuesRef.current[memoryValuesRef.current.length - 1]
-      if (prev !== undefined) {
-        if (memoryPercent > prev + 2) memoryTrend = 'up'
-        else if (memoryPercent < prev - 2) memoryTrend = 'down'
-      }
-      memoryValuesRef.current.push(memoryPercent)
-      if (memoryValuesRef.current.length > 30) memoryValuesRef.current.shift()
-    }
-
-    let storageUsed = 0
-    let storageQuota = 0
-    let storagePercent = 0
+    // 2. Remove large localStorage items (>100KB)
     try {
-      const storage = navigator.storage as unknown as { estimate?: () => Promise<{ usage: number; quota: number }> }
-      if (storage?.estimate) {
-        storage.estimate().then((est) => {
-          storageUsed = Math.round(est.usage / 1024 / 1024)
-          storageQuota = Math.round(est.quota / 1024 / 1024)
-          storagePercent = Math.round((est.usage / est.quota) * 100)
-        })
-      }
-    } catch {}
-
-    let startupTime = 0
-    let domReadyTime = 0
-    let loadTime = 0
-    let ttfbTime = 0
-
-    try {
-      const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[]
-      if (navEntries.length > 0) {
-        const navEntry = navEntries[0]
-        navigationEntryRef.current = navEntry
-        startupTime = navEntry.loadEventEnd - navEntry.startTime
-        domReadyTime = navEntry.domContentLoadedEventEnd - navEntry.startTime
-        loadTime = navEntry.loadEventEnd - navEntry.startTime
-        ttfbTime = navEntry.responseStart - navEntry.requestStart
-      }
-    } catch {}
-
-    const resourceEntries = performance.getEntriesByType('resource')
-    const resourceCount = resourceEntries.length
-    const resourceTypes: Record<string, number> = {}
-    resourceEntries.forEach((entry) => {
-      const initiator = (entry as PerformanceResourceTiming).initiatorType || 'other'
-      resourceTypes[initiator] = (resourceTypes[initiator] || 0) + 1
-    })
-
-    const conn = nav.connection
-    const networkType = conn?.effectiveType || 'unknown'
-    const downlink = conn?.downlink || 0
-
-    const avgFps = fpsValuesRef.current.length > 0
-      ? Math.round(fpsValuesRef.current.reduce((a, b) => a + b, 0) / fpsValuesRef.current.length)
-      : 60
-
-    const cpuEstimate = clamp(
-      100 - (avgFps / 60) * 100 + (memoryPercent > 70 ? 15 : 0),
-      0, 100
-    )
-
-    return {
-      fps: frameCountRef.current,
-      fpsMin: 0,
-      fpsMax: 0,
-      memoryUsed,
-      memoryTotal,
-      memoryPercent,
-      memoryTrend,
-      storageUsed,
-      storageQuota,
-      storagePercent,
-      startupTime,
-      domReadyTime,
-      loadTime,
-      ttfbTime,
-      resourceCount,
-      resourceTypes,
-      networkType,
-      downlink,
-      online: navigator.onLine,
-      cores: nav.hardwareConcurrency || 0,
-      deviceMemory: nav.deviceMemory || 0,
-      dpr: window.devicePixelRatio,
-      screenWidth: screen.width,
-      screenHeight: screen.height,
-      colorDepth: screen.colorDepth,
-      batteryLevel: null,
-      batteryCharging: null,
-      hasWebGL: (() => {
-        try {
-          const canvas = document.createElement('canvas')
-          return !!canvas.getContext('webgl')
-        } catch { return false }
-      })(),
-      hasWebGPU: 'gpu' in navigator,
-      hasWASM: typeof WebAssembly !== 'undefined',
-      hasServiceWorker: 'serviceWorker' in navigator,
-      hasFileSystemAccess: 'showOpenFilePicker' in window,
-      cpuEstimate,
-      longTasks: longTaskObserverRef.current ? [] : [],
-    }
-  }, [])
-
-  const updateMetrics = useCallback(() => {
-    const newMetrics = collectMetrics()
-    setMetrics(newMetrics)
-    setHistory(prev => {
-      const next = [...prev, {
-        time: Date.now(),
-        fps: newMetrics.fps,
-        memory: newMetrics.memoryPercent,
-        cpu: newMetrics.cpuEstimate
-      }]
-      return next.slice(-60)
-    })
-    fpsValuesRef.current.push(newMetrics.fps)
-    if (fpsValuesRef.current.length > 30) fpsValuesRef.current.shift()
-  }, [collectMetrics])
-
-  useEffect(() => {
-    if (!metrics) return
-    setPerformanceScore(computePerformanceScore(metrics))
-    setRecommendations(generateRecommendations(metrics))
-    setStartupAnalysis(analyzeStartup(navigationEntryRef.current))
-  }, [metrics, computePerformanceScore, generateRecommendations, analyzeStartup])
-
-  useEffect(() => {
-    try {
-      if ('PerformanceObserver' in window) {
-        const observer = new PerformanceObserver((list) => {
-          const entries = list.getEntries()
-          if (metrics) {
-            setMetrics(prev => prev ? {
-              ...prev,
-              longTasks: [...prev.longTasks, ...entries].slice(-20)
-            } : prev)
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i)
+        if (key) {
+          const val = localStorage.getItem(key) || ''
+          if (getByteLength(val) > 100 * 1024) {
+            localStorage.removeItem(key)
           }
-        })
-        observer.observe({ entryTypes: ['longtask'] })
-        longTaskObserverRef.current = observer
+        }
       }
-    } catch {}
+    } catch { /* ignore */ }
 
+    // 3. Remove duplicate entries (same value)
+    try {
+      const seen = new Map<string, string[]>()
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key) {
+          const val = localStorage.getItem(key) || ''
+          const existing = seen.get(val)
+          if (existing) existing.push(key)
+          else seen.set(val, [key])
+        }
+      }
+      for (const [, keys] of seen) {
+        if (keys.length > 1) {
+          for (let i = 1; i < keys.length; i++) {
+            localStorage.removeItem(keys[i])
+          }
+        }
+      }
+    } catch { /* ignore */ }
+
+    // 4. Clear old caches
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        for (const key of keys) {
+          if (key.includes('old') || key.includes('v1') || key.includes('temp')) {
+            await caches.delete(key)
+          }
+        }
+      }
+    } catch { /* ignore */ }
+
+    // Re-scan
+    scanStorage()
+    await scanCaches()
+
+    const memAfter = (performance as unknown as { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      ? Math.round(((performance as unknown as { memory: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory.usedJSHeapSize / (performance as unknown as { memory: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory.jsHeapSizeLimit) * 100)
+      : 0
+
+    setIsOptimizing(false)
+
+    // Recompute score after cleanup
+    setTimeout(() => {
+      setBeforeAfter({
+        storageBefore, storageAfter: storageTotal,
+        memoryBefore: memBefore, memoryAfter: memAfter,
+        itemsBefore, itemsAfter: storageItems.length,
+        scoreBefore, scoreAfter: healthScore,
+      })
+    }, 100)
+  }, [healthScore, memoryInfo, storageItems, storageTotal, scanStorage, scanCaches])
+
+  // ──────────── Clear specific cache ────────────
+
+  const clearCache = useCallback(async (name: string) => {
+    try {
+      if ('caches' in window) {
+        await caches.delete(name)
+        await scanCaches()
+      }
+    } catch { /* ignore */ }
+  }, [scanCaches])
+
+  // ──────────── Delete storage item ────────────
+
+  const deleteStorageItem = useCallback((item: StorageItem) => {
+    try {
+      if (item.source === 'localStorage') localStorage.removeItem(item.key)
+      else sessionStorage.removeItem(item.key)
+      scanStorage()
+    } catch { /* ignore */ }
+  }, [scanStorage])
+
+  // ──────────── Initialize ────────────
+
+  useEffect(() => {
+    scanStorage()
+    scanCaches()
+    runAudit()
+
+    // Connection info
+    const nav = navigator as Navigator & { connection?: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean; type?: string } }
+    if (nav.connection) {
+      setConnectionInfo({
+        effectiveType: nav.connection.effectiveType || 'unknown',
+        downlink: nav.connection.downlink || 0,
+        rtt: nav.connection.rtt || 0,
+        saveData: nav.connection.saveData || false,
+        type: nav.connection.type || 'unknown',
+      })
+    }
+
+    // Startup metrics
     try {
       const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[]
       if (navEntries.length > 0) {
-        navigationEntryRef.current = navEntries[0]
+        const nav = navEntries[0]
+        setStartupMetrics({
+          dns: nav.domainLookupEnd - nav.domainLookupStart,
+          tcp: nav.connectEnd - nav.connectStart,
+          ttfb: nav.responseStart - nav.requestStart,
+          download: nav.responseEnd - nav.responseStart,
+          domParse: nav.domInteractive - nav.responseEnd,
+          domReady: nav.domContentLoadedEventEnd - nav.startTime,
+          loadComplete: nav.loadEventEnd - nav.startTime,
+          total: nav.loadEventEnd - nav.startTime,
+        })
       }
-    } catch {}
+    } catch { /* ignore */ }
 
-    return () => {
-      if (longTaskObserverRef.current) {
-        longTaskObserverRef.current.disconnect()
-        longTaskObserverRef.current = null
-      }
+    // Resource waterfall
+    try {
+      const resEntries = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
+      const waterfall: ResourceEntry[] = resEntries.slice(-30).map(r => ({
+        name: r.name.split('/').pop() || r.name,
+        type: r.initiatorType || 'unknown',
+        duration: Math.round(r.duration),
+        size: r.transferSize || 0,
+        startTime: Math.round(r.startTime),
+      }))
+      waterfall.sort((a, b) => a.startTime - b.startTime)
+      setResourceWaterfall(waterfall)
+    } catch { /* ignore */ }
+  }, [scanStorage, scanCaches, runAudit])
+
+  // ──────────── Periodic FPS measurement ────────────
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const fps = await measureFps()
+      setFpsHistory(prev => [...prev.slice(-29), fps])
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [measureFps])
+
+  // ──────────── Update health score & recommendations ────────────
+
+  useEffect(() => {
+    const score = computeScore()
+    setHealthScore(score)
+    setRecommendations(generateRecs())
+  }, [computeScore, generateRecs])
+
+  // ──────────── Storage usage estimate ────────────
+
+  const [storageEstimate, setStorageEstimate] = useState({ usage: 0, quota: 0 })
+
+  useEffect(() => {
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      navigator.storage.estimate().then(est => {
+        setStorageEstimate({ usage: est.usage || 0, quota: est.quota || 0 })
+      }).catch(() => {})
     }
   }, [])
 
-  useEffect(() => {
-    updateMetrics()
-  }, [updateMetrics])
+  // ─── Render ───
 
-  useEffect(() => {
-    if (!isMonitoring) {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-        rafRef.current = null
-      }
-      return
-    }
-
-    frameCountRef.current = 0
-    lastFpsTimeRef.current = performance.now()
-
-    frameCallbackRef.current = () => {
-      frameCountRef.current++
-      const now = performance.now()
-      if (now - lastFpsTimeRef.current >= 1000) {
-        frameCountRef.current = 0
-        lastFpsTimeRef.current = now
-        updateMetrics()
-      }
-      rafRef.current = requestAnimationFrame(frameCallbackRef.current!)
-    }
-    rafRef.current = requestAnimationFrame(frameCallbackRef.current)
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [isMonitoring, updateMetrics])
-
-  const runBenchmark = async () => {
-    setIsBenchmarking(true)
-    setBenchmarkResult(null)
-
-    const start = performance.now()
-    let operations = 0
-    const testDuration = 3000
-
-    while (performance.now() - start < testDuration) {
-      const arr = new Array(1000).fill(0).map((_, i) => i)
-      const sorted = arr.sort((a, b) => b - a)
-      sorted.map(x => Math.sqrt(x) * Math.PI)
-      operations++
-    }
-
-    const elapsed = performance.now() - start
-    const opsPerSec = Math.round((operations / elapsed) * 1000)
-    setBenchmarkResult(opsPerSec)
-    setIsBenchmarking(false)
-  }
-
-  const runGarbageCollection = () => {
-    if (typeof (window as any).gc === 'function') {
-      try {
-        ;(window as any).gc()
-        updateMetrics()
-      } catch {}
-    }
-  }
-
-  const clearStorage = (type: 'local' | 'session') => {
-    const storage = type === 'local' ? localStorage : sessionStorage
-    const before = storage.length
-    storage.clear()
-    const after = storage.length
-    updateMetrics()
-    return { before, after }
-  }
-
-  const severityColor = (severity: Recommendation['severity']) => {
-    switch (severity) {
-      case 'critical': return '#ef4444'
-      case 'warning': return '#f59e0b'
-      case 'info': return '#3b82f6'
-    }
-  }
-
-  const severityBg = (severity: Recommendation['severity']) => {
-    switch (severity) {
-      case 'critical': return 'rgba(239,68,68,0.1)'
-      case 'warning': return 'rgba(245,158,11,0.1)'
-      case 'info': return 'rgba(59,130,246,0.1)'
-    }
-  }
-
-  const scoreColor = (score: number): string => {
-    if (score >= 80) return '#22c55e'
-    if (score >= 60) return '#f59e0b'
-    if (score >= 40) return '#f97316'
-    return '#ef4444'
-  }
-
-  if (!metrics) {
-    return (
-      <div style={{
-        padding: '40px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%)',
-        color: '#fff',
-        fontFamily: 'Space Grotesk, sans-serif'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <RefreshCw size={48} style={{ animation: 'spin 1s linear infinite' }} />
-          <p style={{ marginTop: 16, color: '#94a3b8' }}>正在收集系统指标...</p>
-        </div>
-      </div>
-    )
-  }
-
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: 16,
-    marginBottom: 24
-  }
-
-  const cardStyle: React.CSSProperties = {
-    background: 'linear-gradient(145deg, rgba(30,30,50,0.9), rgba(20,20,35,0.9))',
-    borderRadius: 16,
-    padding: 20,
-    border: '1px solid rgba(255,255,255,0.08)',
-    backdropFilter: 'blur(10px)',
-    position: 'relative',
-    overflow: 'hidden'
-  }
-
-  return (
-    <div style={{
-      padding: '24px',
-      height: '100%',
-      overflow: 'auto',
-      background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%)',
-      color: '#e0e0e8',
-      fontFamily: 'Space Grotesk, "Noto Sans SC", sans-serif'
-    }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: 14,
-            background: 'linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <GaugeIcon size={24} color="white" />
-          </div>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, background: 'linear-gradient(135deg, #f5f3ff, #c4b5fd)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              系统优化器
-            </h1>
-            <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
-              实时浏览器性能分析与优化建议
-            </p>
+  const renderOverview = () => (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        {/* Health Score */}
+        <div style={{ background: BG_CARD, borderRadius: 12, border: `1px solid ${BORDER}`, padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <HealthGauge score={healthScore} size={160} />
+          <div style={{ marginTop: 8, fontSize: 13, color: scoreColor(healthScore), fontWeight: 600 }}>
+            {healthScore >= 80 ? '系统健康' : healthScore >= 60 ? '需要关注' : healthScore >= 40 ? '性能较差' : '严重异常'}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setIsMonitoring(!isMonitoring)} style={{
-            padding: '8px 16px',
-            borderRadius: 10,
-            border: 'none',
-            background: isMonitoring ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #22c55e, #16a34a)',
-            color: 'white',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            fontSize: 13,
-            fontWeight: 600
-          }}>
-            {isMonitoring ? <><Pause size={14} /> 停止监控</> : <><Play size={14} /> 开始监控</>}
-          </button>
-          <button onClick={updateMetrics} style={{
-            padding: '8px 12px',
-            borderRadius: 10,
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(255,255,255,0.05)',
-            color: '#e0e0e8',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6
-          }}>
-            <RefreshCw size={14} />
-          </button>
+
+        {/* Quick Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {[
+            { label: '存储占用', value: formatSize(storageTotal), color: storageTotal > 1024 * 1024 ? YELLOW : GREEN },
+            { label: '内存使用', value: `${memoryInfo.percent}%`, color: memoryInfo.percent > 70 ? YELLOW : GREEN },
+            { label: '帧率', value: `${fpsHistory.length > 0 ? fpsHistory[fpsHistory.length - 1] : '-'} FPS`, color: (fpsHistory.length > 0 ? fpsHistory[fpsHistory.length - 1] : 60) < 50 ? YELLOW : GREEN },
+            { label: '存储项数', value: String(storageItems.length), color: storageItems.length > 50 ? YELLOW : GREEN },
+            { label: '缓存数', value: String(caches.length), color: caches.length > 5 ? YELLOW : GREEN },
+            { label: '网络类型', value: connectionInfo?.effectiveType || 'N/A', color: BLUE },
+          ].map(s => (
+            <div key={s.label} style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}`, padding: 10, textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: s.color, fontFamily: MONO }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: TEXT_DIM, marginTop: 2 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        {([
-          { key: 'dashboard', label: '仪表板', icon: <GaugeIcon size={14} /> },
-          { key: 'optimize', label: '优化建议', icon: <Sparkles size={14} /> },
-          { key: 'cleanup', label: '资源清理', icon: <Trash2 size={14} /> },
-          { key: 'benchmark', label: '性能基准', icon: <Rocket size={14} /> },
-        ] as const).map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-            padding: '10px 20px',
-            borderRadius: 12,
-            border: 'none',
-            background: activeTab === tab.key ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'rgba(255,255,255,0.05)',
-            color: activeTab === tab.key ? 'white' : '#94a3b8',
-            cursor: 'pointer',
-            fontWeight: 600,
-            fontSize: 13,
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6
-          }}>
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+      {/* Recommendations */}
+      <Card title="智能建议" accent={GREEN}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {recommendations.slice(0, 5).map(r => (
+            <div key={r.id} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: BG, borderRadius: 8, border: `1px solid ${BORDER}` }}>
+              <span style={{ fontSize: 16 }}>{r.severity === 'critical' ? '🔴' : r.severity === 'warning' ? '🟡' : '🟢'}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: TEXT }}>{r.title}</div>
+                <div style={{ fontSize: 11, color: TEXT_MID, marginTop: 2 }}>{r.description}</div>
+                {r.action && <div style={{ fontSize: 11, color: BLUE, marginTop: 2 }}>→ {r.action}</div>}
+              </div>
+              <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: `${r.impact === 'high' ? RED : r.impact === 'medium' ? YELLOW : GREEN}15`, color: r.impact === 'high' ? RED : r.impact === 'medium' ? YELLOW : GREEN, alignSelf: 'flex-start' }}>
+                {r.impact === 'high' ? '高' : r.impact === 'medium' ? '中' : '低'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Before/After */}
+      {beforeAfter && (
+        <Card title="优化前后对比" accent={BLUE}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, textAlign: 'center' }}>
+            {[
+              { label: '健康评分', before: beforeAfter.scoreBefore, after: beforeAfter.scoreAfter, unit: '' },
+              { label: '存储大小', before: beforeAfter.storageBefore, after: beforeAfter.storageAfter, unit: 'B', format: true },
+              { label: '内存%', before: beforeAfter.memoryBefore, after: beforeAfter.memoryAfter, unit: '%' },
+              { label: '存储项数', before: beforeAfter.itemsBefore, after: beforeAfter.itemsAfter, unit: '' },
+            ].map(m => {
+              const improved = m.after < m.before || (m.label === '健康评分' && m.after > m.before)
+              return (
+                <div key={m.label}>
+                  <div style={{ fontSize: 11, color: TEXT_DIM, marginBottom: 4 }}>{m.label}</div>
+                  <div style={{ fontSize: 13, color: TEXT_DIM, textDecoration: 'line-through' }}>{m.format ? formatSize(m.before) : `${m.before}${m.unit}`}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: improved ? GREEN : RED }}>{m.format ? formatSize(m.after) : `${m.after}${m.unit}`}</div>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
+    </div>
+  )
+
+  const renderStorage = () => (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
+        <div style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}`, padding: 12, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: GREEN, fontFamily: MONO }}>{formatSize(storageTotal)}</div>
+          <div style={{ fontSize: 11, color: TEXT_DIM }}>总占用</div>
+        </div>
+        <div style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}`, padding: 12, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: BLUE, fontFamily: MONO }}>{storageItems.length}</div>
+          <div style={{ fontSize: 11, color: TEXT_DIM }}>存储项数</div>
+        </div>
+        <div style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}`, padding: 12, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: CYAN, fontFamily: MONO }}>
+            {storageEstimate.quota > 0 ? `${((storageEstimate.usage / storageEstimate.quota) * 100).toFixed(1)}%` : 'N/A'}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_DIM }}>配额使用</div>
+        </div>
       </div>
 
-      {activeTab === 'dashboard' && (
-        <>
-          {/* Performance Score Hero */}
-          <div style={{ ...cardStyle, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative', width: 140, height: 140, flexShrink: 0 }}>
-              <svg width="140" height="140" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
-                <circle cx="70" cy="70" r="58" fill="none"
-                  stroke={scoreColor(performanceScore)}
-                  strokeWidth="12"
-                  strokeDasharray={2 * Math.PI * 58}
-                  strokeDashoffset={2 * Math.PI * 58 * (1 - performanceScore / 100)}
-                  strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 0.6s ease, stroke 0.3s ease' }}
-                />
-              </svg>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ fontSize: 40, fontWeight: 800, color: scoreColor(performanceScore) }}>
-                  {performanceScore}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8' }}>性能评分</div>
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 8 }}>综合性能指数</div>
-              <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.8 }}>
-                {performanceScore >= 80 && '🌟 系统运行流畅，各项指标优秀'}
-                {performanceScore >= 60 && performanceScore < 80 && '✨ 系统运行良好，部分指标可优化'}
-                {performanceScore >= 40 && performanceScore < 60 && '⚠️ 系统性能一般，建议查看优化建议'}
-                {performanceScore < 40 && '🚨 系统性能较差，强烈建议进行优化'}
-              </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
+      {storageEstimate.quota > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <ProgressBar
+            value={storageEstimate.usage}
+            max={storageEstimate.quota}
+            color={storageEstimate.usage / storageEstimate.quota > 0.8 ? RED : storageEstimate.usage / storageEstimate.quota > 0.5 ? YELLOW : GREEN}
+            height={10}
+            label={`${formatSize(storageEstimate.usage)} / ${formatSize(storageEstimate.quota)}`}
+          />
+        </div>
+      )}
+
+      <div style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}`, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: MONO }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${BORDER}`, background: `${BLUE}08` }}>
+              {['键名', '大小', '来源', '值预览', '操作'].map(h => (
+                <th key={h} style={{ padding: '8px 6px', textAlign: 'left', color: TEXT_DIM, fontWeight: 500 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {storageItems.slice(0, 30).map(item => (
+              <tr key={`${item.source}-${item.key}`} style={{ borderBottom: `1px solid ${BORDER}33` }}>
+                <td style={{ padding: '4px 6px', color: CYAN, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.key}</td>
+                <td style={{ padding: '4px 6px', color: item.size > 100 * 1024 ? RED : item.size > 10 * 1024 ? YELLOW : TEXT_MID }}>
+                  {formatSize(item.size)}
+                </td>
+                <td style={{ padding: '4px 6px' }}>
+                  <span style={{ padding: '1px 6px', borderRadius: 3, fontSize: 10, background: item.source === 'localStorage' ? `${GREEN}15` : `${ORANGE}15`, color: item.source === 'localStorage' ? GREEN : ORANGE }}>
+                    {item.source === 'localStorage' ? 'LS' : 'SS'}
+                  </span>
+                </td>
+                <td style={{ padding: '4px 6px', color: TEXT_DIM, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.value.slice(0, 50)}
+                </td>
+                <td style={{ padding: '4px 6px' }}>
+                  <button onClick={() => deleteStorageItem(item)} style={{ padding: '2px 8px', fontSize: 10, borderRadius: 4, background: `${RED}22`, color: RED, border: `1px solid ${RED}44`, cursor: 'pointer' }}>删除</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {storageItems.length > 30 && <div style={{ padding: 8, textAlign: 'center', fontSize: 11, color: TEXT_DIM }}>... 还有 {storageItems.length - 30} 项</div>}
+      </div>
+    </div>
+  )
+
+  const renderCache = () => (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <span style={{ fontSize: 13, color: TEXT_MID }}>{caches.length} 个 Service Worker 缓存</span>
+        <button onClick={scanCaches} disabled={cacheLoading} style={{ padding: '4px 12px', fontSize: 12, borderRadius: 6, background: `${BLUE}22`, color: BLUE, border: `1px solid ${BLUE}44`, cursor: 'pointer' }}>
+          {cacheLoading ? '扫描中...' : '刷新'}
+        </button>
+      </div>
+      {caches.length === 0 ? (
+        <div style={{ padding: 30, textAlign: 'center', color: TEXT_DIM, background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}` }}>
+          未检测到 Service Worker 缓存
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {caches.map(cache => (
+            <div key={cache.name} style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${BORDER}`, padding: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>FPS</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: metrics.fps >= 55 ? '#4ade80' : metrics.fps >= 30 ? '#fbbf24' : '#ef4444' }}>
-                    {metrics.fps}
-                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: TEXT, fontFamily: MONO }}>{cache.name}</span>
+                  <span style={{ marginLeft: 10, fontSize: 12, color: TEXT_MID }}>{cache.entries.length} 条目 | {formatSize(cache.totalSize)}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>内存</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: metrics.memoryPercent > 80 ? '#ef4444' : '#22c55e' }}>
-                    {metrics.memoryPercent}%
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>CPU估算</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: metrics.cpuEstimate > 80 ? '#ef4444' : metrics.cpuEstimate > 50 ? '#fbbf24' : '#22c55e' }}>
-                    {Math.round(metrics.cpuEstimate)}%
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>启动</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: metrics.startupTime > 3000 ? '#ef4444' : metrics.startupTime > 1500 ? '#fbbf24' : '#22c55e' }}>
-                    {metrics.startupTime > 0 ? `${Math.round(metrics.startupTime)}ms` : 'N/A'}
-                  </div>
-                </div>
+                <button onClick={() => clearCache(cache.name)} style={{ padding: '3px 10px', fontSize: 11, borderRadius: 5, background: `${RED}22`, color: RED, border: `1px solid ${RED}44`, cursor: 'pointer' }}>清除</button>
               </div>
-            </div>
-          </div>
-
-          {/* Gauges Row */}
-          <div style={{ ...gridStyle, marginBottom: 24 }}>
-            <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Gauge
-                value={metrics.fps}
-                max={60}
-                label="实时帧率"
-                unit="FPS"
-                size={130}
-                sublabel={metrics.fps >= 55 ? '流畅' : metrics.fps >= 30 ? '一般' : '卡顿'}
-              />
-            </div>
-            <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Gauge
-                value={metrics.memoryPercent}
-                max={100}
-                label="内存占用"
-                unit="%"
-                size={130}
-                sublabel={`${metrics.memoryUsed} / ${metrics.memoryTotal} MB`}
-              />
-            </div>
-            <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Gauge
-                value={Math.round(metrics.cpuEstimate)}
-                max={100}
-                label="CPU 负载估算"
-                unit="%"
-                size={130}
-                sublabel={`${metrics.cores || '?'} 核心`}
-              />
-            </div>
-            <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Gauge
-                value={metrics.storagePercent}
-                max={100}
-                label="存储使用"
-                unit="%"
-                size={130}
-                sublabel={`${metrics.storageUsed} / ${metrics.storageQuota} MB`}
-              />
-            </div>
-          </div>
-
-          {/* Charts Row */}
-          <div style={gridStyle}>
-            {/* FPS / Memory Line Chart */}
-            <div style={{ ...cardStyle, gridColumn: 'span 2' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Activity size={18} color="#a78bfa" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>性能趋势 (最近60秒)</span>
-              </div>
-              <PerformanceChart history={history} />
-            </div>
-
-            {/* Startup Time Analysis */}
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Timer size={18} color="#38bdf8" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>启动时序分析</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <StartupBar label="TTFB" value={metrics.ttfbTime} warning={600} />
-                <StartupBar label="DOM 就绪" value={metrics.domReadyTime} warning={2500} />
-                <StartupBar label="页面加载" value={metrics.loadTime} warning={3000} />
-                <StartupBar label="总启动时间" value={metrics.startupTime} warning={3000} highlight />
-              </div>
-            </div>
-
-            {/* Resource Breakdown */}
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <PieChart size={18} color="#f59e0b" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>资源加载分析</span>
-              </div>
-              <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 12 }}>
-                共加载 <span style={{ color: '#e0e0e8', fontWeight: 600 }}>{metrics.resourceCount}</span> 个资源
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Object.entries(metrics.resourceTypes)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 6)
-                  .map(([type, count]) => (
-                    <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 60, fontSize: 11, color: '#94a3b8', textTransform: 'capitalize' }}>{type}</div>
-                      <div style={{
-                        flex: 1, height: 6, borderRadius: 3,
-                        background: 'rgba(255,255,255,0.08)', overflow: 'hidden'
-                      }}>
-                        <div style={{
-                          height: '100%',
-                          width: `${(count / Math.max(metrics.resourceCount, 1)) * 100}%`,
-                          background: 'linear-gradient(90deg, #7c3aed, #38bdf8)',
-                          borderRadius: 3,
-                          transition: 'width 0.5s ease'
-                        }} />
-                      </div>
-                      <div style={{ width: 32, fontSize: 11, color: '#cbd5e1', textAlign: 'right' }}>{count}</div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* System Info */}
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Server size={18} color="#22c55e" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>系统信息</span>
-              </div>
-              <div style={{ fontSize: 12, lineHeight: 2, color: '#cbd5e1' }}>
-                <div>屏幕: {metrics.screenWidth} × {metrics.screenHeight}</div>
-                <div>像素比: {metrics.dpr}x · 色深: {metrics.colorDepth}-bit</div>
-                <div>CPU 核心: {metrics.cores || '未知'} · 内存: {metrics.deviceMemory || '未知'}GB</div>
-                <div>网络: {metrics.online ? '🟢 在线' : '🔴 离线'} · {metrics.networkType.toUpperCase()}</div>
-                {metrics.downlink > 0 && <div>下行速率: {metrics.downlink} Mbps</div>}
-              </div>
-            </div>
-
-            {/* Browser Capabilities */}
-            <div style={{ ...cardStyle, gridColumn: '1 / -1' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Sparkles size={18} color="#facc15" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>浏览器能力检测</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
-                {[
-                  { key: 'WebGL', support: metrics.hasWebGL },
-                  { key: 'WebGPU', support: metrics.hasWebGPU },
-                  { key: 'WebAssembly', support: metrics.hasWASM },
-                  { key: 'Service Worker', support: metrics.hasServiceWorker },
-                  { key: 'File System API', support: metrics.hasFileSystemAccess },
-                ].map(({ key, support }) => (
-                  <div key={key} style={{
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    background: support ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                    border: `1px solid ${support ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    fontSize: 12
-                  }}>
-                    {support ? <CheckCircle size={14} color="#4ade80" /> : <AlertTriangle size={14} color="#ef4444" />}
-                    <span style={{ color: support ? '#4ade80' : '#ef4444' }}>{key}</span>
+              <div style={{ maxHeight: 100, overflow: 'auto', fontSize: 11, fontFamily: MONO }}>
+                {cache.entries.map((entry, i) => (
+                  <div key={i} style={{ padding: '2px 0', color: TEXT_DIM, borderBottom: `1px solid ${BORDER}22` }}>
+                    <span style={{ color: CYAN }}>{entry.name}</span>
+                    {entry.size > 0 && <span style={{ marginLeft: 8, color: TEXT_DIM }}>({formatSize(entry.size)})</span>}
                   </div>
                 ))}
               </div>
             </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const renderAudit = () => (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <span style={{ fontSize: 13, color: TEXT_MID }}>
+          {audit ? `上次审计: ${new Date(audit.timestamp).toLocaleTimeString('zh-CN', { hour12: false })}` : '尚未审计'}
+        </span>
+        <button onClick={runAudit} disabled={isAuditing} style={{ padding: '6px 16px', fontSize: 12, borderRadius: 6, background: `${GREEN}22`, color: GREEN, border: `1px solid ${GREEN}44`, cursor: 'pointer', fontWeight: 600 }}>
+          {isAuditing ? '审计中...' : '▶ 运行审计'}
+        </button>
+      </div>
+
+      {audit && (
+        <>
+          {/* Key Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 12 }}>
+            {[
+              { label: '页面加载', value: formatTime(audit.pageLoadTime), ok: audit.pageLoadTime < 3000, icon: '⏱' },
+              { label: 'DOM 就绪', value: formatTime(audit.domReadyTime), ok: audit.domReadyTime < 1500, icon: '🏗' },
+              { label: 'TTFB', value: formatTime(audit.ttfb), ok: audit.ttfb < 600, icon: '⚡' },
+              { label: 'FPS', value: `${audit.fps}`, ok: audit.fps >= 50, icon: '🎬' },
+              { label: '内存使用', value: `${audit.memoryPercent}%`, ok: audit.memoryPercent < 70, icon: '💾' },
+              { label: '长任务', value: `${audit.longTasksCount}`, ok: audit.longTasksCount <= 2, icon: '⚠' },
+              { label: '资源数', value: `${audit.resources.length}`, ok: audit.resources.length < 40, icon: '📦' },
+              { label: '内存(MB)', value: `${audit.memoryUsed}/${audit.memoryTotal}`, ok: audit.memoryPercent < 70, icon: '🧮' },
+            ].map(m => (
+              <div key={m.label} style={{ background: BG_CARD, borderRadius: 8, border: `1px solid ${m.ok ? GREEN : RED}33`, padding: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, color: TEXT_DIM }}>{m.icon} {m.label}</span>
+                  <StatusIcon ok={m.ok} />
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: m.ok ? GREEN : RED, fontFamily: MONO, marginTop: 4 }}>{m.value}</div>
+              </div>
+            ))}
           </div>
+
+          {/* FPS Chart */}
+          <Card title="帧率趋势 (FPS)">
+            <div style={{ height: 60, position: 'relative' }}>
+              {fpsHistory.length > 1 && (() => {
+                const max = Math.max(...fpsHistory, 60)
+                return (
+                  <svg width="100%" height={60} style={{ display: 'block' }}>
+                    <polyline
+                      fill="none"
+                      stroke={GREEN}
+                      strokeWidth={2}
+                      points={fpsHistory.map((v, i) => `${(i / (fpsHistory.length - 1)) * 100}%,${60 - (v / max) * 55}`).join(' ')}
+                    />
+                    <line x1="0" y1={60 - (60 / max) * 55} x2="100%" y2={60 - (60 / max) * 55} stroke={`${YELLOW}44`} strokeWidth={1} strokeDasharray="4 4" />
+                  </svg>
+                )
+              })()}
+            </div>
+          </Card>
+
+          {/* Resource Waterfall */}
+          {resourceWaterfall.length > 0 && (
+            <Card title="资源加载瀑布流">
+              <div style={{ maxHeight: 250, overflow: 'auto' }}>
+                {resourceWaterfall.slice(0, 20).map((r, i) => {
+                  const maxStart = Math.max(...resourceWaterfall.slice(0, 20).map(x => x.startTime + x.duration), 1)
+                  const leftPct = (r.startTime / maxStart) * 100
+                  const widthPct = Math.max((r.duration / maxStart) * 100, 0.5)
+                  const typeColor = r.type === 'script' ? YELLOW : r.type === 'css' ? CYAN : r.type === 'img' ? GREEN : r.type === 'fetch' ? ORANGE : TEXT_DIM
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', fontSize: 10, fontFamily: MONO }}>
+                      <span style={{ width: 30, color: TEXT_DIM, textAlign: 'right' }}>{i + 1}</span>
+                      <span style={{ width: 120, color: typeColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                      <div style={{ flex: 1, height: 8, borderRadius: 4, background: `${BORDER}`, position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`, height: '100%', borderRadius: 4, background: typeColor, minWidth: 2 }} />
+                      </div>
+                      <span style={{ width: 50, color: TEXT_DIM, textAlign: 'right' }}>{r.duration}ms</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+          )}
+
+          {/* Long Tasks */}
+          {audit.longTasks.length > 0 && (
+            <Card title="长任务 (>50ms)" accent={RED}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {audit.longTasks.map((t, i) => (
+                  <div key={i} style={{ padding: '4px 8px', background: `${RED}08`, borderRadius: 4, fontSize: 12, fontFamily: MONO, color: TEXT_MID }}>
+                    ⚠ 耗时 {Math.round(t.duration)}ms @ {Math.round(t.startTime)}ms
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </>
       )}
+    </div>
+  )
 
-      {activeTab === 'optimize' && (
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <Zap size={20} color="#facc15" />
-            <span style={{ fontSize: 16, fontWeight: 600 }}>智能优化建议</span>
-            <span style={{ fontSize: 12, color: '#64748b', marginLeft: 'auto' }}>
-              共 {recommendations.length} 条建议
-            </span>
+  const renderMemory = () => (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        <Card title="内存使用">
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: 36, fontWeight: 800, color: scoreColor(100 - memoryInfo.percent), fontFamily: MONO }}>
+              {memoryInfo.percent}%
+            </div>
+            <div style={{ fontSize: 12, color: TEXT_DIM }}>{memoryInfo.used}MB / {memoryInfo.total}MB</div>
           </div>
-          {recommendations.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {recommendations.map(rec => (
-                <div key={rec.id} style={{
-                  padding: '16px',
-                  borderRadius: 12,
-                  background: severityBg(rec.severity),
-                  border: `1px solid ${severityColor(rec.severity)}33`,
-                  display: 'flex',
-                  gap: 12,
-                  alignItems: 'flex-start'
-                }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10,
-                    background: `${severityColor(rec.severity)}20`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {rec.severity === 'critical' && <AlertTriangle size={18} color={severityColor(rec.severity)} />}
-                    {rec.severity === 'warning' && <Wrench size={18} color={severityColor(rec.severity)} />}
-                    {rec.severity === 'info' && <CheckCircle size={18} color={severityColor(rec.severity)} />}
+          <ProgressBar value={memoryInfo.percent} max={100} color={memoryInfo.percent > 70 ? RED : memoryInfo.percent > 50 ? YELLOW : GREEN} height={12} />
+        </Card>
+        <Card title="优化操作">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button onClick={() => { try { (performance as any).gc?.() } catch { /* only in Chrome with flag */ } }} style={{
+              padding: '10px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+              background: `${GREEN}15`, color: GREEN, border: `1px solid ${GREEN}33`, textAlign: 'left',
+            }}>
+              ♻ 强制 GC 提示 <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>需要 Chrome --expose-gc 标志</span>
+            </button>
+            <button onClick={() => { try { sessionStorage.clear() } catch { /* ignore */ }; scanStorage() }} style={{
+              padding: '10px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+              background: `${BLUE}15`, color: BLUE, border: `1px solid ${BLUE}33`, textAlign: 'left',
+            }}>
+              🗑 清除 SessionStorage <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>释放会话级存储内存</span>
+            </button>
+            <button onClick={runAudit} style={{
+              padding: '10px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+              background: `${CYAN}15`, color: CYAN, border: `1px solid ${CYAN}33`, textAlign: 'left',
+            }}>
+              📊 重新审计 <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>刷新内存和性能指标</span>
+            </button>
+          </div>
+        </Card>
+      </div>
+
+      {/* JS Heap Visualization */}
+      <Card title="JS 堆内存分布">
+        {(() => {
+          const perfAny = performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }
+          if (!perfAny.memory) return <div style={{ color: TEXT_DIM }}>当前浏览器不支持 performance.memory API</div>
+          const m = perfAny.memory
+          const usedPct = (m.usedJSHeapSize / m.jsHeapSizeLimit) * 100
+          const totalPct = (m.totalJSHeapSize / m.jsHeapSizeLimit) * 100
+          return (
+            <div>
+              <div style={{ position: 'relative', height: 30, borderRadius: 6, background: BORDER, overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, width: `${totalPct}%`, background: `${BLUE}33`, borderRadius: 6 }} />
+                <div style={{ position: 'absolute', inset: 0, width: `${usedPct}%`, background: `${BLUE}88`, borderRadius: 6 }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, fontFamily: MONO }}>
+                <span style={{ color: BLUE }}>已用: {formatSize(m.usedJSHeapSize)}</span>
+                <span style={{ color: TEXT_DIM }}>已分配: {formatSize(m.totalJSHeapSize)}</span>
+                <span style={{ color: TEXT_DIM }}>上限: {formatSize(m.jsHeapSizeLimit)}</span>
+              </div>
+            </div>
+          )
+        })()}
+      </Card>
+    </div>
+  )
+
+  const renderNetwork = () => (
+    <div>
+      <Card title="网络连接信息" accent={BLUE}>
+        {connectionInfo ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            {[
+              { label: '有效类型', value: connectionInfo.effectiveType, color: ['4g', '5g'].includes(connectionInfo.effectiveType) ? GREEN : connectionInfo.effectiveType === '3g' ? YELLOW : RED },
+              { label: '下行带宽', value: `${connectionInfo.downlink} Mbps`, color: connectionInfo.downlink > 5 ? GREEN : connectionInfo.downlink > 1 ? YELLOW : RED },
+              { label: 'RTT', value: `${connectionInfo.rtt}ms`, color: connectionInfo.rtt < 100 ? GREEN : connectionInfo.rtt < 300 ? YELLOW : RED },
+              { label: '省流量模式', value: connectionInfo.saveData ? '开启' : '关闭', color: connectionInfo.saveData ? ORANGE : TEXT_MID },
+              { label: '连接类型', value: connectionInfo.type, color: TEXT },
+              { label: '在线状态', value: navigator.onLine ? '在线' : '离线', color: navigator.onLine ? GREEN : RED },
+            ].map(m => (
+              <div key={m.label} style={{ background: BG, borderRadius: 8, border: `1px solid ${BORDER}`, padding: 10 }}>
+                <div style={{ fontSize: 11, color: TEXT_DIM, marginBottom: 4 }}>{m.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: m.color, fontFamily: MONO }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ color: TEXT_DIM, textAlign: 'center', padding: 20 }}>
+            当前浏览器不支持 Network Information API (navigator.connection)
+          </div>
+        )}
+      </Card>
+
+      <Card title="优化建议">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {connectionInfo && ([
+            connectionInfo.effectiveType === '2g' || connectionInfo.effectiveType === 'slow-2g' ? { text: '网络极慢，建议启用激进的数据压缩和资源懒加载', color: RED } : null,
+            connectionInfo.rtt > 300 ? { text: `RTT ${connectionInfo.rtt}ms 较高，建议减少请求数和使用 CDN`, color: YELLOW } : null,
+            connectionInfo.saveData ? { text: '用户开启了省流量模式，应减少资源传输', color: ORANGE } : null,
+            !navigator.onLine ? { text: '当前离线，应启用 Service Worker 离线缓存', color: RED } : null,
+            connectionInfo.downlink > 10 ? { text: '网络状况良好，可以预加载关键资源', color: GREEN } : null,
+          ].filter(Boolean).map((r, i) => r && (
+            <div key={i} style={{ padding: '8px 12px', background: `${r.color}08`, borderRadius: 6, border: `1px solid ${r.color}33`, fontSize: 12, color: TEXT }}>
+              <span style={{ color: r.color, marginRight: 6 }}>●</span>{r.text}
+            </div>
+          )))}
+          {(!connectionInfo || (connectionInfo.effectiveType !== '2g' && connectionInfo.effectiveType !== 'slow-2g' && connectionInfo.rtt <= 300 && navigator.onLine)) && (
+            <div style={{ padding: '8px 12px', background: `${GREEN}08`, borderRadius: 6, border: `1px solid ${GREEN}33`, fontSize: 12, color: TEXT }}>
+              <span style={{ color: GREEN, marginRight: 6 }}>●</span>网络状态良好，无特殊优化建议
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  )
+
+  const renderStartup = () => (
+    <div>
+      <Card title="启动时序分析" accent={CYAN}>
+        {startupMetrics ? (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8, marginBottom: 12 }}>
+              {[
+                { label: 'DNS 查询', value: startupMetrics.dns, ok: startupMetrics.dns < 50 },
+                { label: 'TCP 连接', value: startupMetrics.tcp, ok: startupMetrics.tcp < 100 },
+                { label: 'TTFB', value: startupMetrics.ttfb, ok: startupMetrics.ttfb < 600 },
+                { label: '内容下载', value: startupMetrics.download, ok: startupMetrics.download < 1000 },
+                { label: 'DOM 解析', value: startupMetrics.domParse, ok: startupMetrics.domParse < 1000 },
+                { label: 'DOM 就绪', value: startupMetrics.domReady, ok: startupMetrics.domReady < 1500 },
+                { label: '加载完成', value: startupMetrics.loadComplete, ok: startupMetrics.loadComplete < 3000 },
+              ].map(m => (
+                <div key={m.label} style={{ background: BG, borderRadius: 6, border: `1px solid ${m.ok ? GREEN : RED}33`, padding: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: TEXT_DIM }}>{m.label}</span>
+                    <StatusIcon ok={m.ok} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#e0e0e8' }}>{rec.title}</span>
-                      <span style={{
-                        fontSize: 10,
-                        padding: '2px 6px',
-                        borderRadius: 4,
-                        background: `${severityColor(rec.severity)}20`,
-                        color: severityColor(rec.severity),
-                        fontWeight: 600,
-                        textTransform: 'uppercase'
-                      }}>{rec.severity}</span>
-                    </div>
-                    <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
-                      {rec.description}
-                    </div>
-                    {rec.action && (
-                      <div style={{
-                        marginTop: 8,
-                        fontSize: 12,
-                        color: severityColor(rec.severity),
-                        padding: '8px 12px',
-                        background: 'rgba(255,255,255,0.03)',
-                        borderRadius: 8,
-                        border: `1px dashed ${severityColor(rec.severity)}40`
-                      }}>
-                        💡 {rec.action}
-                      </div>
-                    )}
-                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: m.ok ? GREEN : RED, fontFamily: MONO, marginTop: 2 }}>{Math.round(m.value)}ms</div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-              <CheckCircle size={48} color="#4ade80" style={{ margin: '0 auto 16px' }} />
-              <p>当前系统状态良好，暂无优化建议</p>
-            </div>
-          )}
 
-          {/* Startup Analysis Findings */}
-          {startupAnalysis.length > 0 && (
-            <div style={{ marginTop: 24, padding: 20, borderRadius: 12, background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)' }}>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                <Clock size={18} color="#38bdf8" />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#38bdf8' }}>启动时序详细分析</span>
-              </div>
-              <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.8 }}>
-                {startupAnalysis.map((finding, i) => (
-                  <div key={i}>{finding}</div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'cleanup' && (
-        <div>
-          {/* Cleanup Actions */}
-          <div style={{ ...cardStyle, marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <Trash2 size={20} color="#f97316" />
-              <span style={{ fontSize: 16, fontWeight: 600 }}>一键清理</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-              <CleanupButton
-                label="清理 LocalStorage"
-                description={`${localStorage.length} 项数据`}
-                onClick={() => {
-                  const { before } = clearStorage('local')
-                  updateMetrics()
-                  return `已清理 ${before} 项数据`
-                }}
-              />
-              <CleanupButton
-                label="清理 SessionStorage"
-                description={`${sessionStorage.length} 项数据`}
-                onClick={() => {
-                  const { before } = clearStorage('session')
-                  updateMetrics()
-                  return `已清理 ${before} 项数据`
-                }}
-              />
-              <CleanupButton
-                label="触发 GC (如可用)"
-                description="强制垃圾回收"
-                onClick={() => {
-                  runGarbageCollection()
-                  updateMetrics()
-                  return '已触发垃圾回收'
-                }}
-              />
-              <CleanupButton
-                label="刷新页面"
-                description="重置所有状态"
-                onClick={() => {
-                  window.location.reload()
-                  return '正在刷新...'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Resource Breakdown for Cleanup */}
-          <div style={gridStyle}>
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <HardDrive size={18} color="#22c55e" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>存储详情</span>
-              </div>
-              <div style={{ fontSize: 13, lineHeight: 2, color: '#cbd5e1' }}>
-                <div>LocalStorage: <span style={{ color: '#e0e0e8', fontWeight: 600 }}>{localStorage.length}</span> 项</div>
-                <div>SessionStorage: <span style={{ color: '#e0e0e8', fontWeight: 600 }}>{sessionStorage.length}</span> 项</div>
-                <div>IndexedDB: <span style={{ color: '#e0e0e8', fontWeight: 600 }}>检测中...</span></div>
-                <div>Cookie 数: <span style={{ color: '#e0e0e8', fontWeight: 600 }}>{document.cookie ? document.cookie.split(';').filter(c => c.trim()).length : 0}</span></div>
-              </div>
-              <div style={{ marginTop: 12, fontSize: 11, color: '#64748b' }}>
-                存储使用: {metrics.storageUsed}MB / {metrics.storageQuota}MB ({metrics.storagePercent}%)
-              </div>
-            </div>
-
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <BarChart3 size={18} color="#38bdf8" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>页面资源类型</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Object.entries(metrics.resourceTypes)
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([type, count]) => (
-                    <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 70, fontSize: 11, color: '#94a3b8', textTransform: 'capitalize' }}>{type}</div>
-                      <div style={{
-                        flex: 1, height: 8, borderRadius: 4,
-                        background: 'rgba(255,255,255,0.08)', overflow: 'hidden'
-                      }}>
-                        <div style={{
-                          height: '100%',
-                          width: `${(count / Math.max(metrics.resourceCount, 1)) * 100}%`,
-                          background: 'linear-gradient(90deg, #38bdf8, #22c55e)',
-                          borderRadius: 4
-                        }} />
-                      </div>
-                      <div style={{ width: 32, fontSize: 12, color: '#e0e0e8', textAlign: 'right', fontWeight: 600 }}>{count}</div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Eye size={18} color="#a78bfa" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>优化检查清单</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <ChecklistItem label="关闭不必要的标签页" done={metrics.memoryPercent < 50} />
-                <ChecklistItem label="清理浏览器缓存" done={metrics.storagePercent < 50} />
-                <ChecklistItem label="禁用无用的浏览器扩展" done={true} />
-                <ChecklistItem label="启用硬件加速" done={metrics.hasWebGL} />
-                <ChecklistItem label="保持浏览器更新" done={true} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'benchmark' && (
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <Rocket size={20} color="#facc15" />
-            <span style={{ fontSize: 16, fontWeight: 600 }}>JavaScript 性能基准测试</span>
-          </div>
-
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            <div style={{
-              width: 180, height: 180, borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(56,189,248,0.2))',
-              border: '2px solid rgba(124,58,237,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 24px',
-              position: 'relative'
-            }}>
-              {isBenchmarking ? (
-                <RefreshCw size={48} color="#a78bfa" style={{ animation: 'spin 1s linear infinite' }} />
-              ) : (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 36, fontWeight: 700, color: '#a78bfa' }}>
-                    {benchmarkResult ? benchmarkResult.toLocaleString() : '—'}
+            {/* Waterfall visualization */}
+            <div style={{ fontSize: 12, fontWeight: 600, color: TEXT, marginBottom: 8 }}>启动瀑布流</div>
+            {(() => {
+              const phases = [
+                { label: 'DNS', start: 0, duration: startupMetrics.dns, color: YELLOW },
+                { label: 'TCP', start: startupMetrics.dns, duration: startupMetrics.tcp, color: ORANGE },
+                { label: 'TTFB', start: startupMetrics.dns + startupMetrics.tcp, duration: startupMetrics.ttfb, color: CYAN },
+                { label: '下载', start: startupMetrics.dns + startupMetrics.tcp + startupMetrics.ttfb, duration: startupMetrics.download, color: GREEN },
+                { label: 'DOM', start: startupMetrics.dns + startupMetrics.tcp + startupMetrics.ttfb + startupMetrics.download, duration: startupMetrics.domParse, color: BLUE },
+              ]
+              const total = startupMetrics.total || 1
+              return phases.map((p, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ width: 40, fontSize: 10, color: TEXT_DIM, fontFamily: MONO, textAlign: 'right' }}>{p.label}</span>
+                  <div style={{ flex: 1, height: 14, borderRadius: 3, background: BORDER, position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: `${(p.start / total) * 100}%`, width: `${Math.max((p.duration / total) * 100, 0.5)}%`, height: '100%', borderRadius: 3, background: p.color }} />
                   </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8' }}>
-                    {benchmarkResult ? 'ops/sec' : '等待测试'}
-                  </div>
+                  <span style={{ width: 60, fontSize: 10, color: TEXT_DIM, fontFamily: MONO, textAlign: 'right' }}>{Math.round(p.duration)}ms</span>
                 </div>
-              )}
-            </div>
+              ))
+            })()}
+          </div>
+        ) : (
+          <div style={{ color: TEXT_DIM, textAlign: 'center', padding: 20 }}>
+            无法获取导航时序数据
+          </div>
+        )}
+      </Card>
 
-            <button
-              onClick={runBenchmark}
-              disabled={isBenchmarking}
-              style={{
-                padding: '14px 36px',
-                borderRadius: 12,
-                border: 'none',
-                background: isBenchmarking ? '#374151' : 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                color: 'white',
-                cursor: isBenchmarking ? 'not-allowed' : 'pointer',
-                fontSize: 14,
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8
-              }}>
-              {isBenchmarking ? <>测试中...</> : <><Play size={16} /> 开始测试</>}
-            </button>
-
-            {benchmarkResult && !isBenchmarking && (
-              <div style={{ marginTop: 24, fontSize: 13, color: '#94a3b8' }}>
-                {benchmarkResult > 1000000 ? (
-                  <span style={{ color: '#4ade80' }}>🌟 性能优秀！你的 JavaScript 执行速度非常快。</span>
-                ) : benchmarkResult > 500000 ? (
-                  <span style={{ color: '#22c55e' }}>✨ 性能良好，日常使用完全足够。</span>
-                ) : benchmarkResult > 100000 ? (
-                  <span style={{ color: '#fbbf24' }}>⚠️ 性能中等，可考虑关闭其他标签页提升性能。</span>
-                ) : (
-                  <span style={{ color: '#ef4444' }}>🚨 性能较低，建议关闭其他程序或重启浏览器。</span>
-                )}
+      <Card title="懒加载分析">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {resourceWaterfall.slice(0, 10).map((r, i) => {
+            const isLazyCandidate = r.type === 'img' || r.type === 'script' || r.startTime > 1000
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: BG, borderRadius: 4, fontSize: 11, fontFamily: MONO }}>
+                <span style={{ color: isLazyCandidate ? YELLOW : GREEN }}>{isLazyCandidate ? '⚠' : '✓'}</span>
+                <span style={{ color: CYAN, width: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                <span style={{ color: TEXT_DIM }}>{r.type}</span>
+                <span style={{ color: TEXT_MID, marginLeft: 'auto' }}>{r.startTime}ms</span>
+                {isLazyCandidate && <span style={{ color: YELLOW, fontSize: 10 }}>可懒加载</span>}
               </div>
-            )}
-          </div>
-
-          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.03)', fontSize: 12, color: '#64748b' }}>
-            测试说明：本测试在 3 秒内执行数组排序、映射和数学运算，测量每秒操作数。测试仅作参考，实际性能因浏览器、设备和系统负载而异。
-          </div>
+            )
+          })}
         </div>
-      )}
+      </Card>
     </div>
   )
-}
 
-function PerformanceChart({ history }: { history: HistoryPoint[] }) {
-  const width = 600
-  const height = 140
-  const padding = { top: 10, right: 10, bottom: 20, left: 30 }
-  const chartW = width - padding.left - padding.right
-  const chartH = height - padding.top - padding.bottom
-
-  const fpsMax = 60
-  const memMax = 100
-  const count = Math.max(history.length, 1)
-
-  const toPath = (points: { x: number; y: number }[]) => {
-    if (points.length === 0) return ''
-    return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-  }
-
-  const fpsPoints = history.map((p, i) => ({
-    x: padding.left + (i / Math.max(count - 1, 1)) * chartW,
-    y: padding.top + chartH - (p.fps / fpsMax) * chartH
-  }))
-
-  const memPoints = history.map((p, i) => ({
-    x: padding.left + (i / Math.max(count - 1, 1)) * chartW,
-    y: padding.top + chartH - (p.memory / memMax) * chartH
-  }))
-
-  const fpsAreaPath = history.length > 1
-    ? `${toPath(fpsPoints)} L${fpsPoints[fpsPoints.length - 1].x},${padding.top + chartH} L${fpsPoints[0].x},${padding.top + chartH} Z`
-    : ''
-
-  return (
-    <div style={{ width: '100%' }}>
-      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: height }}>
-        <defs>
-          <linearGradient id="fpsGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="memGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-          <line key={i}
-            x1={padding.left} y1={padding.top + t * chartH}
-            x2={padding.left + chartW} y2={padding.top + t * chartH}
-            stroke="rgba(255,255,255,0.06)" strokeWidth="1"
-          />
-        ))}
-
-        {history.length > 1 && (
-          <>
-            <path d={fpsAreaPath} fill="url(#fpsGrad)" />
-            <path d={toPath(fpsPoints)} fill="none" stroke="#a78bfa" strokeWidth="2" />
-            <path d={toPath(memPoints)} fill="none" stroke="#38bdf8" strokeWidth="2" strokeDasharray="4 2" />
-          </>
-        )}
-
-        {history.length === 0 && (
-          <text x={width / 2} y={height / 2} fill="#64748b" fontSize="12" textAnchor="middle">
-            等待数据中...
-          </text>
-        )}
-      </svg>
-      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8, fontSize: 11, color: '#94a3b8' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 12, height: 2, background: '#a78bfa', display: 'inline-block' }} /> FPS
-        </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 12, height: 2, background: '#38bdf8', display: 'inline-block' }} /> 内存
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function StartupBar({ label, value, warning, highlight }: { label: string; value: number; warning: number; highlight?: boolean }) {
-  const percent = clamp((value / (warning * 2)) * 100, 0, 100)
-  const color = value > warning ? '#ef4444' : value > warning * 0.7 ? '#f59e0b' : '#22c55e'
-
-  return (
+  const renderCleanup = () => (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
-        <span style={{ color: highlight ? '#facc15' : '#94a3b8', fontWeight: highlight ? 600 : 400 }}>{label}</span>
-        <span style={{ color, fontWeight: 600 }}>{value > 0 ? `${Math.round(value)}ms` : 'N/A'}</span>
+      <Card title="一键清理" accent={GREEN}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+          <button onClick={performCleanup} disabled={isOptimizing} style={{
+            padding: '14px 20px', fontSize: 14, borderRadius: 10, cursor: 'pointer',
+            background: `linear-gradient(135deg, ${GREEN}22, ${BLUE}22)`,
+            color: GREEN, border: `1px solid ${GREEN}33`, fontWeight: 600, textAlign: 'center',
+          }}>
+            {isOptimizing ? '⟳ 优化中...' : '✦ 一键优化'}
+            <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 4, fontWeight: 400 }}>清除过期存储、重复项、旧缓存</span>
+          </button>
+          <div style={{ padding: 14, background: BG, borderRadius: 10, border: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: 12, color: TEXT_DIM, marginBottom: 6 }}>优化将执行以下操作：</div>
+            <div style={{ fontSize: 11, color: TEXT_MID, lineHeight: 1.6 }}>
+              1. 清空 SessionStorage<br />
+              2. 删除 >100KB 的 localStorage 项<br />
+              3. 移除重复值条目<br />
+              4. 清理旧版 Service Worker 缓存
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        <button onClick={() => { try { sessionStorage.clear() } catch { /* ignore */ }; scanStorage() }} style={{
+          padding: '12px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+          background: BG_CARD, color: TEXT, border: `1px solid ${BORDER}`, textAlign: 'left',
+        }}>
+          🗑 清空 SessionStorage
+          <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>移除所有会话级存储</span>
+        </button>
+        <button onClick={() => {
+          try {
+            const large = storageItems.filter(i => i.size > 10 * 1024 && i.source === 'localStorage')
+            large.forEach(i => localStorage.removeItem(i.key))
+            scanStorage()
+          } catch { /* ignore */ }
+        }} style={{
+          padding: '12px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+          background: BG_CARD, color: TEXT, border: `1px solid ${BORDER}`, textAlign: 'left',
+        }}>
+          📦 移除大型存储项
+          <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>删除 >10KB 的 localStorage 条目</span>
+        </button>
+        <button onClick={async () => {
+          if ('caches' in window) {
+            try { const keys = await caches.keys(); for (const k of keys) await caches.delete(k); await scanCaches() } catch { /* ignore */ }
+          }
+        }} style={{
+          padding: '12px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+          background: BG_CARD, color: TEXT, border: `1px solid ${BORDER}`, textAlign: 'left',
+        }}>
+          🧹 清除所有缓存
+          <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>删除所有 Service Worker 缓存</span>
+        </button>
+        <button onClick={() => {
+          try {
+            const seen = new Map<string, string[]>()
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i)
+              if (key) {
+                const val = localStorage.getItem(key) || ''
+                const arr = seen.get(val)
+                if (arr) arr.push(key)
+                else seen.set(val, [key])
+              }
+            }
+            for (const [, keys] of seen) {
+              if (keys.length > 1) for (let i = 1; i < keys.length; i++) localStorage.removeItem(keys[i])
+            }
+            scanStorage()
+          } catch { /* ignore */ }
+        }} style={{
+          padding: '12px 16px', fontSize: 13, borderRadius: 8, cursor: 'pointer',
+          background: BG_CARD, color: TEXT, border: `1px solid ${BORDER}`, textAlign: 'left',
+        }}>
+          🔍 去除重复条目
+          <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>移除 localStorage 中重复值</span>
+        </button>
       </div>
-      <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-        <div style={{
-          height: '100%',
-          width: `${percent}%`,
-          background: color,
-          borderRadius: 2,
-          transition: 'width 0.5s ease'
-        }} />
-      </div>
+
+      {beforeAfter && (
+        <Card title="优化结果" accent={BLUE}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, textAlign: 'center' }}>
+            {[
+              { label: '评分', before: beforeAfter.scoreBefore, after: beforeAfter.scoreAfter, higher: true },
+              { label: '存储', before: formatSize(beforeAfter.storageBefore), after: formatSize(beforeAfter.storageAfter), higher: false },
+              { label: '内存%', before: beforeAfter.memoryBefore, after: beforeAfter.memoryAfter, higher: false, suffix: '%' },
+              { label: '项数', before: beforeAfter.itemsBefore, after: beforeAfter.itemsAfter, higher: false },
+            ].map(m => (
+              <div key={m.label} style={{ background: BG, borderRadius: 6, border: `1px solid ${BORDER}`, padding: 8 }}>
+                <div style={{ fontSize: 10, color: TEXT_DIM }}>{m.label}</div>
+                <div style={{ fontSize: 12, color: TEXT_DIM, textDecoration: 'line-through', fontFamily: MONO }}>
+                  {typeof m.before === 'number' ? `${m.before}${m.suffix || ''}` : m.before}
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: GREEN, fontFamily: MONO }}>
+                  {typeof m.after === 'number' ? `${m.after}${m.suffix || ''}` : m.after}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   )
-}
 
-function CleanupButton({ label, description, onClick }: { label: string; description: string; onClick: () => string }) {
-  const [toast, setToast] = useState<string | null>(null)
-
-  const handleClick = () => {
-    const result = onClick()
-    setToast(result)
-    setTimeout(() => setToast(null), 2000)
+  const tabRenderers: Record<TabKey, () => React.ReactNode> = {
+    overview: renderOverview,
+    storage: renderStorage,
+    cache: renderCache,
+    audit: renderAudit,
+    memory: renderMemory,
+    network: renderNetwork,
+    startup: renderStartup,
+    cleanup: renderCleanup,
   }
 
   return (
-    <button onClick={handleClick} style={{
-      padding: '16px',
-      borderRadius: 12,
-      border: '1px solid rgba(255,255,255,0.08)',
-      background: 'rgba(255,255,255,0.03)',
-      color: '#e0e0e8',
-      cursor: 'pointer',
-      textAlign: 'left',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 6,
-      transition: 'all 0.2s',
-      position: 'relative'
-    }}
-    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)' }}
-    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.03)' }}
-    >
-      <div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>
-      <div style={{ fontSize: 12, color: '#94a3b8' }}>{description}</div>
-      {toast && (
-        <div style={{
-          position: 'absolute',
-          top: -8,
-          right: -8,
-          padding: '4px 10px',
-          borderRadius: 8,
-          background: 'rgba(34,197,94,0.9)',
-          color: 'white',
-          fontSize: 11,
-          fontWeight: 600
-        }}>
-          {toast}
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: BG, color: TEXT, fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', fontSize: 14, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{
+        padding: '12px 16px', borderBottom: `1px solid ${BORDER}`,
+        background: `linear-gradient(135deg, ${GREEN}08, ${BLUE}08)`,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18, fontWeight: 700, fontFamily: MONO, background: `linear-gradient(135deg, ${GREEN}, ${BLUE})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            ⚙ System Optimizer
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: scoreColor(healthScore), boxShadow: `0 0 8px ${scoreColor(healthScore)}66` }} />
+            <span style={{ fontSize: 12, color: TEXT_MID, fontFamily: MONO }}>评分 {healthScore}</span>
+          </div>
         </div>
-      )}
-    </button>
-  )
-}
-
-function ChecklistItem({ label, done }: { label: string; done: boolean }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      {done ? (
-        <CheckCircle size={16} color="#4ade80" />
-      ) : (
-        <div style={{ width: 16, height: 16, borderRadius: 4, border: '2px solid rgba(255,255,255,0.2)' }} />
-      )}
-      <span style={{ fontSize: 12, color: done ? '#4ade80' : '#94a3b8' }}>{label}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {memoryInfo.percent > 0 && (
+            <span style={{ fontSize: 11, color: TEXT_DIM, fontFamily: MONO }}>内存 {memoryInfo.percent}%</span>
+          )}
+          {fpsHistory.length > 0 && (
+            <span style={{ fontSize: 11, color: TEXT_DIM, fontFamily: MONO }}>{fpsHistory[fpsHistory.length - 1]} FPS</span>
+          )}
+          <span style={{ fontSize: 11, color: TEXT_DIM, fontFamily: MONO }}>
+            {new Date().toLocaleTimeString('zh-CN', { hour12: false })}
+          </span>
+        </div>
+      </div>
+      {/* Tab Bar */}
+      <TabBar active={activeTab} onChange={setActiveTab} />
+      {/* Content */}
+      <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+        {tabRenderers[activeTab]()}
+      </div>
     </div>
   )
 }

@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v106.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v107.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -25,7 +25,7 @@
 - [What is WebLinuxOS](#what-is-weblinuxos)
 - [Features](#features)
   - [Desktop Environment](#desktop-environment)
-  - [500+ Integrated Applications](#500-integrated-applications)
+  - [560+ Integrated Applications](#560-integrated-applications)
   - [Real API Integrations](#real-api-integrations)
   - [Technical Highlights](#technical-highlights)
 - [Architecture](#architecture)
@@ -45,7 +45,7 @@
 
 ## What is WebLinuxOS
 
-WebLinuxOS is a fully functional Linux desktop environment that runs entirely in your browser. It is not a demo or simulation — every application performs real work: the terminal executes actual commands, the code editor writes real code with syntax highlighting, the API tester sends real HTTP requests, and the AI image studio generates images through public APIs. Built on React 19 and TypeScript, it ships with 500+ integrated applications spanning development, office, networking, multimedia, AI, and gaming — turning any browser-equipped device into a complete workstation.
+WebLinuxOS is a fully functional Linux desktop environment that runs entirely in your browser. It is not a demo or simulation — every application performs real work: the terminal executes actual commands, the code editor writes real code with syntax highlighting, the API tester sends real HTTP requests, and the AI image studio generates images through public APIs. Built on React 19 and TypeScript, it ships with 560+ integrated applications spanning development, office, networking, multimedia, AI, and gaming — turning any browser-equipped device into a complete workstation.
 
 ## Features
 
@@ -59,20 +59,32 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 - **Aurora & particle effects** — animated gradient backgrounds with floating particles and nebula layers
 - **Cross-tab synchronization** — real-time theme, file, and presence sync across browser tabs
 
-### 500+ Integrated Applications
+### 560+ Integrated Applications
 
 | Category | Examples |
 |----------|---------|
-| **Development** | Code editor, terminal, JSON tools, regex tester, API client, Git visualizer, snippet manager |
-| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation, flashcards |
+| **Development** | Code editor, terminal, JSON tools, regex tester, API client, Git visualizer, snippet manager, DevOps dashboard |
+| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation, flashcards, Smart Notes Pro |
 | **AI & Creative** | AI chat, image generation, background removal, code analyzer, translation, prompt engineering |
-| **Internet & APIs** | Weather, crypto, news, Wikipedia, GitHub trends, exchange rates |
-| **System & Utilities** | File manager, settings, system monitor, password vault, clipboard |
+| **Internet & APIs** | Weather, crypto, news, Wikipedia, GitHub trends, exchange rates, RSS aggregator, cloud drive |
+| **System & Utilities** | File manager, settings, system monitor, password vault, clipboard, app marketplace, system optimizer |
 | **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera |
 | **Smart Home** | IoT dashboard, device control, energy monitoring, scene automation |
 | **Education** | Language lab, flashcards, code challenges, learning paths |
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
 | **Collaboration** | Real-time whiteboard, document editor, code collaboration |
+| **Infrastructure** | WebSSH terminal, DevOps dashboard, workspace layout manager |
+
+#### New in v107
+
+- **AppMarketplace** — full-featured app store with 30+ app catalog, install/uninstall management, 5-star ratings, download tracking, update detection, featured picks, and category filtering
+- **CloudDrive** — multi-cloud storage client with IndexedDB local cloud, WebDAV remote access, file browser (grid/list), drag-and-drop upload, inline preview, storage analytics with pie chart, and sync status indicators
+- **WebSSHTerminal** — remote SSH terminal emulator with complete virtual Linux filesystem (/, /home, /etc, /var, /usr, /proc), 50+ commands (ls, cd, cat, grep, find, ps, top, curl, nano, vim...), multi-session tabs, SFTP panel, 5 color schemes, and pipe support
+- **WorkspaceLayout** — save and restore window layouts, 6 preset templates (Developer/Designer/Writer/Data Analyst/Sysadmin/Custom), visual layout editor, auto-save, import/export JSON, and window snap presets (50/50, 33/33/33, 70/30...)
+- **RSSAggregator** — real RSS/Atom feed reader with DOMParser, 9 preset feeds (Hacker News, TechCrunch, Ars Technica, The Verge, Dev.to, Lobsters, BBC Tech, MIT Tech Review), article reader with readability mode, offline cache, and CORS proxy fallback
+- **SmartNotesPro** — enhanced note-taking with `[[wiki-links]]` syntax, backlink tracking, knowledge graph visualization (Canvas), Markdown rendering, tag cloud, 5 built-in templates, export (Markdown/JSON), and trash/restore
+- **DevOpsDashboard** — infrastructure monitoring dashboard with real service health checks (fetch to public endpoints), CI/CD pipeline visualization, container management, log aggregation with level filtering, Canvas metrics charts, alert management, and environment configuration
+- **SystemOptimizer** — browser performance optimizer with real Performance API data: storage analyzer, cache manager, performance audit (load time, FPS, long tasks), memory/network/startup optimization, health score (0-100), and before/after comparison
 
 #### New & Notable (v106)
 
