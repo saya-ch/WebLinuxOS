@@ -178,6 +178,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/AstroViewer')) {
               return 'app-astrophys';
             }
+            if (id.includes('src/apps/EnhancedCodeSandbox')) {
+              return 'app-enhanced-sandbox';
+            }
+            if (id.includes('src/apps/EnhancedApiDebugger')) {
+              return 'app-enhanced-api-debugger';
+            }
+            if (id.includes('src/apps/DataVizWorkbench')) {
+              return 'app-dataviz-workbench';
+            }
             if (id.includes('src/apps/ColorName')) {
               return 'app-colors';
             }

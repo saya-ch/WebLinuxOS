@@ -776,10 +776,12 @@ export const useStore = create<Store>((set, get) => ({
   // 批量注册：一次性写入多个应用，避免 350+ 个应用逐个调用 registerApp 时的 O(n²) 性能问题
   registerApps: (apps) =>
     set((s) => {
-      if (apps.length === 0) return {}
-      const incomingIds = new Set(apps.map((a) => a.id))
-      const kept = s.apps.filter((a) => !incomingIds.has(a.id))
-      return { apps: [...kept, ...apps] }
+      if (!Array.isArray(apps) || apps.length === 0) return {}
+      const validApps = apps.filter((a): a is NonNullable<typeof a> => !!a && !!a.id)
+      if (validApps.length === 0) return {}
+      const incomingIds = new Set(validApps.map((a) => a.id))
+      const kept = s.apps.filter((a) => a && a.id && !incomingIds.has(a.id))
+      return { apps: [...kept, ...validApps] }
     }),
 
   addWindow: (app) => {

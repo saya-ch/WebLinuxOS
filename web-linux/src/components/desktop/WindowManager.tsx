@@ -581,6 +581,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DevEfficiencyDashboard: () => import('../../apps/DevEfficiencyDashboard'),
   // === v105 新增创新应用 ===
   WebSandboxIDE: () => import('../../apps/WebSandboxIDE'),
+  // === v106 创新应用套件 ===
+  EnhancedCodeSandbox: () => import('../../apps/EnhancedCodeSandbox'),
+  EnhancedApiDebugger: () => import('../../apps/EnhancedApiDebugger'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
@@ -951,12 +954,15 @@ const WindowManager = memo(function WindowManager() {
 
   const memoizedWindows = useMemo(() => {
     const currentDesktopWindows = windowsPerDesktop[currentDesktop] || []
-    const appMap = new Map(apps.map((app) => [app.id, app]))
+    const safeApps = Array.isArray(apps)
+      ? apps.filter((a): a is NonNullable<typeof a> => a !== null && a !== undefined && typeof a === 'object' && !!a.id)
+      : []
+    const appMap = new Map(safeApps.map((app) => [app.id, app]))
 
     const result = windows
       .filter((win) => currentDesktopWindows.includes(win.id))
       .map((win) => {
-        const app = appMap.get(win.appId) ?? apps.find((a) => a.id === win.appId)
+        const app = appMap.get(win.appId) ?? safeApps.find((a) => a.id === win.appId)
         if (!app) {
           console.warn(`[WindowManager] 未找到应用: ${win.appId}`)
           return null

@@ -45,7 +45,10 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const resizeRafRef = useRef<number | null>(null)
   const dragRafRef = useRef<number | null>(null)
 
-  const app = apps.find((a) => a.id === win.appId)
+  const safeApps = Array.isArray(apps)
+    ? apps.filter((a) => a !== null && a !== undefined && typeof a === 'object' && !!a.id)
+    : []
+  const app = safeApps.find((a) => a.id === win.appId)
 
   const [isMinimizing, setIsMinimizing] = useState(false)
   const [isOpening, setIsOpening] = useState(true)
