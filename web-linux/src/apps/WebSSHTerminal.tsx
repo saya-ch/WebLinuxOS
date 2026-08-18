@@ -401,7 +401,7 @@ function createShellState(user: string, hostname: string): ShellState {
     hostname,
     history: [],
     historyIndex: -1,
-    alias: { ll: 'ls -la', la: 'ls -a', l: 'ls -CF', ..: 'cd ..', cls: 'clear' },
+    alias: { ll: 'ls -la', la: 'ls -a', l: 'ls -CF', '..': 'cd ..', cls: 'clear' },
     processes: [
       { pid: 1, user: 'root', cpu: 0.1, mem: 0.3, command: '/sbin/init', startTime: '10:00' },
       { pid: 2, user: 'root', cpu: 0.0, mem: 0.0, command: '[kthreadd]', startTime: '10:00' },
@@ -1596,7 +1596,7 @@ ${cyan('       |o_o |       ')} ${dim('-----------------')}
 ${cyan('       |:_/ |       ')} OS: WebLinuxOS 1.0 x86_64
 ${cyan('      //   \\ \\      ')} Host: Virtual Machine
 ${cyan('     (|     | )     ')} Kernel: 5.15.0-weblinux
-${cyan('    /'\\_   _/\`\\     ')} Uptime: 42 days, 3 hours
+${cyan("    /'\\_   _/`\\     ")} Uptime: 42 days, 3 hours
 ${cyan('    \\___)=(___/     ')} Shell: bash 5.1.16
 ${cyan('                    ')} Terminal: xterm-256color
 ${cyan('                    ')} CPU: Intel i7-10700K (8) @ 3.80GHz

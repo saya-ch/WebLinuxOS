@@ -926,7 +926,7 @@ export default function SystemOptimizer() {
 
           {/* Long Tasks */}
           {audit.longTasks.length > 0 && (
-            <Card title="长任务 (>50ms)" accent={RED}>
+            <Card title={"长任务 (>50ms)"} accent={RED}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {audit.longTasks.map((t, i) => (
                   <div key={i} style={{ padding: '4px 8px', background: `${RED}08`, borderRadius: 4, fontSize: 12, fontFamily: MONO, color: TEXT_MID }}>
@@ -1141,7 +1141,7 @@ export default function SystemOptimizer() {
             <div style={{ fontSize: 12, color: TEXT_DIM, marginBottom: 6 }}>优化将执行以下操作：</div>
             <div style={{ fontSize: 11, color: TEXT_MID, lineHeight: 1.6 }}>
               1. 清空 SessionStorage<br />
-              2. 删除 >100KB 的 localStorage 项<br />
+              2. 删除 {'>'}100KB 的 localStorage 项<br />
               3. 移除重复值条目<br />
               4. 清理旧版 Service Worker 缓存
             </div>
@@ -1168,7 +1168,7 @@ export default function SystemOptimizer() {
           background: BG_CARD, color: TEXT, border: `1px solid ${BORDER}`, textAlign: 'left',
         }}>
           📦 移除大型存储项
-          <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>删除 >10KB 的 localStorage 条目</span>
+          <span style={{ fontSize: 10, color: TEXT_DIM, display: 'block', marginTop: 2 }}>删除 {'>'}10KB 的 localStorage 条目</span>
         </button>
         <button onClick={async () => {
           if ('caches' in window) {
