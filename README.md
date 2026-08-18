@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v105.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v106.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -74,6 +74,16 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
 | **Collaboration** | Real-time whiteboard, document editor, code collaboration |
 
+#### New & Notable (v106)
+
+- **DailyDashboard** — the one-stop morning dashboard: real-time weather with 5-day forecast, air quality index (AQI) with pollutant breakdown, upcoming public holiday countdown, top Hacker News stories, crypto market snapshot, and a daily inspirational quote, all on a single screen with live clock
+- **REST Countries integration** — full country lookup (250+ countries) with flags, capitals, populations, currencies, languages, time zones, borders, and OpenStreetMap links
+- **Open-Meteo Air Quality API** — PM2.5, PM10, NO2, SO2, O3, CO readings with 6-tier AQI severity labels (Good / Moderate / Unhealthy for Sensitive / Unhealthy / Very Unhealthy / Hazardous)
+- **Date.Nager Public Holidays API** — 100+ countries' public holiday calendars with countdown and local name display
+- **TheMealDB recipes API** — searchable recipe database with ingredients, measurements, video links, and random meal discovery
+- **Missing icon definitions backfilled** — 15 icon components (GitHub, WikiExplorer, SnippetVault, GeoAtlas, Nebula, PollinationsAI, DevAtlas, DataVizStudio, CodeReviewBot, FlashMaster, MarkdownPublisher, IdeaBoard, LivePulse, InsightPulse, CodeDocGen) that were referenced from apps.tsx but not declared in icons.tsx, preventing potential runtime reference errors
+- **API service layer expansion** — 9 new service methods (`fetchCountriesAll`, `searchCountryByName`, `fetchCountryByCode`, `fetchAirQuality`, `fetchHolidays`, `searchRecipes`, `fetchRandomRecipe`, `fetchDailyMegaDashboard`) plus 4 new TypeScript interfaces
+
 #### New & Notable (v105)
 
 - **WebSandboxIDE** — browser-based sandbox IDE for safe code experimentation and prototyping
@@ -87,9 +97,13 @@ WebLinuxOS is a fully functional Linux desktop environment that runs entirely in
 All data comes from legitimate, public APIs — no mock data, no empty shells:
 
 - **Open-Meteo** — global weather forecasts
+- **Open-Meteo Air Quality** — real-time AQI and pollutant readings (PM2.5/PM10/NOx/SO2/O3/CO)
 - **CoinGecko** — real-time cryptocurrency prices
 - **Hacker News** — tech news aggregation
 - **Wikipedia** — encyclopedia articles
+- **REST Countries** — country data for 250+ sovereign states (flags, capitals, currencies, borders, maps)
+- **Date.Nager** — global public holiday calendars with country-code filtering
+- **TheMealDB** — open recipe database with ingredients, measurements and tutorials
 - **ExchangeRate-API** — foreign exchange rates
 - **ZenQuotes** — daily quotes and wisdom
 - **Pollinations.ai** — AI chat and image generation

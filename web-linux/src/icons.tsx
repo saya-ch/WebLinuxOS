@@ -464,3 +464,168 @@ export const ShortcutCustomizerIcon = ({ size = 18 }: { size?: number }) => (
     <path d="M22 8l-2-2M2 8l2-2M22 16l-2 2M2 16l2 2"/>
   </svg>
 )
+
+/* =================== 缺失图标补全：apps.tsx 引用但未定义的图标 =================== */
+
+export const GitHubIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+  </svg>
+)
+
+export const WikiExplorerIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    <path d="M12 7l-2 4-2 4h8l-2-4-2-4z" opacity="0.4" fill="currentColor" stroke="none"/>
+  </svg>
+)
+
+export const SnippetVaultIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <path d="M7 4v16M17 4v16"/>
+    <rect x="9" y="8" width="6" height="8" rx="1" fill="currentColor" opacity="0.2"/>
+    <polyline points="11,11 13,13 11,15"/>
+  </svg>
+)
+
+export const GeoAtlasIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M2 12h20"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    <path d="M5 7l2 2M17 7l-2 2M5 17l2-2M17 17l-2-2"/>
+  </svg>
+)
+
+export const NebulaIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3"/>
+    <path d="M12 2a10 10 0 0 1 0 20 10 10 0 0 1 0-20"/>
+    <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20" opacity="0.5"/>
+    <circle cx="12" cy="4" r="1" fill="currentColor"/>
+    <circle cx="4" cy="12" r="1" fill="currentColor"/>
+    <circle cx="20" cy="12" r="1" fill="currentColor"/>
+    <circle cx="12" cy="20" r="1" fill="currentColor"/>
+  </svg>
+)
+
+export const PollinationsAIIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.2"/>
+  </svg>
+)
+
+export const DevAtlasIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    <path d="M12 8v8M9 11l3 3 3-3"/>
+  </svg>
+)
+
+export const DataVizStudioIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18"/>
+    <rect x="7" y="14" width="3" height="5" fill="currentColor" opacity="0.3"/>
+    <rect x="11" y="10" width="3" height="9" fill="currentColor" opacity="0.3"/>
+    <rect x="15" y="6" width="3" height="13" fill="currentColor" opacity="0.3"/>
+    <path d="M7 14c2-4 4-4 4-4s2 0 4 4"/>
+  </svg>
+)
+
+export const CodeReviewBotIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 0 1-8 0"/>
+    <circle cx="9" cy="10" r="1" fill="currentColor"/>
+    <circle cx="15" cy="10" r="1" fill="currentColor"/>
+    <path d="M9 15l2 2 4-4"/>
+  </svg>
+)
+
+export const FlashMasterIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="2"/>
+    <path d="M9 10h6M9 14h4M9 18h3" strokeWidth="2.5"/>
+    <polygon points="13,2 17,2 11,9 15,9 7,18 9,11 5,11 13,2" fill="currentColor" opacity="0.2"/>
+  </svg>
+)
+
+export const MarkdownPublisherIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <path d="M8 13v5l2-2 2 2v-5M16 13v5M14 13h4"/>
+  </svg>
+)
+
+export const IdeaBoardIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="9" cy="9" r="1.5" fill="currentColor"/>
+    <circle cx="15" cy="9" r="1.5" fill="currentColor"/>
+    <circle cx="9" cy="15" r="1.5" fill="currentColor"/>
+    <path d="M10.5 10.5l3 3M13.5 10.5l-3 3"/>
+    <circle cx="15" cy="15" r="1.5" fill="currentColor" opacity="0.5"/>
+  </svg>
+)
+
+export const LivePulseIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+    <circle cx="5" cy="5" r="1" fill="currentColor"/>
+    <circle cx="19" cy="5" r="1" fill="currentColor"/>
+    <circle cx="5" cy="19" r="1" fill="currentColor"/>
+    <circle cx="19" cy="19" r="1" fill="currentColor"/>
+  </svg>
+)
+
+export const InsightPulseIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 6v6l4 2"/>
+    <path d="M2 12h4M18 12h4M12 2v4M12 18v4"/>
+    <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.3"/>
+  </svg>
+)
+
+export const CodeDocGenIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <polyline points="10 13 8 15 10 17"/>
+    <polyline points="14 13 16 15 14 17"/>
+    <line x1="9" y1="12" x2="15" y2="12"/>
+  </svg>
+)
+
+/* =================== v106 新增：DailyDashboard 每日仪表盘图标 =================== */
+
+export const DailyDashboardIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.2"/>
+    <polyline points="12 7 12 12 15 14"/>
+    <rect x="3" y="4" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+    <rect x="18" y="4" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+    <rect x="3" y="18" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+    <rect x="18" y="18" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+  </svg>
+)
+
+/* =================== v106 新增：API 集成补充图标 =================== */
+
+export const RestCountriesIcon = ({ size = 18 }: { size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    <circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.7"/>
+    <circle cx="16" cy="10" r="1" fill="currentColor" opacity="0.7"/>
+    <circle cx="10" cy="16" r="1" fill="currentColor" opacity="0.7"/>
+    <circle cx="17" cy="17" r="1" fill="currentColor" opacity="0.7"/>
+  </svg>
+)

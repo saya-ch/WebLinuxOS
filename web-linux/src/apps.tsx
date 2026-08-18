@@ -16,7 +16,9 @@ import {
   WikiSearchIcon, CodeSnapIcon, WebSummarizeIcon, TrendingUpIcon,
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
   BarChartIcon, ResearchIcon, DatabaseIcon, BarChart3Icon,
-  GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon
+  GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon,
+  // v106 新增：仅保留 icons.tsx 独有的，不与 apps.tsx 本地 function 定义冲突
+  DailyDashboardIcon
 } from './icons'
 
 import type { AppDefinition } from './types'
@@ -33,6 +35,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // v106 创新功能 — DailyDashboard 每日仪表盘：聚合天气+空气质量+节假日+新闻+加密货币+每日名言
+  { id: 'daily-dashboard', name: '每日仪表盘', icon: <DailyDashboardIcon />, component: 'DailyDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '每日信息聚合仪表盘：实时天气+5天预报、空气质量指数AQI、近期节假日倒计时、Hacker News热门资讯、加密货币行情、每日励志名言，一站式获取每日所需信息' },
   // v104 创新功能 — SmartWorkspace 智能工作空间：多布局自定义、收藏夹、应用快捷启动
   { id: 'smart-workspace', name: '智能工作空间', icon: <GridIcon />, component: 'SmartWorkspace', category: 'utilities', defaultWidth: 1280, defaultHeight: 820, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '智能工作空间：多布局自定义（开发/设计/学习/办公）、应用收藏夹、一键启动、实时时钟、全局搜索' },
   // v104 创新功能 — 开发者效率仪表板：系统性能、待办、快捷入口三合一

@@ -584,6 +584,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v106 创新应用套件 ===
   EnhancedCodeSandbox: () => import('../../apps/EnhancedCodeSandbox'),
   EnhancedApiDebugger: () => import('../../apps/EnhancedApiDebugger'),
+  // === v106 DailyDashboard 每日仪表盘 ===
+  DailyDashboard: () => import('../../apps/DailyDashboard'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

@@ -1400,6 +1400,315 @@ export class ApiService {
       }
     }
   }
+
+  // === v106 新增：REST Countries API - 国家信息查询 ===
+}
+
+export interface CountryInfo {
+  name: string
+  officialName: string
+  cca2: string
+  cca3: string
+  capital: string[]
+  region: string
+  subregion: string
+  population: number
+  area: number
+  languages: Record<string, string>
+  currencies: Record<string, { name: string; symbol: string }>
+  flag: string
+  flags: { png: string; svg: string }
+  timezones: string[]
+  borders: string[]
+  latlng: [number, number]
+  maps: { googleMaps: string; openStreetMaps: string }
+}
+
+export interface AirQualityData {
+  latitude: number
+  longitude: number
+  aqi: number
+  aqiLevel: string
+  pm10: number
+  pm2_5: number
+  carbonMonoxide: number
+  nitrogenDioxide: number
+  sulphurDioxide: number
+  ozone: number
+  europeanAqi?: number
+}
+
+export interface HolidayInfo {
+  date: string
+  localName: string
+  name: string
+  countryCode: string
+  fixed: boolean
+  global: boolean
+  types: string[]
+}
+
+export interface Recipe {
+  id: string
+  name: string
+  category: string
+  area: string
+  instructions: string
+  thumbnail: string
+  tags: string[]
+  ingredients: { name: string; measure: string }[]
+  youtubeLink?: string
+  sourceLink?: string
+}
+
+// 扩展 ApiService 的 baseUrls 定义和方法
+declare module './apiService' {
+  interface ApiService {
+    fetchCountriesAll(): Promise<CountryInfo[] | null>
+    searchCountryByName(name: string): Promise<CountryInfo[] | null>
+    fetchCountryByCode(code: string): Promise<CountryInfo | null>
+    fetchAirQuality(latitude: number, longitude: number): Promise<AirQualityData | null>
+    fetchHolidays(countryCode: string, year: number): Promise<HolidayInfo[] | null>
+    searchRecipes(query: string): Promise<Recipe[] | null>
+    fetchRandomRecipe(): Promise<Recipe | null>
+    fetchDailyMegaDashboard(): Promise<{
+      weather: WeatherData | null
+      quote: QuoteData | null
+      airQuality: AirQualityData | null
+      holidays: HolidayInfo[]
+      news: NewsArticle[]
+      crypto: CryptoPrice[]
+    }>
+  }
+}
+
+ApiService.prototype.fetchCountriesAll = async function (): Promise<CountryInfo[] | null> {
+  try {
+    const fields = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
+    const response = await fetch(`https://restcountries.com/v3.1/all?fields=${fields}`)
+    if (!response.ok) return null
+    const data = await response.json()
+    return (data as any[]).map(item => ({
+      name: item.name?.common || '',
+      officialName: item.name?.official || '',
+      cca2: item.cca2 || '',
+      cca3: item.cca3 || '',
+      capital: item.capital || [],
+      region: item.region || '',
+      subregion: item.subregion || '',
+      population: item.population || 0,
+      area: item.area || 0,
+      languages: item.languages || {},
+      currencies: item.currencies || {},
+      flag: item.flag || '',
+      flags: item.flags || { png: '', svg: '' },
+      timezones: item.timezones || [],
+      borders: item.borders || [],
+      latlng: (item.latlng as [number, number]) || [0, 0],
+      maps: item.maps || { googleMaps: '', openStreetMaps: '' }
+    })).sort((a, b) => a.name.localeCompare(b.name))
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.searchCountryByName = async function (name: string): Promise<CountryInfo[] | null> {
+  try {
+    const fields = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
+    const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=${fields}`)
+    if (!response.ok) return []
+    const data = await response.json()
+    return (data as any[]).map(item => ({
+      name: item.name?.common || '',
+      officialName: item.name?.official || '',
+      cca2: item.cca2 || '',
+      cca3: item.cca3 || '',
+      capital: item.capital || [],
+      region: item.region || '',
+      subregion: item.subregion || '',
+      population: item.population || 0,
+      area: item.area || 0,
+      languages: item.languages || {},
+      currencies: item.currencies || {},
+      flag: item.flag || '',
+      flags: item.flags || { png: '', svg: '' },
+      timezones: item.timezones || [],
+      borders: item.borders || [],
+      latlng: (item.latlng as [number, number]) || [0, 0],
+      maps: item.maps || { googleMaps: '', openStreetMaps: '' }
+    }))
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.fetchCountryByCode = async function (code: string): Promise<CountryInfo | null> {
+  try {
+    const fields = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
+    const response = await fetch(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(code)}?fields=${fields}`)
+    if (!response.ok) return null
+    const data = await response.json()
+    const item = data[0] || data
+    return {
+      name: item.name?.common || '',
+      officialName: item.name?.official || '',
+      cca2: item.cca2 || '',
+      cca3: item.cca3 || '',
+      capital: item.capital || [],
+      region: item.region || '',
+      subregion: item.subregion || '',
+      population: item.population || 0,
+      area: item.area || 0,
+      languages: item.languages || {},
+      currencies: item.currencies || {},
+      flag: item.flag || '',
+      flags: item.flags || { png: '', svg: '' },
+      timezones: item.timezones || [],
+      borders: item.borders || [],
+      latlng: (item.latlng as [number, number]) || [0, 0],
+      maps: item.maps || { googleMaps: '', openStreetMaps: '' }
+    }
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.fetchAirQuality = async function (latitude: number, longitude: number): Promise<AirQualityData | null> {
+  try {
+    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=european_aqi,us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone`
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const data = await response.json()
+    const current = data.current || {}
+
+    const aqi = current.us_aqi ?? current.european_aqi ?? 0
+    const getAqiLevel = (val: number): string => {
+      if (val <= 50) return '优'
+      if (val <= 100) return '良'
+      if (val <= 150) return '轻度污染'
+      if (val <= 200) return '中度污染'
+      if (val <= 300) return '重度污染'
+      return '严重污染'
+    }
+
+    return {
+      latitude,
+      longitude,
+      aqi: Math.round(aqi),
+      aqiLevel: getAqiLevel(aqi),
+      pm10: Math.round(current.pm10 ?? 0),
+      pm2_5: Math.round(current.pm2_5 ?? 0),
+      carbonMonoxide: Math.round((current.carbon_monoxide ?? 0) * 10) / 10,
+      nitrogenDioxide: Math.round(current.nitrogen_dioxide ?? 0),
+      sulphurDioxide: Math.round(current.sulphur_dioxide ?? 0),
+      ozone: Math.round(current.ozone ?? 0),
+      europeanAqi: current.european_aqi ? Math.round(current.european_aqi) : undefined
+    }
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.fetchHolidays = async function (countryCode: string, year: number): Promise<HolidayInfo[] | null> {
+  try {
+    const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${encodeURIComponent(countryCode)}`)
+    if (!response.ok) return []
+    const data = await response.json()
+    return (data as any[]).map(item => ({
+      date: item.date || '',
+      localName: item.localName || '',
+      name: item.name || '',
+      countryCode: item.countryCode || '',
+      fixed: !!item.fixed,
+      global: !!item.global,
+      types: item.types || []
+    }))
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.searchRecipes = async function (query: string): Promise<Recipe[] | null> {
+  try {
+    const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`)
+    if (!response.ok) return null
+    const data = await response.json()
+    if (!data.meals) return []
+    return data.meals.map((m: any) => {
+      const ingredients: { name: string; measure: string }[] = []
+      for (let i = 1; i <= 20; i++) {
+        const ing = m[`strIngredient${i}`]
+        const mea = m[`strMeasure${i}`]
+        if (ing && ing.trim()) ingredients.push({ name: ing.trim(), measure: mea?.trim() || '' })
+      }
+      return {
+        id: m.idMeal || '',
+        name: m.strMeal || '',
+        category: m.strCategory || '',
+        area: m.strArea || '',
+        instructions: m.strInstructions || '',
+        thumbnail: m.strMealThumb || '',
+        tags: m.strTags ? m.strTags.split(',').filter(Boolean) : [],
+        ingredients,
+        youtubeLink: m.strYoutube || undefined,
+        sourceLink: m.strSource || undefined
+      }
+    })
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.fetchRandomRecipe = async function (): Promise<Recipe | null> {
+  try {
+    const response = await fetch(`https://www.themealdb.com/api/json/v1/1/random.php`)
+    if (!response.ok) return null
+    const data = await response.json()
+    if (!data.meals?.[0]) return null
+    const m = data.meals[0]
+    const ingredients: { name: string; measure: string }[] = []
+    for (let i = 1; i <= 20; i++) {
+      const ing = m[`strIngredient${i}`]
+      const mea = m[`strMeasure${i}`]
+      if (ing && ing.trim()) ingredients.push({ name: ing.trim(), measure: mea?.trim() || '' })
+    }
+    return {
+      id: m.idMeal || '',
+      name: m.strMeal || '',
+      category: m.strCategory || '',
+      area: m.strArea || '',
+      instructions: m.strInstructions || '',
+      thumbnail: m.strMealThumb || '',
+      tags: m.strTags ? m.strTags.split(',').filter(Boolean) : [],
+      ingredients,
+      youtubeLink: m.strYoutube || undefined,
+      sourceLink: m.strSource || undefined
+    }
+  } catch {
+    return null
+  }
+}
+
+ApiService.prototype.fetchDailyMegaDashboard = async function (): Promise<{
+  weather: WeatherData | null
+  quote: QuoteData | null
+  airQuality: AirQualityData | null
+  holidays: HolidayInfo[]
+  news: NewsArticle[]
+  crypto: CryptoPrice[]
+}> {
+  const coords = await (ApiService.prototype as any).getSmartCoords.call(ApiService.getInstance())
+  const year = new Date().getFullYear()
+  const [weather, quote, airQuality, holidays, news, crypto] = await Promise.all([
+    ApiService.getInstance().fetchWeather(coords.latitude, coords.longitude),
+    ApiService.getInstance().fetchRandomQuote(),
+    ApiService.getInstance().fetchAirQuality(coords.latitude, coords.longitude),
+    ApiService.getInstance().fetchHolidays('CN', year).then(r => r || []),
+    ApiService.getInstance().fetchNews(),
+    ApiService.getInstance().fetchCryptoPrices(['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple'])
+  ])
+
+  return { weather, quote, airQuality, holidays, news, crypto }
 }
 
 export const apiService = ApiService.getInstance()

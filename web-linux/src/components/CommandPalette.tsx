@@ -73,7 +73,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const commands = useMemo(() => {
     const result: Command[] = []
 
-    appRegistry.forEach((app) => {
+    // 防御性过滤：跳过 appRegistry 中可能的 undefined/null 条目，避免 reading 'id' 崩溃
+    ;(appRegistry || []).forEach((app) => {
+      if (!app || !app.id || !app.name) return
       result.push({
         id: `app-${app.id}`,
         name: app.name,
@@ -130,9 +132,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
 
     const currentWindows = windowsPerDesktop[currentDesktop] || []
     currentWindows.forEach((windowId) => {
-      const win = windows.find(w => w.id === windowId)
+      const win = (windows || []).find((w: any) => w && w.id === windowId)
       if (win) {
-        const app = appRegistry.find(a => a.id === win.appId)
+        const app = (appRegistry || []).find((a: any) => a && a.id === win.appId)
         result.push({
           id: `window-${win.id}`,
           name: `聚焦 ${win.title}`,
