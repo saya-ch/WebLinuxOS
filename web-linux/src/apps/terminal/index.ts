@@ -69,3 +69,6 @@ import './enhancedTerminalCommands'
 
 // 18. 创新命令集：calc/password-gen/unit/ip-info/uuid-gen/color-info/emoji-search/fortune-today/short-link/quote-random
 import './innovativeCommands'
+
+// 19. v109 终端增强命令集：edit/write增强/wc增强/tee增强/run/whereis
+import './terminalEnhancedCommands'

@@ -2,28 +2,10 @@
 // 基于 Pollinations AI 公开免费 API，带本地回退
 
 import { registerCommand, type CommandContext } from './commands'
+import { pollinationsPrompt } from './terminalApiService'
 
 const POEM_STYLES = ['唐诗', '宋词', '现代诗', '俳句', '十四行诗', '诗经', '楚辞', '自由诗']
 const GENRES = ['奇幻', '科幻', '悬疑', '浪漫', '寓言', '恐怖', '历史', '喜剧']
-
-async function pollinationsPrompt(prompt: string, maxTokens = 800): Promise<string> {
-  try {
-    const res = await fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'flux',
-        prompt,
-        max_tokens: maxTokens,
-        temperature: 0.85,
-      }),
-    })
-    if (!res.ok) throw new Error('API error')
-    return await res.text()
-  } catch {
-    return ''
-  }
-}
 
 // ===== poetry 命令 =====
 registerCommand('poetry', {

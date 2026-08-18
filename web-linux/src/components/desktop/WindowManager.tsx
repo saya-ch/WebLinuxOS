@@ -586,6 +586,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   EnhancedApiDebugger: () => import('../../apps/EnhancedApiDebugger'),
   // === v106 DailyDashboard 每日仪表盘 ===
   DailyDashboard: () => import('../../apps/DailyDashboard'),
+  // === v109 新增组件 ===
+  WebContainerIDE: () => import('../../apps/WebContainerIDE'),
+  MarkdownWriter: () => import('../../apps/MarkdownWriter'),
   // === v107 新增组件 ===
   AppMarketplace: () => import('../../apps/AppMarketplace'),
   CloudDrive: () => import('../../apps/CloudDrive'),

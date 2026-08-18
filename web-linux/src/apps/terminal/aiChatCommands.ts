@@ -8,7 +8,7 @@
 
 import { registerCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
-import { fetchWithTimeout, handleApiError } from '../../config/apiConfig'
+import { fetchWithTimeout, handleApiError } from './terminalApiService'
 
 const AI_API_URL = 'https://text.pollinations.ai/openai/messages'
 const AI_TIMEOUT = 10000
