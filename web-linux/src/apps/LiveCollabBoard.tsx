@@ -341,7 +341,7 @@ export default function LiveCollabBoard() {
     const cursorClean = setInterval(() => {
       const now = Date.now()
       let changed = false
-      for (const [id, cur] of remoteCursorsRef.current) {
+      for (const [id] of remoteCursorsRef.current) {
         const peer = peers.get(id)
         if (!peer || now - peer.lastSeen > CURSOR_TIMEOUT) {
           remoteCursorsRef.current.delete(id)

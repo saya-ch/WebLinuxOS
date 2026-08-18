@@ -15,7 +15,6 @@
  */
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import type { editor } from 'monaco-editor'
 
 // 类型定义
 interface FileTab {
@@ -338,9 +337,8 @@ export default function WebContainerIDE() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showConsole, setShowConsole] = useState(true);
   
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const previewRef = useRef<HTMLIFrameElement | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // 自动保存
   useEffect(() => {
@@ -374,18 +372,6 @@ export default function WebContainerIDE() {
     iframe.style.display = 'none';
     iframe.sandbox.add('allow-scripts');
     document.body.appendChild(iframe);
-
-    const entries: ConsoleEntry[] = [];
-
-    const formatValue = (v: unknown): string => {
-      if (v === undefined) return 'undefined';
-      if (v === null) return 'null';
-      if (typeof v === 'string') return v;
-      if (typeof v === 'object') {
-        try { return JSON.stringify(v, null, 2); } catch { return String(v); }
-      }
-      return String(v);
-    };
 
     // 注入 console 拦截
     const consoleScript = `
@@ -542,8 +528,6 @@ export default function WebContainerIDE() {
     a.click();
     URL.revokeObjectURL(url);
   }, [activeFile]);
-
-  const isDark = true; // 在WebLinuxOS中默认暗色主题
 
   const templateList = Object.entries(TEMPLATES) as [string, { name: string }][];
   const entryColors: Record<string, string> = {

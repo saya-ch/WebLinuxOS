@@ -449,7 +449,7 @@ const WebBrowser = memo(function WebBrowser() {
         for (const topic of topics) {
           if (!topic || typeof topic !== 'object') continue
           const t = topic as Record<string, unknown>
-          if (t.Text && t.FirstURL) {
+          if (typeof t.Text === 'string' && t.FirstURL) {
             results.push({
               title: t.Text.split(' - ')[0] || String(t.Text),
               snippet: String(t.Text),
@@ -469,7 +469,7 @@ const WebBrowser = memo(function WebBrowser() {
       // Add Results if available (these have separate title/url/text)
       if (Array.isArray(data.Results)) {
         for (const r of data.Results as Record<string, unknown>[]) {
-          if (r.Text && r.FirstURL) {
+          if (typeof r.Text === 'string' && r.FirstURL) {
             results.push({
               title: r.Text.split(' - ')[0] || String(r.Text),
               snippet: String(r.Text),

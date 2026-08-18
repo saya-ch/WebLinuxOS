@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v109.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v110.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -31,6 +31,18 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - The **system monitor** reads real Performance API data from your browser
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v110
+
+This release introduces three professional-grade applications that transform WebLinuxOS from a desktop simulation into a practical daily productivity environment.
+
+- **DataPulse Pro (数据脉搏仪表盘)** — One-stop real-time data dashboard aggregating 7+ public APIs: Open-Meteo weather, Open-Meteo AQI (PM2.5/PM10/O3), Frankfurter FX rates, CoinGecko crypto prices (BTC/ETH/SOL/ADA/XRP/DOGE with 7-day sparklines), Hacker News top stories, NASA Astronomy Picture of the Day, and locally computed holiday countdowns. Includes smart caching, error fallbacks, city switching, and a tabbed interface (Overview / Finance / News / Space).
+- **AICodeMentor Pro (AI代码导师)** — A full developer mentorship workspace built on the free Pollinations.ai LLM API. Six dedicated modes: Code Explainer, Code Reviewer, Optimizer (performance + readability), Bug Finder & Fixer, Test Case Generator, and Algorithm Explainer. Supports JavaScript/TypeScript/Python/Go/Rust/Java/C++ with prompt templates, one-click import/export, and session history.
+- **DevFlow Pro (开发者工作流中心)** — Integrated developer workflow hub combining four modules: Pomodoro timer (focus/short/long break with audio cues, Web Audio API), Kanban task board (today/todo/blocked/done with drag-drop and priorities), code snippet manager (language-aware, tagged, searchable, copy to clipboard, preset snippets), and daily standup journal with mood tracking and focus-hour logging. All data persists in localStorage across sessions, plus a built-in GitHub Trending browser.
+
+Additional improvements in v110:
+- **Build reliability fixes** — resolved TypeScript strict-mode violations across LiveCollabBoard, MarkdownWriter, WebBrowser, WebContainerIDE, and terminalEnhancedCommands (unused imports, incorrect types, missing properties).
+- **Improved null-safety in network layers** — DataPulse and other API-driven apps now fully guard against empty payloads with per-field optional chaining and safe fallbacks instead of throwing.
 
 ## What's New in v109
 

@@ -13,7 +13,7 @@
  * - 暗色/亮色主题
  */
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 
 interface Doc {
   id: string

@@ -8,7 +8,6 @@
 import { registerCommand, getCommand } from './commands'
 import type { CommandContext, CommandResult } from './commands'
 import { findNodeByPath, resolvePath } from '../../store'
-import { formatBytes } from './terminalApiService'
 
 // ─── 1. edit 命令 ─── 基于文件系统的文本编辑器命令
 registerCommand('edit', {
