@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import { API_CONFIG, fetchWithTimeout, handleApiError } from '../config/apiConfig'
 
 interface Message {
   id: string
@@ -14,94 +15,51 @@ interface Conversation {
   createdAt: Date
 }
 
-// 预设的AI响应模板（模拟智能助手）
-const AI_RESPONSES: Record<string, string[]> = {
-  'hello': [
-    '你好！我是WebLinuxOS智能助手，很高兴为你服务。有什么我可以帮助你的吗？',
-    '嗨！欢迎来到WebLinuxOS。我可以帮助你使用这个系统，或者回答你的问题。',
-    '你好！我是你的AI助手。你可以问我关于编程、系统使用、或者任何其他问题。'
-  ],
-  'help': [
-    '我可以帮助你：\n\n1. 解释系统功能和应用\n2. 提供编程建议和代码示例\n3. 解答技术问题\n4. 推荐工具和资源\n5. 翻译文本\n\n请告诉我你需要什么帮助！',
-    '作为智能助手，我可以：\n\n• 回答技术问题\n• 提供代码建议\n• 解释系统功能\n• 翻译多语言文本\n• 推荐学习资源\n\n试试问我："如何使用终端？"或"推荐一个代码编辑器"'
-  ],
-  'terminal': [
-    'WebLinuxOS终端是一个强大的命令行工具，支持90+命令。\n\n常用命令：\n• ls - 列出文件\n• cd - 切换目录\n• cat - 查看文件\n• pwd - 显示当前路径\n• help - 查看所有命令\n\n你可以在终端中尝试这些命令，或者输入"neofetch"查看系统信息！',
-    '终端使用技巧：\n\n1. 使用Tab键自动补全命令\n2. 使用↑↓键浏览历史命令\n3. Ctrl+C取消当前命令\n4. 输入"cowsay Hello"让牛说话\n5. 输入"matrix"查看矩阵效果\n\n试试这些有趣的命令吧！'
-  ],
-  'code': [
-    'WebLinuxOS提供了多个编程工具：\n\n• CodeRunner - 支持JS/TS/Python/SQL/Bash\n• CodeEditor - 专业的代码编辑器\n• CodePlayground - 实验性代码运行\n• Terminal - 命令行编程环境\n\n推荐使用CodeRunner来运行和测试代码！',
-    '编程建议：\n\n1. 使用CodeRunner进行快速代码测试\n2. 用CodeEditor编写更复杂的程序\n3. 在Terminal中使用git命令管理代码\n4. 用FileManager组织你的项目文件\n\n你想学习哪种编程语言？我可以提供入门建议。'
-  ],
-  'weather': [
-    '天气应用是WebLinuxOS的实用工具之一。\n\n功能特点：\n• 实时天气数据（使用Open-Meteo API）\n• 7天天气预报\n• 空气质量监测\n• 全球城市搜索\n• 智能穿衣建议\n\n打开天气应用，输入城市名称即可查看天气！',
-    '天气应用使用技巧：\n\n1. 点击"定位"按钮获取当前位置天气\n2. 使用搜索框查找全球城市\n3. 收藏常查城市方便快速访问\n4. 查看"智能建议"获取穿衣推荐\n\n试试搜索"东京"或"纽约"查看天气！'
-  ],
-  'file': [
-    'FileManager是WebLinuxOS的核心应用。\n\n功能：\n• 文件浏览和管理\n• 创建、删除、重命名文件\n• 文件上传和下载\n• 文件搜索\n• 文件预览\n• 批量操作\n\n快捷键：Ctrl+F搜索，Ctrl+C复制，Ctrl+V粘贴',
-    '文件管理技巧：\n\n1. 双击文件用相应应用打开\n2. 右键菜单提供更多操作\n3. 拖拽文件到目录移动\n4. 使用网格视图查看图标\n5. 搜索功能快速定位文件\n\n试试创建一个新文件夹来组织你的文件！'
-  ],
-  'translate': [
-    '翻译功能：\n\nWebLinuxOS提供了多种翻译工具：\n• RealTimeTranslator - 实时翻译应用\n• Terminal中的translate命令\n\n支持语言：中文、英语、日语、韩语、法语、德语等。\n\n在终端输入：translate "Hello" zh 即可翻译！',
-    '翻译使用方法：\n\n1. 打开RealTimeTranslator应用\n2. 输入要翻译的文本\n3. 选择源语言和目标语言\n4. 点击翻译按钮\n\n或者在终端使用：\ntranslate "你的文本" en\n\n试试翻译一些文本吧！'
-  ],
-  'game': [
-    'WebLinuxOS内置小游戏：\n\n• Snake - 经典贪吃蛇游戏\n• Tetris - 俄罗斯方块\n• Flip - 抛硬币\n• RPS - 石头剪刀布\n\n在终端输入游戏名称即可开始！\n试试输入"snake"或"tetris"',
-    '游戏推荐：\n\n1. Snake贪吃蛇 - 方向键控制\n2. Tetris俄罗斯方块 - 经典益智\n3. 在终端输入"joke"获取程序员笑话\n4. 输入"fortune"获取随机名言\n\n来玩一局放松一下吧！'
-  ],
-  'api': [
-    'WebLinuxOS集成的公开API：\n\n• Open-Meteo - 天气数据\n• Wikipedia - 维基百科\n• GitHub Trending - 开源趋势\n• NASA - 太空探索\n• Crypto - 加密货币\n• Currency - 汇率转换\n\n打开相应应用即可使用这些API！',
-    'API使用指南：\n\n1. Weather - 天气API\n2. WikipediaReader - 维基百科\n3. GitHubTrending - 开源项目\n4. CryptoTracker - 加密货币\n5. CurrencyConverter - 汇率\n\n这些应用都使用真实API，提供实际数据！'
-  ],
-  'shortcut': [
-    '系统快捷键：\n\n窗口管理：\n• Ctrl+Alt+Tab - 切换窗口\n• Ctrl+Shift+M - 最大化窗口\n• Ctrl+W - 关闭窗口\n• F11 - 全屏\n\n应用快捷键：\n• Ctrl+Shift+L - 启动器\n• Ctrl+Shift+T - 终端\n• Ctrl+E - 文件管理器\n• Ctrl+P - 画图',
-    '更多快捷键：\n\n桌面操作：\n• 1-9数字键 - 切换虚拟桌面\n• Ctrl+Shift+D - 显示桌面\n• PrintScreen - 截图\n\n在终端输入"help"查看完整快捷键列表！'
-  ],
-  'default': [
-    '这是一个很好的问题！让我想想...\n\nWebLinuxOS是一个功能丰富的Web桌面环境，有200+应用。你可以尝试：\n\n1. 使用终端执行命令\n2. 打开各种应用程序\n3. 管理文件和文件夹\n4. 查看天气和新闻\n\n有什么具体想了解的吗？',
-    '我理解你的问题。WebLinuxOS提供了丰富的功能：\n\n• 200+应用程序\n• 90+终端命令\n• 多虚拟桌面\n• 文件管理系统\n• 实时API集成\n\n告诉我你想做什么，我可以提供具体指导！',
-    '好的，我来帮你。WebLinuxOS是一个完整的Web桌面环境。\n\n你可以：\n• 打开应用（点击桌面图标或使用启动器）\n• 使用终端执行命令\n• 管理文件\n• 查看天气、新闻等\n\n需要我详细介绍某个功能吗？'
-  ]
-}
+const SYSTEM_PROMPT = `你是 WebLinuxOS 智能助手，运行在浏览器中的 Linux 桌面环境中。你可以：
+- 回答技术问题、提供编程建议和代码示例
+- 帮助用户使用 WebLinuxOS 系统的各种功能
+- 解释 Linux 命令和概念
+- 翻译文本、写作、头脑风暴
+- 使用简洁清晰的中文回答
 
-function getAIResponse(userMessage: string): string {
-  const lowerMsg = userMessage.toLowerCase()
-  
-  // 检查关键词匹配
-  for (const [key, responses] of Object.entries(AI_RESPONSES)) {
-    if (key !== 'default' && lowerMsg.includes(key)) {
-      return responses[Math.floor(Math.random() * responses.length)]
-    }
+WebLinuxOS 是一个基于 Web 的完整 Linux 桌面环境，拥有 560+ 应用、终端模拟器、文件系统、代码编辑器等。`
+
+async function callPollinationsAPI(messages: Array<{role: string; content: string}>): Promise<string> {
+  const url = `${API_CONFIG.pollinations.textBaseUrl}/openai/messages`
+  const body = {
+    model: API_CONFIG.pollinations.defaultModel,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...messages.filter(m => m.role !== 'system')
+    ],
+    temperature: 0.7,
+    max_tokens: 2048,
   }
-  
-  // 检查特定问题模式
-  if (lowerMsg.includes('如何') || lowerMsg.includes('怎么')) {
-    if (lowerMsg.includes('终端') || lowerMsg.includes('命令')) {
-      return AI_RESPONSES['terminal'][Math.floor(Math.random() * AI_RESPONSES['terminal'].length)]
+
+  try {
+    const response = await fetchWithTimeout(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }, 30000)
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`)
     }
-    if (lowerMsg.includes('文件') || lowerMsg.includes('管理')) {
-      return AI_RESPONSES['file'][Math.floor(Math.random() * AI_RESPONSES['file'].length)]
+
+    const data = await response.json()
+    
+    if (data.choices && data.choices[0]?.message?.content) {
+      return data.choices[0].message.content
     }
-    if (lowerMsg.includes('编程') || lowerMsg.includes('代码')) {
-      return AI_RESPONSES['code'][Math.floor(Math.random() * AI_RESPONSES['code'].length)]
+    if (data.content) {
+      return typeof data.content === 'string' ? data.content : data.content[0]?.text || '抱歉，无法解析响应'
     }
+    throw new Error('Unexpected response format')
+  } catch (error) {
+    const errMsg = handleApiError(error, 'AI')
+    throw new Error(errMsg)
   }
-  
-  if (lowerMsg.includes('推荐') || lowerMsg.includes('建议')) {
-    if (lowerMsg.includes('应用') || lowerMsg.includes('工具')) {
-      return AI_RESPONSES['code'][Math.floor(Math.random() * AI_RESPONSES['code'].length)]
-    }
-    if (lowerMsg.includes('游戏') || lowerMsg.includes('玩')) {
-      return AI_RESPONSES['game'][Math.floor(Math.random() * AI_RESPONSES['game'].length)]
-    }
-  }
-  
-  if (lowerMsg.includes('快捷键') || lowerMsg.includes('键盘')) {
-    return AI_RESPONSES['shortcut'][Math.floor(Math.random() * AI_RESPONSES['shortcut'].length)]
-  }
-  
-  // 默认响应
-  return AI_RESPONSES['default'][Math.floor(Math.random() * AI_RESPONSES['default'].length)]
 }
 
 const AIChat = memo(function AIChat() {
@@ -117,26 +75,25 @@ const AIChat = memo(function AIChat() {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
-  
+  const [error, setError] = useState<string | null>(null)
+  const [useRealAI, setUseRealAI] = useState(true)
+  const abortRef = useRef<AbortController | null>(null)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  
-  // 获取当前对话
+
   const currentConversation = conversations.find(c => c.id === currentConversationId)
-  
-  // 保存对话到localStorage
+
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem('weblinux-ai-chat-conversations', JSON.stringify(conversations.slice(-20)))
     }
   }, [conversations])
-  
-  // 自动滚动到底部
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentConversation?.messages])
-  
-  // 创建新对话
+
   const createNewConversation = useCallback(() => {
     const newConv: Conversation = {
       id: `conv-${Date.now()}`,
@@ -145,7 +102,7 @@ const AIChat = memo(function AIChat() {
         {
           id: `msg-${Date.now()}`,
           role: 'system',
-          content: '欢迎使用WebLinuxOS智能助手！我可以帮助你使用系统、回答问题、提供编程建议等。有什么我可以帮助你的吗？',
+          content: '欢迎使用 WebLinuxOS 智能助手！我由 Pollinations AI 驱动，可以回答技术问题、提供编程建议、帮助使用系统等。有什么我可以帮助你的吗？',
           timestamp: new Date()
         }
       ],
@@ -154,79 +111,132 @@ const AIChat = memo(function AIChat() {
     setConversations(prev => [newConv, ...prev])
     setCurrentConversationId(newConv.id)
     setInput('')
+    setError(null)
+    setTimeout(() => inputRef.current?.focus(), 100)
   }, [])
-  
-  // 发送消息
+
   const sendMessage = useCallback(async () => {
-    if (!input.trim() || !currentConversationId) return
-    
+    if (!input.trim() || !currentConversationId || isTyping) return
+    setError(null)
+
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       role: 'user',
       content: input.trim(),
       timestamp: new Date()
     }
-    
-    // 添加用户消息
+
     setConversations(prev => prev.map(conv => {
       if (conv.id === currentConversationId) {
         const updatedMessages = [...conv.messages, userMessage]
-        // 更新标题（使用第一条用户消息）
         const title = conv.messages.length <= 1 ? input.trim().slice(0, 30) : conv.title
         return { ...conv, messages: updatedMessages, title }
       }
       return conv
     }))
-    
+
     setInput('')
     setIsTyping(true)
-    
-    // 模拟AI思考延迟
-    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
-    
-    // 获取AI响应
-    const aiResponse = getAIResponse(userMessage.content)
-    
-    const assistantMessage: Message = {
-      id: `msg-${Date.now() + 1}`,
-      role: 'assistant',
-      content: aiResponse,
-      timestamp: new Date()
-    }
-    
-    // 添加AI响应
-    setConversations(prev => prev.map(conv => {
-      if (conv.id === currentConversationId) {
-        return { ...conv, messages: [...conv.messages, assistantMessage] }
+
+    try {
+      if (useRealAI) {
+        const conv = conversations.find(c => c.id === currentConversationId)
+        const chatMessages = [
+          ...(conv?.messages || []).filter(m => m.role !== 'system').map(m => ({
+            role: m.role,
+            content: m.content
+          })),
+          { role: 'user' as const, content: userMessage.content }
+        ]
+
+        abortRef.current = new AbortController()
+        const aiContent = await callPollinationsAPI(chatMessages)
+
+        const assistantMessage: Message = {
+          id: `msg-${Date.now() + 1}`,
+          role: 'assistant',
+          content: aiContent,
+          timestamp: new Date()
+        }
+
+        setConversations(prev => prev.map(conv => {
+          if (conv.id === currentConversationId) {
+            return { ...conv, messages: [...conv.messages, assistantMessage] }
+          }
+          return conv
+        }))
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
+        const fallbackResponse = 'AI 服务暂不可用（已切换到离线模式）。请尝试重新开启 AI 连接。你可以直接使用终端、文件管理器等应用，或在启动器中搜索 "Pollinations" 使用完整的 AI 工作台。'
+
+        const assistantMessage: Message = {
+          id: `msg-${Date.now() + 1}`,
+          role: 'assistant',
+          content: fallbackResponse,
+          timestamp: new Date()
+        }
+
+        setConversations(prev => prev.map(conv => {
+          if (conv.id === currentConversationId) {
+            return { ...conv, messages: [...conv.messages, assistantMessage] }
+          }
+          return conv
+        }))
       }
-      return conv
-    }))
-    
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : '未知错误'
+      setError(errMsg)
+      const errorMessage: Message = {
+        id: `msg-${Date.now() + 1}`,
+        role: 'assistant',
+        content: `请求出错：${errMsg}\n\n请检查网络连接，或尝试切换 AI 模式。你也可以打开 Pollinations AI 应用获得更完整的 AI 体验。`,
+        timestamp: new Date()
+      }
+      setConversations(prev => prev.map(conv => {
+        if (conv.id === currentConversationId) {
+          return { ...conv, messages: [...conv.messages, errorMessage] }
+        }
+        return conv
+      }))
+    } finally {
+      setIsTyping(false)
+      abortRef.current = null
+    }
+  }, [input, currentConversationId, isTyping, conversations, useRealAI])
+
+  const stopGeneration = useCallback(() => {
+    abortRef.current?.abort()
     setIsTyping(false)
-  }, [input, currentConversationId])
-  
-  // 删除对话
+  }, [])
+
   const deleteConversation = useCallback((convId: string) => {
     setConversations(prev => prev.filter(c => c.id !== convId))
     if (currentConversationId === convId) {
       setCurrentConversationId(null)
     }
   }, [currentConversationId])
-  
-  // 格式化时间
+
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   }
-  
-  // 如果没有当前对话，显示欢迎界面
+
+  const renderMarkdown = (text: string) => {
+    let html = text
+      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;font-size:13px"><code>$2</code></pre>')
+      .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;font-size:13px">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br/>')
+    return html
+  }
+
   if (!currentConversation) {
     return (
       <div style={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-        color: '#e6edf3',
+        background: 'var(--window-bg)',
+        color: 'var(--text-primary)',
         fontFamily: 'system-ui, -apple-system, sans-serif'
       }}>
         <div style={{
@@ -240,10 +250,10 @@ const AIChat = memo(function AIChat() {
         }}>
           <div style={{
             fontSize: 64,
-            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+            background: 'var(--accent-gradient)',
             borderRadius: 24,
             padding: 20,
-            boxShadow: '0 8px 32px rgba(102,126,234,0.4)'
+            boxShadow: '0 8px 32px var(--accent-bg)'
           }}>
             🤖
           </div>
@@ -251,87 +261,104 @@ const AIChat = memo(function AIChat() {
             fontSize: 28,
             fontWeight: 600,
             margin: 0,
-            background: 'linear-gradient(135deg, #667eea, #764ba2)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            color: 'var(--text-primary)'
           }}>
-            WebLinuxOS 智能助手
+            WebLinuxOS AI 助手
           </h1>
           <p style={{
-            fontSize: 15,
-            color: '#8b949e',
+            fontSize: 14,
+            color: 'var(--text-secondary)',
             margin: 0,
             textAlign: 'center',
             maxWidth: 400,
             lineHeight: 1.6
           }}>
-            我可以帮助你使用系统、回答问题、提供编程建议、翻译文本等。
+            由 Pollinations AI 驱动的智能对话助手，可以回答问题、提供编程建议、翻译文本等。
           </p>
           <div style={{
             display: 'flex',
-            gap: 12,
-            marginTop: 16
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 16px',
+            borderRadius: 20,
+            background: useRealAI ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${useRealAI ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+            fontSize: 13,
           }}>
+            <span style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: useRealAI ? '#22c55e' : '#ef4444',
+            }} />
+            <span style={{ color: useRealAI ? '#22c55e' : '#ef4444' }}>
+              {useRealAI ? 'AI 已连接 (Pollinations)' : '离线模式'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
             <button
               onClick={createNewConversation}
               style={{
                 padding: '14px 32px',
                 borderRadius: 12,
                 border: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'var(--accent-gradient)',
                 color: '#fff',
                 cursor: 'pointer',
                 fontSize: 15,
                 fontWeight: 600,
-                boxShadow: '0 4px 16px rgba(102,126,234,0.4)',
+                boxShadow: '0 4px 16px var(--accent-bg)',
                 transition: 'all 0.2s'
               }}
             >
               开始新对话
             </button>
-            {conversations.length > 0 && (
-              <button
-                onClick={() => setShowSidebar(!showSidebar)}
-                style={{
-                  padding: '14px 24px',
-                  borderRadius: 12,
-                  border: '1px solid #30363d',
-                  background: 'transparent',
-                  color: '#c9d1d9',
-                  cursor: 'pointer',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  transition: 'all 0.2s'
-                }}
-              >
-                查看历史
-              </button>
-            )}
+            <button
+              onClick={() => setUseRealAI(!useRealAI)}
+              style={{
+                padding: '14px 24px',
+                borderRadius: 12,
+                border: '1px solid var(--border-color)',
+                background: 'var(--color-surface)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontSize: 14,
+                transition: 'all 0.2s'
+              }}
+            >
+              {useRealAI ? '切换离线' : '切换在线'}
+            </button>
           </div>
-          
-          {/* 快速建议 */}
-          <div style={{
-            marginTop: 32,
-            display: 'flex',
-            gap: 8,
-            flexWrap: 'wrap',
-            maxWidth: 500
-          }}>
-            {['如何使用终端？', '推荐编程工具', '查看快捷键', '天气应用介绍'].map(suggestion => (
+          {conversations.length > 0 && (
+            <button
+              onClick={() => setShowSidebar(!showSidebar)}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 10,
+                border: '1px solid var(--border-color)',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontSize: 13,
+              }}
+            >
+              查看历史对话
+            </button>
+          )}
+          <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap', maxWidth: 500, justifyContent: 'center' }}>
+            {['如何使用终端？', '推荐编程工具', 'Python 快速入门', '解释 Linux 权限'].map(suggestion => (
               <button
                 key={suggestion}
                 onClick={() => {
                   createNewConversation()
-                  setTimeout(() => {
-                    setInput(suggestion)
-                  }, 100)
+                  setTimeout(() => setInput(suggestion), 100)
                 }}
                 style={{
                   padding: '8px 16px',
                   borderRadius: 20,
-                  border: '1px solid #30363d',
-                  background: 'rgba(48,54,61,0.5)',
-                  color: '#8b949e',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--color-surface)',
+                  color: 'var(--text-secondary)',
                   cursor: 'pointer',
                   fontSize: 13,
                   transition: 'all 0.2s'
@@ -342,8 +369,7 @@ const AIChat = memo(function AIChat() {
             ))}
           </div>
         </div>
-        
-        {/* 历史对话侧边栏 */}
+
         {showSidebar && conversations.length > 0 && (
           <div style={{
             position: 'absolute',
@@ -351,12 +377,12 @@ const AIChat = memo(function AIChat() {
             top: 0,
             bottom: 0,
             width: 280,
-            background: '#161b22',
-            borderLeft: '1px solid #30363d',
+            background: 'var(--window-bg)',
+            borderLeft: '1px solid var(--border-color)',
             padding: 16,
             overflowY: 'auto'
           }}>
-            <h3 style={{ color: '#c9d1d9', fontSize: 14, margin: '0 0 12px 0' }}>历史对话</h3>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: 14, margin: '0 0 12px 0' }}>历史对话</h3>
             {conversations.slice(0, 10).map(conv => (
               <div
                 key={conv.id}
@@ -364,8 +390,8 @@ const AIChat = memo(function AIChat() {
                 style={{
                   padding: 12,
                   borderRadius: 8,
-                  background: currentConversationId === conv.id ? 'rgba(102,126,234,0.2)' : 'transparent',
-                  border: currentConversationId === conv.id ? '1px solid #667eea' : '1px solid transparent',
+                  background: currentConversationId === conv.id ? 'var(--accent-bg)' : 'transparent',
+                  border: currentConversationId === conv.id ? '1px solid var(--accent)' : '1px solid transparent',
                   cursor: 'pointer',
                   marginBottom: 8,
                   display: 'flex',
@@ -373,20 +399,10 @@ const AIChat = memo(function AIChat() {
                   alignItems: 'center'
                 }}
               >
-                <span style={{ fontSize: 13, color: '#e6edf3' }}>{conv.title}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{conv.title}</span>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    deleteConversation(conv.id)
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#8b949e',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    padding: 4
-                  }}
+                  onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id) }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, padding: 4 }}
                 >
                   ✕
                 </button>
@@ -397,42 +413,62 @@ const AIChat = memo(function AIChat() {
       </div>
     )
   }
-  
+
   return (
     <div style={{
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-      color: '#e6edf3',
+      background: 'var(--window-bg)',
+      color: 'var(--text-primary)',
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
-      {/* 头部 */}
+      {/* Header */}
       <div style={{
-        padding: '12px 16px',
-        background: '#161b22',
-        borderBottom: '1px solid #30363d',
+        padding: '10px 16px',
+        background: 'var(--color-surface)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 12
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 24 }}>🤖</span>
-          <span style={{ fontSize: 16, fontWeight: 600 }}>{currentConversation.title}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 22 }}>🤖</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>{currentConversation.title}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: useRealAI ? '#22c55e' : '#ef4444' }} />
+              {useRealAI ? 'Pollinations AI' : '离线模式'}
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => setUseRealAI(!useRealAI)}
+            title={useRealAI ? '切换到离线模式' : '切换到AI模式'}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 6,
+              border: '1px solid var(--border-color)',
+              background: useRealAI ? 'rgba(34,197,94,0.1)' : 'var(--color-surface)',
+              color: useRealAI ? '#22c55e' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: 12,
+            }}
+          >
+            {useRealAI ? '🟢 AI' : '🔴 离线'}
+          </button>
           <button
             onClick={createNewConversation}
             style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid #30363d',
+              padding: '6px 12px',
+              borderRadius: 6,
+              border: '1px solid var(--border-color)',
               background: 'transparent',
-              color: '#c9d1d9',
+              color: 'var(--text-primary)',
               cursor: 'pointer',
-              fontSize: 13,
-              transition: 'all 0.2s'
+              fontSize: 12,
             }}
           >
             + 新对话
@@ -440,22 +476,21 @@ const AIChat = memo(function AIChat() {
           <button
             onClick={() => deleteConversation(currentConversationId!)}
             style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid #30363d',
+              padding: '6px 12px',
+              borderRadius: 6,
+              border: '1px solid var(--border-color)',
               background: 'transparent',
-              color: '#8b949e',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
-              fontSize: 13,
-              transition: 'all 0.2s'
+              fontSize: 12,
             }}
           >
             删除
           </button>
         </div>
       </div>
-      
-      {/* 消息区域 */}
+
+      {/* Messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -469,105 +504,120 @@ const AIChat = memo(function AIChat() {
             key={message.id}
             style={{
               display: 'flex',
-              gap: 12,
+              gap: 10,
               alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '80%'
+              maxWidth: '85%'
             }}
           >
             {message.role !== 'user' && (
               <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                background: message.role === 'system' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#30363d',
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: message.role === 'system' ? 'var(--accent-gradient)' : 'var(--color-surface)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 18
+                fontSize: 16,
+                flexShrink: 0,
               }}>
                 {message.role === 'system' ? '🌟' : '🤖'}
               </div>
             )}
             <div style={{
-              padding: 12,
-              borderRadius: message.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-              background: message.role === 'user' 
-                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              padding: '10px 14px',
+              borderRadius: message.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+              background: message.role === 'user'
+                ? 'var(--accent-gradient)'
                 : message.role === 'system'
-                  ? 'rgba(102,126,234,0.15)'
-                  : '#21262d',
-              color: message.role === 'user' ? '#fff' : '#e6edf3',
+                  ? 'var(--accent-bg)'
+                  : 'var(--color-surface)',
+              color: message.role === 'user' ? '#fff' : 'var(--text-primary)',
               fontSize: 14,
               lineHeight: 1.6,
-              whiteSpace: 'pre-wrap'
+              whiteSpace: 'pre-wrap',
+              border: message.role === 'assistant' ? '1px solid var(--border-color)' : 'none',
             }}>
-              {message.content}
+              <div dangerouslySetInnerHTML={{
+                __html: message.role === 'assistant' ? renderMarkdown(message.content) : message.content
+              }} />
               <div style={{
-                fontSize: 11,
-                color: message.role === 'user' ? 'rgba(255,255,255,0.7)' : '#8b949e',
-                marginTop: 8
+                fontSize: 10,
+                color: message.role === 'user' ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)',
+                marginTop: 6,
+                opacity: 0.7,
               }}>
                 {formatTime(message.timestamp)}
               </div>
             </div>
             {message.role === 'user' && (
               <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                background: '#30363d',
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: 'var(--color-surface)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 18
+                fontSize: 16,
+                flexShrink: 0,
               }}>
                 👤
               </div>
             )}
           </div>
         ))}
-        
-        {/* AI正在输入 */}
+
         {isTyping && (
-          <div style={{
-            display: 'flex',
-            gap: 12,
-            alignSelf: 'flex-start'
-          }}>
+          <div style={{ display: 'flex', gap: 10, alignSelf: 'flex-start' }}>
             <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 12,
-              background: '#30363d',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 18
-            }}>
-              🤖
-            </div>
+              width: 32, height: 32, borderRadius: 10,
+              background: 'var(--color-surface)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, flexShrink: 0,
+            }}>🤖</div>
             <div style={{
-              padding: 12,
-              borderRadius: '16px 16px 16px 4px',
-              background: '#21262d',
-              color: '#8b949e',
-              fontSize: 14
+              padding: '10px 14px',
+              borderRadius: '14px 14px 14px 4px',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-secondary)',
+              fontSize: 14,
             }}>
-              正在思考...
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <span className="typing-dot" style={{ animationDelay: '0ms' }}>●</span>
+                <span className="typing-dot" style={{ animationDelay: '200ms' }}>●</span>
+                <span className="typing-dot" style={{ animationDelay: '400ms' }}>●</span>
+                <span style={{ marginLeft: 8 }}>思考中...</span>
+              </div>
             </div>
           </div>
         )}
-        
+
+        {error && (
+          <div style={{
+            padding: '10px 14px',
+            borderRadius: 8,
+            background: 'rgba(239,68,68,0.1)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            color: '#ef4444',
+            fontSize: 13,
+            textAlign: 'center',
+          }}>
+            {error}
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
-      
-      {/* 输入区域 */}
+
+      {/* Input */}
       <div style={{
         padding: '12px 16px',
-        background: '#161b22',
-        borderTop: '1px solid #30363d',
+        background: 'var(--color-surface)',
+        borderTop: '1px solid var(--border-color)',
         display: 'flex',
-        gap: 12,
+        gap: 10,
         alignItems: 'center'
       }}>
         <input
@@ -581,62 +631,77 @@ const AIChat = memo(function AIChat() {
               sendMessage()
             }
           }}
-          placeholder="输入你的问题..."
+          placeholder={useRealAI ? '输入你的问题... (Pollinations AI)' : '输入你的问题... (离线模式)'}
           disabled={isTyping}
           style={{
             flex: 1,
-            padding: '12px 16px',
-            borderRadius: 12,
-            border: '1px solid #30363d',
-            background: '#0d1117',
-            color: '#e6edf3',
+            padding: '10px 14px',
+            borderRadius: 10,
+            border: '1px solid var(--border-color)',
+            background: 'var(--window-bg)',
+            color: 'var(--text-primary)',
             fontSize: 14,
             outline: 'none',
             opacity: isTyping ? 0.7 : 1
           }}
         />
-        <button
-          onClick={sendMessage}
-          disabled={isTyping || !input.trim()}
-          style={{
-            padding: '12px 20px',
-            borderRadius: 12,
-            border: 'none',
-            background: input.trim() && !isTyping 
-              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-              : '#30363d',
-            color: '#fff',
-            cursor: input.trim() && !isTyping ? 'pointer' : 'not-allowed',
-            fontSize: 14,
-            fontWeight: 600,
-            transition: 'all 0.2s',
-            opacity: input.trim() && !isTyping ? 1 : 0.7
-          }}
-        >
-          发送
-        </button>
+        {isTyping ? (
+          <button
+            onClick={stopGeneration}
+            style={{
+              padding: '10px 18px',
+              borderRadius: 10,
+              border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.1)',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            停止
+          </button>
+        ) : (
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim()}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 10,
+              border: 'none',
+              background: input.trim() ? 'var(--accent-gradient)' : 'var(--color-surface)',
+              color: '#fff',
+              cursor: input.trim() ? 'pointer' : 'not-allowed',
+              fontSize: 14,
+              fontWeight: 600,
+              opacity: input.trim() ? 1 : 0.5,
+            }}
+          >
+            发送
+          </button>
+        )}
       </div>
-      
-      {/* 快捷建议 */}
+
+      {/* Quick suggestions */}
       <div style={{
         padding: '8px 16px',
-        background: '#0d1117',
+        background: 'var(--window-bg)',
         display: 'flex',
-        gap: 8,
+        gap: 6,
         flexWrap: 'wrap'
       }}>
-        {['终端使用', '编程建议', '快捷键', '天气查询', '文件管理', 'API介绍'].map(suggestion => (
+        {['编程问题', 'Linux 命令', '翻译文本', '代码审查', '写作辅助', '技术架构'].map(suggestion => (
           <button
             key={suggestion}
             onClick={() => setInput(suggestion)}
             style={{
-              padding: '6px 12px',
-              borderRadius: 16,
-              border: '1px solid #30363d',
+              padding: '5px 10px',
+              borderRadius: 14,
+              border: '1px solid var(--border-color)',
               background: 'transparent',
-              color: '#8b949e',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
-              fontSize: 12,
+              fontSize: 11,
               transition: 'all 0.2s'
             }}
           >

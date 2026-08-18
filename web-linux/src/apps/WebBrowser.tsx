@@ -61,6 +61,12 @@ interface GHRepo {
   updated_at: string
 }
 
+interface DDGSearchResult {
+  title: string
+  snippet: string
+  url: string
+}
+
 // ==================== 常量 ====================
 const INTERNAL_PAGES = [
   { pageType: 'wikipedia' as PageType, title: '维基百科', icon: '📚', url: 'internal://wikipedia' },
@@ -135,8 +141,8 @@ function parseUrl(input: string): { url: string; pageType: PageType; searchQuery
     return { url: 'https://' + trimmed, pageType: 'iframe' }
   }
 
-  // 否则视为搜索关键词 → Wikipedia搜索
-  return { url: 'internal://wikipedia', pageType: 'wikipedia', searchQuery: trimmed }
+  // 否则视为搜索关键词 → DuckDuckGo搜索
+  return { url: `search://${encodeURIComponent(trimmed)}`, pageType: 'search', searchQuery: trimmed }
 }
 
 function timeAgo(timestamp: number): string {
@@ -234,6 +240,8 @@ const WebBrowser = memo(function WebBrowser() {
   const [ghRepos, setGhRepos] = useState<GHRepo[]>([])
   const [ghQuery, setGhQuery] = useState('')
   const [ghSort, setGhSort] = useState<'stars' | 'forks' | 'updated'>('stars')
+  const [searchResults, setSearchResults] = useState<DDGSearchResult[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -291,15 +299,17 @@ const WebBrowser = memo(function WebBrowser() {
       : pageType === 'wikipedia' ? '维基百科'
       : pageType === 'hackernews' ? 'Hacker News'
       : pageType === 'github' ? 'GitHub 热门'
+      : pageType === 'search' ? `${query} - 搜索`
       : finalUrl.split('/')[2] || finalUrl
     const favicon = pageType === 'home' ? '🏠'
       : pageType === 'wikipedia' ? '📚'
       : pageType === 'hackernews' ? '📰'
       : pageType === 'github' ? '🐙'
+      : pageType === 'search' ? '🔍'
       : FAVICON_MAP[finalUrl.split('/')[2] || ''] || '🌐'
 
     updateCurrentTab({ url: finalUrl, pageType, title, favicon, searchQuery: query })
-    setInputUrl(pageType !== 'home' && !finalUrl.startsWith('internal://') ? finalUrl : (query || ''))
+    setInputUrl(pageType !== 'home' && !finalUrl.startsWith('internal://') && !finalUrl.startsWith('search://') ? finalUrl : (query || ''))
 
     // 添加历史
     if (finalUrl && pageType !== 'home') {
@@ -310,6 +320,8 @@ const WebBrowser = memo(function WebBrowser() {
     // 根据页面类型加载数据
     if (pageType === 'wikipedia' && query) {
       fetchWikipediaSearch(query)
+    } else if (pageType === 'search' && query) {
+      fetchDuckDuckGoSearch(query)
     } else if (pageType === 'hackernews') {
       fetchHackerNews(hnTab)
     } else if (pageType === 'github') {
@@ -411,6 +423,72 @@ const WebBrowser = memo(function WebBrowser() {
     setIsLoading(false)
   }, [ghSort])
 
+  const fetchDuckDuckGoSearch = useCallback(async (query: string) => {
+    setIsLoading(true)
+    setError(null)
+    setSearchQuery(query)
+    setSearchResults([])
+    try {
+      const resp = await fetch(
+        `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`
+      )
+      const data = await resp.json()
+      const results: DDGSearchResult[] = []
+
+      // Add the abstract if available
+      if (data.Abstract && data.AbstractURL) {
+        results.push({
+          title: data.Heading || query,
+          snippet: data.Abstract,
+          url: data.AbstractURL,
+        })
+      }
+
+      // Process RelatedTopics — they can be flat or nested
+      const processTopics = (topics: unknown[]) => {
+        for (const topic of topics) {
+          if (!topic || typeof topic !== 'object') continue
+          const t = topic as Record<string, unknown>
+          if (t.Text && t.FirstURL) {
+            results.push({
+              title: t.Text.split(' - ')[0] || String(t.Text),
+              snippet: String(t.Text),
+              url: String(t.FirstURL),
+            })
+          }
+          // Nested sub-topics
+          if (Array.isArray(t.Topics)) {
+            processTopics(t.Topics)
+          }
+        }
+      }
+      if (Array.isArray(data.RelatedTopics)) {
+        processTopics(data.RelatedTopics)
+      }
+
+      // Add Results if available (these have separate title/url/text)
+      if (Array.isArray(data.Results)) {
+        for (const r of data.Results as Record<string, unknown>[]) {
+          if (r.Text && r.FirstURL) {
+            results.push({
+              title: r.Text.split(' - ')[0] || String(r.Text),
+              snippet: String(r.Text),
+              url: String(r.FirstURL),
+            })
+          }
+        }
+      }
+
+      setSearchResults(results)
+      if (results.length === 0 && !data.Abstract) {
+        setError(`未找到 "${query}" 的搜索结果`)
+      }
+    } catch {
+      setError('搜索失败，请检查网络连接')
+    }
+    setIsLoading(false)
+  }, [])
+
   // 初始化加载：如果当前标签页是内置页面且没有数据，则加载数据
   useEffect(() => {
     if (currentTab.pageType === 'hackernews' && hnStories.length === 0) {
@@ -430,6 +508,8 @@ const WebBrowser = memo(function WebBrowser() {
   const refresh = useCallback(() => {
     if (currentTab.pageType === 'wikipedia' && wikiQuery) {
       fetchWikipediaSearch(wikiQuery)
+    } else if (currentTab.pageType === 'search' && searchQuery) {
+      fetchDuckDuckGoSearch(searchQuery)
     } else if (currentTab.pageType === 'hackernews') {
       fetchHackerNews(hnTab)
     } else if (currentTab.pageType === 'github') {
@@ -438,7 +518,7 @@ const WebBrowser = memo(function WebBrowser() {
       setIsLoading(true)
       iframeRef.current.src = currentTab.url
     }
-  }, [currentTab, wikiQuery, hnTab, ghQuery, fetchWikipediaSearch, fetchHackerNews, fetchGitHubTrending])
+  }, [currentTab, wikiQuery, searchQuery, hnTab, ghQuery, fetchWikipediaSearch, fetchDuckDuckGoSearch, fetchHackerNews, fetchGitHubTrending])
 
   const addBookmark = useCallback(() => {
     const exists = bookmarks.some(b => b.url === currentTab.url)
@@ -485,7 +565,7 @@ const WebBrowser = memo(function WebBrowser() {
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && inputUrl.trim()) navigateTo(inputUrl) }}
-          placeholder="搜索维基百科，或输入网址..."
+          placeholder="搜索关键词，或输入网址..."
           autoFocus
           style={{
             width: '100%', padding: '14px 18px 14px 44px', borderRadius: 24,
@@ -513,7 +593,7 @@ const WebBrowser = memo(function WebBrowser() {
         ))}
       </div>
       <div style={{ color: '#6e7681', fontSize: 12, textAlign: 'center', maxWidth: 400, lineHeight: 1.6 }}>
-        提示：输入关键词直接搜索维基百科 · 输入 wiki:搜索词 搜索维基 · 输入网址访问网站 · 输入 gh:关键词 搜索GitHub
+        提示：输入关键词使用 DuckDuckGo 搜索 · 输入 wiki:搜索词 搜索维基 · 输入网址访问网站 · 输入 gh:关键词 搜索GitHub
       </div>
     </div>
   )
@@ -754,6 +834,103 @@ const WebBrowser = memo(function WebBrowser() {
     </div>
   )
 
+  // --- DuckDuckGo 搜索结果 ---
+  const renderSearch = () => (
+    <div style={{ flex: 1, overflow: 'auto', padding: 20, display: 'flex', flexDirection: 'column' }}>
+      {/* 搜索栏 */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && searchQuery.trim()) fetchDuckDuckGoSearch(searchQuery) }}
+          placeholder="使用 DuckDuckGo 搜索..."
+          style={{
+            flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #30363d',
+            background: '#0d1117', color: '#e6edf3', fontSize: 14, outline: 'none',
+          }}
+        />
+        <button
+          onClick={() => fetchDuckDuckGoSearch(searchQuery)}
+          style={{ ...S.btnBase, background: 'linear-gradient(135deg, #667eea, #764ba2)', border: 'none', color: '#fff', fontWeight: 600 }}
+        >
+          搜索
+        </button>
+      </div>
+
+      {/* 搜索品牌 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, color: '#6e7681', fontSize: 12 }}>
+        <span style={{ fontSize: 16 }}>🦆</span>
+        <span>DuckDuckGo 搜索结果</span>
+        {searchQuery && <span style={{ color: '#8b949e' }}> — {searchQuery}</span>}
+      </div>
+
+      {/* 搜索结果列表 */}
+      {searchResults.map((result, i) => {
+        // Extract display domain from URL
+        let domain = ''
+        try { domain = new URL(result.url).hostname } catch { /* ignore */ }
+
+        return (
+          <div
+            key={`${result.url}-${i}`}
+            style={{
+              ...S.cardBase,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#1c2333' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#161b22' }}
+          >
+            {/* Rank number */}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ color: '#667eea', fontSize: 13, fontWeight: 700, minWidth: 24, textAlign: 'right', flexShrink: 0 }}>
+                {i + 1}.
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Clickable title */}
+                <div
+                  onClick={() => navigateTo(result.url)}
+                  style={{ color: S.linkColor, fontSize: 15, fontWeight: 600, marginBottom: 4, textDecoration: 'none', cursor: 'pointer' }}
+                >
+                  {result.title}
+                </div>
+                {/* Snippet */}
+                <div style={{ ...S.textSecondary, lineHeight: 1.6, marginBottom: 6, wordBreak: 'break-word' }}>
+                  {result.snippet}
+                </div>
+                {/* URL */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 10, color: '#667eea' }}>🔗</span>
+                  <span
+                    onClick={() => navigateTo(result.url)}
+                    style={{ fontSize: 12, color: '#3fb950', cursor: 'pointer', textDecoration: 'none', wordBreak: 'break-all' }}
+                  >
+                    {domain || result.url}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+
+      {/* No results */}
+      {searchResults.length === 0 && !isLoading && !error && searchQuery && (
+        <div style={{ textAlign: 'center', color: '#8b949e', padding: 40, fontSize: 14 }}>
+          未找到相关搜索结果，请尝试其他关键词
+        </div>
+      )}
+
+      {/* No query yet */}
+      {searchResults.length === 0 && !isLoading && !searchQuery && (
+        <div style={{ textAlign: 'center', color: '#8b949e', padding: 40, fontSize: 14 }}>
+          输入关键词开始搜索
+        </div>
+      )}
+    </div>
+  )
+
   // --- iframe带fallback ---
   const renderIframe = () => (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
@@ -830,6 +1007,7 @@ const WebBrowser = memo(function WebBrowser() {
     }
     switch (currentTab.pageType) {
       case 'home': return renderHome()
+      case 'search': return renderSearch()
       case 'wikipedia': return renderWikipedia()
       case 'hackernews': return renderHackerNews()
       case 'github': return renderGitHub()
@@ -855,7 +1033,7 @@ const WebBrowser = memo(function WebBrowser() {
             key={tab.id}
             onClick={() => {
               setActiveTabId(tab.id)
-              setInputUrl(tab.url.startsWith('internal://') ? (tab.searchQuery || '') : tab.url)
+              setInputUrl(tab.url.startsWith('internal://') || tab.url.startsWith('search://') ? (tab.searchQuery || '') : tab.url)
             }}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -922,7 +1100,7 @@ const WebBrowser = memo(function WebBrowser() {
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && inputUrl.trim()) navigateTo(inputUrl) }}
-            placeholder="搜索或输入网址..."
+            placeholder="搜索关键词或输入网址..."
             style={{
               width: '100%', padding: '10px 14px 10px 38px', borderRadius: 8,
               border: '1px solid #30363d', background: '#0d1117', color: '#e6edf3',

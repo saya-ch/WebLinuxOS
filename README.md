@@ -2,228 +2,91 @@
 
 # WebLinuxOS
 
-**A full Linux desktop environment in the browser. Real tools. Real work. Zero installation.**
+**A fully functional Linux desktop that runs in your browser. Real tools, real APIs, real work.**
 
-[Live Demo](https://saya-ch.github.io/WebLinuxOS/) · [Changelog](CHANGELOG.md) · [Wiki](https://github.com/saya-ch/WebLinuxOS/wiki) · [Report Issue](https://github.com/saya-ch/WebLinuxOS/issues)
+[Live Demo](https://saya-ch.github.io/WebLinuxOS/) · [Report Issue](https://github.com/saya-ch/WebLinuxOS/issues) · [Contributing](CONTRIBUTING.md)
 
-[![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=for-the-badge&logo=github&color=yellow)](https://github.com/saya-ch/WebLinuxOS/stargazers)
-[![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/forks)
-[![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=for-the-badge&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v107.0.0-blue?style=for-the-badge)](https://github.com/saya-ch/WebLinuxOS/releases)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-brightgreen?style=for-the-badge&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Platform](https://img.shields.io/badge/platform-web-lightgrey?style=for-the-badge)](https://saya-ch.github.io/WebLinuxOS/)
+[![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
+[![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
+[![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
+[![Version](https://img.shields.io/badge/version-v108.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 
 </div>
 
 ---
 
-## Table of Contents
+## Why WebLinuxOS?
 
-- [What is WebLinuxOS](#what-is-weblinuxos)
-- [Features](#features)
-  - [Desktop Environment](#desktop-environment)
-  - [560+ Integrated Applications](#560-integrated-applications)
-  - [Real API Integrations](#real-api-integrations)
-  - [Technical Highlights](#technical-highlights)
-- [Architecture](#architecture)
-- [Screenshots](#screenshots)
-- [Quick Start](#quick-start)
-  - [Online Demo](#online-demo)
-  - [Local Development](#local-development)
-  - [Production Build](#production-build)
-- [Deployment](#deployment)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
-- [Technology Stack](#technology-stack)
-- [Version History](#version-history)
-- [Contributing](#contributing)
-- [License](#license)
+Most "web desktop" projects are eye candy — windows you can drag around, but nothing inside works. WebLinuxOS is different:
 
----
+- The **terminal** executes 200+ real commands with a virtual filesystem
+- The **code editor** uses Monaco (the same engine as VS Code) with syntax highlighting
+- The **AI chat** connects to Pollinations.ai for real AI conversations
+- The **weather app** pulls live data from Open-Meteo
+- The **browser** searches the web via DuckDuckGo's API
+- The **system monitor** reads real Performance API data from your browser
 
-## What is WebLinuxOS
+Every application does real work. No mock data. No placeholder UI.
 
-WebLinuxOS is a fully functional Linux desktop environment that runs entirely in your browser. It is not a demo or simulation — every application performs real work: the terminal executes actual commands, the code editor writes real code with syntax highlighting, the API tester sends real HTTP requests, and the AI image studio generates images through public APIs. Built on React 19 and TypeScript, it ships with 560+ integrated applications spanning development, office, networking, multimedia, AI, and gaming — turning any browser-equipped device into a complete workstation.
+## What's New in v108
+
+- **AI Chat goes real** — the AI assistant now uses Pollinations.ai for actual AI-powered conversations, not scripted responses. Toggle between online AI and offline mode.
+- **DuckDuckGo search** — the built-in browser now searches the web using DuckDuckGo's Instant Answer API, with formatted results and click-through navigation.
+- **Real system monitoring** — the System Monitor now reads actual browser Performance API data: real FPS, JS heap memory, device memory, network connection info, and localStorage usage. Replaced fake "chrome.exe" processes with realistic Linux process names.
+- **Live Collaborative Board** — new cross-tab collaborative whiteboard using BroadcastChannel API. Draw in one tab, see it appear in another in real-time. Supports pen, eraser, shapes, color picker, cursor sharing, and PNG export.
+- **Terminal AI commands** — new `ai` and `ask` terminal commands that query Pollinations.ai directly from the command line.
 
 ## Features
 
 ### Desktop Environment
 
-- **Full window management** — drag, resize, minimize, maximize, snap, tile, and cascade windows with smooth spring-based animations
-- **Multiple virtual desktops** — up to 9 workspaces with independent content and wallpaper
-- **Taskbar & start menu** — application launcher, system tray, and window switcher with glass-morphism styling
-- **Command palette** — search and launch any app with a universal quick-open interface
-- **Global keyboard shortcuts** — 30+ customizable shortcuts for power users
-- **Aurora & particle effects** — animated gradient backgrounds with floating particles and nebula layers
-- **Cross-tab synchronization** — real-time theme, file, and presence sync across browser tabs
+- Full window management — drag, resize, minimize, maximize, snap, tile
+- Up to 9 virtual desktops with independent wallpapers
+- Taskbar, start menu, and command palette (Ctrl+Shift+P)
+- 30+ global keyboard shortcuts
+- Animated aurora and particle wallpapers
+- Cross-tab synchronization for themes and files
 
 ### 560+ Integrated Applications
 
-| Category | Examples |
-|----------|---------|
-| **Development** | Code editor, terminal, JSON tools, regex tester, API client, Git visualizer, snippet manager, DevOps dashboard |
-| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation, flashcards, Smart Notes Pro |
-| **AI & Creative** | AI chat, image generation, background removal, code analyzer, translation, prompt engineering |
-| **Internet & APIs** | Weather, crypto, news, Wikipedia, GitHub trends, exchange rates, RSS aggregator, cloud drive |
-| **System & Utilities** | File manager, settings, system monitor, password vault, clipboard, app marketplace, system optimizer |
+| Category | Highlights |
+|----------|-----------|
+| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner |
+| **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab |
+| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending |
+| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links |
+| **System** | File manager, settings, system monitor (real data), password vault, app marketplace, system optimizer |
 | **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera |
-| **Smart Home** | IoT dashboard, device control, energy monitoring, scene automation |
-| **Education** | Language lab, flashcards, code challenges, learning paths |
+| **Collaboration** | Real-time collaborative whiteboard, document editor, code collaboration |
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
-| **Collaboration** | Real-time whiteboard, document editor, code collaboration |
-| **Infrastructure** | WebSSH terminal, DevOps dashboard, workspace layout manager |
-
-#### New in v107
-
-- **AppMarketplace** — full-featured app store with 30+ app catalog, install/uninstall management, 5-star ratings, download tracking, update detection, featured picks, and category filtering
-- **CloudDrive** — multi-cloud storage client with IndexedDB local cloud, WebDAV remote access, file browser (grid/list), drag-and-drop upload, inline preview, storage analytics with pie chart, and sync status indicators
-- **WebSSHTerminal** — remote SSH terminal emulator with complete virtual Linux filesystem (/, /home, /etc, /var, /usr, /proc), 50+ commands (ls, cd, cat, grep, find, ps, top, curl, nano, vim...), multi-session tabs, SFTP panel, 5 color schemes, and pipe support
-- **WorkspaceLayout** — save and restore window layouts, 6 preset templates (Developer/Designer/Writer/Data Analyst/Sysadmin/Custom), visual layout editor, auto-save, import/export JSON, and window snap presets (50/50, 33/33/33, 70/30...)
-- **RSSAggregator** — real RSS/Atom feed reader with DOMParser, 9 preset feeds (Hacker News, TechCrunch, Ars Technica, The Verge, Dev.to, Lobsters, BBC Tech, MIT Tech Review), article reader with readability mode, offline cache, and CORS proxy fallback
-- **SmartNotesPro** — enhanced note-taking with `[[wiki-links]]` syntax, backlink tracking, knowledge graph visualization (Canvas), Markdown rendering, tag cloud, 5 built-in templates, export (Markdown/JSON), and trash/restore
-- **DevOpsDashboard** — infrastructure monitoring dashboard with real service health checks (fetch to public endpoints), CI/CD pipeline visualization, container management, log aggregation with level filtering, Canvas metrics charts, alert management, and environment configuration
-- **SystemOptimizer** — browser performance optimizer with real Performance API data: storage analyzer, cache manager, performance audit (load time, FPS, long tasks), memory/network/startup optimization, health score (0-100), and before/after comparison
-
-#### New & Notable (v106)
-
-- **DailyDashboard** — the one-stop morning dashboard: real-time weather with 5-day forecast, air quality index (AQI) with pollutant breakdown, upcoming public holiday countdown, top Hacker News stories, crypto market snapshot, and a daily inspirational quote, all on a single screen with live clock
-- **REST Countries integration** — full country lookup (250+ countries) with flags, capitals, populations, currencies, languages, time zones, borders, and OpenStreetMap links
-- **Open-Meteo Air Quality API** — PM2.5, PM10, NO2, SO2, O3, CO readings with 6-tier AQI severity labels (Good / Moderate / Unhealthy for Sensitive / Unhealthy / Very Unhealthy / Hazardous)
-- **Date.Nager Public Holidays API** — 100+ countries' public holiday calendars with countdown and local name display
-- **TheMealDB recipes API** — searchable recipe database with ingredients, measurements, video links, and random meal discovery
-- **Missing icon definitions backfilled** — 15 icon components (GitHub, WikiExplorer, SnippetVault, GeoAtlas, Nebula, PollinationsAI, DevAtlas, DataVizStudio, CodeReviewBot, FlashMaster, MarkdownPublisher, IdeaBoard, LivePulse, InsightPulse, CodeDocGen) that were referenced from apps.tsx but not declared in icons.tsx, preventing potential runtime reference errors
-- **API service layer expansion** — 9 new service methods (`fetchCountriesAll`, `searchCountryByName`, `fetchCountryByCode`, `fetchAirQuality`, `fetchHolidays`, `searchRecipes`, `fetchRandomRecipe`, `fetchDailyMegaDashboard`) plus 4 new TypeScript interfaces
-
-#### New & Notable (v105)
-
-- **WebSandboxIDE** — browser-based sandbox IDE for safe code experimentation and prototyping
-- **Enhanced Terminal Commands** — 200+ commands including neofetch, theme switching, weather, crypto prices, programming jokes, app management, shortcut lookup, and AI-powered assistance
-- **AI Workspace** — unified AI assistant with chat, notes summarization, task planning, and code snippet generation
-- **Voice Assistant** — Web Speech API integration with 12 language support
-- **Realtime Collaboration** — cross-tab whiteboard, code editor, and document collaboration
 
 ### Real API Integrations
 
-All data comes from legitimate, public APIs — no mock data, no empty shells:
+Every data source is a real, public API — no fake data:
 
-- **Open-Meteo** — global weather forecasts
-- **Open-Meteo Air Quality** — real-time AQI and pollutant readings (PM2.5/PM10/NOx/SO2/O3/CO)
-- **CoinGecko** — real-time cryptocurrency prices
-- **Hacker News** — tech news aggregation
+- **Open-Meteo** — global weather forecasts and air quality
+- **Pollinations.ai** — AI chat and image generation (free, no key)
+- **DuckDuckGo** — web search (free, no key)
+- **CoinGecko** — cryptocurrency market data
+- **Hacker News** — tech news via Firebase API
 - **Wikipedia** — encyclopedia articles
-- **REST Countries** — country data for 250+ sovereign states (flags, capitals, currencies, borders, maps)
-- **Date.Nager** — global public holiday calendars with country-code filtering
-- **TheMealDB** — open recipe database with ingredients, measurements and tutorials
-- **ExchangeRate-API** — foreign exchange rates
-- **ZenQuotes** — daily quotes and wisdom
-- **Pollinations.ai** — AI chat and image generation
+- **REST Countries** — country data for 250+ nations
+- **Frankfurter** — ECB exchange rates
 - **GitHub API** — repository exploration
 - **Open Library** — book discovery
 - **NASA APOD** — astronomy imagery
-- **IP-API** — geolocation services
-- **Frankfurter** — European Central Bank exchange rates
-- **NewsAPI** — global news aggregation
-- **Giphy** — GIF search and discovery
-- **MyMemory** — free translation service
+- **MyMemory** — translation service
 - **Web Speech API** — speech synthesis and recognition
-- **Web Audio API** — music synthesis and audio processing
-
-### Technical Highlights
-
-- **Lazy loading** — every application loads on demand via `React.lazy` + `Suspense`
-- **Cross-tab synchronization** — real-time theme, file, and presence sync across browser tabs
-- **Content Security Policy** — comprehensive CSP headers for safe script execution
-- **Service Worker** — offline caching with auto-update detection
-- **Error boundaries** — graceful failure isolation per application
-- **Keyboard-first design** — power-user workflows with 30+ global shortcuts
-- **GPU-accelerated rendering** — `transform: translateZ(0)` for compositor promotion, `contain` for layout isolation
-- **Accessibility** — focus-visible indicators, reduced-motion support, semantic keyboard navigation
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        WebLinuxOS                           │
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │   Apps (500+) │  │  Components  │  │    Services       │  │
-│  │              │  │              │  │                   │  │
-│  │ ┌──────────┐ │  │ ┌──────────┐ │  │ ┌──────────────┐ │  │
-│  │ │ Terminal  │ │  │ │  Desktop  │ │  │ │  AI Service │ │  │
-│  │ │ (200+ cmds)│  │ │  Window   │ │  │ │  API Service│ │  │
-│  │ ├──────────┤ │  │ │  Taskbar  │ │  │ │  Sync Service│ │  │
-│  │ │ CodeEditor│ │  │ │  Launcher │ │  │ └──────────────┘ │  │
-│  │ ├──────────┤ │  │ └──────────┘ │  │                   │  │
-│  │ │ AI Tools  │ │  ├──────────────┤  │ ┌──────────────┐ │  │
-│  │ ├──────────┤ │  │ │  Store      │  │ │  Icons       │ │  │
-│  │ │ DevTools  │ │  │ │  (Zustand) │  │ │  Registry    │ │  │
-│  │ └──────────┘ │  │ └──────────┘ │  │ └──────────────┘ │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
-│                                                              │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │              Theme & Design Token System              │  │
-│  │   CSS Variables · Dark/Light · Aurora · Glass         │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                              │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │              Public APIs (Real Data)                  │  │
-│  │   Weather · Crypto · News · AI · Translate · More    │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Directory Structure
-
-```
-WebLinuxOS/
-├── web-linux/
-│   ├── src/
-│   │   ├── apps/               # 500+ application implementations
-│   │   │   └── terminal/       # Terminal command system (200+ commands)
-│   │   ├── components/         # Core UI (Desktop, Window, Taskbar, StartMenu)
-│   │   │   └── desktop/        # WindowManager with lazy-loaded components
-│   │   ├── store/              # Zustand state, file system, storage utilities
-│   │   ├── services/           # API service layer, AI service, sync service
-│   │   ├── config/             # API endpoint configuration
-│   │   ├── apps.tsx            # Application registry (metadata + icons + dimensions)
-│   │   └── icons.tsx           # Custom icon components
-│   ├── public/                 # Static assets, PWA manifest, Service Worker
-│   └── vite.config.ts          # Vite configuration (base path, code splitting)
-├── .github/workflows/          # CI/CD: auto-build and deploy to GitHub Pages
-└── README.md
-```
-
-## Screenshots
-
-<div align="center">
-
-![Desktop](web-linux/screenshots/01-desktop.png)
-
-**Clean desktop with widgets**
-
-![Launcher](web-linux/screenshots/02-launcher.png)
-
-**Application launcher with categories**
-
-![Terminal](web-linux/screenshots/04-terminal.png)
-
-**Fully functional terminal emulator**
-
-![Code Editor](web-linux/screenshots/05-text-editor.png)
-
-**Monaco-based code editor with syntax highlighting**
-
-</div>
 
 ## Quick Start
 
-### Online Demo
+### Online
 
-No installation required. Visit:
-
-**[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)**
+Visit **[https://saya-ch.github.io/WebLinuxOS/](https://saya-ch.github.io/WebLinuxOS/)** — no installation needed.
 
 ### Local Development
 
@@ -243,19 +106,28 @@ cd web-linux
 npm run build
 ```
 
-The build runs `tsc -b` for type checking first — zero type errors are a release gate.
+Type checking (`tsc -b`) runs first — zero type errors are required.
 
-## Deployment
+## Architecture
 
-### GitHub Pages
+```
+WebLinuxOS/
+├── web-linux/
+│   ├── src/
+│   │   ├── apps/               # 560+ application implementations
+│   │   │   └── terminal/       # Terminal command system (200+ commands)
+│   │   ├── components/         # Core UI (Desktop, Window, Taskbar, StartMenu)
+│   │   ├── store/              # Zustand state management, virtual filesystem
+│   │   ├── config/             # API endpoint configuration
+│   │   ├── apps.tsx            # Application registry
+│   │   └── icons.tsx           # Icon components
+│   ├── public/                 # Static assets, PWA manifest, service worker
+│   └── vite.config.ts          # Build config with code splitting
+├── .github/workflows/          # CI/CD: auto-deploy to GitHub Pages
+└── README.md
+```
 
-This project is configured for automatic deployment via GitHub Actions. Push to `main` and the CI/CD pipeline builds and publishes to GitHub Pages automatically.
-
-For manual deployment or custom domains:
-
-1. Modify the `base` config in `web-linux/vite.config.ts` (default: `/WebLinuxOS/`)
-2. Run `npm run build` to generate the `dist` directory
-3. Push `dist` contents to the `gh-pages` branch, or configure a custom domain
+**Tech stack:** React 19 + TypeScript 6 + Vite 8 + Zustand 5 + Monaco Editor
 
 ## Keyboard Shortcuts
 
@@ -267,53 +139,17 @@ For manual deployment or custom domains:
 | Browser | `Ctrl/Cmd + B` |
 | Command Palette | `Ctrl/Cmd + Shift + P` |
 | Quick Note | `Alt + N` |
-| Screenshot | `PrintScreen` |
 | Switch Desktop | `Ctrl/Cmd + Alt + 1-9` |
 | Close Window | `Ctrl/Cmd + Q` |
-| New Terminal | `Ctrl/Cmd + Shift + N` |
+| AI Command Center | `Ctrl/Cmd + Space` |
 
-## Technology Stack
+## Deployment
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 + TypeScript |
-| Build | Vite 8 |
-| State | Zustand |
-| Editor | Monaco Editor |
-| Icons | Lucide Icons |
-| Runtime | Web APIs, Pyodide |
-| Styling | CSS Variables, Design Tokens |
-| Deployment | GitHub Actions Pages |
-| CI/CD | GitHub Actions |
+GitHub Pages deployment is automated via GitHub Actions. Push to `main` and the CI/CD pipeline handles the rest.
 
-## Version History
-
-### v105.0.0
-
-- **WebSandboxIDE**: Browser-based sandbox IDE for safe code experimentation
-- **Enhanced Terminal Commands**: neofetch, theme, weather, quote, crypto, joke, app, shortcut, and AI command sets
-- **AI Workspace**: Unified AI assistant with chat, notes, task planning, and code generation
-- **Voice Assistant**: Web Speech API with 12 language support
-- **Realtime Collaboration**: Cross-tab whiteboard, document, and code collaboration
-- **Desktop Visuals**: Enhanced aurora effects, particle system, glass-morphism taskbar
-- **Accessibility**: Keyboard focus indicators, reduced-motion support
-- **Performance**: GPU-accelerated rendering, lazy loading, code splitting
-
-### v104.0.0
-
-- SmartWorkspace: multi-layout customization (Developer/Design/Learning/Office)
-- Enhanced terminal commands: apt, app management, theme, shortcut lookup, neofetch
-- Network speed test, detailed system information, ASCII banner generator
-- Improved component mapping auto-generation scripts
-- Innovation tool commands: calculator, password generator, unit converter, IP lookup, UUID generator, color tools, fortune, URL shortener, quotes
-
-See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+For custom deployments, modify the `base` config in `web-linux/vite.config.ts` and run `npm run build`.
 
 ## Contributing
-
-Contributions are welcome — bug fixes, new applications, and feature enhancements.
-
-### Development Workflow
 
 1. Fork this repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -321,33 +157,22 @@ Contributions are welcome — bug fixes, new applications, and feature enhanceme
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-### Pre-submission Checklist
+Before submitting, ensure the build passes:
 
 ```bash
-cd web-linux
-npm run build   # Must pass: zero type errors
+cd web-linux && npm run build
 ```
-
-### Reporting Issues
-
-When filing a bug, please include:
-- Browser and OS version
-- Steps to reproduce
-- Expected vs actual behavior
-- Screenshots if applicable
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-**Built with React, TypeScript, and Vite. Deployed on GitHub Pages.**
+Built with React, TypeScript, and Vite. Deployed on GitHub Pages.
 
-If this project helps you, consider giving it a star.
+If this project is useful to you, consider giving it a star.
 
 </div>

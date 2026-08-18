@@ -2,6 +2,26 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, Monitor, Play, Pause, Server } from 'lucide-react'
 import { useStore } from '../store'
 
+// --- Type declarations for browser APIs not in standard TypeScript lib ---
+
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
+interface NetworkConnection {
+  downlink?: number
+  effectiveType?: string
+  type?: string
+  rtt?: number
+  saveData?: boolean
+  addEventListener?: (type: string, handler: () => void) => void
+  removeEventListener?: (type: string, handler: () => void) => void
+}
+
+// --- Data interfaces (unchanged) ---
+
 interface ProcessInfo {
   id: string
   name: string
@@ -27,6 +47,80 @@ interface DiskPartition {
   total: number
 }
 
+// --- Linux process definitions with base resource profiles ---
+
+const LINUX_PROCESSES: Array<{ name: string; baseCpu: number; baseMemMB: number; defaultStatus: ProcessInfo['status'] }> = [
+  { name: 'systemd', baseCpu: 0.1, baseMemMB: 12, defaultStatus: 'running' },
+  { name: 'bash', baseCpu: 0.2, baseMemMB: 5, defaultStatus: 'sleeping' },
+  { name: 'python3', baseCpu: 2.5, baseMemMB: 45, defaultStatus: 'running' },
+  { name: 'node', baseCpu: 3.0, baseMemMB: 80, defaultStatus: 'running' },
+  { name: 'nginx', baseCpu: 0.5, baseMemMB: 8, defaultStatus: 'running' },
+  { name: 'postgres', baseCpu: 1.2, baseMemMB: 60, defaultStatus: 'running' },
+  { name: 'redis-server', baseCpu: 0.8, baseMemMB: 15, defaultStatus: 'running' },
+  { name: 'docker', baseCpu: 1.5, baseMemMB: 120, defaultStatus: 'running' },
+  { name: 'sshd', baseCpu: 0.1, baseMemMB: 4, defaultStatus: 'sleeping' },
+  { name: 'cron', baseCpu: 0.05, baseMemMB: 2, defaultStatus: 'sleeping' },
+  { name: 'Xorg', baseCpu: 2.0, baseMemMB: 90, defaultStatus: 'running' },
+  { name: 'pulseaudio', baseCpu: 0.3, baseMemMB: 10, defaultStatus: 'running' },
+  { name: 'NetworkManager', baseCpu: 0.2, baseMemMB: 18, defaultStatus: 'running' },
+  { name: 'dbus-daemon', baseCpu: 0.1, baseMemMB: 6, defaultStatus: 'sleeping' },
+  { name: 'journald', baseCpu: 0.2, baseMemMB: 14, defaultStatus: 'running' },
+  { name: 'udev', baseCpu: 0.05, baseMemMB: 8, defaultStatus: 'sleeping' },
+  { name: 'rsyslogd', baseCpu: 0.1, baseMemMB: 5, defaultStatus: 'running' },
+  { name: 'gunicorn', baseCpu: 1.8, baseMemMB: 55, defaultStatus: 'running' },
+  { name: 'mongod', baseCpu: 2.2, baseMemMB: 150, defaultStatus: 'running' },
+  { name: 'memcached', baseCpu: 0.4, baseMemMB: 20, defaultStatus: 'running' },
+  { name: 'agetty', baseCpu: 0.01, baseMemMB: 2, defaultStatus: 'sleeping' },
+  { name: 'polkitd', baseCpu: 0.1, baseMemMB: 12, defaultStatus: 'sleeping' },
+  { name: 'crond', baseCpu: 0.05, baseMemMB: 3, defaultStatus: 'sleeping' },
+]
+
+// --- Browser API accessors (safe, null-returning) ---
+
+function getPerformanceMemory(): PerformanceMemory | null {
+  const perf = performance as Performance & { memory?: PerformanceMemory }
+  return perf.memory ?? null
+}
+
+function getDeviceMemoryGB(): number | null {
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  return nav.deviceMemory ?? null
+}
+
+function getNetworkConnection(): NetworkConnection | null {
+  const nav = navigator as Navigator & { connection?: NetworkConnection }
+  return nav.connection ?? null
+}
+
+async function getStorageEstimate(): Promise<{ usage: number; quota: number } | null> {
+  if (navigator.storage?.estimate) {
+    try {
+      const est = await navigator.storage.estimate()
+      return { usage: est.usage ?? 0, quota: est.quota ?? 0 }
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
+function getLocalStorageUsageBytes(): number {
+  let total = 0
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key) {
+        total += key.length + (localStorage.getItem(key)?.length ?? 0)
+      }
+    }
+  } catch {
+    // localStorage may be inaccessible
+  }
+  return total * 2 // UTF-16 = 2 bytes per character
+}
+
+// --- Formatting helpers (unchanged) ---
+
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
   const k = 1024
@@ -45,69 +139,110 @@ function formatUptime(ms: number): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-const PROCESS_NAMES = [
-  'chrome.exe', 'node.exe', 'vscode.exe', 'explorer.exe', 'firefox.exe',
-  'code.exe', 'terminal.exe', 'photoshop.exe', 'spotify.exe', 'notion.exe',
-  'slack.exe', 'discord.exe', 'docker.exe', 'nginx.exe', 'mysqld.exe',
-  'python.exe', 'java.exe', 'go.exe', 'rustc.exe', 'npm.exe',
-  'system', 'registry', 'svchost', 'winlogon', 'csrss',
-]
-
-function generateProcesses(count: number, prev?: ProcessInfo[]): ProcessInfo[] {
-  const now = Date.now()
-  const result: ProcessInfo[] = []
-  const usedNames = new Set<string>()
-
-  for (let i = 0; i < count; i++) {
-    const name = prev?.[i]?.name || PROCESS_NAMES[Math.floor(Math.random() * PROCESS_NAMES.length)]
-    if (usedNames.has(name)) continue
-    usedNames.add(name)
-
-    const prevCpu = prev?.[i]?.cpu ?? Math.random() * 40
-    const prevMem = prev?.[i]?.memory ?? Math.random() * 800 + 50
-
-    result.push({
-      id: `pid-${now}-${i}`,
-      name,
-      cpu: Math.max(0, Math.min(100, prevCpu + (Math.random() - 0.4) * 10)),
-      memory: Math.max(20, Math.min(2048, prevMem + (Math.random() - 0.5) * 100)),
-      status: (['running', 'sleeping', 'zombie'] as const)[Math.floor(Math.random() * 3)],
-    })
-  }
-  return result.sort((a, b) => b.cpu - a.cpu)
-}
-
-function generateCpuHistory(prev: CpuHistory[]): CpuHistory[] {
-  const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const lastVal = prev.length > 0 ? prev[prev.length - 1].value : 30
-  const drift = (Math.random() - 0.5) * 15
-  const mean = 35
-  const pull = (mean - lastVal) * 0.1
-  const next = Math.max(2, Math.min(98, lastVal + drift + pull))
-  const point = { time: now, value: Math.round(next * 10) / 10 }
-  const history = [...prev, point]
-  return history.length > 30 ? history.slice(-30) : history
-}
-
-function generateNetActivity(prev: NetActivity[]): NetActivity[] {
-  const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const lastDown = prev.length > 0 ? prev[prev.length - 1].down : 5
-  const lastUp = prev.length > 0 ? prev[prev.length - 1].up : 2
-  const point = {
-    time: now,
-    down: Math.max(0.1, lastDown + (Math.random() - 0.5) * 4 + (Math.random() > 0.9 ? 8 : 0)),
-    up: Math.max(0.1, lastUp + (Math.random() - 0.5) * 2 + (Math.random() > 0.95 ? 5 : 0)),
-  }
-  const history = [...prev, point]
-  return history.length > 30 ? history.slice(-30) : history
-}
-
 function getUsageColor(usage: number): string {
   if (usage > 80) return '#ef4444'
   if (usage > 60) return '#f59e0b'
   if (usage > 40) return '#3b82f6'
   return '#22c55e'
 }
+
+// --- Process generation using Linux names + real JS heap ---
+
+function generateProcesses(
+  count: number,
+  prev: ProcessInfo[] | undefined,
+  jsHeapUsedMB: number,
+  cpuEstimate: number,
+): ProcessInfo[] {
+  const now = Date.now()
+  const result: ProcessInfo[] = []
+  const usedNames = new Set<string>()
+
+  // Shuffle and pick `count` processes
+  const shuffled = [...LINUX_PROCESSES].sort(() => Math.random() - 0.5)
+  const picked = shuffled.slice(0, count)
+
+  for (let i = 0; i < picked.length; i++) {
+    const proc = picked[i]
+    if (usedNames.has(proc.name)) continue
+    usedNames.add(proc.name)
+
+    // Carry over from previous tick for smooth transitions
+    const prevEntry = prev?.find((p) => p.name === proc.name)
+    const prevCpu = prevEntry?.cpu ?? proc.baseCpu
+    const prevMem = prevEntry?.memory ?? proc.baseMemMB
+
+    // CPU: drift from base + influence from real CPU estimate
+    const cpuInfluence = (cpuEstimate - 30) * 0.02 // scale real CPU into per-process nudge
+    const cpuDrift = (Math.random() - 0.45) * 3 + cpuInfluence
+    const cpu = Math.max(0, Math.min(100, prevCpu + cpuDrift))
+
+    // Memory: for "node" process, use real JS heap; otherwise drift from base
+    let mem: number
+    if (proc.name === 'node' && jsHeapUsedMB > 0) {
+      mem = Math.max(10, jsHeapUsedMB + (Math.random() - 0.5) * 10)
+    } else {
+      const memDrift = (Math.random() - 0.5) * 8
+      mem = Math.max(2, Math.min(1024, prevMem + memDrift))
+    }
+
+    // Status: mostly follow default, small chance of transition
+    let status = prevEntry?.status ?? proc.defaultStatus
+    if (Math.random() < 0.05) {
+      const statuses: ProcessInfo['status'][] = ['running', 'sleeping', 'zombie']
+      status = statuses[Math.floor(Math.random() * 3)]
+    }
+
+    result.push({
+      id: prevEntry?.id ?? `pid-${now}-${i}`,
+      name: proc.name,
+      cpu: Math.round(cpu * 10) / 10,
+      memory: Math.round(mem * 10) / 10,
+      status,
+    })
+  }
+  return result.sort((a, b) => b.cpu - a.cpu)
+}
+
+// --- CPU history: estimate from FPS + long tasks ---
+
+function generateCpuHistory(prev: CpuHistory[], fps: number, longTaskCount: number): CpuHistory[] {
+  const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+  // Base idle CPU ~8-15%
+  const baseIdle = 10
+  // FPS penalty: below 55 fps, each missing frame adds ~1.5% CPU
+  const fpsPenalty = fps < 55 ? (55 - fps) * 1.5 : 0
+  // Long task penalty: each long task detected adds ~4% CPU
+  const longTaskPenalty = longTaskCount * 4
+  // Small random jitter
+  const jitter = (Math.random() - 0.5) * 4
+  // Mean-reversion pull
+  const lastVal = prev.length > 0 ? prev[prev.length - 1].value : baseIdle
+  const pull = (baseIdle - lastVal) * 0.05
+
+  const next = Math.max(2, Math.min(98, lastVal + pull + jitter + fpsPenalty + longTaskPenalty))
+  const point = { time: now, value: Math.round(next * 10) / 10 }
+  const history = [...prev, point]
+  return history.length > 30 ? history.slice(-30) : history
+}
+
+// --- Net history: seed from navigator.connection ---
+
+function generateNetActivity(prev: NetActivity[], baseDown: number): NetActivity[] {
+  const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const lastDown = prev.length > 0 ? prev[prev.length - 1].down : baseDown
+  const lastUp = prev.length > 0 ? prev[prev.length - 1].up : baseDown * 0.2
+  const point = {
+    time: now,
+    down: Math.max(0.1, lastDown + (Math.random() - 0.5) * 2 + (Math.random() > 0.92 ? 5 : 0)),
+    up: Math.max(0.1, lastUp + (Math.random() - 0.5) * 1 + (Math.random() > 0.95 ? 3 : 0)),
+  }
+  const history = [...prev, point]
+  return history.length > 30 ? history.slice(-30) : history
+}
+
+// --- Component ---
 
 const SystemMonitor = () => {
   const windows = useStore((s) => s.windows)
@@ -116,74 +251,123 @@ const SystemMonitor = () => {
   const [refreshInterval, setRefreshInterval] = useState(2000)
   const [uptime, setUptime] = useState(0)
 
+  // Real performance tracking refs
+  const fpsRef = useRef(60)
+  const frameCountRef = useRef(0)
+  const lastFpsTimeRef = useRef(performance.now())
+  const longTaskCountRef = useRef(0)
+
+  // CPU history
   const [cpuHistory, setCpuHistory] = useState<CpuHistory[]>(() => {
     const init: CpuHistory[] = []
     const now = Date.now()
     for (let i = 29; i >= 0; i--) {
       const t = new Date(now - i * 2000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      init.push({ time: t, value: Math.max(5, Math.min(95, 30 + Math.random() * 30)) })
+      init.push({ time: t, value: 8 + Math.random() * 7 })
     }
     return init
   })
 
+  // Net history — seed from real connection
+  const connRef = useRef<NetworkConnection | null>(null)
   const [netHistory, setNetHistory] = useState<NetActivity[]>(() => {
+    const conn = getNetworkConnection()
+    connRef.current = conn
+    const baseDown = conn?.downlink ?? 5
     const init: NetActivity[] = []
     const now = Date.now()
     for (let i = 29; i >= 0; i--) {
       const t = new Date(now - i * 2000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       init.push({
         time: t,
-        down: Math.max(0.5, 5 + Math.random() * 10),
-        up: Math.max(0.2, 2 + Math.random() * 4),
+        down: Math.max(0.1, baseDown + (Math.random() - 0.5) * 2),
+        up: Math.max(0.1, baseDown * 0.2 + (Math.random() - 0.5) * 1),
       })
     }
     return init
   })
 
-  const [processes, setProcesses] = useState<ProcessInfo[]>(() => generateProcesses(12))
+  // Processes — Linux names
+  const [processes, setProcesses] = useState<ProcessInfo[]>(() => generateProcesses(12, undefined, 0, 10))
 
-  const [disk] = useState<DiskPartition[]>([
-    { name: 'C: 系统盘', used: 128 * 1024 * 1024 * 1024, total: 256 * 1024 * 1024 * 1024 },
-    { name: 'D: 数据盘', used: 410 * 1024 * 1024 * 1024, total: 512 * 1024 * 1024 * 1024 },
-    { name: 'E: 游戏盘', used: 180 * 1024 * 1024 * 1024, total: 1024 * 1024 * 1024 * 1024 },
+  // Disk — updated with real storage estimate
+  const [disk, setDisk] = useState<DiskPartition[]>([
+    { name: '/ (root)', used: 28 * 1024 * 1024 * 1024, total: 60 * 1024 * 1024 * 1024 },
+    { name: '/home', used: 85 * 1024 * 1024 * 1024, total: 200 * 1024 * 1024 * 1024 },
+    { name: '/tmp', used: 512 * 1024 * 1024, total: 2 * 1024 * 1024 * 1024 },
   ])
 
-  const [memory] = useState({
-    total: 16 * 1024 * 1024 * 1024,
-    used: 0,
-    cached: 0,
+  // Memory — based on real device memory
+  const [memory, setMemory] = useState(() => {
+    const devMem = getDeviceMemoryGB()
+    const total = devMem ? devMem * 1024 * 1024 * 1024 : 16 * 1024 * 1024 * 1024
+    return { total, used: 0, cached: 0 }
   })
 
   const [battery, setBattery] = useState<{ level: number; charging: boolean } | null>(null)
   const [networkOnline, setNetworkOnline] = useState(navigator.onLine)
 
+  // Derived display values
+  const [currentFps, setCurrentFps] = useState(60)
+  const [jsHeapUsed, setJsHeapUsed] = useState(0)
+  const [jsHeapTotal, setJsHeapTotal] = useState(0)
+  const [localStorageBytes, setLocalStorageBytes] = useState(0)
+
   const startTime = useRef(Date.now())
 
-  const cpuUsage = cpuHistory.length > 0 ? cpuHistory[cpuHistory.length - 1].value : 0
-  const netDown = netHistory.length > 0 ? netHistory[netHistory.length - 1].down : 0
-  const netUp = netHistory.length > 0 ? netHistory[netHistory.length - 1].up : 0
-
-  const memoryUsed = useRef(6 * 1024 * 1024 * 1024)
-  const memoryCached = useRef(2 * 1024 * 1024 * 1024)
-
-  const tick = useCallback(() => {
-    setUptime(Date.now() - startTime.current)
-    setCpuHistory((prev) => generateCpuHistory(prev))
-    setNetHistory((prev) => generateNetActivity(prev))
-    setProcesses((prev) => generateProcesses(Math.max(8, Math.min(16, prev.length + (Math.random() > 0.5 ? 1 : -1))), prev))
-
-    const memFluctuation = (Math.random() - 0.48) * 200 * 1024 * 1024
-    memoryUsed.current = Math.max(2 * 1024 * 1024 * 1024, Math.min(14 * 1024 * 1024 * 1024, memoryUsed.current + memFluctuation))
-    memoryCached.current = Math.max(1 * 1024 * 1024 * 1024, Math.min(4 * 1024 * 1024 * 1024, memoryCached.current + (Math.random() - 0.5) * 100 * 1024 * 1024))
+  // --- FPS tracking via requestAnimationFrame ---
+  useEffect(() => {
+    let animId: number
+    const measure = () => {
+      frameCountRef.current++
+      const now = performance.now()
+      const elapsed = now - lastFpsTimeRef.current
+      if (elapsed >= 1000) {
+        fpsRef.current = Math.round((frameCountRef.current * 1000) / elapsed)
+        frameCountRef.current = 0
+        lastFpsTimeRef.current = now
+      }
+      animId = requestAnimationFrame(measure)
+    }
+    animId = requestAnimationFrame(measure)
+    return () => cancelAnimationFrame(animId)
   }, [])
 
+  // --- PerformanceObserver for long tasks ---
   useEffect(() => {
-    if (!autoRefresh) return
-    tick()
-    const id = setInterval(tick, refreshInterval)
-    return () => clearInterval(id)
-  }, [autoRefresh, refreshInterval, tick])
+    let observer: PerformanceObserver | null = null
+    try {
+      if (typeof PerformanceObserver !== 'undefined') {
+        observer = new PerformanceObserver((list) => {
+          longTaskCountRef.current += list.getEntries().length
+        })
+        observer.observe({ type: 'longtask', buffered: false })
+      }
+    } catch {
+      // longtask type not supported
+    }
+    return () => observer?.disconnect()
+  }, [])
 
+  // --- Storage estimate (async, once) ---
+  useEffect(() => {
+    getStorageEstimate().then((est) => {
+      if (est && est.quota > 0) {
+        const usageRatio = est.usage / est.quota
+        // Map browser storage to realistic Linux partition sizes
+        const rootTotal = 60 * 1024 * 1024 * 1024
+        const homeTotal = 200 * 1024 * 1024 * 1024
+        const tmpTotal = 2 * 1024 * 1024 * 1024
+        setDisk([
+          { name: '/ (root)', used: Math.round(rootTotal * Math.min(usageRatio * 1.2, 0.95)), total: rootTotal },
+          { name: '/home', used: Math.round(homeTotal * Math.min(usageRatio * 0.8, 0.9)), total: homeTotal },
+          { name: '/tmp', used: Math.round(tmpTotal * Math.min(usageRatio * 0.3, 0.5)), total: tmpTotal },
+        ])
+      }
+    })
+  }, [])
+
+  // --- Battery (unchanged) ---
   useEffect(() => {
     if ('getBattery' in navigator) {
       type BatteryInfo = { level: number; charging: boolean; addEventListener: (type: string, handler: () => void) => void }
@@ -199,6 +383,7 @@ const SystemMonitor = () => {
     }
   }, [])
 
+  // --- Network online/offline (unchanged) ---
   useEffect(() => {
     const onOnline = () => setNetworkOnline(true)
     const onOffline = () => setNetworkOnline(false)
@@ -210,18 +395,90 @@ const SystemMonitor = () => {
     }
   }, [])
 
-  const memUsed = memoryUsed.current
-  const memCached = memoryCached.current
-  const memPercent = ((memUsed + memCached) / memory.total) * 100
+  // --- Main tick: update all data ---
+  const tick = useCallback(() => {
+    setUptime(Date.now() - startTime.current)
+
+    // Read real FPS
+    const fps = fpsRef.current
+    setCurrentFps(fps)
+
+    // Read long tasks count and reset
+    const longTasks = longTaskCountRef.current
+    longTaskCountRef.current = 0
+
+    // CPU estimate from FPS + long tasks
+    const cpuEstimate = Math.min(98, Math.max(2, 10 + (fps < 55 ? (55 - fps) * 1.5 : 0) + longTasks * 4))
+    setCpuHistory((prev) => generateCpuHistory(prev, fps, longTasks))
+
+    // Net history with real base downlink
+    const baseDown = connRef.current?.downlink ?? 5
+    setNetHistory((prev) => generateNetActivity(prev, baseDown))
+
+    // Real JS heap
+    const mem = getPerformanceMemory()
+    const heapUsedMB = mem ? mem.usedJSHeapSize / (1024 * 1024) : 0
+    const heapTotalMB = mem ? mem.totalJSHeapSize / (1024 * 1024) : 0
+    setJsHeapUsed(heapUsedMB)
+    setJsHeapTotal(heapTotalMB)
+
+    // Processes with real JS heap for "node"
+    setProcesses((prev) => generateProcesses(
+      Math.max(8, Math.min(16, prev.length + (Math.random() > 0.5 ? 1 : -1))),
+      prev,
+      heapUsedMB,
+      cpuEstimate,
+    ))
+
+    // Memory: real device memory + JS heap influence
+    const devMemGB = getDeviceMemoryGB()
+    const totalMem = devMemGB ? devMemGB * 1024 * 1024 * 1024 : 16 * 1024 * 1024 * 1024
+
+    // Estimate "used" memory: scale JS heap to represent the web runtime + simulated system overhead
+    // JS heap is just the browser tab; scale up by ~10x to simulate full OS memory usage
+    const jsHeapScale = mem ? (mem.usedJSHeapSize / mem.jsHeapSizeLimit) : 0.35
+    const baseUsedRatio = 0.25 + jsHeapScale * 0.4 // 25%-65% range driven by real heap usage
+    const usedJitter = (Math.random() - 0.5) * 0.03
+    const usedMem = totalMem * Math.min(0.9, Math.max(0.15, baseUsedRatio + usedJitter))
+
+    // Cache/buffer: typically 10-25% of total
+    const cachedRatio = 0.12 + Math.random() * 0.08
+    const cachedMem = totalMem * cachedRatio
+
+    setMemory({ total: totalMem, used: usedMem, cached: cachedMem })
+
+    // Local storage usage
+    setLocalStorageBytes(getLocalStorageUsageBytes())
+  }, [])
+
+  useEffect(() => {
+    if (!autoRefresh) return
+    tick()
+    const id = setInterval(tick, refreshInterval)
+    return () => clearInterval(id)
+  }, [autoRefresh, refreshInterval, tick])
+
+  // --- Computed display values ---
+
+  const cpuUsage = cpuHistory.length > 0 ? cpuHistory[cpuHistory.length - 1].value : 0
+  const netDown = netHistory.length > 0 ? netHistory[netHistory.length - 1].down : 0
+  const netUp = netHistory.length > 0 ? netHistory[netHistory.length - 1].up : 0
+
+  const memUsed = memory.used
+  const memCached = memory.cached
+  const memPercent = memory.total > 0 ? ((memUsed + memCached) / memory.total) * 100 : 0
   const swapUsed = Math.round(memUsed / (1024 * 1024 * 1024) * 10) / 10
   const swapCached = Math.round(memCached / (1024 * 1024 * 1024) * 10) / 10
 
   const totalDiskUsed = disk.reduce((s, d) => s + d.used, 0)
   const totalDiskTotal = disk.reduce((s, d) => s + d.total, 0)
-  const totalDiskPercent = (totalDiskUsed / totalDiskTotal) * 100
+  const totalDiskPercent = totalDiskTotal > 0 ? (totalDiskUsed / totalDiskTotal) * 100 : 0
 
   const maxCpu = Math.max(...cpuHistory.map((p) => p.value), 1)
   const maxNet = Math.max(...netHistory.map((p) => Math.max(p.down, p.up)), 1)
+
+  // Connection info for display
+  const connInfo = getNetworkConnection()
 
   const renderCpuChart = () => {
     const bars = cpuHistory.slice(-20)
@@ -354,6 +611,22 @@ const SystemMonitor = () => {
                 <span className="sm-sub-value">{formatBytes(memory.total)}</span>
               </div>
             </div>
+            {jsHeapUsed > 0 && (
+              <div className="sm-sub-grid" style={{ marginTop: 8, borderTop: '1px solid var(--window-border, #2a2a3e)', paddingTop: 8 }}>
+                <div className="sm-sub-item">
+                  <span className="sm-sub-label">JS 堆已用</span>
+                  <span className="sm-sub-value">{jsHeapUsed.toFixed(1)} MB</span>
+                </div>
+                <div className="sm-sub-item">
+                  <span className="sm-sub-label">JS 堆总计</span>
+                  <span className="sm-sub-value">{jsHeapTotal.toFixed(1)} MB</span>
+                </div>
+                <div className="sm-sub-item">
+                  <span className="sm-sub-label">LocalStorage</span>
+                  <span className="sm-sub-value">{formatBytes(localStorageBytes)}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="sm-card">
@@ -372,7 +645,7 @@ const SystemMonitor = () => {
             </div>
             <div className="sm-disk-list">
               {disk.map((d) => {
-                const pct = (d.used / d.total) * 100
+                const pct = d.total > 0 ? (d.used / d.total) * 100 : 0
                 return (
                   <div key={d.name} className="sm-disk-item">
                     <div className="sm-disk-name">
@@ -414,6 +687,28 @@ const SystemMonitor = () => {
                 <span className="sm-net-value">{netUp.toFixed(1)} <small>Mbps</small></span>
               </div>
             </div>
+            {connInfo && (
+              <div className="sm-sub-grid" style={{ marginBottom: 8 }}>
+                {connInfo.effectiveType && (
+                  <div className="sm-sub-item">
+                    <span className="sm-sub-label">连接类型</span>
+                    <span className="sm-sub-value">{connInfo.effectiveType}</span>
+                  </div>
+                )}
+                {connInfo.rtt !== undefined && (
+                  <div className="sm-sub-item">
+                    <span className="sm-sub-label">RTT</span>
+                    <span className="sm-sub-value">{connInfo.rtt} ms</span>
+                  </div>
+                )}
+                {connInfo.downlink !== undefined && (
+                  <div className="sm-sub-item">
+                    <span className="sm-sub-label">下行带宽</span>
+                    <span className="sm-sub-value">{connInfo.downlink} Mbps</span>
+                  </div>
+                )}
+              </div>
+            )}
             {renderNetChart()}
           </div>
         </div>
@@ -480,6 +775,12 @@ const SystemMonitor = () => {
               <div className="sm-info-row">
                 <span>屏幕</span>
                 <strong>{screen.width}×{screen.height}</strong>
+              </div>
+              <div className="sm-info-row">
+                <span>帧率</span>
+                <strong style={{ color: currentFps >= 55 ? '#22c55e' : currentFps >= 30 ? '#f59e0b' : '#ef4444' }}>
+                  {currentFps} FPS
+                </strong>
               </div>
               <div className="sm-info-row">
                 <span>窗口数</span>

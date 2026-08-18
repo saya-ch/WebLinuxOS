@@ -19,6 +19,7 @@ import './creativeCommands'    // 创意命令（nasa/wikipedia/github-trending 
 // 4. 独立功能模块：不与上述命令冲突
 import './funCommands'
 import './aiCommands'
+import './aiChatCommands'
 import './advancedCommands'
 import './storageCommands'
 import './systemBackupCommands'

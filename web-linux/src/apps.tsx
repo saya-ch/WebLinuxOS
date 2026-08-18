@@ -51,6 +51,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'devops-dashboard', name: 'DevOps 仪表盘', icon: <ServerIcon />, component: 'DevOpsDashboard', category: 'development', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: 'DevOps基础设施仪表盘：真实服务健康监控、CI/CD部署流水线、容器管理、日志聚合、Canvas指标图表、告警管理、环境配置、API网关' },
   // v107 创新功能 — SystemOptimizer 系统优化器：真实浏览器性能审计+一键优化
   { id: 'system-optimizer', name: 'SystemOptimizer 优化器', icon: <ActivityIcon />, component: 'SystemOptimizer', category: 'system', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '系统优化器：真实存储/缓存/性能审计、健康评分、一键清理、内存/网络/启动优化、Performance API数据、优化前后对比' },
+  // v108 创新功能 — LiveCollabBoard 实时协作画板：跨标签页实时绘图协作
+  { id: 'live-collab-board', name: '实时协作画板', icon: <PaintIcon />, component: 'LiveCollabBoard', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '跨标签页实时协作画板：画笔/橡皮/直线/矩形/圆形工具、颜色选择、笔触大小、BroadcastChannel跨Tab同步、光标共享、用户在线指示、撤销、导出PNG' },
   // v106 创新功能 — DailyDashboard 每日仪表盘：聚合天气+空气质量+节假日+新闻+加密货币+每日名言
   { id: 'daily-dashboard', name: '每日仪表盘', icon: <DailyDashboardIcon />, component: 'DailyDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '每日信息聚合仪表盘：实时天气+5天预报、空气质量指数AQI、近期节假日倒计时、Hacker News热门资讯、加密货币行情、每日励志名言，一站式获取每日所需信息' },
   // v104 创新功能 — SmartWorkspace 智能工作空间：多布局自定义、收藏夹、应用快捷启动
