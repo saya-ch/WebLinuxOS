@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
+import { chat } from '../services/aiService';
+import type { AIMessage } from '../services/aiService';
 
 /**
  * AI正则表达式生成器
@@ -130,15 +132,17 @@ Requirements:
 
     try {
       const fullPrompt = buildPrompt(description.trim());
-      const response = await fetch(
-        `https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?temperature=0.3&nologo=true`
-      );
-
-      if (!response.ok) {
-        throw new Error(`API错误: ${response.status}`);
-      }
-
-      const text = (await response.text()).trim();
+      
+      const messages: AIMessage[] = [
+        { role: 'system', content: 'You are a regex expert. Generate accurate regular expressions. Follow the output format exactly.' },
+        { role: 'user', content: fullPrompt },
+      ];
+      
+      const text = (await chat(messages, {
+        temperature: 0.3,
+        timeout: 60_000,
+      })).trim();
+      
       const lines = text.split('\n').filter(line => line.trim());
       
       let pattern = '';

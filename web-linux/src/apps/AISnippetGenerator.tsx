@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { chat } from '../services/aiService';
+import type { AIMessage } from '../services/aiService';
 
 /**
  * AI代码片段生成器
@@ -91,15 +93,15 @@ export default function AISnippetGenerator() {
     try {
       const fullPrompt = buildPrompt();
       
-      const response = await fetch(
-        `https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?temperature=${temperature}&nologo=true`
-      );
-
-      if (!response.ok) {
-        throw new Error(`API返回错误状态: ${response.status}`);
-      }
-
-      const text = await response.text();
+      const messages: AIMessage[] = [
+        { role: 'system', content: 'You are an expert programmer. Generate production-ready code. Only output the code itself, no explanations, no markdown formatting.' },
+        { role: 'user', content: fullPrompt },
+      ];
+      
+      const text = await chat(messages, {
+        temperature: temperature,
+        timeout: 60_000,
+      });
       
       // 清理响应，移除可能的markdown代码块标记
       let cleanCode = text.trim();
@@ -108,7 +110,7 @@ export default function AISnippetGenerator() {
         // 移除第一行（```javascript 或类似的）
         lines.shift();
         // 移除最后一行（```）
-        if (lines[lines.length - 1].trim() === '```') {
+        if (lines.length > 0 && lines[lines.length - 1].trim() === '```') {
           lines.pop();
         }
         cleanCode = lines.join('\n').trim();
