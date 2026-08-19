@@ -19,6 +19,7 @@ interface WindowComponent {
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
   AICodeReviewWorkbench: () => import('../../apps/AICodeReviewWorkbench'),
   AISnippetGenerator: () => import('../../apps/AISnippetGenerator'),
+  AIRegexGenerator: () => import('../../apps/AIRegexGenerator'),
   OnlineCodeRunnerPro: () => import('../../apps/OnlineCodeRunnerPro'),
   PromptEngineeringLab: () => import('../../apps/PromptEngineeringLab'),
   WebsitePerformanceTester: () => import('../../apps/WebsitePerformanceTester'),
