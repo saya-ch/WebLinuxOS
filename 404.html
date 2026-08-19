@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting...</title>
+    <script>
+      // GitHub Pages SPA fallback：
+      // 当访问的路径不存在时，GH Pages 会返回 404.html。
+      // 此脚本将 location 记录原始路径并跳转到 index.html。
+      (function () {
+        try {
+          sessionStorage.setItem('spa-redirect-path', location.href);
+        } catch (e) {
+          // Safari 隐私模式下可能抛出，忽略。
+        }
+        // 支持任意 base 路径：相对当前 origin 的根路径 + 脚本检测 repo 名
+        var base = location.pathname.split('/').slice(0, -1).filter(Boolean).join('/');
+        var target = base ? '/' + base + '/' : '/';
+        location.replace(target);
+      })();
+    </script>
+    <noscript>
+      <p><a href="./">点击这里返回 WebLinuxOS</a></p>
+    </noscript>
+  </head>
+  <body></body>
+</html>
