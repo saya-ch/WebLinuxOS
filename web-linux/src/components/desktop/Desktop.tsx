@@ -109,34 +109,38 @@ const DesktopIcon = memo(function DesktopIcon({
 }) {
   const [dragging, setDragging] = useState(false)
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
-  const dragStartRef = useRef<{ mx: number; my: number; ix: number; iy: number } | null>(null)
-  const dragMovedRef = useRef(false)
+  const dragStartRef = useRef<{ mx: number; my: number; ix: number; iy: number; moved: boolean } | null>(null)
+  const clickTimerRef = useRef<number | null>(null)
+  const clickCountRef = useRef(0)
   const ICON_DRAG_THRESHOLD = 8
+  const DOUBLE_CLICK_DELAY = 260
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return
-    dragMovedRef.current = false
     dragStartRef.current = {
       mx: e.clientX,
       my: e.clientY,
       ix: icon.x,
       iy: icon.y,
+      moved: false,
     }
   }, [icon.x, icon.y])
 
   const handleMouseMove = useCallback((e: globalThis.MouseEvent) => {
     const start = dragStartRef.current
-    if (!start) return
+    if (!start || start.moved) return
     const dx = e.clientX - start.mx
     const dy = e.clientY - start.my
     const dist = Math.sqrt(dx * dx + dy * dy)
     
     if (dist > ICON_DRAG_THRESHOLD) {
-      if (!dragMovedRef.current) {
-        dragMovedRef.current = true
-        setDragging(true)
+      start.moved = true
+      // 如果正在等待双击检测，立即取消挂起的单击
+      if (clickTimerRef.current !== null) {
+        window.clearTimeout(clickTimerRef.current)
+        clickTimerRef.current = null
       }
-      setDragPos({ x: start.ix + dx, y: start.iy + dy })
+      setDragging(true)
     }
   }, [])
 
@@ -144,17 +148,17 @@ const DesktopIcon = memo(function DesktopIcon({
     const start = dragStartRef.current
     if (!start) return
     
-    if (dragMovedRef.current) {
+    if (start.moved) {
       setDragging(false)
       setDragPos(null)
       const dx = e.clientX - start.mx
       const dy = e.clientY - start.my
       onDragEnd(icon.id, start.ix + dx, start.iy + dy)
-      dragMovedRef.current = false
       dragStartRef.current = null
       return
     }
     
+    // 没有发生拖拽 - 视为点击
     dragStartRef.current = null
   }, [icon.id, onDragEnd])
 
@@ -168,18 +172,41 @@ const DesktopIcon = memo(function DesktopIcon({
   }, [handleMouseMove, handleMouseUp])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (dragMovedRef.current) {
+    // 如果拖拽过，忽略这次点击
+    if (dragStartRef.current?.moved) {
       return
     }
-    onClick(e)
-  }, [onClick])
+    // 使用 clickCount + 定时器区分单击与双击
+    clickCountRef.current += 1
+    if (clickCountRef.current === 1) {
+      clickTimerRef.current = window.setTimeout(() => {
+        clickCountRef.current = 0
+        clickTimerRef.current = null
+        if (!dragStartRef.current?.moved) {
+          onClick(e)
+        }
+      }, DOUBLE_CLICK_DELAY)
+    } else {
+      // 双击 - 取消挂起的单击
+      if (clickTimerRef.current !== null) {
+        window.clearTimeout(clickTimerRef.current)
+        clickTimerRef.current = null
+      }
+      clickCountRef.current = 0
+      if (!dragStartRef.current?.moved) {
+        onDoubleClick(e)
+      }
+    }
+  }, [onClick, onDoubleClick])
 
-  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (dragMovedRef.current) {
-      return
+  // 清理：组件卸载时清除定时器
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current !== null) {
+        window.clearTimeout(clickTimerRef.current)
+      }
     }
-    onDoubleClick(e)
-  }, [onDoubleClick])
+  }, [])
 
   const currentX = dragPos ? dragPos.x : icon.x
   const currentY = dragPos ? dragPos.y : icon.y
@@ -191,10 +218,11 @@ const DesktopIcon = memo(function DesktopIcon({
       style={{
         left: currentX,
         top: currentY,
+        pointerEvents: booted ? 'auto' : 'none',
+        cursor: booted ? 'pointer' : 'default',
         '--boot-index': index,
       } as React.CSSProperties}
       onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
       onMouseDown={handleMouseDown}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -211,7 +239,7 @@ const DesktopIcon = memo(function DesktopIcon({
       }}
       tabIndex={0}
       role="button"
-      aria-label={`${icon.name} - 单击选中，双击打开`}
+      aria-label={`${icon.name} - 单击打开应用，双击快速打开（拖拽可移动位置）`}
       aria-pressed={selectedIconId === icon.id}
       data-app-id={icon.appId}
     >

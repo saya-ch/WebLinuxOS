@@ -36,6 +36,10 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v116 创新应用：PomodoroFocus 番茄钟 + SomaFM 电台 ===
+  { id: 'pomodoro-focus', name: 'PomodoroFocus · 番茄电台', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/><path d="M9 1h6"/></svg>, component: 'PomodoroFocus', category: 'office', defaultWidth: 1180, defaultHeight: 780, minWidth: 880, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '番茄钟 + SomaFM 公开电台 + 任务看板 + 专注统计：三阶段计时、8个真实SomaFM MP3流、Web Audio结束提示、任务番茄分配、7日专注柱状图，数据本地持久化' },
+  // === v116 创新应用：UtilityStack 公共 API 工具集 ===
+  { id: 'utility-stack', name: 'UtilityStack · 公共API工具集', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, component: 'UtilityStack', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 560, resizable: true, multiple: false, isNew: true, description: '公共API工具集：IP归属地查询、每日箴言收藏、LoremFlickr图片灵感、Punk随机啤酒推荐、ChuckNorris冷知识，数据实时获取' },
   // === v115 创新应用：DevRadar 开发者技术雷达 ===
   { id: 'dev-radar', name: 'DevRadar 技术雷达', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12 2 2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'DevRadar', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '开发者技术雷达：聚合Hacker News+GitHub Trending+GitHub Releases实时信息流，支持多源筛选、热门/最新/趋势排序、全文搜索、本地收藏、自动刷新、详情面板' },
   // === v114 创新应用：MindSync Pro 效率中心 ===

@@ -34,6 +34,25 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 
 Every application does real work. No mock data. No placeholder UI.
 
+## What's New in v116
+
+This release introduces **two real, useful applications** — a Pomodoro timer that broadcasts SomaFM public radio streams, and a public API utility toolkit.
+
+- **PomodoroFocus · 番茄电台** — 番茄钟 + SomaFM 公开电台 + 任务看板 + 专注统计
+  - Three-phase Pomodoro timer (focus / short break / long break) with custom durations
+  - 8 real SomaFM MP3 streams (Drift Zone, Indie Pop, DEF CON Radio, Secret Agent, …)
+  - Web-Audio-based end-chime (no external sound files needed)
+  - Task kanban with Pomodoro allocation
+  - 7-day focus bar chart with daily totals
+  - All data persisted in `localStorage`
+- **UtilityStack · 公共API工具集** — A five-tab toolkit of free public APIs, no keys required
+  - IP geolocation (ipapi.co) with custom IP lookup + OpenStreetMap link
+  - Random advice / quotes with favorites (Advice Slip API)
+  - LoremFlickr image inspiration generator
+  - Random craft beer explorer (Punk API)
+  - Chuck Norris jokes (ChuckNorris.io)
+- Build: 2 new lazy-loaded chunks registered in `APP_REGISTRY_EXTRAS`, Vite code-split automatically
+
 ## What's New in v115
 
 This release introduces **DevRadar**, a developer-focused real-time tech news aggregator, along with boot performance improvements.
