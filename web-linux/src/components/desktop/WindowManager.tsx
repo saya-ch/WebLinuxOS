@@ -604,6 +604,18 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WorkspaceLayout: () => import('../../apps/WorkspaceLayout'),
   RSSAggregator: () => import('../../apps/RSSAggregator'),
   DevOpsDashboard: () => import('../../apps/DevOpsDashboard'),
+  // === v110/v114/v115/v116 新增应用组件 ===
+  DataPulsePro: () => import('../../apps/DataPulsePro'),
+  AICodeMentorPro: () => import('../../apps/AICodeMentorPro'),
+  DevFlowPro: () => import('../../apps/DevFlowPro'),
+  MindSyncPro: () => import('../../apps/MindSyncPro'),
+  PomodoroFocus: () => import('../../apps/PomodoroFocus'),
+  UtilityStack: () => import('../../apps/UtilityStack'),
+  LiveCollabBoard: () => import('../../apps/LiveCollabBoard'),
+  // === v117 三大创新应用 ===
+  MemeGenerator: () => import('../../apps/MemeGenerator'),
+  TechInterviewPrep: () => import('../../apps/TechInterviewPrep'),
+  MotivationalDashboard: () => import('../../apps/MotivationalDashboard'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

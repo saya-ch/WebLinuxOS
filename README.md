@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v115.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v117.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -33,6 +33,34 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - **MindSync Pro** unifies pomodoro, tasks, habits, reflection, and analytics into one productivity system
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v117
+
+This release ships **three purpose-built productivity applications** that turn WebLinuxOS into a genuinely useful daily workstation — a meme studio you can actually use in group chats, an interview prep trainer with real runnable code, and a scientifically grounded motivational dashboard with live public APIs.
+
+- **MemeGenerator · 表情包工坊** — Local meme generation studio with zero server dependency
+  - 8 preset classic templates (Drake Hotline Bling, Distracted Boyfriend, Two Buttons, Change My Mind, Woman Yelling at Cat, Is This a Pigeon, Expanding Brain, American Chopper)
+  - Canvas-based realtime rendering with auto word-wrap and CJK character-aware line breaking
+  - Per-textarea styling: font size, fill color, stroke color, font family, uppercase toggle, global stroke-width control
+  - Local image upload with automatic dual text-area positioning
+  - One-click **copy to clipboard as PNG** (compatible with WeChat / Feishu / DingTalk / email paste) and PNG download
+  - Favorites system, last-used history, custom-template library (persisted to localStorage, 50-item cap)
+  - CORS fallback chain (external template → picsum seeded placeholder → generated gradient) so the app never blank-screens on restricted networks
+- **TechInterviewPrep · 技术面试刷题助手** — Interview training tool with real JavaScript execution inside the app
+  - 30+ curated real questions across 8 categories: algorithms & data structures, frontend, backend, databases, computer networking, operating systems, behavioral, and system design
+  - Difficulty triage (easy / medium / hard) with LeetCode source links and tags
+  - Three dedicated views: Practice mode (with hints and graded reveal), Question library (filterable/searchable grid), Statistics dashboard (streak tracking, correct rate, progress KPIs)
+  - Inline **sandboxed JavaScript executor** (captures console.log/warn/error with millisecond timing) so you can run Two Sum, reverse list, and event-loop code samples without leaving the app
+  - Full filter engine: by category, by difficulty, by attempt status (unsolved / correct / wrong / attempted / bookmarked), full-text search across title/tags/body
+  - Custom question importer, user bookmark library, streak calendar with per-day activity, all data persisted to localStorage
+- **MotivationalDashboard · 励志仪表盘** — Five-module mental-wellness and focus tool grounded in positive psychology research
+  - **Daily Quote tab** — Real quote APIs (ZenQuotes.io + Stoic.themotivate365.com fallback) with 34-entry local quote bank (Chinese classics + English) for offline resilience, Lorem Picsum inspirational imagery, copy/share/save to collection, and 15-entry history browser
+  - **Breathwork tab** — Four guided breathing patterns (4-7-8 Dr. Weil sleep, Box square-breathing, 5-5 balanced, rapid-energy) with Web Audio Solfeggio chimes on phase transitions and a cumulative cycle counter
+  - **Today's Goals tab** — Goal tracker with percentage ring, quick-add preset chips (read 30m / meditate 5m / drink 8 cups etc.), and completion-delight gold gradient
+  - **Gratitude Journal** and **Small Wins Wall** — Both backed by Seligman's three-good-things methodology with in-app explanation of the 6-month 36%-depression-reduction study result; both support template chips, Ctrl/Cmd+Enter quick-submit, and custom templates
+  - Eight theme gradients (Aurora / Sunset / Ocean / Forest / Starry Night / Peach / Warm Sun / Calm) with glassmorphism overlays, motivational quote, programmer-joke side panel, and all-state persistence
+- Aligned version metadata across package.json, index.html meta tags, Open Graph/Twitter cards, and boot-loader banners to v117.
+- Three new entries registered in `APP_REGISTRY_EXTRAS` and `WindowManager.componentMap`; all three are lazy-loaded chunks in the Vite build.
 
 ## What's New in v116
 
@@ -139,10 +167,10 @@ Additional improvements in v110:
 
 | Category | Highlights |
 |----------|-----------|
-| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub |
-| **Productivity** | **MindSync Pro (番茄钟/任务/习惯/反思/统计)**, DevFlow Pro, Pomodoro Studio, Kanban, TimeCapsule, Daily Dashboard |
-| **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab, AI writing studio, AI code mentor |
-| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro |
+| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub, **TechInterviewPrep 面试刷题 (30+ real questions + sandbox executor, 8 categories)** |
+| **Productivity** | **MindSync Pro (番茄钟/任务/习惯/反思/统计)**, DevFlow Pro, Pomodoro Studio, Kanban, TimeCapsule, Daily Dashboard, **PomodoroFocus 番茄电台 (SomaFM streams)**, **MotivationalDashboard (5-in-1 励志/呼吸/目标/感恩/成就)** |
+| **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab, AI writing studio, AI code mentor, **MemeGenerator 表情包工坊 (Canvas realtime render + clipboard export)** |
+| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro, **DevRadar (HN + GitHub Trending + Releases)**, **UtilityStack (IP+Quote+Image+Beer+Joke public API hub)** |
 | **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links, ResumeForge, MarkdownPublisher, SmartNotes Pro |
 | **System** | File manager, settings, system monitor (real data), password vault, app marketplace, system optimizer, CloudDrive, WebSSH, Workspace layout manager |
 | **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera, AI image studio, ImageForge |
@@ -166,6 +194,14 @@ Every data source is a real, public API — no fake data:
 - **NASA APOD** — astronomy imagery
 - **MyMemory** — translation service
 - **Web Speech API** — speech synthesis and recognition
+- **ZenQuotes.io** — daily motivational quotes (no key)
+- **Stoic.themotivate365.com** — stoic philosophy quotes (backup)
+- **SomaFM** — public internet radio MP3 streams (8 channels)
+- **Picsum Photos (Lorem Picsum)** — inspirational imagery
+- **Punk API (Brewdog)** — craft beer explorer
+- **ChuckNorris.io** — jokes feed
+- **Advice Slip** — random advice API
+- **ipapi.co** — IP geolocation
 
 ## Quick Start
 
