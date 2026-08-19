@@ -23,6 +23,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AIWritingStudio: () => import('../../apps/AIWritingStudio'),
   CryptoDashboard: () => import('../../apps/CryptoDashboard'),
   WeatherDashboard: () => import('../../apps/WeatherDashboard'),
+  GlobalTravelAssistant: () => import('../../apps/GlobalTravelAssistant'),
   OnlineCodeRunnerPro: () => import('../../apps/OnlineCodeRunnerPro'),
   PromptEngineeringLab: () => import('../../apps/PromptEngineeringLab'),
   WebsitePerformanceTester: () => import('../../apps/WebsitePerformanceTester'),

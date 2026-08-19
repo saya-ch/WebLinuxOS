@@ -17,6 +17,7 @@ import {
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
   BarChartIcon, ResearchIcon, DatabaseIcon, BarChart3Icon,
   GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon,
+  PlaneIcon,
   // v106 新增：仅保留 icons.tsx 独有的，不与 apps.tsx 本地 function 定义冲突
   DailyDashboardIcon
 } from './icons'
@@ -474,6 +475,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'ai-writing-studio', name: 'AI智能写作工作台', icon: <SparklesIcon />, component: 'AIWritingStudio', category: 'office', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的专业写作工作台：Pollinations AI真实内容生成、8种写作模式（文章/改写/摘要/翻译/润色/扩写/大纲/邮件）、6种写作风格、8种语言互译、字数统计、本地项目保存、快速模板库' },
   { id: 'crypto-dashboard', name: '加密货币仪表盘', icon: <BarChart3Icon />, component: 'CryptoDashboard', category: 'finance', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时加密货币市场仪表盘：CoinGecko API真实数据、15个主流币种监控、实时价格更新、多周期K线走势图、收藏管理、市场统计分析、数据导出' },
   { id: 'weather-dashboard', name: '天气环境监测中心', icon: <CloudRainIcon />, component: 'WeatherDashboard', category: 'utilities', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时天气与环境监测：Open-Meteo API真实数据、12个中国/国际城市、当前天气详情、7日预报、24小时温度趋势、空气质量AQI监测、污染物浓度分析、收藏城市管理' },
+  // === v113 创新应用套件 — 全球旅行助手 ===
+  { id: 'global-travel-assistant', name: '全球旅行助手', icon: <PlaneIcon />, component: 'GlobalTravelAssistant', category: 'utilities', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '全球旅行助手：世界时钟(16城市)、实时天气查询(Open-Meteo API)、汇率转换(ExchangeRate-API)、时区转换器、收藏管理、玻璃拟态UI' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）

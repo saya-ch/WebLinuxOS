@@ -13,7 +13,7 @@ import {
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
   Star, Tag, Save, Monitor, Power, Target, TrendingUp, TrendingDown, Lightbulb, Bookmark, ArrowRight,
   BarChart3, Layers, HeartOff, Wallet, PieChart, RotateCcw, Dices,
-  Send, DollarSign, Bitcoin, Thermometer, Wind, Droplets, History, FileEdit, PenTool,
+  Send, DollarSign, Bitcoin, Thermometer, Wind, Droplets, History, FileEdit, PenTool, Plane,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -643,5 +643,6 @@ export const DropletIcon = Droplets
 export const HistoryIcon = History
 export const FileEditIcon = FileEdit
 export const PenToolIcon = PenTool
+export const PlaneIcon = Plane
 export const MessageSquareIcon = MessageSquare
 export const FileTextIcon2 = FileText
