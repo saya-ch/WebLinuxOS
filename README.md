@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v114.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v115.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -33,6 +33,17 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - **MindSync Pro** unifies pomodoro, tasks, habits, reflection, and analytics into one productivity system
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v115
+
+This release introduces **DevRadar**, a developer-focused real-time tech news aggregator, along with boot performance improvements.
+
+- **DevRadar (开发者技术雷达)** — A unified real-time information stream that aggregates three major developer data sources:
+  - **Hacker News** — Fetches front-page stories via the Algolia HN API with scores and comment counts
+  - **GitHub Trending** — Surfaces the fastest-growing new repositories from the past 7 days via GitHub Search API
+  - **GitHub Releases** — Tracks the latest releases from 8 popular open-source projects (VS Code, React, Next.js, TypeScript, Tailwind, Vite, Prisma, shadcn/ui)
+  - Features: multi-source filtering, popular/latest/trending sort modes, full-text search, local favorites with persistence, auto-refresh (5-min interval), detail panel, and language-colored tags
+- **Boot animation optimization** — Increased progress increment rate for faster startup, especially in low-frame-rate environments
 
 ## What's New in v114
 

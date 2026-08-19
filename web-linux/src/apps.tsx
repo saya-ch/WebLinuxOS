@@ -36,6 +36,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v115 创新应用：DevRadar 开发者技术雷达 ===
+  { id: 'dev-radar', name: 'DevRadar 技术雷达', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12 2 2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'DevRadar', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '开发者技术雷达：聚合Hacker News+GitHub Trending+GitHub Releases实时信息流，支持多源筛选、热门/最新/趋势排序、全文搜索、本地收藏、自动刷新、详情面板' },
   // === v114 创新应用：MindSync Pro 效率中心 ===
   { id: 'mind-sync-pro', name: 'MindSync Pro · 效率中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"/></svg>, component: 'MindSyncPro', category: 'office', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '效率中心：番茄钟计时器+任务看板(Kanban)+21天习惯追踪+每日反思日记+可视化效率统计，五合一个人效率系统，全部数据本地持久化，支持声音提示与自动开始下一阶段' },
   // === v110 创新应用套件：DataPulsePro + AICodeMentorPro + DevFlowPro ===

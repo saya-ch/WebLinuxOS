@@ -123,7 +123,9 @@ function BootAnimation({ onComplete }: BootAnimationProps) {
     const animate = () => {
       if (completedRef.current) return
 
-      const increment = (100 - progressRef.current) * 0.015 + 0.5
+      // 使用时间增量而非帧增量，确保在不同帧率下进度一致
+      // 约2.5秒完成加载
+      const increment = (100 - progressRef.current) * 0.025 + 1.5
       progressRef.current = Math.min(progressRef.current + increment, 100)
       setProgress(progressRef.current)
 

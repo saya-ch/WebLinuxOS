@@ -103,6 +103,9 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/uuid')) {
               return 'vendor-uuid'
             }
+            if (id.includes('src/apps/DevRadar')) {
+              return 'app-devradar'
+            }
             if (id.includes('src/apps/terminal')) {
               return 'app-terminal'
             }
