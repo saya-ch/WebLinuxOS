@@ -13,6 +13,7 @@ import {
   Play, Pause, Share2, Smartphone, Tablet, SplitSquareHorizontal,
   Star, Tag, Save, Monitor, Power, Target, TrendingUp, TrendingDown, Lightbulb, Bookmark, ArrowRight,
   BarChart3, Layers, HeartOff, Wallet, PieChart, RotateCcw, Dices,
+  Send, DollarSign, Bitcoin, Thermometer, Wind, Droplets, History, FileEdit, PenTool,
 } from 'lucide-react'
 
 export const FolderIcon = Folder
@@ -629,3 +630,18 @@ export const RestCountriesIcon = ({ size = 18 }: { size?: number }) => (
     <circle cx="17" cy="17" r="1" fill="currentColor" opacity="0.7"/>
   </svg>
 )
+
+/* =================== v112 新增：创新应用所需图标 =================== */
+
+export const SendIcon = Send
+export const GitBranchIcon = GitBranch
+export const DollarSignIcon = DollarSign
+export const BitcoinIcon = Bitcoin
+export const ThermometerIcon = Thermometer
+export const WindIcon = Wind
+export const DropletIcon = Droplets
+export const HistoryIcon = History
+export const FileEditIcon = FileEdit
+export const PenToolIcon = PenTool
+export const MessageSquareIcon = MessageSquare
+export const FileTextIcon2 = FileText

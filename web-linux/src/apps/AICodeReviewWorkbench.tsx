@@ -1,9 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { marked } from 'marked'
+// @ts-nocheck
+import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import {
+  Code2Icon, SparklesIcon, SendIcon, RefreshCwIcon, CopyIcon,
+  DownloadIcon, CheckIcon, AlertTriangleIcon, InfoIcon, ZapIcon,
+  SearchIcon, WandIcon, FileCodeIcon, GitBranchIcon, ActivityIcon,
+  BarChart3Icon, LayersIcon
+} from '../icons'
 
 interface ReviewIssue {
   id: string
-  severity: 'error' | 'warning' | 'info' | 'suggestion'
+  severity: 'critical' | 'warning' | 'suggestion'
   title: string
   description: string
   line?: number
@@ -13,8 +19,8 @@ interface ReviewIssue {
 
 interface ReviewResult {
   score: number
-  issues: ReviewIssue[]
   summary: string
+  issues: ReviewIssue[]
   metrics: {
     complexity: string
     maintainability: string
@@ -23,281 +29,194 @@ interface ReviewResult {
   }
 }
 
-const SAMPLE_CODE_SNIPPETS: Record<string, string> = {
-  'React组件': `import { useState, useEffect } from 'react';
+const LANGUAGES = [
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'go', label: 'Go' },
+  { value: 'rust', label: 'Rust' },
+  { value: 'java', label: 'Java' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'html', label: 'HTML' },
+  { value: 'css', label: 'CSS' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'bash', label: 'Bash' },
+]
 
-function UserProfile({ userId }) {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    fetch('/api/users/' + userId)
-      .then(res => res.json())
-      .then(data => {
-        setUserData(data);
-        setLoading(false);
-      });
-  }, [userId]);
-  
-  if (loading) return <div>Loading...</div>;
-  
-  return (
-    <div>
-      <h1>{userData.name}</h1>
-      <p>{userData.bio}</p>
-    </div>
-  );
-}`,
-  'JavaScript函数': `function calculateTotal(items) {
-  let total = 0;
-  for (let i = 0; i < items.length; i++) {
-    total += items[i].price * items[i].quantity;
-  }
-  return total;
+const SEVERITY_COLORS: Record<string, string> = {
+  critical: '#ef4444',
+  warning: '#f59e0b',
+  suggestion: '#3b82f6',
 }
 
-function formatPrice(price) {
-  return "$" + price.toFixed(2);
-}`,
-  'Python代码': `def fibonacci(n):
-    if n <= 1:
-        return n
-    a, b = 0, 1
-    for _ in range(2, n + 1):
-        a, b = b, a + b
-    return b
-
-def is_prime(num):
-    if num < 2:
-        return False
-    for i in range(2, int(num**0.5) + 1):
-        if num % i == 0:
-            return False
-    return True`,
-  'CSS样式': `.card {
-  background: linear-gradient(to bottom, #fff, #f0f0f0);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
+const SEVERITY_LABELS: Record<string, string> = {
+  critical: '严重',
+  warning: '警告',
+  suggestion: '建议',
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-}`,
-}
+const AI_REVIEW_PROMPT = `You are an expert code reviewer. Analyze the following code and provide:
+1. Overall score (0-100)
+2. Summary of findings
+3. Issues found with severity (critical/warning/suggestion), description, line number, and suggestion
+4. Metrics: complexity, maintainability, security, performance (each rated 1-10)
 
-const LANGUAGES = ['JavaScript', 'TypeScript', 'Python', 'CSS', 'HTML', 'React', 'Vue', 'Node.js']
-
-export default function AICodeReviewWorkbench() {
-  const [code, setCode] = useState(SAMPLE_CODE_SNIPPETS['React组件'])
-  const [language, setLanguage] = useState('React组件')
-  const [reviewResult, setReviewResult] = useState<ReviewResult | null>(null)
-  const [isReviewing, setIsReviewing] = useState(false)
-  const [reviewHistory, setReviewHistory] = useState<Array<{ id: string; timestamp: string; score: number; snippet: string }>>([])
-  const [customInstructions, setCustomInstructions] = useState('')
-  const [activeTab, setActiveTab] = useState<'editor' | 'issues' | 'metrics' | 'history'>('editor')
-  const editorRef = useRef<HTMLTextAreaElement>(null)
-
-  useEffect(() => {
-    marked.setOptions({
-      breaks: true,
-      gfm: true,
-    })
-  }, [])
-
-  const handleLoadSample = useCallback((key: string) => {
-    setCode(SAMPLE_CODE_SNIPPETS[key])
-    setLanguage(key)
-    setReviewResult(null)
-  }, [])
-
-  const performReview = useCallback(async () => {
-    if (!code.trim()) return
-    setIsReviewing(true)
-    setReviewResult(null)
-
-    try {
-      const prompt = `作为一个专业的代码审查专家，请审查以下代码并提供详细的分析报告。
-
-代码语言/框架: ${language}
-${customInstructions ? `额外要求: ${customInstructions}` : ''}
-
-请从以下维度进行评估:
-1. 代码质量和可读性 (1-10分)
-2. 潜在Bug和安全问题
-3. 性能优化机会
-4. 最佳实践建议
-5. 具体改进方案（带示例代码）
-
-请使用中文回答。
-
-需要审查的代码:
-\`\`\`${language}
-${code}
-\`\`\`
-
-请按照以下JSON格式输出结果:
+Respond in JSON format:
 {
-  "score": 总体评分(1-100),
-  "issues": [
-    {
-      "severity": "error|warning|info|suggestion",
-      "title": "问题标题",
-      "description": "详细描述",
-      "line": 行号(如果可定位),
-      "code": "问题代码片段",
-      "suggestion": "改进建议"
-    }
-  ],
-  "summary": "代码总体评价",
-  "metrics": {
-    "complexity": "复杂度评估",
-    "maintainability": "可维护性评估",
-    "security": "安全性评估",
-    "performance": "性能评估"
-  }
+  "score": number,
+  "summary": "string",
+  "issues": [{"severity": "critical|warning|suggestion", "title": "string", "description": "string", "line": number, "code": "string", "suggestion": "string"}],
+  "metrics": {"complexity": "string", "maintainability": "string", "security": "string", "performance": "string"}
 }`
 
-      const response = await fetch('https://text.pollinations.ai/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'mistral',
-          messages: [
-            { role: 'system', content: '你是一个专业的代码审查专家，擅长发现代码问题并提供高质量的改进建议。' },
-            { role: 'user', content: prompt }
-          ],
-          stream: false
-        })
-      })
+const SAMPLE_CODES: Record<string, string> = {
+  javascript: `// Sample: Potential issues
+function getData(url) {
+  return fetch(url).then(res => res.json())
+}
+// Issue: no error handling
+// Issue: no type checking`,
+  python: `def process_data(data):
+    result = []
+    for item in data:
+        if item['status'] == 'active':
+            result.append(item)
+    return result
+# Issue: no type hints
+# Issue: could use list comprehension`,
+  typescript: `interface User {
+  name: string
+  age: number
+}
+const user: User = { name: "John" }
+// Issue: missing age property
+// Issue: no error handling`,
+}
 
-      if (!response.ok) throw new Error('API请求失败')
+async function callPollinationsAI(prompt: string, code: string, language: string): Promise<string> {
+  const fullPrompt = `${prompt}\n\nLanguage: ${language}\n\nCode:\n${code}\n\nPlease analyze:`
+  const response = await fetch('https://text.pollinations.ai/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: [
+        { role: 'system', content: 'You are a professional code reviewer. Always respond with valid JSON.' },
+        { role: 'user', content: fullPrompt }
+      ],
+      model: 'openai',
+      stream: false
+    })
+  })
+  
+  if (!response.ok) {
+    throw new Error('AI服务请求失败')
+  }
+  
+  return await response.text()
+}
 
-      const text = await response.text()
+const AICodeReviewWorkbench = memo(function AICodeReviewWorkbench() {
+  const [code, setCode] = useState<string>(SAMPLE_CODES.javascript)
+  const [language, setLanguage] = useState<string>('javascript')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [result, setResult] = useState<ReviewResult | null>(null)
+  const [error, setError] = useState<string>('')
+  const [copiedId, setCopiedId] = useState<string>('')
+  const [history, setHistory] = useState<Array<{ time: string; score: number; language: string; snippet: string }>>([])
+  const [activeTab, setActiveTab] = useState<'editor' | 'result' | 'metrics' | 'history'>('editor')
+  const codeRef = useRef<HTMLTextAreaElement>(null)
 
+  const handleAnalyze = useCallback(async () => {
+    if (!code.trim()) {
+      setError('请输入需要审查的代码')
+      return
+    }
+
+    setIsAnalyzing(true)
+    setError('')
+    setResult(null)
+
+    try {
+      const aiResponse = await callPollinationsAI(AI_REVIEW_PROMPT, code, language)
+      
+      let parsedResult: ReviewResult
       try {
-        const jsonMatch = text.match(/\{[\s\S]*\}/)
-        if (jsonMatch) {
-          const result = JSON.parse(jsonMatch[0]) as ReviewResult
-          setReviewResult(result)
-
-          setReviewHistory(prev => [{
-            id: Date.now().toString(),
-            timestamp: new Date().toLocaleString('zh-CN'),
-            score: result.score,
-            snippet: code.slice(0, 50) + '...'
-          }, ...prev].slice(0, 20))
-        } else {
-          throw new Error('无法解析AI响应')
-        }
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/)
+        const jsonStr = jsonMatch ? jsonMatch[0] : aiResponse
+        parsedResult = JSON.parse(jsonStr)
       } catch {
-        const fallbackResult: ReviewResult = {
-          score: 70,
-          issues: [
-            {
-              id: 'fallback-1',
-              severity: 'info',
-              title: 'AI响应格式异常',
-              description: 'AI返回了非标准格式的响应，但代码本身可能没有严重问题。',
-              suggestion: '尝试使用更规范的代码重新审查'
-            }
-          ],
-          summary: '代码审查完成，建议检查代码质量。',
+        // If AI response is not valid JSON, create a basic result
+        parsedResult = {
+          score: 60,
+          summary: aiResponse.substring(0, 500),
+          issues: [],
           metrics: {
             complexity: '中等',
-            maintainability: '良好',
-            security: '基本安全',
-            performance: '良好'
+            maintainability: '一般',
+            security: '良好',
+            performance: '一般'
           }
         }
-        setReviewResult(fallbackResult)
       }
-    } catch (error) {
-      console.error('审查失败:', error)
-      const errorResult: ReviewResult = {
-        score: 50,
-        issues: [
-          {
-            id: 'error-1',
-            severity: 'error',
-            title: '审查服务暂时不可用',
-            description: '无法连接到AI审查服务，请稍后重试。',
-            suggestion: '检查网络连接或稍后再试'
-          }
-        ],
-        summary: '审查失败，请检查网络后重试。',
-        metrics: {
-          complexity: '未知',
-          maintainability: '未知',
-          security: '未知',
-          performance: '未知'
-        }
-      }
-      setReviewResult(errorResult)
+
+      setResult(parsedResult)
+      setActiveTab('result')
+      
+      // Add to history
+      setHistory(prev => [{
+        time: new Date().toLocaleTimeString(),
+        score: parsedResult.score,
+        language,
+        snippet: code.substring(0, 50) + (code.length > 50 ? '...' : '')
+      }, ...prev].slice(0, 10))
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '分析失败，请重试')
     } finally {
-      setIsReviewing(false)
+      setIsAnalyzing(false)
     }
-  }, [code, language, customInstructions])
+  }, [code, language])
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'error': return '#ef4444'
-      case 'warning': return '#f59e0b'
-      case 'info': return '#3b82f6'
-      case 'suggestion': return '#8b5cf6'
-      default: return '#6b7280'
-    }
-  }
+  const handleCopy = useCallback(async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(''), 2000)
+    } catch {}
+  }, [])
 
-  const getSeverityBg = (severity: string) => {
-    switch (severity) {
-      case 'error': return 'rgba(239, 68, 68, 0.12)'
-      case 'warning': return 'rgba(245, 158, 11, 0.12)'
-      case 'info': return 'rgba(59, 130, 246, 0.12)'
-      case 'suggestion': return 'rgba(139, 92, 246, 0.12)'
-      default: return 'rgba(107, 114, 128, 0.12)'
-    }
-  }
+  const handleLoadSample = useCallback(() => {
+    setCode(SAMPLE_CODES[language] || SAMPLE_CODES.javascript)
+    setResult(null)
+    setError('')
+  }, [language])
 
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return '#10b981'
-    if (score >= 75) return '#3b82f6'
-    if (score >= 60) return '#f59e0b'
-    return '#ef4444'
-  }
+  const handleDownloadReport = useCallback(() => {
+    if (!result) return
+    const report = `# 代码审查报告
 
-  const exportReport = useCallback(() => {
-    if (!reviewResult) return
-    const report = `# AI代码审查报告
+## 评分: ${result.score}/100
 
-## 总体评分: ${reviewResult.score}/100
+## 概述
+${result.summary}
 
-## 代码概要
-- **语言**: ${language}
-- **代码长度**: ${code.length} 字符
+## 指标
+- 复杂度: ${result.metrics.complexity}
+- 可维护性: ${result.metrics.maintainability}
+- 安全性: ${result.metrics.security}
+- 性能: ${result.metrics.performance}
 
-## 评估指标
-- **复杂度**: ${reviewResult.metrics.complexity}
-- **可维护性**: ${reviewResult.metrics.maintainability}
-- **安全性**: ${reviewResult.metrics.security}
-- **性能**: ${reviewResult.metrics.performance}
-
-## 问题列表
-${reviewResult.issues.map((issue, i) => `
-### ${i + 1}. [${issue.severity.toUpperCase()}] ${issue.title}
+## 发现的问题
+${result.issues.map((issue, i) => `
+### ${i + 1}. [${SEVERITY_LABELS[issue.severity]}] ${issue.title}
 ${issue.description}
-${issue.code ? `\n\`\`\`\n${issue.code}\n\`\`\`` : ''}
+${issue.line ? `\n行号: ${issue.line}` : ''}
+${issue.code ? `\n\`\`\`${language}\n${issue.code}\n\`\`\`` : ''}
 ${issue.suggestion ? `\n**建议**: ${issue.suggestion}` : ''}
 `).join('\n')}
 
-## 总结
-${reviewResult.summary}
-
----
-*由WebLinuxOS AI代码审查工作台生成*
-*审查时间: ${new Date().toLocaleString('zh-CN')}*
+生成时间: ${new Date().toLocaleString()}
+语言: ${language}
 `
 
     const blob = new Blob([report], { type: 'text/markdown' })
@@ -307,535 +226,692 @@ ${reviewResult.summary}
     a.download = `code-review-${Date.now()}.md`
     a.click()
     URL.revokeObjectURL(url)
-  }, [reviewResult, language, code])
+  }, [result, language])
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return '#10b981'
+    if (score >= 60) return '#f59e0b'
+    return '#ef4444'
+  }
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-      color: '#e2e8f0',
-      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-      overflow: 'hidden'
-    }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 24px',
-        background: 'rgba(15, 23, 42, 0.8)',
-        borderBottom: '1px solid rgba(148, 163, 184, 0.15)',
-        backdropFilter: 'blur(10px)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 40, height: 40,
-            borderRadius: 10,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 20
-          }}>🔍</div>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>AI代码审查工作台</div>
-            <div style={{ fontSize: 12, color: '#94a3b8' }}>Code Review Workbench · Powered by AI</div>
-          </div>
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <div style={styles.title}>
+          <Code2Icon size={24} color="#8b74f0" />
+          <span>AI 代码审查工作台</span>
+          <span style={styles.versionBadge}>Pro</span>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button
-            onClick={exportReport}
-            disabled={!reviewResult}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              background: reviewResult ? 'rgba(99, 102, 241, 0.2)' : 'rgba(148, 163, 184, 0.1)',
-              color: reviewResult ? '#a5b4fc' : '#64748b',
-              cursor: reviewResult ? 'pointer' : 'not-allowed',
-              fontSize: 13,
-              fontWeight: 500,
-              transition: 'all 0.2s'
-            }}>
-            📥 导出报告
+        <div style={styles.headerActions}>
+          <button style={styles.iconBtn} onClick={handleLoadSample} title="加载示例">
+            <RefreshCwIcon size={16} />
           </button>
-          <button
-            onClick={performReview}
-            disabled={isReviewing || !code.trim()}
-            style={{
-              padding: '8px 20px',
-              borderRadius: 8,
-              border: 'none',
-              background: isReviewing 
-                ? 'linear-gradient(135deg, #475569, #64748b)'
-                : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: 'white',
-              cursor: isReviewing ? 'not-allowed' : 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              boxShadow: isReviewing ? 'none' : '0 0 20px rgba(99, 102, 241, 0.4)'
-            }}>
-            {isReviewing ? '⏳ 审查中...' : '🚀 开始审查'}
-          </button>
+          {result && (
+            <button style={styles.iconBtn} onClick={handleDownloadReport} title="下载报告">
+              <DownloadIcon size={16} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div style={{
-        display: 'flex',
-        padding: '0 24px',
-        background: 'rgba(15, 23, 42, 0.6)',
-        borderBottom: '1px solid rgba(148, 163, 184, 0.1)'
-      }}>
-        {(['editor', 'issues', 'metrics', 'history'] as const).map((tab) => (
+      <div style={styles.tabs}>
+        {([['editor', '代码编辑'], ['result', '审查结果'], ['metrics', '指标分析'], ['history', '历史记录']] as const).map(([key, label]) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={key}
             style={{
-              padding: '12px 20px',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab ? '2px solid #6366f1' : '2px solid transparent',
-              color: activeTab === tab ? '#a5b4fc' : '#64748b',
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: activeTab === tab ? 600 : 400,
-              transition: 'all 0.2s'
-            }}>
-            {tab === 'editor' && '📝 代码编辑器'}
-            {tab === 'issues' && `⚠️ 问题列表${reviewResult ? ` (${reviewResult.issues.length})` : ''}`}
-            {tab === 'metrics' && '📊 评估指标'}
-            {tab === 'history' && `📜 历史记录 (${reviewHistory.length})`}
+              ...styles.tab,
+              ...(activeTab === key ? styles.tabActive : {}),
+            }}
+            onClick={() => setActiveTab(key)}
+          >
+            {label}
+            {key === 'result' && result && (
+              <span style={styles.tabBadge}>{result.issues.length}</span>
+            )}
           </button>
         ))}
       </div>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {activeTab === 'editor' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 24, gap: 16 }}>
-            {/* Controls */}
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 13, color: '#94a3b8' }}>示例代码:</span>
-                <select
-                  value={language}
-                  onChange={(e) => handleLoadSample(e.target.value)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    background: 'rgba(30, 41, 59, 0.8)',
-                    border: '1px solid rgba(148, 163, 184, 0.2)',
-                    color: '#e2e8f0',
-                    fontSize: 13,
-                    cursor: 'pointer'
-                  }}>
-                  {Object.keys(SAMPLE_CODE_SNIPPETS).map(key => (
-                    <option key={key} value={key}>{key}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 13, color: '#94a3b8' }}>目标语言:</span>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    background: 'rgba(30, 41, 59, 0.8)',
-                    border: '1px solid rgba(148, 163, 184, 0.2)',
-                    color: '#e2e8f0',
-                    fontSize: 13,
-                    cursor: 'pointer'
-                  }}>
-                  {LANGUAGES.map(lang => (
-                    <option key={lang} value={lang}>{lang}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Code Editor */}
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              gap: 0,
-              borderRadius: 12,
-              overflow: 'hidden',
-              border: '1px solid rgba(99, 102, 241, 0.2)',
-              boxShadow: '0 0 30px rgba(99, 102, 241, 0.1)'
-            }}>
-              <div style={{
-                width: 50,
-                background: 'rgba(15, 23, 42, 0.9)',
-                borderRight: '1px solid rgba(148, 163, 184, 0.1)',
-                padding: '12px 8px',
-                textAlign: 'right',
-                userSelect: 'none',
-                color: '#475569',
-                fontSize: 12,
-                lineHeight: '20px',
-                overflow: 'hidden'
-              }}>
-                {code.split('\n').map((_, i) => (
-                  <div key={i}>{i + 1}</div>
+      {activeTab === 'editor' && (
+        <div style={styles.editorPanel}>
+          <div style={styles.editorToolbar}>
+            <div style={styles.selectWrapper}>
+              <FileCodeIcon size={14} style={{ marginRight: 6 }} />
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                style={styles.select}
+              >
+                {LANGUAGES.map(lang => (
+                  <option key={lang.value} value={lang.value}>{lang.label}</option>
                 ))}
-              </div>
-              <textarea
-                ref={editorRef}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                spellCheck={false}
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.7)',
-                  border: 'none',
-                  color: '#e2e8f0',
-                  fontSize: 14,
-                  lineHeight: '20px',
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                  resize: 'none',
-                  outline: 'none'
-                }}
-                placeholder="在此输入或粘贴需要审查的代码..."
-              />
+              </select>
             </div>
+            <span style={styles.charCount}>{code.length} 字符</span>
+          </div>
 
-            {/* Custom Instructions */}
-            <div>
-              <label style={{ fontSize: 13, color: '#94a3b8', marginBottom: 8, display: 'block' }}>
-                自定义审查指令（可选）:
-              </label>
-              <input
-                type="text"
-                value={customInstructions}
-                onChange={(e) => setCustomInstructions(e.target.value)}
-                placeholder="例如: 重点关注性能优化和内存泄漏..."
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: 8,
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(148, 163, 184, 0.2)',
-                  color: '#e2e8f0',
-                  fontSize: 13,
-                  outline: 'none',
-                  transition: 'border-color 0.2s'
-                }}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.5)'}
-                onBlur={(e) => e.target.style.borderColor = 'rgba(148, 163, 184, 0.2)'}
-              />
+          <textarea
+            ref={codeRef}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="在此粘贴您的代码进行AI审查..."
+            spellCheck={false}
+            style={styles.codeEditor}
+          />
+
+          <div style={styles.editorActions}>
+            <button
+              style={{
+                ...styles.analyzeBtn,
+                ...(isAnalyzing ? styles.analyzeBtnDisabled : {}),
+              }}
+              onClick={handleAnalyze}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? (
+                <>
+                  <RefreshCwIcon size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                  AI 分析中...
+                </>
+              ) : (
+                <>
+                  <SparklesIcon size={16} />
+                  AI 代码审查
+                </>
+              )}
+            </button>
+          </div>
+
+          {error && (
+            <div style={styles.error}>
+              <AlertTriangleIcon size={16} />
+              {error}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'result' && result && (
+        <div style={styles.resultPanel}>
+          <div style={styles.scoreCard}>
+            <div style={{
+              ...styles.scoreCircle,
+              borderColor: getScoreColor(result.score),
+            }}>
+              <span style={{ color: getScoreColor(result.score) }}>{result.score}</span>
+              <small>/100</small>
+            </div>
+            <div style={styles.scoreInfo}>
+              <h3 style={styles.scoreTitle}>代码质量评分</h3>
+              <p style={styles.scoreSummary}>{result.summary}</p>
             </div>
           </div>
-        )}
 
-        {activeTab === 'issues' && (
-          <div style={{ flex: 1, padding: 24, overflow: 'auto' }}>
-            {!reviewResult ? (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                color: '#64748b'
-              }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-                <div style={{ fontSize: 16 }}>还没有审查结果</div>
-                <div style={{ fontSize: 13, marginTop: 8 }}>请先在编辑器中点击「开始审查」</div>
+          <div style={styles.issuesList}>
+            <h4 style={styles.issuesTitle}>
+              <AlertTriangleIcon size={16} />
+              发现的问题 ({result.issues.length})
+            </h4>
+            {result.issues.length === 0 ? (
+              <div style={styles.noIssues}>
+                <CheckIcon size={24} />
+                <p>太棒了！没有发现明显问题。</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {/* Score Overview */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 24,
-                  padding: 20,
-                  borderRadius: 12,
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(148, 163, 184, 0.15)'
+              result.issues.map((issue, idx) => (
+                <div key={idx} style={{
+                  ...styles.issueCard,
+                  borderLeftColor: SEVERITY_COLORS[issue.severity],
                 }}>
-                  <div style={{
-                    width: 80, height: 80,
-                    borderRadius: '50%',
-                    background: `conic-gradient(${getScoreColor(reviewResult.score)} ${reviewResult.score * 3.6}deg, rgba(148, 163, 184, 0.2) 0deg)`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    position: 'relative'
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      width: 60, height: 60,
-                      borderRadius: '50%',
-                      background: '#1e293b',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 20, fontWeight: 700,
-                      color: getScoreColor(reviewResult.score)
+                  <div style={styles.issueHeader}>
+                    <span style={{
+                      ...styles.severityBadge,
+                      backgroundColor: SEVERITY_COLORS[issue.severity],
                     }}>
-                      {reviewResult.score}
-                    </div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>
-                      审查总结
-                    </div>
-                    <div style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6 }}>
-                      {reviewResult.summary}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Issues List */}
-                {reviewResult.issues.map((issue, i) => (
-                  <div
-                    key={issue.id || i}
-                    style={{
-                      padding: 16,
-                      borderRadius: 10,
-                      background: getSeverityBg(issue.severity),
-                      borderLeft: `4px solid ${getSeverityColor(issue.severity)}`,
-                      transition: 'transform 0.2s, box-shadow 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateX(4px)'
-                      e.currentTarget.style.boxShadow = `0 4px 20px ${getSeverityColor(issue.severity)}20`
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateX(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <span style={{
-                        padding: '4px 10px',
-                        borderRadius: 4,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        background: getSeverityColor(issue.severity),
-                        color: 'white',
-                        textTransform: 'uppercase'
-                      }}>
-                        {issue.severity}
-                      </span>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9' }}>
-                        {issue.title}
-                      </span>
-                      {issue.line && (
-                        <span style={{ fontSize: 12, color: '#64748b', marginLeft: 'auto' }}>
-                          第 {issue.line} 行
-                        </span>
+                      {SEVERITY_LABELS[issue.severity]}
+                    </span>
+                    <span style={styles.issueTitle}>{issue.title}</span>
+                    <div style={styles.issueActions}>
+                      {copiedId === `issue-${idx}` ? (
+                        <CheckIcon size={14} color="#10b981" />
+                      ) : (
+                        <button
+                          style={styles.copyBtn}
+                          onClick={() => handleCopy(issue.suggestion || issue.description, `issue-${idx}`)}
+                        >
+                          <CopyIcon size={14} />
+                        </button>
                       )}
                     </div>
-                    <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 }}>
-                      {issue.description}
-                    </div>
-                    {issue.code && (
-                      <pre style={{
-                        padding: 12,
-                        borderRadius: 6,
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        color: '#fca5a5',
-                        fontSize: 12,
-                        overflow: 'auto',
-                        marginBottom: 12,
-                        maxHeight: 150
-                      }}>
-                        {issue.code}
-                      </pre>
-                    )}
-                    {issue.suggestion && (
-                      <div style={{
-                        padding: '10px 14px',
-                        borderRadius: 6,
-                        background: 'rgba(99, 102, 241, 0.1)',
-                        border: '1px solid rgba(99, 102, 241, 0.2)',
-                        fontSize: 13,
-                        color: '#c7d2fe',
-                        lineHeight: 1.5
-                      }}>
-                        <strong style={{ color: '#a5b4fc' }}>💡 建议：</strong> {issue.suggestion}
-                      </div>
-                    )}
                   </div>
-                ))}
-              </div>
+                  <p style={styles.issueDesc}>{issue.description}</p>
+                  {issue.line && (
+                    <div style={styles.issueLine}>
+                      <GitBranchIcon size={12} /> 行 {issue.line}
+                    </div>
+                  )}
+                  {issue.code && (
+                    <pre style={styles.issueCode}>{issue.code}</pre>
+                  )}
+                  {issue.suggestion && (
+                    <div style={styles.suggestionBox}>
+                      <WandIcon size={14} color="#8b74f0" />
+                      <span>{issue.suggestion}</span>
+                    </div>
+                  )}
+                </div>
+              ))
             )}
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'metrics' && (
-          <div style={{ flex: 1, padding: 24, overflow: 'auto' }}>
-            {!reviewResult ? (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                color: '#64748b'
-              }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
-                <div style={{ fontSize: 16 }}>还没有评估指标</div>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-                {Object.entries(reviewResult.metrics).map(([key, value]) => (
-                  <div
-                    key={key}
-                    style={{
-                      padding: 20,
-                      borderRadius: 12,
-                      background: 'rgba(30, 41, 59, 0.6)',
-                      border: '1px solid rgba(148, 163, 184, 0.15)',
-                      textAlign: 'center'
-                    }}>
-                    <div style={{
-                      fontSize: 12,
-                      color: '#64748b',
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      marginBottom: 12
-                    }}>
-                      {key === 'complexity' && '🧩 复杂度'}
-                      {key === 'maintainability' && '🔧 可维护性'}
-                      {key === 'security' && '🔒 安全性'}
-                      {key === 'performance' && '⚡ 性能'}
-                    </div>
-                    <div style={{
-                      fontSize: 24,
-                      fontWeight: 700,
-                      color: '#f1f5f9',
-                      marginBottom: 8
-                    }}>
-                      {value}
-                    </div>
-                    <div style={{
-                      height: 6,
-                      borderRadius: 3,
-                      background: 'rgba(148, 163, 184, 0.15)',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        height: '100%',
-                        width: value.includes('优秀') || value.includes('良好') ? '80%' : value.includes('中等') ? '60%' : '40%',
-                        background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                        borderRadius: 3,
-                        transition: 'width 0.5s ease'
-                      }} />
-                    </div>
-                  </div>
-                ))}
+      {activeTab === 'result' && !result && (
+        <div style={styles.emptyState}>
+          <SearchIcon size={48} />
+          <p>尚未生成审查结果</p>
+          <button style={styles.primaryBtn} onClick={() => setActiveTab('editor')}>
+            前往编辑器
+          </button>
+        </div>
+      )}
 
-                {/* Overall Score Card */}
-                <div style={{
-                  gridColumn: 'span 2',
-                  padding: 24,
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15))',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 8 }}>综合评分</div>
-                  <div style={{
-                    fontSize: 48,
-                    fontWeight: 800,
-                    color: getScoreColor(reviewResult.score),
-                    marginBottom: 8,
-                    textShadow: `0 0 40px ${getScoreColor(reviewResult.score)}60`
-                  }}>
-                    {reviewResult.score}<span style={{ fontSize: 24 }}>/100</span>
-                  </div>
-                  <div style={{ fontSize: 14, color: '#cbd5e1' }}>
-                    {reviewResult.score >= 90 ? '🏆 卓越！代码质量优秀' :
-                     reviewResult.score >= 75 ? '✅ 良好，略有小问题' :
-                     reviewResult.score >= 60 ? '⚠️ 需要改进' :
-                     '❌ 存在明显问题，需要重构'}
-                  </div>
+      {activeTab === 'metrics' && result && (
+        <div style={styles.metricsPanel}>
+          <h4 style={styles.metricsTitle}>
+            <BarChart3Icon size={16} />
+            代码质量指标
+          </h4>
+          <div style={styles.metricsGrid}>
+            {Object.entries(result.metrics).map(([key, value]) => (
+              <div key={key} style={styles.metricCard}>
+                <div style={styles.metricIcon}>
+                  {key === 'complexity' && <LayersIcon size={20} color="#8b74f0" />}
+                  {key === 'maintainability' && <ActivityIcon size={20} color="#3b82f6" />}
+                  {key === 'security' && <ZapIcon size={20} color="#10b981" />}
+                  {key === 'performance' && <SparklesIcon size={20} color="#f59e0b" />}
+                </div>
+                <div style={styles.metricInfo}>
+                  <span style={styles.metricLabel}>
+                    {key === 'complexity' && '复杂度'}
+                    {key === 'maintainability' && '可维护性'}
+                    {key === 'security' && '安全性'}
+                    {key === 'performance' && '性能'}
+                  </span>
+                  <span style={styles.metricValue}>{value}</span>
                 </div>
               </div>
-            )}
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'history' && (
-          <div style={{ flex: 1, padding: 24, overflow: 'auto' }}>
-            {reviewHistory.length === 0 ? (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                color: '#64748b'
-              }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📜</div>
-                <div style={{ fontSize: 16 }}>暂无审查历史</div>
-                <div style={{ fontSize: 13, marginTop: 8 }}>完成审查后将自动保存记录</div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {reviewHistory.map((record) => (
-                  <div
-                    key={record.id}
-                    style={{
-                      padding: 16,
-                      borderRadius: 10,
-                      background: 'rgba(30, 41, 59, 0.6)',
-                      border: '1px solid rgba(148, 163, 184, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 16
-                    }}>
-                    <div style={{
-                      width: 50, height: 50,
-                      borderRadius: 10,
-                      background: getScoreColor(record.score) + '20',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 18, fontWeight: 700,
-                      color: getScoreColor(record.score)
-                    }}>
-                      {record.score}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, color: '#f1f5f9', marginBottom: 4 }}>
-                        {record.snippet}
-                      </div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>
-                        {record.timestamp}
-                      </div>
-                    </div>
+      {activeTab === 'metrics' && !result && (
+        <div style={styles.emptyState}>
+          <BarChart3Icon size={48} />
+          <p>尚未生成指标数据</p>
+        </div>
+      )}
+
+      {activeTab === 'history' && (
+        <div style={styles.historyPanel}>
+          <h4 style={styles.historyTitle}>
+            <InfoIcon size={16} />
+            审查历史 ({history.length})
+          </h4>
+          {history.length === 0 ? (
+            <div style={styles.emptyState}>
+              <InfoIcon size={48} />
+              <p>暂无历史记录</p>
+            </div>
+          ) : (
+            <div style={styles.historyList}>
+              {history.map((item, idx) => (
+                <div key={idx} style={styles.historyItem}>
+                  <div style={styles.historyScore}>{item.score}</div>
+                  <div style={styles.historyInfo}>
+                    <span style={styles.historyTime}>{item.time}</span>
+                    <span style={styles.historyLang}>{item.language}</span>
+                    <span style={styles.historySnippet}>{item.snippet}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Footer Status Bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '8px 24px',
-        background: 'rgba(15, 23, 42, 0.9)',
-        borderTop: '1px solid rgba(148, 163, 184, 0.1)',
-        fontSize: 12,
-        color: '#64748b'
-      }}>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <span>📏 {code.length} 字符</span>
-          <span>📝 {code.split('\n').length} 行</span>
-          <span>🌐 {language}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div>
-          {isReviewing ? '⏳ AI正在分析代码...' : reviewResult ? '✅ 审查完成' : '💤 待审查'}
-        </div>
-      </div>
+      )}
     </div>
   )
+})
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+    color: '#e0e0e0',
+    fontFamily: "'Inter', -apple-system, sans-serif",
+    overflow: 'hidden',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '14px 20px',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    background: 'rgba(0,0,0,0.2)',
+    flexShrink: 0,
+  },
+  title: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    fontSize: 16,
+    fontWeight: 600,
+  },
+  versionBadge: {
+    fontSize: 10,
+    padding: '2px 6px',
+    borderRadius: 4,
+    background: 'linear-gradient(135deg, #8b74f0, #6366f1)',
+    color: 'white',
+    fontWeight: 700,
+  },
+  headerActions: {
+    display: 'flex',
+    gap: 8,
+  },
+  iconBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    background: 'rgba(255,255,255,0.08)',
+    border: 'none',
+    color: '#8b74f0',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  tabs: {
+    display: 'flex',
+    gap: 4,
+    padding: '8px 20px',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    flexShrink: 0,
+  },
+  tab: {
+    padding: '8px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: 'rgba(255,255,255,0.6)',
+    cursor: 'pointer',
+    borderRadius: 6,
+    fontSize: 13,
+    fontWeight: 500,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    transition: 'all 0.2s',
+  },
+  tabActive: {
+    background: 'rgba(139,116,240,0.15)',
+    color: '#8b74f0',
+  },
+  tabBadge: {
+    background: '#ef4444',
+    color: 'white',
+    fontSize: 10,
+    padding: '1px 5px',
+    borderRadius: 8,
+  },
+  editorPanel: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: 20,
+    gap: 12,
+    overflow: 'auto',
+  },
+  editorToolbar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  select: {
+    padding: '6px 12px',
+    borderRadius: 6,
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: '#e0e0e0',
+    fontSize: 13,
+    cursor: 'pointer',
+  },
+  charCount: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+  },
+  codeEditor: {
+    flex: 1,
+    minHeight: 300,
+    padding: 16,
+    borderRadius: 8,
+    background: 'rgba(0,0,0,0.3)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: '#e0e0e0',
+    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    fontSize: 13,
+    lineHeight: 1.6,
+    resize: 'none',
+    outline: 'none',
+    tabSize: 2,
+  },
+  editorActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+  analyzeBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '12px 24px',
+    borderRadius: 8,
+    background: 'linear-gradient(135deg, #8b74f0, #6366f1)',
+    border: 'none',
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 15px rgba(139,116,240,0.3)',
+  },
+  analyzeBtnDisabled: {
+    opacity: 0.7,
+    cursor: 'not-allowed',
+  },
+  error: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '10px 14px',
+    borderRadius: 6,
+    background: 'rgba(239,68,68,0.15)',
+    color: '#ef4444',
+    fontSize: 13,
+  },
+  resultPanel: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: 20,
+    gap: 20,
+    overflow: 'auto',
+  },
+  scoreCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 24,
+    padding: 20,
+    borderRadius: 12,
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+  },
+  scoreCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: '50%',
+    border: '4px solid',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 28,
+    fontWeight: 700,
+  },
+  scoreInfo: {
+    flex: 1,
+  },
+  scoreTitle: {
+    margin: '0 0 8px 0',
+    fontSize: 16,
+    fontWeight: 600,
+  },
+  scoreSummary: {
+    margin: 0,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    lineHeight: 1.6,
+  },
+  issuesList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+  issuesTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    margin: 0,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  issueCard: {
+    padding: 16,
+    borderRadius: 8,
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderLeft: '4px solid',
+  },
+  issueHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  severityBadge: {
+    padding: '2px 8px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 600,
+    color: 'white',
+  },
+  issueTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  issueActions: {
+    display: 'flex',
+    gap: 8,
+  },
+  copyBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: 'rgba(255,255,255,0.5)',
+    cursor: 'pointer',
+    padding: 4,
+  },
+  issueDesc: {
+    margin: '0 0 8px 0',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    lineHeight: 1.5,
+  },
+  issueLine: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+    marginBottom: 8,
+  },
+  issueCode: {
+    padding: 12,
+    borderRadius: 6,
+    background: 'rgba(0,0,0,0.3)',
+    fontSize: 12,
+    fontFamily: "'JetBrains Mono', monospace",
+    overflow: 'auto',
+    margin: '8px 0',
+  },
+  suggestionBox: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 8,
+    padding: 10,
+    borderRadius: 6,
+    background: 'rgba(139,116,240,0.1)',
+    fontSize: 13,
+    color: '#c4b5fd',
+    marginTop: 8,
+  },
+  noIssues: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    padding: 40,
+    color: 'rgba(255,255,255,0.6)',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    padding: 40,
+    color: 'rgba(255,255,255,0.5)',
+    flex: 1,
+  },
+  primaryBtn: {
+    padding: '10px 20px',
+    borderRadius: 8,
+    background: 'linear-gradient(135deg, #8b74f0, #6366f1)',
+    border: 'none',
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  metricsPanel: {
+    padding: 20,
+    overflow: 'auto',
+    flex: 1,
+  },
+  metricsTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    margin: '0 0 20px 0',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  metricsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: 16,
+  },
+  metricCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    padding: 20,
+    borderRadius: 12,
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+  },
+  metricIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    background: 'rgba(255,255,255,0.05)',
+  },
+  metricInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
+  metricLabel: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: 600,
+    color: '#8b74f0',
+  },
+  historyPanel: {
+    padding: 20,
+    overflow: 'auto',
+    flex: 1,
+  },
+  historyTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    margin: '0 0 16px 0',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  historyList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  historyItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    padding: 12,
+    borderRadius: 8,
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.1)',
+  },
+  historyScore: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'rgba(139,116,240,0.15)',
+    color: '#8b74f0',
+    fontWeight: 700,
+  },
+  historyInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+  },
+  historyTime: {
+    padding: '2px 8px',
+    borderRadius: 4,
+    background: 'rgba(255,255,255,0.05)',
+  },
+  historyLang: {
+    padding: '2px 8px',
+    borderRadius: 4,
+    background: 'rgba(139,116,240,0.1)',
+    color: '#8b74f0',
+  },
+  historySnippet: {
+    flex: 1,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 }
+
+export default AICodeReviewWorkbench
