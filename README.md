@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v110.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v113.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -31,6 +31,26 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - The **system monitor** reads real Performance API data from your browser
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v113
+
+This release adds the Global Travel Assistant, a comprehensive travel companion application that integrates world clocks, weather queries, currency conversion, and timezone tools.
+
+- **GlobalTravelAssistant (全球旅行助手)** — A professional travel toolkit with four main modules:
+  - **World Clock** — Real-time clocks for 16 major cities (Beijing, Tokyo, New York, London, Sydney, etc.) with live weather overlays
+  - **Weather Query** — Detailed weather information powered by Open-Meteo API including temperature, wind speed, humidity
+  - **Currency Converter** — Real-time exchange rates from ExchangeRate-API with 8 popular currency pairs (CNY/USD/EUR/JPY/GBP/KRW)
+  - **Timezone Converter** — Intuitive timezone comparison with visual day/night indicators and UTC offset display
+  - Favorites management with localStorage persistence
+  - Beautiful glassmorphism UI design with gradient backgrounds
+
+## What's New in v112
+
+This release introduces three innovative applications that bring real-world utility to WebLinuxOS.
+
+- **AIWritingStudio (AI智能写作工作台)** — AI-powered professional writing workstation with 8 writing modes (Article/Rewrite/Summary/Translate/Polish/Expand/Outline/Email), 6 writing styles, 8 languages, word count, local project saving, and quick templates. Powered by Pollinations.ai for real AI content generation.
+- **CryptoDashboard (加密货币仪表盘)** — Real-time cryptocurrency market dashboard using CoinGecko API. Monitors 15 major cryptocurrencies with live price updates, multi-period K-line charts, favorites management, market statistics, and data export.
+- **WeatherDashboard (天气环境监测中心)** — Weather and environment monitoring center using Open-Meteo API. Features current weather details, 7-day forecasts, 24-hour temperature trends, AQI air quality monitoring, and pollutant analysis for 12 cities.
 
 ## What's New in v110
 
