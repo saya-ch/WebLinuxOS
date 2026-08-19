@@ -4,16 +4,17 @@
 
 **A fully functional Linux desktop that runs in your browser. Real tools, real APIs, real work.**
 
-[Live Demo](https://saya-ch.github.io/WebLinuxOS/) · [Report Issue](https://github.com/saya-ch/WebLinuxOS/issues) · [Contributing](CONTRIBUTING.md)
+[Live Demo](https://saya-ch.github.io/WebLinuxOS/) · [Report Issue](https://github.com/saya-ch/WebLinuxOS/issues) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v113.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v114.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/saya-ch/WebLinuxOS/deploy.yml?branch=main&style=flat-square&logo=github-actions)](https://github.com/saya-ch/WebLinuxOS/actions)
 
 </div>
 
@@ -29,8 +30,23 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - The **weather app** pulls live data from Open-Meteo
 - The **browser** searches the web via DuckDuckGo's API
 - The **system monitor** reads real Performance API data from your browser
+- **MindSync Pro** unifies pomodoro, tasks, habits, reflection, and analytics into one productivity system
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v114
+
+This release introduces **MindSync Pro**, a comprehensive five-module productivity center designed for daily use — not a mock-up, but a real tool you can actually rely on.
+
+- **MindSync Pro · 效率中心** — An integrated personal productivity system with five dedicated modules:
+  - **Pomodoro Timer** — Customizable focus/short-break/long-break intervals, optional audio cues (Web Audio API tones), auto-advance between sessions, task association that tracks pomodoros per task, animated progress ring, and today's session counter.
+  - **Task Kanban** — Three-column board (To-do / Doing / Done), priority labels (high/mid/low), tag system, pomodoro estimate tracking, filtering by today and priority, inline state transitions and deletion.
+  - **Habit Tracker** — 21-day visual heatmap grid, daily check-in buttons, auto-calculated streak and best-streak tracking, custom emoji and color coding per habit, completion-rate based stats.
+  - **Daily Reflection** — Five-question journal template (mood selector, today's win, tomorrow's focus, gratitude, lessons learned), 7-day history sidebar, auto-save on blur, on-screen toast confirmations.
+  - **Productivity Stats** — Aggregated 7-day bar charts (focus minutes + completed tasks), four KPI stat cards (today, total focus hours, tasks done, habit completion rate), and adaptive AI-style suggestions based on real user data.
+  - All data persists via `localStorage` across browser sessions. No server required.
+
+Version, metadata, and boot-message banners throughout the site have been aligned to v114 (previously split across v107/v109/v113).
 
 ## What's New in v113
 
@@ -89,18 +105,19 @@ Additional improvements in v110:
 - Animated aurora and particle wallpapers
 - Cross-tab synchronization for themes and files
 
-### 560+ Integrated Applications
+### 600+ Integrated Applications
 
 | Category | Highlights |
 |----------|-----------|
-| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner |
-| **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab |
-| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending |
-| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links |
-| **System** | File manager, settings, system monitor (real data), password vault, app marketplace, system optimizer |
-| **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera |
+| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub |
+| **Productivity** | **MindSync Pro (番茄钟/任务/习惯/反思/统计)**, DevFlow Pro, Pomodoro Studio, Kanban, TimeCapsule, Daily Dashboard |
+| **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab, AI writing studio, AI code mentor |
+| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro |
+| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links, ResumeForge, MarkdownPublisher, SmartNotes Pro |
+| **System** | File manager, settings, system monitor (real data), password vault, app marketplace, system optimizer, CloudDrive, WebSSH, Workspace layout manager |
+| **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera, AI image studio, ImageForge |
 | **Collaboration** | Real-time collaborative whiteboard, document editor, code collaboration |
-| **Games** | Tetris, Snake, 2048, Breakout, dice roller |
+| **Games** | Tetris, Snake, 2048, Breakout, dice roller, Regex Golf challenge |
 
 ### Real API Integrations
 
