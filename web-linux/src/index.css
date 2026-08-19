@@ -11916,4 +11916,333 @@ select:focus-visible,
   }
 }
 
+/* ============ AI Applications Enhanced Styles ============ */
+
+/* AI应用通用发光效果 */
+.ai-app-glow {
+  position: relative;
+}
+
+.ai-app-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, 
+    rgba(124, 108, 240, 0.4), 
+    rgba(0, 214, 193, 0.4), 
+    rgba(240, 147, 251, 0.4)
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  filter: blur(12px);
+}
+
+.ai-app-glow:hover::before {
+  opacity: 1;
+}
+
+/* AI生成按钮增强效果 */
+.ai-generate-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ai-generate-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.ai-generate-btn:hover::after {
+  transform: translateX(100%);
+}
+
+.ai-generate-btn:disabled::after {
+  display: none;
+}
+
+/* 代码编辑器风格 */
+.ai-code-editor {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  tab-size: 2;
+  line-height: 1.7;
+}
+
+/* AI推理/思考动画 */
+@keyframes aiThinking {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.ai-thinking-dot {
+  animation: aiThinking 1.4s ease-in-out infinite;
+}
+
+.ai-thinking-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-thinking-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* 玻璃拟态增强 */
+.glass-enhanced {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+:root.light .glass-enhanced {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 悬停提升效果 */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* 彩虹边框动画 */
+@keyframes rainbowBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rainbow-border {
+  position: relative;
+  background: var(--window-bg);
+  border-radius: var(--radius-md);
+}
+
+.rainbow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    #7c6cf0,
+    #00d6c1,
+    #f093fb,
+    #7c6cf0
+  );
+  background-size: 300% 300%;
+  animation: rainbowBorder 4s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* 平滑折叠展开 */
+@keyframes smoothExpand {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}
+
+.smooth-expand {
+  animation: smoothExpand 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  overflow: hidden;
+}
+
+/* 渐变文字效果 */
+.gradient-text {
+  background: linear-gradient(135deg, #7c6cf0 0%, #00d6c1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* 脉冲发光点 */
+@keyframes pulseGlowDot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(124, 108, 240, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(124, 108, 240, 0);
+  }
+}
+
+.pulse-glow-dot {
+  animation: pulseGlowDot 2s infinite;
+}
+
+/* 现代化输入框聚焦效果 */
+.modern-input-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 20px rgba(124, 108, 240, 0.2);
+  transition: box-shadow 0.3s ease;
+}
+
+/* 卡片翻转动画 */
+@keyframes cardFlip {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateY(90deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+}
+
+.card-flip {
+  animation: cardFlip 0.6s ease-in-out;
+}
+
+/* 数字滚动效果 */
+@keyframes numberScroll {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.number-scroll {
+  animation: numberScroll 0.4s ease-out;
+}
+
+/* 进度条动画 */
+@keyframes progressFill {
+  from {
+    width: 0;
+  }
+}
+
+.progress-animated {
+  animation: progressFill 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 工具提示淡入 */
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltip-fade {
+  animation: tooltipFade 0.2s ease-out;
+}
+
+/* 图标脉冲 */
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(124, 108, 240, 0));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 8px rgba(124, 108, 240, 0.5));
+  }
+}
+
+.icon-pulse:hover {
+  animation: iconPulse 0.6s ease-out;
+}
+
+/* 深色模式滚动条增强 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(155, 138, 240, 0.3);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(155, 138, 240, 0.5);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+:root.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+:root.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* 选中文字样式 */
+::selection {
+  background: rgba(124, 108, 240, 0.4);
+  color: #fff;
+}
+
+:root.light ::selection {
+  background: rgba(91, 76, 216, 0.25);
+  color: inherit;
+}
+
 
