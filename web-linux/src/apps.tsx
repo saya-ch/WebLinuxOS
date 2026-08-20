@@ -491,6 +491,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'weather-dashboard', name: '天气环境监测中心', icon: <CloudRainIcon />, component: 'WeatherDashboard', category: 'utilities', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '实时天气与环境监测：Open-Meteo API真实数据、12个中国/国际城市、当前天气详情、7日预报、24小时温度趋势、空气质量AQI监测、污染物浓度分析、收藏城市管理' },
   // === v113 创新应用套件 — 全球旅行助手 ===
   { id: 'global-travel-assistant', name: '全球旅行助手', icon: <PlaneIcon />, component: 'GlobalTravelAssistant', category: 'utilities', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '全球旅行助手：世界时钟(16城市)、实时天气查询(Open-Meteo API)、汇率转换(ExchangeRate-API)、时区转换器、收藏管理、玻璃拟态UI' },
+  // === v120 创新应用 — CSS Art Studio CSS艺术工作室 ===
+  { id: 'css-art-studio', name: 'CSS Art Studio · CSS艺术工作室', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="13" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="10" cy="20" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10c0-1-2-1-3-1s-2 1-3 1-2-1-3-1-2 1-3 1-2-1-3-1 0-1-1-1"/></svg>, component: 'CSSArtStudio', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '基于CSS的艺术创作工具：8种动态模板（渐变/极光/网格/粒子/波浪/色彩/几何/梦境）、色相饱和度动画速度实时调整、代码导出、本地收藏画廊' },
 ]
 
 // 批量注册函数：用于在运行时动态添加应用（保留去重保护）
