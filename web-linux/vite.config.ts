@@ -287,6 +287,12 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/SmartWebClipper') || id.includes('src/apps/WebToMarkdown')) {
               return 'app-web-tools';
             }
+            if (id.includes('src/apps/GlobalPulse')) {
+              return 'app-global-pulse'
+            }
+            if (id.includes('src/apps/CodeSnapPro')) {
+              return 'app-code-snap'
+            }
             if (id.includes('src/components')) {
               return 'components-shared'
             }

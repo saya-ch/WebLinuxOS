@@ -1,12 +1,12 @@
 # WebLinuxOS
 
-一款完全运行于浏览器中的 Linux 桌面环境模拟器。基于 React 19、TypeScript、Zustand 与 Vite 构建，内置 350+ 应用程序、虚拟文件系统、终端模拟器及 Python 运行时，全部在客户端执行，无需后端服务。
+一款完全运行于浏览器中的 Linux 桌面环境模拟器。基于 React 19、TypeScript、Zustand 与 Vite 构建，内置 360+ 应用程序、虚拟文件系统、终端模拟器及 Python 运行时，全部在客户端执行，无需后端服务。
 
 **在线体验**: <https://saya-ch.github.io/WebLinuxOS/>
 
 [![GitHub Actions Workflow Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-95.0.0-7c3aed.svg)](./package.json)
+[![Version](https://img.shields.io/badge/version-121.0.0-7c3aed.svg)](./package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs)](https://nodejs.org/)
 
@@ -59,6 +59,8 @@
 - **WebIDE Pro**：完整的在线开发环境
 - **在线代码运行器**：支持 JavaScript、TypeScript、SQL、Bash、HTML、Markdown
 - **Python REPL**：通过 Pyodide 实现，支持包管理
+- **CodeSnap Pro**：代码快照生成器，10 种语言语法高亮、8 种精美主题、行号显示、自定义外观、PNG 导出，将代码一键转换为分享级图片
+- **GlobalPulse**：全球脉动仪表盘，实时天气(Open-Meteo 8城市)、全球汇率(Frankfurter 11货币)、加密货币行情(CoinGecko 5大币种)、科技头条(Hacker News Top 20)、世界时钟(6时区)，多 API 集成+智能缓存+自动刷新
 - **终端**：100+ 命令，涵盖：
   - 文件操作：`ls`、`cd`、`cat`、`mkdir`、`rm`、`cp`、`mv`、`grep`、`find`、`diff`、`chmod`、`history`
   - 系统管理：`top`、`ps`、`neofetch`、`free`、`df`、`uptime`、`clear`、`which`
@@ -123,7 +125,7 @@
 
 ## 应用概览
 
-WebLinuxOS 内置 350+ 应用程序，按以下分类组织：
+WebLinuxOS 内置 360+ 应用程序，按以下分类组织：
 
 | 分类 | 说明 | 典型应用 |
 | --- | --- | --- |

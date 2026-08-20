@@ -17,6 +17,8 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  GlobalPulse: () => import('../../apps/GlobalPulse'),
+  CodeSnapPro: () => import('../../apps/CodeSnapPro'),
   LexiconForge: () => import('../../apps/LexiconForge'),
   DevRadar: () => import('../../apps/DevRadar'),
   AICodeReviewWorkbench: () => import('../../apps/AICodeReviewWorkbench'),
