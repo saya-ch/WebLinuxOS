@@ -5,6 +5,19 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [118.0.0] - 2026-08-20
+
+### Added — v118 创新应用：LexiconForge 词语锻造坊
+
+- **LexiconForge** — 基于 Datamuse 公开语料 API（无需密钥、支持 CORS、受限网络回退到 corsproxy.io）的多面写作助手。(`apps/LexiconForge.tsx`)
+  - 七种模式合一：完全押韵 `rel_rhy`、近似押韵 `rel_nry`、同义词 `rel_syn`、反义词 `rel_ant`、联想词 `rel_trg`、同音词 `rel_hmg`、拼写模式匹配 `sp=`（支持 `*` 和 `?` 通配符，填字游戏/Scrabble 利器）
+  - 每个结果展示：词、音节数、词频 score、可展开的 Datamuse `md=fdp` 内联定义（无需第二次 API 调用）
+  - 音节过滤芯片、词频排序、一键复制、200 词收藏词库、50 条搜索历史
+  - 24 小时内存 + localStorage 双层缓存，重复查询即时返回，远低于 Datamuse 软速率限制
+  - 编辑式"墨与羊皮纸"美学：单词用衬线展示字、元数据用等宽、暗色为深靛蓝配暖琥珀、亮色为奶油配墨棕；通过 `resolvedTheme` 正确处理 `auto` 主题
+- 在 `APP_REGISTRY_EXTRAS` 与 `WindowManager` component map 中注册 `LexiconForge` 为懒加载 chunk。
+- 版本号统一升级至 `118.0.0`（`package.json` 与 README badge）。
+
 ## [63.0.0] - 2026-08-14
 
 ### Added — v63 安全与创新套件

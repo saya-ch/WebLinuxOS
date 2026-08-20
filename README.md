@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v117.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v118.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -31,8 +31,21 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - The **browser** searches the web via DuckDuckGo's API
 - The **system monitor** reads real Performance API data from your browser
 - **MindSync Pro** unifies pomodoro, tasks, habits, reflection, and analytics into one productivity system
+- **LexiconForge** mines the Datamuse corpus for rhymes, synonyms, antonyms, associations, homophones, and spelling patterns — a real writing companion for poets, students, and language learners
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v118
+
+This release ships **LexiconForge**, a single focused tool that turns the browser into a real, API-backed writing companion — for poets who need a rhyme, students hunting synonyms, language learners drilling homophones, or crossword players stuck on `?oat`.
+
+- **LexiconForge · 词语锻造坊** — A multi-mode word toolkit backed by the free Datamuse corpus API (no key, CORS-friendly, with a proxy fallback for restricted networks)
+  - Seven modes in one window: perfect rhymes (`rel_rhy`), near rhymes / slant rhymes (`rel_nry`), synonyms (`rel_syn`), antonyms (`rel_ant`), associated/triggers (`rel_trg`), homophones (`rel_hmg`), and spelling-pattern matches (`sp=` — supports `*` and `?` wildcards for Scrabble and crossword puzzles)
+  - Each result shows the word, syllable count, frequency score, and an expandable in-line definition pulled from the same Datamuse `md=fdp` metadata payload — no second API call needed
+  - Syllable-count filter chips, word-frequency ordering, one-click copy to clipboard, a 200-item favorites wordbook, and a 50-entry searchable history
+  - 24-hour in-memory + localStorage cache so repeated queries are instant and the API stays well under Datamuse's soft rate limit
+  - Editorial ink-and-parchment aesthetic: serif display type for words, monospace accents for metadata, warm amber on deep indigo (dark) / ink-brown on cream (light) — theme-aware via `resolvedTheme` so `auto` users get the correct palette
+- Bumped app version metadata to v118.0.0 across `package.json` and the README badge; LexiconForge is registered in `APP_REGISTRY_EXTRAS` and the `WindowManager` component map as a lazy-loaded chunk.
 
 ## What's New in v117
 

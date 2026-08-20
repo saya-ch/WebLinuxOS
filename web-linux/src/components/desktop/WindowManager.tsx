@@ -17,6 +17,7 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  LexiconForge: () => import('../../apps/LexiconForge'),
   DevRadar: () => import('../../apps/DevRadar'),
   AICodeReviewWorkbench: () => import('../../apps/AICodeReviewWorkbench'),
   AISnippetGenerator: () => import('../../apps/AISnippetGenerator'),
