@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v118.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v120.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,24 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - **LexiconForge** mines the Datamuse corpus for rhymes, synonyms, antonyms, associations, homophones, and spelling patterns — a real writing companion for poets, students, and language learners
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v120
+
+This release ships **two focused production-grade tools** — an everyday dashboard that actually replaces three separate tabs, and a pre-launch checklist that every web developer should walk through before shipping. They share the same philosophy as the rest of WebLinuxOS: real APIs, local persistence, no placeholder UI.
+
+- **SmartDailyHub · 智能每日中心** — A morning dashboard that brings together everything you check before sitting down to work, in one window and with graceful offline fallback.
+  - **Live weather** via Open-Meteo (geolocation auto-detect, optional manual city search, 7-day forecast, 24-hour temperature curve, per-card cache with stale-while-revalidate)
+  - **Hacker News front page** via the Algolia HN Search API — real-time, sortable by points/date, click-through to comments and original article, with per-story opening-state persistence
+  - **Daily quote** via ZenQuotes — rotating inspirational quotes with author attribution, previous/next navigation, copy to clipboard
+  - **Personal utilities**: todo list with priorities, water-intake tracker with daily goal and progress ring, pomodoro-style focus timer with keyboard shortcuts, next-holiday countdown for major dates, and a developer-efficiency score computed from the daily todo + focus data
+  - Everything that can be saved is saved to localStorage under a single key, and every API fetch has a cached offline fallback so the dashboard is still useful on an airplane Wi-Fi that drops the weather endpoint
+- **WebDevChecklist · 开发者发布检查清单** — 100+ concrete, non-negotiable checks every site should pass before it goes live, organized into ten groups and built for real audits, not demos.
+  - Ten top-level groups: **Performance, SEO, Accessibility (a11y), Security, Responsive, Cross-Browser, Code Quality, DevOps, Content Compliance, Technical SEO**. Every item is actionable, not vague — e.g. not "check images" but "Serve images in next-gen formats (WebP/AVIF) with `<picture>` fallback for older browsers".
+  - Progress analytics: overall completion percentage, per-category ring charts, a four-tier rating (Perfect / Strong / Fair / Needs Work) with copyable summary, and category-level pass/fail counts
+  - Operable by humans doing real audits: free-text search across item titles and descriptions, filter chips (All / Remaining / Critical-only), collapsible group sections with smart collapse/expand all, critical items highlighted with a severity indicator
+  - Export your work in two formats: **Markdown** (ready to paste into a PR description or Notion page, with `- [x]` / `- [ ]` checkboxes and per-category headings) and **JSON** (for archiving, diffing between audits, or feeding into a CI bot)
+  - Checklist state is persisted across sessions; one-click Reset All returns the sheet to a clean slate
+- Bumped app version metadata to v120.0.0 across `package.json`, `index.html`, the boot-animation banner, and the README badge. Both new apps are registered in `APP_REGISTRY_EXTRAS` and the `WindowManager` component map as lazy-loaded chunks, so they do not inflate the initial page-load bundle.
 
 ## What's New in v118
 

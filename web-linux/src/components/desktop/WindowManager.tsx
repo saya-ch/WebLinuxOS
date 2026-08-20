@@ -617,6 +617,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   MemeGenerator: () => import('../../apps/MemeGenerator'),
   TechInterviewPrep: () => import('../../apps/TechInterviewPrep'),
   MotivationalDashboard: () => import('../../apps/MotivationalDashboard'),
+  // === v120 两大创新应用 ===
+  SmartDailyHub: () => import('../../apps/SmartDailyHub'),
+  WebDevChecklist: () => import('../../apps/WebDevChecklist'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
