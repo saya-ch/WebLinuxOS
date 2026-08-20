@@ -624,6 +624,10 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   WebDevChecklist: () => import('../../apps/WebDevChecklist'),
   // === v122 创新应用：RecipeForge 智能菜谱
   RecipeForge: () => import('../../apps/RecipeForge'),
+  // === v123 三大创新应用：DataVerse Live + NebulaDev Pro + QuantumHabit OS
+  DataVerseLive: () => import('../../apps/DataVerseLive'),
+  NebulaDevPro: () => import('../../apps/NebulaDevPro'),
+  QuantumHabitOS: () => import('../../apps/QuantumHabitOS'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

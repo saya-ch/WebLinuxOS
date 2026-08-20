@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v122.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v123.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,35 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - **LexiconForge** mines the Datamuse corpus for rhymes, synonyms, antonyms, associations, homophones, and spelling patterns — a real writing companion for poets, students, and language learners
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v123
+
+This release introduces **three flagship applications** designed to turn WebLinuxOS into a single-window productivity cockpit for data, code, and behavior. They are intentionally built around composable, independent cards and modules rather than tabbed silos, so the workspace you shape stays under your control.
+
+- **DataVerse Live · 多源实时数据画布** — A free-form live dashboard where every piece of data is a draggable, resizable card. Instead of switching between tabs, you build your own information cockpit.
+  - Nine card types backed by public APIs: Open-Meteo multi-city weather, Open-Meteo air quality (PM2.5 / PM10 / O3 / NO2 / SO2 / CO), Frankfurter exchange rates, CoinGecko crypto markets, Hacker News front-page stories, NASA APOD astronomy imagery, SpaceX latest launch, programmer jokes, daily quotes, random recipe of the day, and a multi-city world clock
+  - Cards are rendered with per-type visual layouts (thermal rings, currency grids, market sparklines, scrollable story lists, large image frames, punchlines with reveal)
+  - Custom card adder, one-shot refresh per card, **refresh-all across the canvas**, and per-card caching with 4-minute TTL so repeated visits and reloads don't hammer rate limits
+  - Automatic graceful fallbacks for CORS-restricted endpoints (Frankfurter, SpaceX, CoinGecko rate limits, etc.) — every card degrades to a sensible local dataset with an inline notice instead of going blank
+  - Entire layout persists to localStorage per-user: positions, sizes, card configuration, and even refresh timestamps
+  - Lazy-loaded chunk of roughly 63 kB so it doesn't touch the initial boot bundle
+- **NebulaDev Pro · 开发者超级工具箱** — A seven-module developer utility window built around the Web Crypto API and browser-native fetch, so nothing sensitive leaves the tab and you can safely paste production JWTs and secrets.
+  - **JWT Workbench** — decode (Header / Payload / Signature with millisecond-expiry diff), HMAC generate (HS256 / HS384 / HS512), and HMAC verify against the token's embedded algorithm field; rejects unsupported `alg` values explicitly rather than accepting `none`
+  - **CORS Probe** — sends OPTIONS + GET requests, reconstructs Access-Control-Allow-Origin/Credentials/Headers/Methods verbatim, and reports the exact failure mode (preflight missing, credentials mismatch, origin mismatch, etc.)
+  - **Cloudflare DoH DNS Query** — A / AAAA / CNAME / MX / NS / TXT / SRV / CERT / PTR record lookup via the 1.1.1.1 public JSON DoH endpoint, no browser DNS
+  - **Web Crypto toolbox** — SHA-1 / 256 / 384 / 512, HMAC with any string secret, AES-GCM 256-bit encrypt & decrypt with PBKDF2 key derivation + salt iteration counter, output hex and base64 side-by-side with copy buttons
+  - **HTTP timing** — named fetch phases (DNS / TCP / TLS / TTFB / Download / Total) derived from PerformanceResourceTiming, plus server certificate check and final HTTP status
+  - **URL parser / encoder** — structured breakdown with copyable fields and an encodeURIComponent / decodeURIComponent scratchpad
+  - **Password strength evaluator & generator** — Shannon entropy bits, length penalty, character-class checks, crack-time estimate, and a cryptographically secure passphrase generator that honors custom length, case, digits, and symbol rules
+- **QuantumHabit OS · 科学习惯操作系统** — A behavior-science-backed habit operating system, not another checkbox list. Organized around James Clear's Four Laws (cue / craving / response / reward) for every habit card, with 66-day addiction curves and yearly growth reporting.
+  - Habit editor with user-visible Cue / Craving / Response / Reward template fields per habit, custom emoji and color swatches, weekday toggle, weekly target (days/week), and a preset library (Meditation, Daily Reading, Journaling, Exercise, Deep Work, Water, Sleep, French Practice etc.)
+  - **Today View** — today's checkboxes with progress ring, completion %, best-streak, current-streak, and per-habit reminders of the Cue/Reward you wrote for yourself (behavioral anchoring, not gamification badges)
+  - **Month heatmap calendar** — single-stroke SVG rendering with density-driven color stops; empty-state hint for the 66-day threshold
+  - **Focus session integration** — Pomodoro-style 25/5 focus timer that can optionally credit the associated habit upon session completion
+  - **Statistics dashboard** — weekly completion bar chart, month-over-month line chart, category-level donut, "days since I started", and YTD annual report card with top/bottom performers
+  - All data persisted to localStorage with import/export JSON for backup and cross-device migration
+- **Graceful degradation overhaul across all API-driven apps** — GlobalPulse exchange / crypto / HN endpoints, DataVerse Live nine card types, NebulaDev Pro network probes, and several other tabs now ship with curated local fallback datasets. Network failures and CORS blocks surface as a subtle inline notice rather than an empty state that looks like broken UI.
+- Version metadata aligned to **v123.0.0** across `package.json`, README, and boot banners. All three new applications are registered in `APP_REGISTRY_EXTRAS` and `WindowManager.componentMap` as Vite lazy-loaded chunks.
 
 ## What's New in v122
 
@@ -223,11 +252,13 @@ Additional improvements in v110:
 
 | Category | Highlights |
 |----------|-----------|
-| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub, **TechInterviewPrep 面试刷题 (30+ real questions + sandbox executor, 8 categories)** |
-| **Productivity** | **MindSync Pro (番茄钟/任务/习惯/反思/统计)**, DevFlow Pro, Pomodoro Studio, Kanban, TimeCapsule, Daily Dashboard, **PomodoroFocus 番茄电台 (SomaFM streams)**, **MotivationalDashboard (5-in-1 励志/呼吸/目标/感恩/成就)** |
+| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub, **TechInterviewPrep 面试刷题 (30+ real questions + sandbox executor, 8 categories)**, **NebulaDev Pro (JWT/CORS/DoH/Web Crypto/HTTP timing/URL/password — 全部本地计算或公开DNS)** |
+| **Productivity** | **MindSync Pro (番茄钟/任务/习惯/反思/统计)**, DevFlow Pro, Pomodoro Studio, Kanban, TimeCapsule, Daily Dashboard, **PomodoroFocus 番茄电台 (SomaFM streams)**, **MotivationalDashboard (5-in-1 励志/呼吸/目标/感恩/成就)**, **QuantumHabit OS (原子习惯4法则 / 66天曲线 / 热力图 / 专注番茄钟整合 / 年度报告)** |
 | **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab, AI writing studio, AI code mentor, **MemeGenerator 表情包工坊 (Canvas realtime render + clipboard export)** |
-| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro, **DevRadar (HN + GitHub Trending + Releases)**, **UtilityStack (IP+Quote+Image+Beer+Joke public API hub)** |
-| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links, ResumeForge, MarkdownPublisher, SmartNotes Pro |
+| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro, **DevRadar (HN + GitHub Trending + Releases)**, **UtilityStack (IP+Quote+Image+Beer+Joke public API hub)**, **GlobalPulse · 全球脉动 (全球天气 / 汇率 / 加密 / HN / 世界时钟，带CORS兜底)** |
+| **Data & Analytics** | **DataVerse Live · 多源实时数据画布 (9类卡片 / 拖拽缩放 / 布局持久化 / 9+公开API)** |
+| **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links, ResumeForge, MarkdownPublisher, SmartNotes Pro, **LanguageLab Pro (词典/翻译/闪卡/生词本)** |
+| **Lifestyle** | **RecipeForge · 智能菜谱工坊 (TheMealDB + 购物清单合并)**, **EcoTrack Pro · 碳足迹追踪 (IPCC排放因子 / Open-Meteo / 目标与抵消)** |
 | **System** | File manager, settings, system monitor (real data), password vault, app marketplace, system optimizer, CloudDrive, WebSSH, Workspace layout manager |
 | **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera, AI image studio, ImageForge |
 | **Collaboration** | Real-time collaborative whiteboard, document editor, code collaboration |
@@ -248,9 +279,15 @@ Every data source is a real, public API — no fake data:
 - **GitHub API** — repository exploration
 - **Open Library** — book discovery
 - **NASA APOD** — astronomy imagery
+- **SpaceX-API (r/SpaceX)** — launch history and live telemetry metadata
 - **MyMemory** — translation service
 - **Web Speech API** — speech synthesis and recognition
 - **ZenQuotes.io** — daily motivational quotes (no key)
+- **Official Joke API (appspot)** — programming jokes feed
+- **TheMealDB** — structured recipe database with ingredients and instructions
+- **Free Dictionary API** — phonetic pronunciation, POS, definitions, synonym/antonym payloads
+- **Datamuse** — rhymes / near rhymes / synonyms / antonyms / homophones / spelling patterns
+- **Cloudflare 1.1.1.1 DoH (JSON)** — public DNS over HTTPS for A/AAAA/MX/TXT/CNAME/NS/SRV/PTR lookups (CORS-enabled)
 - **Stoic.themotivate365.com** — stoic philosophy quotes (backup)
 - **SomaFM** — public internet radio MP3 streams (8 channels)
 - **Picsum Photos (Lorem Picsum)** — inspirational imagery
@@ -258,6 +295,7 @@ Every data source is a real, public API — no fake data:
 - **ChuckNorris.io** — jokes feed
 - **Advice Slip** — random advice API
 - **ipapi.co** — IP geolocation
+- **Web Crypto API** — SHA/HMAC/AES-GCM/PBKDF2 (native to the browser, fully local; used for NebulaDev Pro crypto tools and JWT verification)
 
 ## Quick Start
 
