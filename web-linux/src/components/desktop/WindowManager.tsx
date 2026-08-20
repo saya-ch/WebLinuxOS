@@ -622,6 +622,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v120 两大创新应用 ===
   SmartDailyHub: () => import('../../apps/SmartDailyHub'),
   WebDevChecklist: () => import('../../apps/WebDevChecklist'),
+  // === v122 创新应用：RecipeForge 智能菜谱
+  RecipeForge: () => import('../../apps/RecipeForge'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

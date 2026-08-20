@@ -1,885 +1,812 @@
-import { useState, useEffect, useCallback } from 'react'
-import {
-  BookOpen, Mic, Volume2, ChevronRight,
-  RotateCcw, CheckCircle, XCircle, Star, Brain, Layers,
-  Sparkles, Target,
-  PenTool,
-  Globe, Languages, Lightbulb, Send,
-  Play,
-} from 'lucide-react'
-import { useStore } from '../store'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-type LangKey = 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'es'
-type ViewMode = 'dashboard' | 'lessons' | 'flashcards' | 'exercise' | 'pronunciation'
+/* ============================================================
+ * LanguageLab · 语言实验室
+ * 基于两个公开免费 API：
+ *  1. Free Dictionary API (dictionaryapi.dev) — 英语词典：
+ *     释义、音标、音频、同义词、反义词、例句
+ *  2. MyMemory Translation API (mymemory.translated.net) — 多语翻译：
+ *     支持 zh-CN / en / ja / ko / fr / de / es / it 等 100+ 语言
+ * 两个 API 均免注册、免 Key、CORS 友好。
+ *
+ * 额外自带：
+ *  - 生词本（localStorage，1000 条上限）
+ *  - 闪卡复习（基于生词本的翻转抽卡）
+ *  - 搜索历史（50 条）
+ *  - 24h 内存 + localStorage 缓存，避免重复请求
+ *  - 全文本发音（Web Speech API SpeechSynthesis）
+ * ============================================================ */
 
-interface Language {
-  key: LangKey
-  name: string
-  flag: string
-  nativeName: string
-  code: string
-}
+type Tab = 'dictionary' | 'translator' | 'flashcards' | 'vocabulary'
 
-const LANGUAGES: Language[] = [
-  { key: 'en', name: '英语', flag: '🇺🇸', nativeName: 'English', code: 'en-US' },
-  { key: 'ja', name: '日语', flag: '🇯🇵', nativeName: '日本語', code: 'ja-JP' },
-  { key: 'ko', name: '韩语', flag: '🇰🇷', nativeName: '한국어', code: 'ko-KR' },
-  { key: 'fr', name: '法语', flag: '🇫🇷', nativeName: 'Français', code: 'fr-FR' },
-  { key: 'de', name: '德语', flag: '🇩🇪', nativeName: 'Deutsch', code: 'de-DE' },
-  { key: 'es', name: '西班牙语', flag: '🇪🇸', nativeName: 'Español', code: 'es-ES' },
-]
+interface Phonetic { text?: string; audio?: string }
+interface MeaningDef { definition: string; example?: string; synonyms?: string[]; antonyms?: string[] }
+interface Meaning { partOfSpeech: string; definitions: MeaningDef[]; synonyms?: string[]; antonyms?: string[] }
+interface DictEntry { word: string; phonetic?: string; phonetics: Phonetic[]; meanings: Meaning[]; sourceUrls?: string[] }
 
-interface Lesson {
+interface VocabItem {
   id: string
-  lang: LangKey
-  title: string
-  level: '入门' | '初级' | '中级' | '高级'
-  description: string
-  vocabulary: { word: string; translation: string; example?: string; exampleTranslation?: string }[]
-  grammar: { rule: string; explanation: string; example: string; translation: string }[]
-  exercises: {
-    type: 'fill' | 'translate' | 'choice'
-    question: string
-    options?: string[]
-    answer: string
-    hint?: string
-  }[]
-}
-
-const LESSONS: Lesson[] = [
-  {
-    id: 'en-1', lang: 'en', title: '日常问候', level: '入门',
-    description: '学习最基本的英语问候语和自我介绍',
-    vocabulary: [
-      { word: 'Hello', translation: '你好', example: 'Hello, my name is Tom.', exampleTranslation: '你好，我叫汤姆。' },
-      { word: 'Good morning', translation: '早上好' },
-      { word: 'Nice to meet you', translation: '很高兴见到你' },
-      { word: 'How are you?', translation: '你好吗？' },
-      { word: 'Goodbye', translation: '再见' },
-    ],
-    grammar: [
-      { rule: 'be 动词用法', explanation: 'I am / You are / He is 用于表示状态', example: 'I am a student.', translation: '我是一名学生。' },
-    ],
-    exercises: [
-      { type: 'choice', question: '____, my name is Alice.', options: ['Hello', 'Goodbye', 'Sorry', 'Please'], answer: 'Hello', hint: '最常用的问候语' },
-      { type: 'fill', question: 'Good ____ (早上)', answer: 'morning' },
-      { type: 'translate', question: '翻译：很高兴见到你', answer: 'Nice to meet you' },
-    ],
-  },
-  {
-    id: 'en-2', lang: 'en', title: '旅行必备', level: '初级',
-    description: '在机场、酒店和餐厅使用的英语',
-    vocabulary: [
-      { word: 'Airport', translation: '机场' },
-      { word: 'Hotel', translation: '酒店' },
-      { word: 'Reservation', translation: '预订' },
-      { word: 'Passport', translation: '护照' },
-      { word: 'Delicious', translation: '美味的' },
-    ],
-    grammar: [
-      { rule: 'Could you + 动词原形', explanation: '用于礼貌地请求', example: 'Could you help me?', translation: '你能帮我吗？' },
-    ],
-    exercises: [
-      { type: 'choice', question: 'I have a ____ for two nights.', options: ['reservation', 'reserve', 'reserved', 'reserving'], answer: 'reservation' },
-      { type: 'translate', question: '翻译：请给我菜单', answer: 'Could I have the menu, please?' },
-    ],
-  },
-  {
-    id: 'ja-1', lang: 'ja', title: '基础问候', level: '入门',
-    description: '日语基础问候和日常用语',
-    vocabulary: [
-      { word: 'こんにちは', translation: '你好', example: 'こんにちは、田中さん。', exampleTranslation: '你好，田中先生。' },
-      { word: 'おはよう', translation: '早上好' },
-      { word: 'さようなら', translation: '再见' },
-      { word: 'ありがとう', translation: '谢谢' },
-      { word: 'はい', translation: '是' },
-    ],
-    grammar: [
-      { rule: 'です/だ 敬语', explanation: 'です用于正式场合，だ用于非正式', example: '私は学生です。', translation: '我是学生。' },
-    ],
-    exercises: [
-      { type: 'choice', question: '____、田中さん。', options: ['こんにちは', 'さようなら', 'ありがとう', 'はい'], answer: 'こんにちは' },
-      { type: 'fill', question: '翻译：谢谢 (平假名)', answer: 'ありがとう' },
-    ],
-  },
-  {
-    id: 'ja-2', lang: 'ja', title: '数字与时间', level: '初级',
-    description: '日语数字表达和时间说法',
-    vocabulary: [
-      { word: '一 (いち)', translation: '1' },
-      { word: '二 (に)', translation: '2' },
-      { word: '三 (さん)', translation: '3' },
-      { word: '時間 (じかん)', translation: '小时' },
-      { word: '何時 (なんじ)', translation: '几点' },
-    ],
-    grammar: [
-      { rule: '时间表达', explanation: '～時～分 表示几点几分', example: '七時半です。', translation: '七点半。' },
-    ],
-    exercises: [
-      { type: 'translate', question: '翻译：现在几点了？', answer: '今、何時ですか？' },
-      { type: 'choice', question: '三 的读音是？', options: ['いち', 'に', 'さん', 'よん'], answer: 'さん' },
-    ],
-  },
-  {
-    id: 'fr-1', lang: 'fr', title: '日常用语', level: '入门',
-    description: '法语基础问候',
-    vocabulary: [
-      { word: 'Bonjour', translation: '你好/白天好' },
-      { word: 'Merci', translation: '谢谢' },
-      { word: 'Au revoir', translation: '再见' },
-      { word: 'Oui', translation: '是' },
-      { word: 'Non', translation: '不' },
-    ],
-    grammar: [
-      { rule: '冠词', explanation: 'Le/La/Les 表示特指', example: 'Le livre est sur la table.', translation: '书在桌子上。' },
-    ],
-    exercises: [
-      { type: 'choice', question: '____, comment allez-vous?', options: ['Bonjour', 'Merci', 'Au revoir', 'Oui'], answer: 'Bonjour' },
-      { type: 'translate', question: '翻译：谢谢', answer: 'Merci' },
-    ],
-  },
-  {
-    id: 'ko-1', lang: 'ko', title: '基础问候', level: '入门',
-    description: '韩语基本问候语',
-    vocabulary: [
-      { word: '안녕하세요', translation: '你好' },
-      { word: '감사합니다', translation: '谢谢' },
-      { word: '안녕히 가세요', translation: '再见 (对离开的人)' },
-      { word: '네', translation: '是' },
-      { word: '아니요', translation: '不是' },
-    ],
-    grammar: [
-      { rule: '敬语', explanation: '韩语有严格的敬语体系，对长辈要用敬语', example: '안녕하세요.', translation: '您好。' },
-    ],
-    exercises: [
-      { type: 'choice', question: '____, 만나서 반갑습니다.', options: ['안녕하세요', '감사합니다', '네', '아니요'], answer: '안녕하세요' },
-      { type: 'translate', question: '翻译：谢谢', answer: '감사합니다' },
-    ],
-  },
-]
-
-const STORAGE_KEY = 'weblinux-langlab-data-v1'
-
-interface UserData {
-  xp: number
-  streak: number
-  lastActive: string
-  completedLessons: string[]
-  flashcards: Flashcard[]
-  srsData: Record<string, { interval: number; dueDate: number; reps: number }>
-  dailyGoal: number
-  todayProgress: number
-}
-
-interface Flashcard {
-  id: string
-  lang: LangKey
   word: string
-  translation: string
-  example?: string
-  status: 'new' | 'learning' | 'review'
-  createdAt: number
+  meaning: string
+  lang: string
+  addedAt: number
+  reviewCount: number
+  lastReviewed?: number
 }
 
-function loadData(): UserData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return {
-    xp: 0, streak: 1, lastActive: new Date().toDateString(),
-    completedLessons: [], flashcards: [], srsData: {},
-    dailyGoal: 50, todayProgress: 0,
-  }
-}
+const LANG_OPTIONS: Array<{ code: string; label: string; flag: string }> = [
+  { code: 'zh-CN', label: '中文', flag: '🇨🇳' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+  { code: 'pt', label: 'Português', flag: '🇵🇹' },
+  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+  { code: 'ar', label: 'العربية', flag: '🇸🇦' },
+  { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
+]
 
-function saveData(d: UserData) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)) } catch {}
-}
+const DICT_CACHE_KEY = 'languagelab:dict-cache:v1'
+const TRANS_CACHE_KEY = 'languagelab:trans-cache:v1'
+const VOCAB_KEY = 'languagelab:vocabulary:v1'
+const HISTORY_KEY = 'languagelab:history:v1'
 
-function calculateSRS(quality: number, reps: number): { interval: number; dueDate: number } {
-  let interval: number
-  if (quality >= 3) {
-    const intervals = [1, 3, 7, 14, 30]
-    interval = intervals[Math.min(reps, intervals.length - 1)]
-  } else {
-    interval = 1
-  }
-  const dueDate = Date.now() + interval * 24 * 60 * 60 * 1000
-  return { interval, dueDate }
+type DictCache = Record<string, { t: number; data: DictEntry[] }>
+type TransCache = Record<string, { t: number; data: string }>
+
+const DAY_MS = 86400000
+
+function loadJSON<T>(k: string, fb: T): T {
+  try { const raw = localStorage.getItem(k); return raw ? JSON.parse(raw) as T : fb } catch { return fb }
+}
+function saveJSON(k: string, v: unknown) {
+  try { localStorage.setItem(k, JSON.stringify(v)) } catch { /* ignore */ }
 }
 
 export default function LanguageLab() {
-  const addNotification = useStore((s) => s.addNotification)
-  const [userData, setUserData] = useState<UserData>(loadData)
-  const [activeLang, setActiveLang] = useState<LangKey>('en')
-  const [view, setView] = useState<ViewMode>('dashboard')
-  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
-  const [exerciseIndex, setExerciseIndex] = useState(0)
-  const [exerciseAnswer, setExerciseAnswer] = useState('')
-  const [exerciseResult, setExerciseResult] = useState<'correct' | 'wrong' | null>(null)
-  const [showAnswer, setShowAnswer] = useState(false)
-  const [speaking, setSpeaking] = useState(false)
-  const [pronunciationText, setPronunciationText] = useState('')
-  const [recognitionResult, setRecognitionResult] = useState('')
+  const [tab, setTab] = useState<Tab>('dictionary')
 
-  useEffect(() => {
-    saveData(userData)
-  }, [userData])
+  // === Dictionary State ===
+  const [dictWord, setDictWord] = useState('serendipity')
+  const [dictLoading, setDictLoading] = useState(false)
+  const [dictError, setDictError] = useState<string | null>(null)
+  const [dictResult, setDictResult] = useState<DictEntry[] | null>(null)
+  const [dictHistory, setDictHistory] = useState<string[]>(() => loadJSON(HISTORY_KEY, []))
+  const dictCacheRef = useRef<DictCache>(loadJSON(DICT_CACHE_KEY, {}))
 
-  useEffect(() => {
-    const today = new Date().toDateString()
-    if (userData.lastActive !== today) {
-      const yesterday = new Date(Date.now() - 86400000).toDateString()
-      const newStreak = userData.lastActive === yesterday ? userData.streak + 1 : 1
-      setUserData((d) => ({ ...d, lastActive: today, streak: newStreak, todayProgress: 0 }))
-    }
-  }, [])
+  // === Translator State ===
+  const [transText, setTransText] = useState('Hello, welcome to the language laboratory.')
+  const [transFrom, setTransFrom] = useState('en')
+  const [transTo, setTransTo] = useState('zh-CN')
+  const [transLoading, setTransLoading] = useState(false)
+  const [transError, setTransError] = useState<string | null>(null)
+  const [transResult, setTransResult] = useState<string>('')
+  const transCacheRef = useRef<TransCache>(loadJSON(TRANS_CACHE_KEY, {}))
 
-  const speak = useCallback((text: string, langCode: string) => {
-    if (!('speechSynthesis' in window)) {
-      addNotification({ title: '不支持', message: '浏览器不支持语音合成', type: 'warning', duration: 2000 })
+  // === Vocabulary ===
+  const [vocab, setVocab] = useState<VocabItem[]>(() => loadJSON(VOCAB_KEY, []))
+  const [vocabFilter, setVocabFilter] = useState('')
+
+  // === Flashcards ===
+  const [cardIndex, setCardIndex] = useState(0)
+  const [cardFlipped, setCardFlipped] = useState(false)
+  const [cardSessionCount, setCardSessionCount] = useState(0)
+
+  useEffect(() => { saveJSON(VOCAB_KEY, vocab) }, [vocab])
+  useEffect(() => { saveJSON(HISTORY_KEY, dictHistory.slice(0, 50)) }, [dictHistory])
+
+  const filteredVocab = useMemo(() => {
+    const q = vocabFilter.trim().toLowerCase()
+    const list = [...vocab].sort((a, b) => b.addedAt - a.addedAt)
+    return q ? list.filter(v => v.word.toLowerCase().includes(q) || v.meaning.toLowerCase().includes(q)) : list
+  }, [vocab, vocabFilter])
+
+  /* -------- Dictionary API -------- */
+  async function fetchDictionary(word: string) {
+    const q = word.trim().toLowerCase()
+    if (!q) return
+    const now = Date.now()
+    const cached = dictCacheRef.current[q]
+    if (cached && (now - cached.t) < DAY_MS) {
+      setDictResult(cached.data)
+      setDictError(null)
       return
     }
+    setDictLoading(true)
+    setDictError(null)
+    try {
+      const resp = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(q)}`)
+      if (!resp.ok) throw new Error(resp.status === 404 ? '未找到该单词，请检查拼写。' : `HTTP ${resp.status}`)
+      const data = (await resp.json()) as DictEntry[]
+      dictCacheRef.current[q] = { t: now, data }
+      saveJSON(DICT_CACHE_KEY, dictCacheRef.current)
+      setDictResult(data)
+      setDictHistory(prev => {
+        const next = [q, ...prev.filter(h => h !== q)]
+        return next.slice(0, 50)
+      })
+    } catch (e) {
+      setDictResult(null)
+      setDictError(e instanceof Error ? e.message : '查询失败')
+    } finally {
+      setDictLoading(false)
+    }
+  }
+
+  /* -------- Translator API -------- */
+  async function fetchTranslation() {
+    const text = transText.trim()
+    if (!text) return
+    const key = `${transFrom}:${transTo}:${text}`
+    const now = Date.now()
+    const cached = transCacheRef.current[key]
+    if (cached && (now - cached.t) < DAY_MS) {
+      setTransResult(cached.data)
+      setTransError(null)
+      return
+    }
+    setTransLoading(true)
+    setTransError(null)
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(transFrom)}|${encodeURIComponent(transTo)}`
+      const resp = await fetch(url)
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      const json = (await resp.json()) as { responseData?: { translatedText?: string }; responseStatus?: number }
+      const out = json?.responseData?.translatedText || ''
+      if (!out) throw new Error('翻译服务返回空结果')
+      transCacheRef.current[key] = { t: now, data: out }
+      saveJSON(TRANS_CACHE_KEY, transCacheRef.current)
+      setTransResult(out)
+    } catch (e) {
+      setTransResult('')
+      setTransError(e instanceof Error ? e.message : '翻译失败')
+    } finally {
+      setTransLoading(false)
+    }
+  }
+
+  /* -------- Speech -------- */
+  function speak(text: string, lang = 'en-US') {
+    if (!('speechSynthesis' in window)) return
     window.speechSynthesis.cancel()
-    const utter = new SpeechSynthesisUtterance(text)
-    utter.lang = langCode
-    utter.rate = 0.9
-    utter.pitch = 1
-    window.speechSynthesis.speak(utter)
-  }, [addNotification])
+    const u = new SpeechSynthesisUtterance(text)
+    const fullLang = LANG_OPTIONS.find(l => l.code === lang)?.code
+    if (fullLang) u.lang = fullLang === 'zh-CN' ? 'zh-CN' : fullLang
+    u.rate = 0.95
+    window.speechSynthesis.speak(u)
+  }
 
-  const startRecognition = useCallback(() => {
-    const lang = LANGUAGES.find((l) => l.key === activeLang)
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      addNotification({ title: '不支持', message: '浏览器不支持语音识别', type: 'warning', duration: 2000 })
-      return
-    }
-    const recognition = new SpeechRecognition()
-    recognition.lang = lang?.code || 'en-US'
-    recognition.interimResults = true
-    recognition.continuous = false
-
-    recognition.onstart = () => setSpeaking(true)
-    recognition.onend = () => setSpeaking(false)
-    recognition.onerror = () => setSpeaking(false)
-    recognition.onresult = (event: any) => {
-      let result = ''
-      for (let i = 0; i < event.results.length; i++) {
-        result += event.results[i][0].transcript
+  /* -------- Vocab helpers -------- */
+  function addToVocab(word: string, meaning: string, lang: string = 'en') {
+    setVocab(prev => {
+      if (prev.some(v => v.word.toLowerCase() === word.toLowerCase())) {
+        return prev
       }
-      setRecognitionResult(result)
-    }
-    recognition.start()
-  }, [activeLang, addNotification])
-
-  const addXp = (amount: number) => {
-    setUserData((d) => ({
-      ...d,
-      xp: d.xp + amount,
-      todayProgress: Math.min(d.todayProgress + amount, d.dailyGoal),
-    }))
-  }
-
-  const completeExercise = (lessonId: string) => {
-    if (!userData.completedLessons.includes(lessonId)) {
-      setUserData((d) => ({
-        ...d,
-        completedLessons: [...d.completedLessons, lessonId],
-        xp: d.xp + 50,
-        todayProgress: Math.min(d.todayProgress + 50, d.dailyGoal),
-      }))
-      addNotification({ title: '课程完成!', message: '+50 XP 已获得', type: 'success', duration: 3000 })
-    }
-  }
-
-  const addFlashcard = (word: string, translation: string, example?: string) => {
-    const card: Flashcard = {
-      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      lang: activeLang, word, translation, example,
-      status: 'new', createdAt: Date.now(),
-    }
-    setUserData((d) => ({ ...d, flashcards: [...d.flashcards, card] }))
-    addNotification({ title: '已添加', message: `新卡片: ${word}`, type: 'success', duration: 2000 })
-  }
-
-  const reviewFlashcard = (cardId: string, quality: number) => {
-    setUserData((d) => {
-      const card = d.flashcards.find((c) => c.id === cardId)
-      if (!card) return d
-      const srsKey = cardId
-      const prevSrs = d.srsData[srsKey] || { interval: 0, dueDate: Date.now(), reps: 0 }
-      const reps = quality >= 3 ? prevSrs.reps + 1 : 0
-      const { interval, dueDate } = calculateSRS(quality, reps)
-      return {
-        ...d,
-        srsData: { ...d.srsData, [srsKey]: { interval, dueDate, reps } },
-        flashcards: d.flashcards.map((c) =>
-          c.id === cardId
-            ? { ...c, status: quality >= 3 ? 'review' : 'learning' }
-            : c
-        ),
+      if (prev.length >= 1000) {
+        return [...prev.slice(0, 999), {
+          id: `v-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          word, meaning, lang,
+          addedAt: Date.now(), reviewCount: 0,
+        }]
       }
+      return [{
+        id: `v-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        word, meaning, lang,
+        addedAt: Date.now(), reviewCount: 0,
+      }, ...prev]
     })
   }
 
-  const checkAnswer = (lesson: Lesson) => {
-    const ex = lesson.exercises[exerciseIndex]
-    const correct = exerciseAnswer.trim().toLowerCase() === ex.answer.trim().toLowerCase()
-    setExerciseResult(correct ? 'correct' : 'wrong')
-    setShowAnswer(true)
-    if (correct) addXp(10)
+  function removeVocab(id: string) {
+    setVocab(prev => prev.filter(v => v.id !== id))
   }
 
-  const nextExercise = () => {
-    if (currentLesson && exerciseIndex < currentLesson.exercises.length - 1) {
-      setExerciseIndex(exerciseIndex + 1)
-      setExerciseAnswer('')
-      setExerciseResult(null)
-      setShowAnswer(false)
-    } else if (currentLesson) {
-      completeExercise(currentLesson.id)
-      setView('lessons')
-      setCurrentLesson(null)
-    }
+  function clearVocab() {
+    if (confirm('确定清空整个生词本吗？此操作不可撤销。')) setVocab([])
   }
 
-  const resetExercise = () => {
-    setExerciseAnswer('')
-    setExerciseResult(null)
-    setShowAnswer(false)
+  /* -------- Flashcards -------- */
+  const studyDeck = useMemo(() => [...vocab].sort((a, b) => a.reviewCount - b.reviewCount || a.addedAt - b.addedAt), [vocab])
+  const currentCard = studyDeck[cardIndex % Math.max(1, studyDeck.length)]
+
+  function markCardReview(remembered: boolean) {
+    if (!currentCard) return
+    setVocab(prev => prev.map(v => v.id === currentCard.id
+      ? { ...v, reviewCount: v.reviewCount + 1, lastReviewed: Date.now() }
+      : v,
+    ))
+    setCardSessionCount(c => c + 1)
+    // 若选了「记住了」且是循环末尾则可停止；无论如何翻下一张
+    setCardIndex(i => i + 1)
+    setCardFlipped(false)
+    void remembered
   }
 
-  const currentLangData = LANGUAGES.find((l) => l.key === activeLang)!
-  const availableLessons = LESSONS.filter((l) => l.lang === activeLang)
-  const completedCount = availableLessons.filter((l) => userData.completedLessons.includes(l.id)).length
-  const todayPct = Math.round((userData.todayProgress / userData.dailyGoal) * 100)
+  /* -------- First run auto lookups -------- */
+  useEffect(() => { void fetchDictionary(dictWord); void fetchTranslation() /* eslint-disable-next-line */ }, [])
 
-  const c: React.CSSProperties = {
-    width: '100%', height: '100%',
-    background: 'linear-gradient(160deg, rgba(16,185,129,0.06) 0%, rgba(99,102,241,0.05) 100%)',
-    display: 'flex', flexDirection: 'column', color: 'var(--text-primary)',
-    fontFamily: 'inherit', overflow: 'hidden',
-  }
-  const hdr: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '14px 20px', borderBottom: '1px solid var(--window-border)',
-    background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(12px)',
-  }
-  const bb: React.CSSProperties = {
-    display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px',
-    borderRadius: 8, border: '1px solid var(--window-border)',
-    background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)',
-    cursor: 'pointer', fontSize: 12, transition: 'all 0.18s ease',
-  }
-  const card: React.CSSProperties = {
-    background: 'var(--window-bg)', border: '1px solid var(--window-border)',
-    borderRadius: 14, padding: 16, backdropFilter: 'blur(10px)',
-  }
-
+  /* ============ RENDER ============ */
   return (
-    <div style={c}>
-      <div style={hdr}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 14,
-            background: 'linear-gradient(135deg, #10b981, #6366f1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
-          }}>
-            <Languages size={22} color="#fff" />
+    <div style={styles.wrap}>
+      {/* ========== HEADER ========== */}
+      <header style={styles.header}>
+        <div style={styles.brand}>
+          <div style={styles.brandMark}>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 5h16M4 19h16M12 5l-4 7h8l-4 7" />
+            </svg>
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>语言实验室</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-              已掌握 {userData.completedLessons.length} 课 · {userData.flashcards.length} 张卡片 · 连续学习 {userData.streak} 天
-            </div>
+            <div style={styles.brandTitle}>LanguageLab</div>
+            <div style={styles.brandSub}>语言实验室 · Dictionary + Translator + Flashcards</div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.key}
-              onClick={() => setActiveLang(lang.key)}
-              style={{
-                padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                background: activeLang === lang.key ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.04)',
-                color: activeLang === lang.key ? '#fff' : 'var(--text-secondary)',
-                fontSize: 13, transition: 'all 0.15s',
-                display: 'flex', alignItems: 'center', gap: 4,
-              }}
-            >
-              <span>{lang.flag}</span> {lang.name}
+        <nav style={styles.tabs}>
+          {(['dictionary', 'translator', 'flashcards', 'vocabulary'] as Tab[]).map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              ...styles.tab, ...(tab === t ? styles.tabActive : {}),
+            }}>
+              {t === 'dictionary' && '📖 词典'}
+              {t === 'translator' && '🌐 翻译'}
+              {t === 'flashcards' && '🎴 闪卡'}
+              {t === 'vocabulary' && `📚 生词本 (${vocab.length})`}
             </button>
           ))}
-        </div>
-      </div>
+        </nav>
+      </header>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-          {([
-            { key: 'dashboard' as ViewMode, label: '总览', icon: <Brain size={14} /> },
-            { key: 'lessons' as ViewMode, label: '课程', icon: <BookOpen size={14} /> },
-            { key: 'flashcards' as ViewMode, label: '闪卡', icon: <Layers size={14} /> },
-            { key: 'exercise' as ViewMode, label: '练习', icon: <PenTool size={14} /> },
-            { key: 'pronunciation' as ViewMode, label: '发音', icon: <Mic size={14} /> },
-          ]).map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setView(t.key)}
-              style={{
-                ...bb, padding: '8px 14px',
-                background: view === t.key ? 'rgba(16,185,129,0.2)' : undefined,
-                color: view === t.key ? '#fff' : undefined,
-                borderColor: view === t.key ? 'rgba(16,185,129,0.5)' : undefined,
-              }}
-            >
-              {t.icon} {t.label}
+      {/* ========== DICTIONARY ========== */}
+      {tab === 'dictionary' && (
+        <section style={styles.body}>
+          <div style={styles.row}>
+            <input
+              value={dictWord}
+              onChange={e => setDictWord(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') fetchDictionary(dictWord) }}
+              placeholder="输入英文单词，例如：serendipity"
+              style={styles.input}
+            />
+            <button style={styles.btnPrimary} onClick={() => fetchDictionary(dictWord)} disabled={dictLoading}>
+              {dictLoading ? '查询中…' : '查询'}
             </button>
-          ))}
-        </div>
-
-        {view === 'dashboard' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            <div style={{ ...card, textAlign: 'center' }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🔥</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: '#f97316' }}>{userData.streak}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>连续学习天数</div>
-            </div>
-            <div style={{ ...card, textAlign: 'center' }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>⭐</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: '#fbbf24' }}>{userData.xp}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>总经验值</div>
-            </div>
-            <div style={{ ...card, textAlign: 'center' }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📚</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: '#6366f1' }}>{completedCount}/{availableLessons.length}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>已完成课程</div>
-            </div>
-
-            <div style={{ ...card, gridColumn: 'span 3' }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Target size={16} style={{ color: '#10b981' }} /> 今日目标
-              </div>
-              <div style={{
-                height: 24, background: 'rgba(255,255,255,0.08)', borderRadius: 12,
-                overflow: 'hidden', position: 'relative',
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${todayPct}%`,
-                  background: 'linear-gradient(90deg, #10b981, #06b6d4)',
-                  borderRadius: 12,
-                  transition: 'width 0.5s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                  paddingRight: 10,
-                }}>
-                  {todayPct > 20 && <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>{todayPct}%</span>}
-                </div>
-              </div>
-              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
-                已获得 {userData.todayProgress} / {userData.dailyGoal} XP
-              </div>
-            </div>
-
-            <div style={{ ...card, gridColumn: 'span 3' }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Sparkles size={16} style={{ color: '#fbbf24' }} /> 推荐课程
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
-                {availableLessons.slice(0, 4).map((lesson) => {
-                  const completed = userData.completedLessons.includes(lesson.id)
-                  return (
-                    <button
-                      key={lesson.id}
-                      onClick={() => { setCurrentLesson(lesson); setExerciseIndex(0); setExerciseAnswer(''); setExerciseResult(null); setShowAnswer(false); setView('exercise') }}
-                      style={{
-                        padding: 14, borderRadius: 10, border: '1px solid var(--window-border)',
-                        background: completed ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.02)',
-                        cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
-                        display: 'flex', flexDirection: 'column', gap: 6,
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc' }}>
-                          {lesson.level}
-                        </span>
-                        {completed && <CheckCircle size={16} style={{ color: '#10b981' }} />}
-                      </div>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{lesson.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{lesson.description}</div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            <button style={styles.btnGhost} onClick={() => dictWord && speak(dictWord, 'en')}>🔊 朗读</button>
           </div>
-        )}
 
-        {view === 'lessons' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>
-                {currentLangData.flag} {currentLangData.nativeName} 课程
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                {completedCount} / {availableLessons.length} 已完成
-              </div>
+          {dictHistory.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              <span style={{ color: 'var(--text-dim)', fontSize: 12, alignSelf: 'center' }}>历史：</span>
+              {dictHistory.slice(0, 10).map(h => (
+                <button key={h} onClick={() => { setDictWord(h); fetchDictionary(h) }} style={styles.chip}>{h}</button>
+              ))}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-              {availableLessons.map((lesson) => {
-                const completed = userData.completedLessons.includes(lesson.id)
-                return (
-                  <div key={lesson.id} style={{
-                    ...card, cursor: 'pointer', transition: 'all 0.2s',
-                    borderColor: completed ? 'rgba(16,185,129,0.4)' : 'var(--window-border)',
-                  }}
-                  onClick={() => { setCurrentLesson(lesson); setExerciseIndex(0); setExerciseAnswer(''); setExerciseResult(null); setShowAnswer(false); setView('exercise') }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <span style={{
-                        fontSize: 11, padding: '3px 10px', borderRadius: 6,
-                        background: lesson.level === '入门' ? 'rgba(16,185,129,0.2)' : lesson.level === '初级' ? 'rgba(59,130,246,0.2)' : lesson.level === '中级' ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)',
-                        color: lesson.level === '入门' ? '#10b981' : lesson.level === '初级' ? '#3b82f6' : lesson.level === '中级' ? '#f59e0b' : '#ef4444',
-                      }}>{lesson.level}</span>
-                      {completed ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10b981', fontSize: 11 }}>
-                          <CheckCircle size={14} /> 已完成
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                          {lesson.exercises.length} 练习
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>{lesson.title}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>{lesson.description}</div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setView('exercise'); setCurrentLesson(lesson); setExerciseIndex(0); setExerciseAnswer(''); setExerciseResult(null); setShowAnswer(false) }}
-                        style={{ ...bb, flex: 1, justifyContent: 'center', background: 'linear-gradient(135deg, #10b981, #06b6d4)', color: '#fff', border: 'none' }}
-                      >
-                        <Play size={12} /> 开始学习
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+          )}
 
-        {view === 'exercise' && currentLesson && (
-          <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <button style={bb} onClick={() => { setView('lessons'); setCurrentLesson(null) }}>
-                ← 返回课程
-              </button>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                第 {exerciseIndex + 1} / {currentLesson.exercises.length} 题
-              </div>
-            </div>
+          {dictError && <div style={styles.errorBox}>{dictError}</div>}
 
-            <div style={{ ...card }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {currentLesson.exercises[exerciseIndex].type === 'fill' ? <PenTool size={18} color="#fff" /> :
-                    currentLesson.exercises[exerciseIndex].type === 'translate' ? <Globe size={18} color="#fff" /> :
-                      <Target size={18} color="#fff" />}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 600 }}>{currentLesson.title}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                    {currentLesson.exercises[exerciseIndex].type === 'fill' ? '填空题' :
-                      currentLesson.exercises[exerciseIndex].type === 'translate' ? '翻译题' : '选择题'}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ fontSize: 15, lineHeight: 1.6, marginBottom: 16, padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
-                {currentLesson.exercises[exerciseIndex].question}
-              </div>
-
-              {currentLesson.exercises[exerciseIndex].type === 'choice' && currentLesson.exercises[exerciseIndex].options ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {currentLesson.exercises[exerciseIndex].options.map((opt, i) => (
-                    <button
-                      key={i}
-                      disabled={showAnswer}
-                      onClick={() => setExerciseAnswer(opt)}
-                      style={{
-                        padding: '12px 16px', borderRadius: 10,
-                        border: `1px solid ${exerciseAnswer === opt && showAnswer ? (exerciseResult === 'correct' ? '#10b981' : '#ef4444') : 'var(--window-border)'}`,
-                        background: exerciseAnswer === opt ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
-                        color: 'var(--text-primary)', cursor: showAnswer ? 'default' : 'pointer',
-                        textAlign: 'left', fontSize: 14, transition: 'all 0.15s',
-                      }}
-                    >
-                      <span style={{ display: 'inline-block', width: 24, color: 'var(--text-secondary)', fontWeight: 600 }}>
-                        {String.fromCharCode(65 + i)}.
-                      </span>
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <textarea
-                  value={exerciseAnswer}
-                  onChange={(e) => setExerciseAnswer(e.target.value)}
-                  placeholder="在此输入你的答案…"
-                  disabled={showAnswer}
-                  style={{
-                    width: '100%', minHeight: 80,
-                    background: 'rgba(0,0,0,0.2)', border: '1px solid var(--window-border)',
-                    borderRadius: 10, color: 'var(--text-primary)', padding: '12px',
-                    fontSize: 14, resize: 'vertical', outline: 'none',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              )}
-
-              {currentLesson.exercises[exerciseIndex].hint && !showAnswer && (
-                <div style={{ marginTop: 10, fontSize: 12, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Lightbulb size={13} /> 提示: {currentLesson.exercises[exerciseIndex].hint}
-                </div>
-              )}
-
-              {showAnswer && (
-                <div style={{
-                  marginTop: 14, padding: 14, borderRadius: 10,
-                  background: exerciseResult === 'correct' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
-                  border: `1px solid ${exerciseResult === 'correct' ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}`,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    {exerciseResult === 'correct' ? (
-                      <><CheckCircle size={18} style={{ color: '#10b981' }} /> <span style={{ color: '#10b981', fontWeight: 600 }}>回答正确! +10 XP</span></>
-                    ) : (
-                      <><XCircle size={18} style={{ color: '#ef4444' }} /> <span style={{ color: '#ef4444', fontWeight: 600 }}>答案不对</span></>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 13 }}>
-                    正确答案: <strong>{currentLesson.exercises[exerciseIndex].answer}</strong>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-                {!showAnswer ? (
-                  <button
-                    style={{
-                      ...bb, flex: 1, padding: '12px', justifyContent: 'center',
-                      background: 'linear-gradient(135deg, #10b981, #06b6d4)', color: '#fff', border: 'none', fontWeight: 600,
-                    }}
-                    onClick={() => checkAnswer(currentLesson)}
-                    disabled={!exerciseAnswer.trim()}
-                  >
-                    <Send size={14} /> 提交答案
-                  </button>
-                ) : (
-                  <>
-                    <button style={{ ...bb, flex: 1, padding: '12px', justifyContent: 'center' }} onClick={resetExercise}>
-                      <RotateCcw size={14} /> 重做
-                    </button>
-                    <button
-                      style={{
-                        ...bb, flex: 1, padding: '12px', justifyContent: 'center',
-                        background: 'linear-gradient(135deg, #6366f1, #06b6d4)', color: '#fff', border: 'none', fontWeight: 600,
-                      }}
-                      onClick={nextExercise}
-                    >
-                      {exerciseIndex < currentLesson.exercises.length - 1 ? '下一题' : '完成课程'} <ChevronRight size={14} />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div style={{ ...card }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <BookOpen size={14} /> 词汇表
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {currentLesson.vocabulary.slice(0, 8).map((v, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)',
-                  }}>
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {dictLoading && <div style={styles.skeleton}><div style={{ ...styles.sk, width: '30%' }} /><div style={{ ...styles.sk, width: '70%', marginTop: 8 }} /><div style={{ ...styles.sk, width: '55%', marginTop: 8 }} /></div>}
+            {!dictLoading && dictResult && dictResult.map((entry, i) => {
+              const firstAudio = entry.phonetics.find(p => p.audio)?.audio
+              const firstPhonetic = entry.phonetic || entry.phonetics.find(p => p.text)?.text
+              return (
+                <article key={i} style={styles.entryCard}>
+                  <div style={styles.entryHead}>
                     <div>
-                      <span style={{ fontWeight: 600, fontSize: 13 }}>{v.word}</span>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: 12, marginLeft: 10 }}>{v.translation}</span>
+                      <h2 style={styles.entryWord}>{entry.word}</h2>
+                      {firstPhonetic && <span style={styles.entryPhonetic}>/{firstPhonetic}/</span>}
                     </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button style={{ ...bb, padding: '4px 8px', fontSize: 11 }} onClick={() => speak(v.word, currentLangData.code)}>
-                        <Volume2 size={12} />
-                      </button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {firstAudio && (
+                        <button style={styles.btnGhostSmall} onClick={() => {
+                          const a = new Audio(firstAudio); a.play().catch(() => speak(entry.word, 'en'))
+                        }}>▶ 发音</button>
+                      )}
                       <button
-                        style={{ ...bb, padding: '4px 8px', fontSize: 11 }}
-                        onClick={() => addFlashcard(v.word, v.translation, v.example)}
-                      >
-                        <Star size={12} /> 闪卡
-                      </button>
+                        style={styles.btnGhostSmall}
+                        onClick={() => {
+                          const m = entry.meanings[0]
+                          const def = m?.definitions[0]?.definition || ''
+                          addToVocab(entry.word, `${m?.partOfSpeech || ''} ${def}`.trim())
+                        }}
+                      >＋ 加入生词本</button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
-        {view === 'flashcards' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>我的闪卡 ({userData.flashcards.length})</div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>基于 SRS 间隔重复算法</div>
-            </div>
-            {userData.flashcards.length === 0 ? (
-              <div style={{ ...card, textAlign: 'center', padding: 60 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📇</div>
-                <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>还没有闪卡</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>在练习中点击"闪卡"按钮来添加词汇</div>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
-                {userData.flashcards.map((card) => {
-                  const lang = LANGUAGES.find((l) => l.key === card.lang)
-                  return (
-                    <div key={card.id} style={{ ...card, padding: 16 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.2)' }}>
-                          {lang?.flag} {lang?.name}
-                        </span>
-                        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => speak(card.word, lang?.code || 'en-US')}>
-                          <Volume2 size={14} color="var(--text-secondary)" />
-                        </button>
-                      </div>
-                      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{card.word}</div>
-                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 10 }}>{card.translation}</div>
-                      {card.example && (
-                        <div style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-secondary)', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: 6, marginBottom: 10 }}>
-                          "{card.example}"
+                  {entry.meanings.map((m, mi) => (
+                    <div key={mi} style={{ marginTop: 12 }}>
+                      <div style={styles.posTag}>{m.partOfSpeech}</div>
+                      <ol style={styles.defList}>
+                        {m.definitions.slice(0, 5).map((d, di) => (
+                          <li key={di} style={styles.defItem}>
+                            <div>{d.definition}</div>
+                            {d.example && <div style={styles.example}>“{d.example}”</div>}
+                            {(d.synonyms?.length || 0) > 0 && (
+                              <div style={styles.relatedRow}>
+                                <span className="lbl">同:</span>
+                                {d.synonyms!.slice(0, 6).map(s => (
+                                  <button key={s} style={styles.miniChip} onClick={() => { setDictWord(s); fetchDictionary(s) }}>{s}</button>
+                                ))}
+                              </div>
+                            )}
+                            {(d.antonyms?.length || 0) > 0 && (
+                              <div style={styles.relatedRow}>
+                                <span className="lbl">反:</span>
+                                {d.antonyms!.slice(0, 6).map(s => (
+                                  <button key={s} style={styles.miniChip} onClick={() => { setDictWord(s); fetchDictionary(s) }}>{s}</button>
+                                ))}
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                      {(m.synonyms?.length || 0) > 0 && (
+                        <div style={styles.relatedRow}>
+                          <strong>同义词:</strong>
+                          {m.synonyms!.slice(0, 10).map(s => (
+                            <button key={s} style={styles.miniChip} onClick={() => { setDictWord(s); fetchDictionary(s) }}>{s}</button>
+                          ))}
                         </div>
                       )}
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button
-                          style={{ ...bb, flex: 1, padding: '6px', justifyContent: 'center', background: 'rgba(239,68,68,0.2)', color: '#ef4444', border: 'none', fontSize: 11 }}
-                          onClick={() => reviewFlashcard(card.id, 1)}
-                        >
-                          困难
-                        </button>
-                        <button
-                          style={{ ...bb, flex: 1, padding: '6px', justifyContent: 'center', background: 'rgba(16,185,129,0.2)', color: '#10b981', border: 'none', fontSize: 11 }}
-                          onClick={() => reviewFlashcard(card.id, 5)}
-                        >
-                          记住了
-                        </button>
-                      </div>
                     </div>
-                  )
-                })}
-              </div>
+                  ))}
+                </article>
+              )
+            })}
+            {!dictLoading && !dictResult && !dictError && (
+              <div style={styles.emptyHint}>输入英文单词开始查询（由 Free Dictionary API 驱动）</div>
             )}
           </div>
-        )}
+        </section>
+      )}
 
-        {view === 'pronunciation' && (
-          <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ ...card }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Mic size={16} style={{ color: '#6366f1' }} /> 发音练习
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                输入或选择要练习的文本，然后点击麦克风按钮开始语音练习
+      {/* ========== TRANSLATOR ========== */}
+      {tab === 'translator' && (
+        <section style={styles.body}>
+          <div style={styles.transGrid}>
+            <div style={styles.transCol}>
+              <div style={styles.transHead}>
+                <select value={transFrom} onChange={e => setTransFrom(e.target.value)} style={styles.select}>
+                  {LANG_OPTIONS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.label}</option>)}
+                </select>
+                <button style={styles.btnGhostSmall} onClick={() => speak(transText, transFrom)}>🔊</button>
               </div>
               <textarea
-                value={pronunciationText}
-                onChange={(e) => setPronunciationText(e.target.value)}
-                placeholder={`输入${currentLangData.name}文本进行发音练习…`}
-                style={{
-                  width: '100%', minHeight: 80,
-                  background: 'rgba(0,0,0,0.2)', border: '1px solid var(--window-border)',
-                  borderRadius: 10, color: 'var(--text-primary)', padding: '12px',
-                  fontSize: 14, resize: 'vertical', outline: 'none',
-                  fontFamily: 'inherit', marginBottom: 12,
-                }}
+                value={transText}
+                onChange={e => setTransText(e.target.value)}
+                placeholder="输入要翻译的文本..."
+                style={styles.textarea}
+                rows={8}
               />
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                <button
-                  style={{ ...bb, flex: 1, justifyContent: 'center', background: 'rgba(99,102,241,0.15)' }}
-                  onClick={() => speak(pronunciationText || 'Hello', currentLangData.code)}
-                  disabled={!pronunciationText.trim()}
-                >
-                  <Volume2 size={14} /> 播放示范
-                </button>
-                <button
-                  style={{
-                    ...bb, flex: 1, justifyContent: 'center',
-                    background: speaking ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #6366f1, #06b6d4)',
-                    color: '#fff', border: 'none',
-                  }}
-                  onClick={startRecognition}
-                  disabled={speaking}
-                >
-                  <Mic size={14} /> {speaking ? '聆听中…' : '开始录音'}
-                </button>
+              <div style={styles.metaRow}>
+                <span>{transText.length} 字符</span>
+                <button style={styles.btnLink} onClick={() => setTransText('')}>清空</button>
               </div>
-              {speaking && (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
-                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    {[10, 20, 30, 20, 10, 25, 15, 30, 20, 10].map((h, i) => (
-                      <div key={i} style={{
-                        width: 4, height: h, background: '#ef4444', borderRadius: 2,
-                        animation: `pulse 0.6s ease-in-out ${i * 0.1}s infinite alternate`,
-                      }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {recognitionResult && (
-                <div style={{
-                  padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.1)',
-                  border: '1px solid rgba(99,102,241,0.3)',
-                }}>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>识别结果:</div>
-                  <div style={{ fontSize: 14, fontWeight: 500 }}>{recognitionResult}</div>
-                </div>
-              )}
             </div>
 
-            <div style={{ ...card }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Sparkles size={14} style={{ color: '#fbbf24' }} /> 常用短语
+            <div style={styles.swapCol}>
+              <button
+                title="交换语言"
+                style={styles.swapBtn}
+                onClick={() => { const f = transFrom; setTransFrom(transTo); setTransTo(f) }}
+              >⇄</button>
+            </div>
+
+            <div style={styles.transCol}>
+              <div style={styles.transHead}>
+                <select value={transTo} onChange={e => setTransTo(e.target.value)} style={styles.select}>
+                  {LANG_OPTIONS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.label}</option>)}
+                </select>
+                <button style={styles.btnGhostSmall} onClick={() => speak(transResult, transTo)}>🔊</button>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {LESSONS.filter((l) => l.lang === activeLang && l.vocabulary.length > 0).flatMap((l) => l.vocabulary.slice(0, 2)).slice(0, 8).map((v, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)',
-                  }}>
-                    <div>
-                      <span style={{ fontWeight: 600, fontSize: 13 }}>{v.word}</span>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: 12, marginLeft: 10 }}>{v.translation}</span>
-                    </div>
-                    <button style={{ ...bb, padding: '4px 8px', fontSize: 11 }} onClick={() => speak(v.word, currentLangData.code)}>
-                      <Volume2 size={12} />
-                    </button>
-                  </div>
-                ))}
+              <div style={{ ...styles.textarea, ...(transLoading ? { opacity: 0.6 } : {}) }}>
+                {transLoading ? '翻译中…' : (transResult || <span style={{ color: 'var(--text-dim)' }}>翻译结果将显示在此处</span>)}
+              </div>
+              <div style={styles.metaRow}>
+                <span>{transResult.length} 字符</span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {transResult && (
+                    <>
+                      <button style={styles.btnLink} onClick={() => navigator.clipboard?.writeText(transResult)}>复制</button>
+                      <button
+                        style={styles.btnLink}
+                        onClick={() => addToVocab(transText.slice(0, 40), transResult.slice(0, 200), transFrom)}
+                      >＋ 加入生词本</button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
 
-      <style>{`
-        @keyframes pulse { from { transform: scaleY(0.5); } to { transform: scaleY(1.5); } }
-      `}</style>
+          {transError && <div style={{ ...styles.errorBox, marginTop: 14 }}>{transError}</div>}
+
+          <div style={{ marginTop: 16, display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <button style={styles.btnPrimary} onClick={fetchTranslation} disabled={transLoading}>
+              {transLoading ? '翻译中…' : '翻译'}
+            </button>
+          </div>
+
+          <div style={{ marginTop: 20, padding: 14, background: 'var(--panel-2)', borderRadius: 10 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>⚡ 快速示例</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {[
+                { text: 'The quick brown fox jumps over the lazy dog.', from: 'en', to: 'zh-CN' },
+                { text: '人工智能正在重塑软件开发的方式。', from: 'zh-CN', to: 'en' },
+                { text: 'La vie est belle.', from: 'fr', to: 'en' },
+                { text: 'Guten Tag, wie geht es dir?', from: 'de', to: 'zh-CN' },
+                { text: 'こんにちは世界', from: 'ja', to: 'en' },
+              ].map((ex, i) => (
+                <button key={i} style={styles.chip} onClick={() => {
+                  setTransText(ex.text); setTransFrom(ex.from); setTransTo(ex.to)
+                  setTimeout(fetchTranslation, 50)
+                }}>例 {i + 1}</button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ========== FLASHCARDS ========== */}
+      {tab === 'flashcards' && (
+        <section style={{ ...styles.body, alignItems: 'center' }}>
+          {studyDeck.length === 0 ? (
+            <div style={styles.emptyBig}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🎴</div>
+              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>生词本是空的</div>
+              <div style={{ color: 'var(--text-dim)', textAlign: 'center', maxWidth: 460 }}>
+                去「词典」或「翻译」页面查询词或句，点击「＋加入生词本」即可开始积累。
+              </div>
+            </div>
+          ) : (
+            <div style={{ width: '100%', maxWidth: 640 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div style={{ color: 'var(--text-dim)' }}>
+                  第 {(cardIndex % studyDeck.length) + 1} / {studyDeck.length} 张 · 本轮复习 {cardSessionCount} 次
+                </div>
+                <div style={{ color: 'var(--text-dim)' }}>
+                  进度 {(Math.min(cardIndex, studyDeck.length))}/{studyDeck.length}
+                </div>
+              </div>
+
+              <div
+                onClick={() => setCardFlipped(f => !f)}
+                style={{
+                  ...styles.card,
+                  transform: cardFlipped ? 'rotateY(180deg)' : 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', flexDirection: 'column',
+                  justifyContent: 'center', alignItems: 'center', padding: 32, textAlign: 'center',
+                  backfaceVisibility: 'hidden',
+                }}>
+                  <div style={{ fontSize: 12, letterSpacing: 2, color: 'var(--text-dim)', marginBottom: 12, textTransform: 'uppercase' }}>
+                    {currentCard.lang || 'WORD'}
+                  </div>
+                  <div style={{ fontSize: 34, fontWeight: 700, lineHeight: 1.3 }}>{currentCard.word}</div>
+                  <div style={{ marginTop: 24, color: 'var(--text-dim)', fontSize: 13 }}>点击卡片查看释义 · 复习 {currentCard.reviewCount} 次</div>
+                </div>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', flexDirection: 'column',
+                  justifyContent: 'center', alignItems: 'center', padding: 32, textAlign: 'center',
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                }}>
+                  <div style={{ fontSize: 12, letterSpacing: 2, color: 'var(--text-dim)', marginBottom: 12, textTransform: 'uppercase' }}>MEANING</div>
+                  <div style={{ fontSize: 20, lineHeight: 1.6 }}>{currentCard.meaning || '（无释义）'}</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 28 }}>
+                <button style={styles.btnGhost} onClick={() => markCardReview(false)}>😵 忘了</button>
+                <button style={styles.btnPrimary} onClick={() => markCardReview(true)}>✅ 记住了</button>
+              </div>
+
+              <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 8 }}>
+                <button style={styles.btnGhostSmall} onClick={() => { setCardIndex(0); setCardFlipped(false) }}>🔁 重新开始</button>
+                <button style={styles.btnGhostSmall} onClick={() => { setCardFlipped(f => !f) }}>🔃 翻转</button>
+                <button style={styles.btnGhostSmall} onClick={() => speak(currentCard.word, currentCard.lang)}>🔊 朗读</button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ========== VOCABULARY ========== */}
+      {tab === 'vocabulary' && (
+        <section style={styles.body}>
+          <div style={styles.row}>
+            <input
+              value={vocabFilter}
+              onChange={e => setVocabFilter(e.target.value)}
+              placeholder="搜索生词本中的单词或释义…"
+              style={{ ...styles.input, flex: 1 }}
+            />
+            <button style={styles.btnGhost} onClick={() => setVocabFilter('')}>清除</button>
+            <button style={styles.btnDanger} onClick={clearVocab}>清空</button>
+          </div>
+
+          <div style={{ marginTop: 14, color: 'var(--text-dim)', fontSize: 13 }}>
+            共 {vocab.length} 个词汇（显示 {filteredVocab.length} 个匹配项）
+          </div>
+
+          {filteredVocab.length === 0 ? (
+            <div style={styles.emptyBig}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>📚</div>
+              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>还没有单词</div>
+              <div style={{ color: 'var(--text-dim)', maxWidth: 460, textAlign: 'center' }}>
+                在「词典」或「翻译」中查到单词后，点击「＋ 加入生词本」开始建立你的词汇库。
+              </div>
+            </div>
+          ) : (
+            <div style={styles.vocabGrid}>
+              {filteredVocab.map(v => (
+                <div key={v.id} style={styles.vocabCard}>
+                  <div style={styles.vocabHead}>
+                    <div style={styles.vocabWord}>{v.word}</div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button title="朗读" style={styles.iconBtn} onClick={() => speak(v.word, v.lang)}>🔊</button>
+                      <button title="删除" style={styles.iconBtn} onClick={() => removeVocab(v.id)}>🗑</button>
+                    </div>
+                  </div>
+                  <div style={styles.vocabMeaning}>{v.meaning}</div>
+                  <div style={styles.vocabMeta}>
+                    <span>{new Date(v.addedAt).toLocaleDateString()} 添加</span>
+                    <span>复习 {v.reviewCount} 次</span>
+                    <span>{LANG_OPTIONS.find(l => l.code === v.lang)?.label || v.lang}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ========== FOOTER ========== */}
+      <footer style={styles.footer}>
+        <span>Powered by Free Dictionary API · MyMemory Translation API · Web Speech API</span>
+        <span>数据本地持久化 · 24h 智能缓存</span>
+      </footer>
     </div>
   )
+}
+
+/* =========================================================
+ * STYLES (inline 以确保独立应用不受其他 css 影响)
+ * ========================================================= */
+const styles: Record<string, React.CSSProperties> = {
+  wrap: {
+    height: '100%',
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    fontFamily: '"Source Serif Pro", "Noto Serif SC", Georgia, "Times New Roman", serif',
+    color: 'var(--text, #1a1a1a)',
+    background: 'linear-gradient(180deg, color-mix(in srgb, var(--panel) 60%, transparent), var(--panel))',
+  },
+  header: {
+    padding: '14px 20px',
+    borderBottom: '1px solid var(--border, rgba(127,127,127,0.2))',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 20,
+    flexWrap: 'wrap',
+    background: 'color-mix(in srgb, var(--panel) 70%, transparent)',
+    backdropFilter: 'blur(8px)',
+  },
+  brand: { display: 'flex', alignItems: 'center', gap: 12 },
+  brandMark: {
+    width: 40, height: 40, borderRadius: 10,
+    background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)',
+    color: '#fff',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 6px 18px -6px rgba(234,88,12,0.5)',
+  },
+  brandTitle: { fontWeight: 800, fontSize: 20, letterSpacing: 0.2 },
+  brandSub: { fontSize: 12, color: 'var(--text-dim, #666)', fontFamily: 'system-ui, sans-serif' },
+
+  tabs: { display: 'flex', gap: 4, padding: 4, background: 'var(--panel-2, rgba(127,127,127,0.08))', borderRadius: 10 },
+  tab: {
+    background: 'transparent', border: 0, padding: '8px 14px', borderRadius: 8,
+    cursor: 'pointer', color: 'var(--text-dim)', fontFamily: 'inherit',
+    fontSize: 13, fontWeight: 600, transition: 'all 150ms ease',
+  },
+  tabActive: {
+    background: 'var(--panel, #fff)',
+    color: 'var(--text, #1a1a1a)',
+    boxShadow: '0 2px 10px -4px rgba(0,0,0,0.15)',
+  },
+
+  body: {
+    flex: 1, overflow: 'auto',
+    padding: '22px 28px',
+    display: 'flex', flexDirection: 'column',
+  },
+
+  row: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
+
+  input: {
+    flex: 1, minWidth: 240,
+    padding: '10px 14px', borderRadius: 10,
+    border: '1px solid var(--border, rgba(127,127,127,0.2))',
+    background: 'var(--panel-2, rgba(127,127,127,0.05))',
+    color: 'var(--text)',
+    fontSize: 15, fontFamily: 'inherit', outline: 'none',
+    transition: 'border-color 150ms ease, background 150ms ease',
+  },
+  select: {
+    padding: '8px 12px', borderRadius: 8,
+    border: '1px solid var(--border, rgba(127,127,127,0.2))',
+    background: 'var(--panel-2, rgba(127,127,127,0.05))',
+    color: 'var(--text)', fontSize: 13, fontFamily: 'inherit',
+  },
+
+  btnPrimary: {
+    padding: '10px 18px', borderRadius: 10, border: 0, cursor: 'pointer',
+    background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)',
+    color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: 'inherit',
+    boxShadow: '0 6px 18px -6px rgba(234,88,12,0.5)',
+  },
+  btnGhost: {
+    padding: '10px 16px', borderRadius: 10,
+    border: '1px solid var(--border, rgba(127,127,127,0.2))',
+    background: 'var(--panel-2, rgba(127,127,127,0.05))',
+    color: 'var(--text)', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit',
+  },
+  btnGhostSmall: {
+    padding: '6px 10px', borderRadius: 8,
+    border: '1px solid var(--border, rgba(127,127,127,0.2))',
+    background: 'var(--panel-2, rgba(127,127,127,0.05))',
+    color: 'var(--text)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit',
+  },
+  btnDanger: {
+    padding: '10px 16px', borderRadius: 10, border: 0, cursor: 'pointer',
+    background: 'color-mix(in srgb, #ef4444 12%, var(--panel-2, rgba(127,127,127,0.05)))',
+    color: '#ef4444', fontWeight: 700, fontFamily: 'inherit',
+  },
+  btnLink: {
+    background: 'transparent', border: 0, padding: '4px 6px',
+    cursor: 'pointer', color: 'var(--accent, #3b82f6)', fontSize: 12, fontFamily: 'inherit',
+    textDecoration: 'underline',
+  },
+  iconBtn: {
+    background: 'transparent', border: 0, cursor: 'pointer',
+    padding: 4, fontSize: 14, opacity: 0.75,
+  },
+
+  chip: {
+    padding: '5px 10px', borderRadius: 999, border: 0, cursor: 'pointer',
+    background: 'var(--panel-2, rgba(127,127,127,0.08))',
+    color: 'var(--text)', fontSize: 12, fontFamily: 'inherit',
+  },
+  miniChip: {
+    padding: '2px 8px', borderRadius: 999, border: 0, cursor: 'pointer',
+    background: 'color-mix(in srgb, var(--accent, #3b82f6) 12%, var(--panel-2, rgba(127,127,127,0.05)))',
+    color: 'var(--accent, #3b82f6)', fontSize: 11, fontFamily: 'system-ui, sans-serif',
+    marginRight: 4,
+  },
+
+  errorBox: {
+    marginTop: 12, padding: 12, borderRadius: 10,
+    background: 'color-mix(in srgb, #ef4444 10%, var(--panel-2))',
+    border: '1px solid color-mix(in srgb, #ef4444 25%, transparent)',
+    color: '#ef4444', fontSize: 14,
+  },
+
+  skeleton: { padding: 20, borderRadius: 14, background: 'var(--panel-2, rgba(127,127,127,0.06))' },
+  sk: { height: 14, borderRadius: 6, background: 'linear-gradient(90deg, rgba(127,127,127,0.12) 0%, rgba(127,127,127,0.22) 50%, rgba(127,127,127,0.12) 100%)' },
+
+  entryCard: {
+    padding: 22, borderRadius: 16,
+    background: 'var(--panel, rgba(255,255,255,0.6))',
+    border: '1px solid var(--border, rgba(127,127,127,0.15))',
+    boxShadow: '0 10px 30px -20px rgba(0,0,0,0.15)',
+  },
+  entryHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' },
+  entryWord: { margin: 0, fontSize: 30, fontWeight: 800, letterSpacing: 0.2 },
+  entryPhonetic: { display: 'inline-block', marginLeft: 10, color: 'var(--text-dim)', fontSize: 15 },
+  posTag: {
+    display: 'inline-block', marginTop: 8,
+    padding: '3px 10px', borderRadius: 6,
+    background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
+    color: 'var(--accent)',
+    fontStyle: 'italic', fontSize: 12, fontWeight: 600,
+  },
+  defList: { margin: '8px 0 0 0', paddingLeft: 22 },
+  defItem: { marginBottom: 10, lineHeight: 1.65, fontSize: 15 },
+  example: {
+    marginTop: 4, fontSize: 13, color: 'var(--text-dim)',
+    fontStyle: 'italic',
+    borderLeft: '2px solid var(--border, rgba(127,127,127,0.3))',
+    paddingLeft: 10,
+  },
+  relatedRow: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 12 },
+
+  emptyHint: {
+    padding: 40, textAlign: 'center', color: 'var(--text-dim)',
+    borderRadius: 14, background: 'var(--panel-2, rgba(127,127,127,0.05))',
+  },
+  emptyBig: {
+    flex: 1, display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center', padding: 60,
+  },
+
+  transGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 56px 1fr',
+    gap: 14, alignItems: 'stretch',
+  },
+  transCol: {
+    background: 'var(--panel, rgba(255,255,255,0.6))',
+    border: '1px solid var(--border, rgba(127,127,127,0.15))',
+    borderRadius: 14,
+    padding: 14,
+    display: 'flex', flexDirection: 'column',
+  },
+  transHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  swapCol: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  swapBtn: {
+    width: 44, height: 44, borderRadius: '50%', border: 0, cursor: 'pointer',
+    background: 'linear-gradient(135deg, #0891b2, #0369a1)', color: '#fff',
+    fontSize: 20, fontWeight: 700,
+    boxShadow: '0 6px 16px -6px rgba(3,105,161,0.5)',
+  },
+  textarea: {
+    width: '100%', flex: 1,
+    minHeight: 180, resize: 'vertical',
+    padding: 12, borderRadius: 10,
+    border: '1px solid var(--border, rgba(127,127,127,0.2))',
+    background: 'var(--panel-2, rgba(127,127,127,0.04))',
+    color: 'var(--text)', fontSize: 15, fontFamily: 'inherit', lineHeight: 1.7,
+    outline: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+    overflow: 'auto',
+  },
+  metaRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: 12, color: 'var(--text-dim)' },
+
+  card: {
+    position: 'relative',
+    minHeight: 320,
+    borderRadius: 22,
+    background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent, #ea580c) 8%, var(--panel)), var(--panel))',
+    border: '1px solid var(--border, rgba(127,127,127,0.15))',
+    boxShadow: '0 30px 60px -24px rgba(0,0,0,0.25)',
+    transformStyle: 'preserve-3d',
+    transition: 'transform 500ms cubic-bezier(.2,.8,.2,1)',
+  },
+
+  vocabGrid: {
+    marginTop: 16,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: 12,
+  },
+  vocabCard: {
+    padding: 14, borderRadius: 14,
+    background: 'var(--panel, rgba(255,255,255,0.7))',
+    border: '1px solid var(--border, rgba(127,127,127,0.15))',
+    display: 'flex', flexDirection: 'column', gap: 8,
+  },
+  vocabHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  vocabWord: { fontSize: 18, fontWeight: 700 },
+  vocabMeaning: { fontSize: 13.5, lineHeight: 1.6, color: 'var(--text-dim, #555)' },
+  vocabMeta: {
+    display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-dim, #777)',
+    paddingTop: 8, borderTop: '1px dashed var(--border, rgba(127,127,127,0.2))',
+    flexWrap: 'wrap',
+  },
+
+  footer: {
+    padding: '10px 20px',
+    borderTop: '1px solid var(--border, rgba(127,127,127,0.15))',
+    display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap',
+    fontSize: 11, color: 'var(--text-dim, #888)',
+    background: 'color-mix(in srgb, var(--panel) 70%, transparent)',
+  },
 }

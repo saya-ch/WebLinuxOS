@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v120.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v122.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,31 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - **LexiconForge** mines the Datamuse corpus for rhymes, synonyms, antonyms, associations, homophones, and spelling patterns — a real writing companion for poets, students, and language learners
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v122
+
+This release ships **three new production-grade applications** that expand WebLinuxOS into education, culinary, and environmental domains. Each is backed by real public APIs, ships with smart local caching, and is designed to replace standalone web apps you'd keep open in separate tabs.
+
+- **LanguageLab Pro · 语言实验室 Pro** — A real four-module language workspace that brings dictionary lookup, multi-language translation, spaced-repetition flashcards, and vocabulary management into one window.
+  - **English Dictionary** via the Free Dictionary API — phonetic pronunciation with playable audio (Web Speech API fallback), part-of-speech grouping, definition lists with examples, synonym/antonym blocks, and source attribution
+  - **Machine Translation** via MyMemory's public translation endpoint — 100+ language pairs with auto-detect, bidirectional swap, 5000-char capacity guard, and copy-to-clipboard
+  - **Flashcards** — four-box spaced-repetition system (New / Learning / Review / Mastered) with Leitner-style auto-promotion and demotion, per-card pronunciation, quick-add from dictionary results, 30-deck limit
+  - **Saved Words** — persistent vocabulary book across dictionary + translation + flashcard modules, with search, per-entry notes, and date-sorted history of the last 50 lookups and 50 translations
+  - 24-hour response cache layer (in-memory + localStorage) for dictionary and translation queries to stay under public API rate limits and keep repeated lookups instant; CORS proxy-aware error messages when the direct endpoint is blocked
+- **RecipeForge · 智能菜谱工坊** — A real cooking companion backed by the public TheMealDB API. Designed to replace the ad-ridden recipe sites you'd normally visit in a separate tab.
+  - **Search** by keyword with smart empty-state fallback; **Categories** grid (14 classic TheMealDB categories with emoji icons and per-card counts); **Regions** selector with 25+ country cuisines; **Surprise Me** button that pulls a genuinely random recipe
+  - Recipe detail view: full-resolution thumbnail, category + region + tags metadata, scrollable ingredient list with measures, numbered step-by-step instructions, direct YouTube link, and direct source link
+  - **Favorites** system: star recipes from any view, dedicated favorites tab, instant add/remove with optimistic UI
+  - **Smart Shopping List**: one-click "add recipe to list" from the detail view, automatic ingredient **deduplication and merge-by-name** (e.g. two recipes adding "1 cup Olive Oil" combine into a single line), manual check-off, clear-all, and serving-scaler that multiplies/divides ingredients by a custom ratio before import
+  - TheMealDB quota-aware: empty-state guidance when the free tier is exhausted rather than a cryptic error
+- **EcoTrack Pro · 碳足迹追踪 Pro** — A real personal carbon-management tool built on IPCC public emission factors and the Open-Meteo climate API. Six activity categories, two dedicated chart views, and actionable offset suggestions rather than a gimmicky score card.
+  - **Six activity categories** with sensible IPCC-derived default factors that users can override: Transport (petrol/diesel/EV car, bus, subway, rail, domestic/intl flight with RFI), Diet (red meat, poultry, fish, dairy, vegan days), Home Electricity, Home Gas, Shopping (clothing, electronics, goods), Waste (recycled/landfill/incinerated)
+  - **Custom activity** form that lets users type any name, quantity, and CO2e factor directly — for edge cases the presets don't cover
+  - **Analytics** view: 30-day stacked trend chart (SVG, category-colored), category breakdown donut chart (SVG), 7-day / 30-day / all-time totals cards, and the most useful part — **equivalency widgets** that translate kilograms of CO2 into "number of mature trees absorbed in one year," "liters of gasoline burned," and "km driven in an average car"
+  - **Climate** tab: Open-Meteo current conditions (temperature, humidity, wind, pressure, condition code) + 7-day forecast with daily min/max (latitude/longitude auto-default to Beijing, overridable), 24-hour local-cache so the app is still useful on flaky networks
+  - **Goal** tab: monthly reduction target (kg) with adjustable slider, YTD bar chart (each month vs. target), and an offset-suggestions list (bike commute one day/week, meat-free one day/week, LED bulbs, line-dry laundry, shorter showers) with kg/year savings per action
+  - All records persist to localStorage under namespaced keys; import/export JSON for backup and cross-device transfer
+- Version metadata aligned to v122.0.0 across `package.json`, README badge, and boot banners. The three new applications are registered in `APP_REGISTRY_EXTRAS` and `WindowManager.componentMap` as Vite lazy-loaded chunks, so they do not increase the initial page-load bundle size.
 
 ## What's New in v120
 
