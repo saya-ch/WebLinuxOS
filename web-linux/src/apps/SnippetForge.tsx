@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 interface Snippet {
   id: string
@@ -176,7 +176,7 @@ export default function SnippetForge() {
     return Array.from(tagSet).sort()
   }, [snippets])
 
-  const filteredSnippets = useCallback(() => {
+  const filteredSnippets = useMemo(() => {
     return snippets.filter(s => {
       if (searchQuery) {
         const q = searchQuery.toLowerCase()
@@ -190,7 +190,7 @@ export default function SnippetForge() {
         return false
       }
       if (selectedTags.length > 0) {
-        if (!selectedTags.some(tag => s.tags.includes(tag))) {
+        if (!selectedTags.some((tag: string) => s.tags.includes(tag))) {
           return false
         }
       }
