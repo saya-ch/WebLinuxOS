@@ -31,24 +31,41 @@ registerCommand('fortune', {
   examples: ['fortune'],
 })
 
+// 补充 Battery API 的类型定义，避免 @ts-ignore
+interface BatteryManager extends EventTarget {
+  charging: boolean
+  chargingTime: number
+  dischargingTime: number
+  level: number
+}
+interface NavigatorWithBattery extends Navigator {
+  getBattery?: () => Promise<BatteryManager>
+}
+
 // battery - 显示电池状态
 registerCommand('battery', {
   handler: async (_ctx: CommandContext): Promise<CommandResult> => {
     try {
-      // @ts-ignore - Battery API type
-      const battery = await navigator.getBattery()
+      const nav = navigator as NavigatorWithBattery
+      if (!nav.getBattery) {
+        return { output: '  ⚠ 当前浏览器不支持电池 API\n' }
+      }
+      const battery = await nav.getBattery()
       const level = Math.round(battery.level * 100)
       const status = battery.charging ? '充电中' : level < 20 ? '低电量' : '正常'
       const bars = Math.round(level / 5)
       const bar = '█'.repeat(bars) + '░'.repeat(20 - bars)
+      const timeInfo = battery.charging
+        ? battery.chargingTime === Infinity ? '' : `\n  充满约: ${Math.round(battery.chargingTime / 60)} 分钟`
+        : battery.dischargingTime === Infinity ? '' : `\n  剩余约: ${Math.round(battery.dischargingTime / 60)} 分钟`
       return {
-        output: `\n  电池状态\n  ─────────────────────\n  ${bar} ${level}%\n  状态: ${status}\n  充电: ${battery.charging ? '是' : '否'}\n  ─────────────────────\n`
+        output: `\n  电池状态\n  ─────────────────────\n  ${bar} ${level}%\n  状态: ${status}\n  充电: ${battery.charging ? '是' : '否'}${timeInfo}\n  ─────────────────────\n`
       }
     } catch {
       return { output: '  ⚠ 电池 API 不可用\n' }
     }
   },
-  description: '显示设备电池状态',
+  description: '显示设备电池状态（电量百分比、充电状态、剩余/充满时间）',
   examples: ['battery'],
 })
 

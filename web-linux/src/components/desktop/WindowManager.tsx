@@ -17,6 +17,10 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v124 创新应用
+  AICommandPro: () => import('../../apps/AICommandPro'),
+  DevOpsHealthCheck: () => import('../../apps/DevOpsHealthCheck'),
+  EcoFoodPrint: () => import('../../apps/EcoFoodPrint'),
   GlobalPulse: () => import('../../apps/GlobalPulse'),
   CodeSnapPro: () => import('../../apps/CodeSnapPro'),
   LexiconForge: () => import('../../apps/LexiconForge'),

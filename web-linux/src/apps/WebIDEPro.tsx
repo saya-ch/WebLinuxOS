@@ -1,6 +1,18 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { PlayIcon, DownloadIcon, CopyIcon, FolderIcon, FileIcon, PlusIcon, SparklesIcon, GlobeIcon } from '../icons'
 
+// Pyodide 全局类型声明，消除 @ts-ignore
+declare global {
+  interface Window {
+    pyodide?: {
+      runPython: (code: string) => unknown
+      loadPackage?: (packages: string | string[]) => Promise<void>
+      FS?: unknown
+    }
+    loadPyodide?: (options?: { indexURL?: string }) => Promise<NonNullable<Window['pyodide']>>
+  }
+}
+
 interface CodeFile {
   id: string
   name: string
@@ -188,11 +200,9 @@ print(f"5 * 3 = {calc.multiply(5, 3)}")
     execute: async (code: string): Promise<ExecutionResult> => {
       const start = performance.now()
       try {
-        // @ts-ignore - Pyodide动态加载
         if (!window.pyodide) {
           return { output: '', error: 'Pyodide未加载，请稍后重试', duration: 0, language: 'python' }
         }
-        // @ts-ignore
         const pyodide = window.pyodide
         pyodide.runPython(`
 import sys
@@ -201,12 +211,10 @@ sys.stdout = StringIO()
 sys.stderr = StringIO()
 `)
         pyodide.runPython(code)
-        // @ts-ignore
-        const stdout = pyodide.runPython('sys.stdout.getvalue()')
-        // @ts-ignore
-        const stderr = pyodide.runPython('sys.stderr.getvalue()')
+        const stdout = String(pyodide.runPython('sys.stdout.getvalue()') ?? '')
+        const stderr = String(pyodide.runPython('sys.stderr.getvalue()') ?? '')
         
-        return { output: stdout || stderr, error: stderr ? null : null, duration: performance.now() - start, language: 'python' }
+        return { output: stdout || stderr, error: null, duration: performance.now() - start, language: 'python' }
       } catch (e) {
         return { output: '', error: e instanceof Error ? e.message : String(e), duration: performance.now() - start, language: 'python' }
       }
@@ -603,8 +611,9 @@ const WebIDEPro = memo(function WebIDEPro() {
         const script = document.createElement('script')
         script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js'
         script.onload = async () => {
-          // @ts-ignore
-          window.pyodide = await window.loadPyodide()
+          if (typeof window.loadPyodide === 'function') {
+            window.pyodide = await window.loadPyodide()
+          }
         }
         document.head.appendChild(script)
       }
@@ -1079,11 +1088,3 @@ const WebIDEPro = memo(function WebIDEPro() {
 })
 
 export default WebIDEPro
-
-// 声明全局pyodide类型
-declare global {
-  interface Window {
-    pyodide?: any
-    loadPyodide?: () => Promise<any>
-  }
-}

@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat-square&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/forks)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat-square&color=blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v123.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-v124.0.0-blue?style=flat-square)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen?style=flat-square&logo=github)](https://saya-ch.github.io/WebLinuxOS/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -34,6 +34,36 @@ Most "web desktop" projects are eye candy — windows you can drag around, but n
 - **LexiconForge** mines the Datamuse corpus for rhymes, synonyms, antonyms, associations, homophones, and spelling patterns — a real writing companion for poets, students, and language learners
 
 Every application does real work. No mock data. No placeholder UI.
+
+## What's New in v124
+
+This release introduces **three specialized, API-backed applications** that extend WebLinuxOS into three new domains: shell-learning productivity, DevOps site-reliability diagnostics, and nutritional-environmental impact tracking. They share the common thread of turning browser-side computation and public APIs into standalone tools you would otherwise need a separate tab or a paid service to use.
+
+- **AICommandPro · AI智能命令中心** — A bidirectional natural-language ↔ shell-command translator with risk scoring, a curated command-template library, persistent history, and favorited bookmarks. Designed for Linux learners who think in Chinese and need to understand what a command actually does before pasting it into a terminal.
+  - **Natural language → command** translator with 500+ hand-written rule mapping: `查看80端口占用` → `lsof -i :80`, `解压 package.tar.gz` → `tar -zxvf package.tar.gz`, `搜索包含关键字的文件` → `grep -r "关键字" .`, etc. Every produced command includes a sentence-length explanation, an estimated risk level (safe / warning / danger), and a copy button.
+  - **Command → explanation & risk** reverse engine: paste a shell pipeline and the parser tokenizes operators (`| ; && || `), identifies destructive verbs (`rm -rf dd chmod chown`), scores overall risk, and renders a point-by-point explanation of each redirection, option flag, and input/output file. Handles compound commands with `&&` chains and warns specifically about the `-r -f` combination and unescaped glob targets under `/`.
+  - **Command template library** with 30+ categorized entries (File, Dev, Git, Network, System): quick-search by Chinese description or command substring, category filters, one-click use, and persistent favorites list with localStorage. Templates include things like "show top-10 largest directories under /var", "batch rename jpg to png", and "tar + gzip a folder with timestamp".
+  - **History & Favorites** sidebar with millisecond timestamps, mode badges (NL→CMD / CMD→NL), exportable to clipboard. Everything is saved locally; nothing is sent to a server.
+  - Risk metadata uses explicit icons for each level: shield-check for safe operations, shield for cautious (sudo, curl), warning-triangle for destructive (rm, dd, format). All state is namespaced to the AICommandPro key family.
+- **DevOpsHealthCheck · 网站健康诊断** — A one-window DevOps site-reliability auditor. Type in a domain and the window composes **eight independent probe modules** into a single composite grade (A+ through F). Nothing sensitive is computed off-device; cryptographic fingerprinting and parsing all run in the browser.
+  - **Reachability** — layered HTTPS probe: fetch with no-cors, followed by XHR + explicit 8 s timeout, followed by favicon `<img>` tag fallback as a last-resort "is the host even up" signal. HTTP status code, response headers when available, download timing, and request phases are captured.
+  - **DNS health over Cloudflare 1.1.1.1 JSON DoH** — A / AAAA / CNAME / MX / NS / TXT / SOA records pulled via `?name=&type=` JSON endpoint. Answers are grouped by record type and rendered with TTLs and byte sizes; the grade contribution distinguishes between "A OK + NS OK" (pass, full score), "A OK / NS missing" (warn, half score) and "unable to resolve A" (fail).
+  - **SSL/TLS health** — Certificate Transparency log search via crt.sh (public JSON endpoint) showing issuer CN, SAN count, and days-to-expiry from `not_before` / `not_after`. Warns explicitly under 14 days remaining, fails under 3 days, shows the raw Subject Alternative Name list if the endpoint returned any.
+  - **RDAP / WHOIS domain information** — RDAP JSON (rdap.org) for registration date, expiry, registrar, and WHOIS-server fallback.
+  - **Performance heuristics** — First-byte timing, favicon download size as a proxy for page weight, response headers (Server, X-Powered-By, strict-transport-security, content-security-policy) with explicit security scoring.
+  - **Headers security checklist** — 11 critical headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-XSS-Protection, Expect-CT, Feature-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy) with per-header explanations and fix suggestions for the missing ones.
+  - **Global grade computation** — Weighted (DNS / SSL / HTTP / Headers / Performance / RDAP / Security / Reachability) percent-to-grade mapping from `A+` (95–100) through `F` (< 40). Summary card shows grade ring, total score out of 100, and an expandable per-item list with inline detail rows.
+- **EcoFoodPrint · 饮食碳足迹计算器** — A food-specific environmental-impact tracker backed by **IPCC AR5, FAO 2017, and Poore & Nemecek (Science 2018) emission factors**. 87 foods across 10 categories with kg CO₂e per kg of product plus water footprints. Designed to turn "what did I eat today" into a concrete number with useful equivalents and 7-day / 30-day trend analysis.
+  - **Meal entries** — Breakfast / Lunch / Dinner / Snack meal buckets. Select any food, dial in grams via +/- steppers, press Add. Each entry shows name-en + name-zh, meal-type tag, per-serving CO₂e (g), per-serving water (L), total line, and delete button.
+  - **Emission-factor database** — 10 categories (Meat / Dairy / Seafood / Grain / Vegetable / Fruit / Beverage / Snack-Food / Processed / Plant-Protein) with representative 2024 IPCC / FAO median values, e.g. Beef (grain-finished) = 27.0 kg CO₂e / kg, Lentils = 0.9, Tofu = 2.0, Farmed Salmon = 11.87, Cow milk = 3.2, Rice (white) = 2.7. Water footprints for each item too (L/kg), so the app can also track embedded water.
+  - **Today summary KPIs** — Daily CO₂e total (g), water footprint (L), serving count, meal breakdown. Benchmarked against "China adult daily recommendation: < 3 kg CO₂e" and the 5–7 kg global average.
+  - **Equivalency widgets** — Translate today's CO₂e into: number of mature trees required to absorb it for one year, km driven in an average gasoline passenger car, kWh of grid electricity (China 2024 grid mix), and liters of produced water (including agricultural / processing / transport).
+  - **Category analysis** — Donut chart of which food groups are driving today's footprint.
+  - **7-day / 30-day history view** — Date-sorted meal log, stacked area SVG trend line with per-category colors, 7-day rolling average, month-over-month comparison. All data persists to localStorage.
+  - **Low-carbon suggestion engine** — If today's diet is heavy in red meat or processed food or single-use beverages, in-line cards suggest concrete substitutions (e.g. "chicken breast instead of beef saves ~X kg CO₂e per meal", "one oat-milk day per week saves ~Y kg / year", etc.) with verified numbers from the same factor database.
+- **Type safety pass across the codebase** — Added explicit `BatteryManager` / `NavigatorWithBattery` interfaces to `enhancedSystemCommands.ts` replacing a `@ts-ignore` on the Battery API; `Pyodide` global declaration on `Window` with `loadPyodide(options?) -> Promise<...>` instead of `any`; `TextDecoder`-first JWT payload decoding in DeveloperToolkitPro with UTF-8 safe fallback instead of raw `decodeURIComponent(escape(...))`; removed duplicate tail `declare global` block in `WebIDEPro.tsx` that conflicted on `pyodide`/`loadPyodide` property types.
+- **Registration** — All three new applications are registered in `APP_REGISTRY_EXTRAS` inside `src/apps.tsx` and lazy-loaded through `WindowManager.componentMap` in `src/components/desktop/WindowManager.tsx`, resulting in three independent code-split chunks (roughly 46–48 kB each) that do not inflate the boot bundle.
+- **Version metadata aligned to v124.0.0** across `package.json`, `index.html` meta description, Open Graph / Twitter cards, the boot animation banner, and the README badge.
 
 ## What's New in v123
 
@@ -252,13 +282,13 @@ Additional improvements in v110:
 
 | Category | Highlights |
 |----------|-----------|
-| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub, **TechInterviewPrep 面试刷题 (30+ real questions + sandbox executor, 8 categories)**, **NebulaDev Pro (JWT/CORS/DoH/Web Crypto/HTTP timing/URL/password — 全部本地计算或公开DNS)** |
+| **Development** | Code editor (Monaco), terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, API hub, **TechInterviewPrep 面试刷题 (30+ real questions + sandbox executor, 8 categories)**, **NebulaDev Pro (JWT/CORS/DoH/Web Crypto/HTTP timing/URL/password — 全部本地计算或公开DNS)**, **AICommandPro · AI智能命令中心 (自然语言↔命令双向转换 + 风险评估 + 30项模板库)** |
 | **Productivity** | **MindSync Pro (番茄钟/任务/习惯/反思/统计)**, DevFlow Pro, Pomodoro Studio, Kanban, TimeCapsule, Daily Dashboard, **PomodoroFocus 番茄电台 (SomaFM streams)**, **MotivationalDashboard (5-in-1 励志/呼吸/目标/感恩/成就)**, **QuantumHabit OS (原子习惯4法则 / 66天曲线 / 热力图 / 专注番茄钟整合 / 年度报告)** |
 | **AI & Creative** | AI chat (Pollinations.ai), AI image generation, code analyzer, translation, prompt engineering lab, AI writing studio, AI code mentor, **MemeGenerator 表情包工坊 (Canvas realtime render + clipboard export)** |
-| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro, **DevRadar (HN + GitHub Trending + Releases)**, **UtilityStack (IP+Quote+Image+Beer+Joke public API hub)**, **GlobalPulse · 全球脉动 (全球天气 / 汇率 / 加密 / HN / 世界时钟，带CORS兜底)** |
+| **Internet** | Web browser (DuckDuckGo search), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, Global Travel Assistant, NexusHub, DataPulse Pro, **DevRadar (HN + GitHub Trending + Releases)**, **UtilityStack (IP+Quote+Image+Beer+Joke public API hub)**, **GlobalPulse · 全球脉动 (全球天气 / 汇率 / 加密 / HN / 世界时钟，带CORS兜底)**, **DevOpsHealthCheck · 网站健康诊断 (8类探测 / A+-F评分 / HTTPS / DoH DNS / CT日志 / RDAP / 安全头)** |
 | **Data & Analytics** | **DataVerse Live · 多源实时数据画布 (9类卡片 / 拖拽缩放 / 布局持久化 / 9+公开API)** |
 | **Office** | Markdown editor, spreadsheet, PDF viewer, presentation mode, smart notes with wiki-links, ResumeForge, MarkdownPublisher, SmartNotes Pro, **LanguageLab Pro (词典/翻译/闪卡/生词本)** |
-| **Lifestyle** | **RecipeForge · 智能菜谱工坊 (TheMealDB + 购物清单合并)**, **EcoTrack Pro · 碳足迹追踪 (IPCC排放因子 / Open-Meteo / 目标与抵消)** |
+| **Lifestyle** | **RecipeForge · 智能菜谱工坊 (TheMealDB + 购物清单合并)**, **EcoTrack Pro · 碳足迹追踪 (IPCC排放因子 / Open-Meteo / 目标与抵消)**, **EcoFoodPrint · 饮食碳足迹 (IPCC AR5 / FAO / Poore-Nemecek 87食物 · 水足迹 · 低碳替换建议)** |
 | **System** | File manager, settings, system monitor (real data), password vault, app marketplace, system optimizer, CloudDrive, WebSSH, Workspace layout manager |
 | **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera, AI image studio, ImageForge |
 | **Collaboration** | Real-time collaborative whiteboard, document editor, code collaboration |
@@ -296,6 +326,9 @@ Every data source is a real, public API — no fake data:
 - **Advice Slip** — random advice API
 - **ipapi.co** — IP geolocation
 - **Web Crypto API** — SHA/HMAC/AES-GCM/PBKDF2 (native to the browser, fully local; used for NebulaDev Pro crypto tools and JWT verification)
+- **crt.sh (Sectigo Certificate Transparency log)** — public JSON endpoint used by DevOpsHealthCheck to retrieve SSL/TLS certificate issuer, SAN list, and not_before / not_after dates
+- **RDAP (rdap.org) + IANA WHOIS** — registration / registrar / nameserver and expiry data for domain names; used in DevOpsHealthCheck with a JSON fallback
+- **IPCC AR5 / FAO 2017 / Poore & Nemecek 2018 food emission factors** — compiled kg CO₂e per kg of food product + water footprints for 87 foods across 10 categories; powering the EcoFoodPrint calculator
 
 ## Quick Start
 

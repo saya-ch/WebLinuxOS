@@ -1058,18 +1058,22 @@ const JwtTool: React.FC = () => {
       try {
         const parts = token.trim().split('.')
         if (parts.length !== 3) { setError('无效的JWT格式，应由三部分组成'); return }
-        const decodePart = (s: string) => {
+        const decodePart = (s: string): string => {
           let base64 = s.replace(/-/g, '+').replace(/_/g, '/')
           while (base64.length % 4) base64 += '='
           try {
-          const decoded = (window as any).atob(base64)
-          const bytes: string[] = decoded.split('')
-          // @ts-ignore
-          const hexChars = bytes.map((c: string) => '%' + ('00' + c.charCodeAt(0)).toString(16).slice(-2))
-          return (window as any).decodeURIComponent(hexChars.join(''))
-        } catch {
-          return ''
-        }
+            // 优先使用 TextDecoder 处理 Unicode，避免 decodeURIComponent 在多字节字符上失败
+            const binStr = window.atob(base64)
+            const bytes = Uint8Array.from(binStr, ch => ch.charCodeAt(0))
+            if (typeof TextDecoder !== 'undefined') {
+              return new TextDecoder('utf-8').decode(bytes)
+            }
+            // 回退：使用 decodeURIComponent + %XX 编码
+            const hexChars = Array.from(binStr).map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            return window.decodeURIComponent(hexChars.join(''))
+          } catch {
+            return ''
+          }
         }
         setHeader(decodePart(parts[0]))
         setPayload(decodePart(parts[1]))
