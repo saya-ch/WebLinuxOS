@@ -194,6 +194,12 @@ export default defineConfig(({ mode }) => {
               return 'app-colors';
             }
             // v107 新增组件 chunk 分割
+            if (id.includes('src/apps/GlobalIntelCenter')) {
+              return 'app-global-intel';
+            }
+            if (id.includes('src/apps/SnippetForge')) {
+              return 'app-snippet-forge';
+            }
             if (id.includes('src/apps/AppMarketplace')) {
               return 'app-marketplace';
             }
