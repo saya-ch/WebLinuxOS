@@ -255,9 +255,15 @@ const App = memo(function App() {
         refreshSystemStats: () => st.getState().refreshSystemStats(),
         addQuickNote: (content: string) => {
           const store = st.getState()
-          const id = 'file-' + Date.now()
-          store.addFile('notes', `QuickNote-${Date.now()}`, 'file')
-          store.updateFileContent(id, content)
+          const timestamp = Date.now()
+          store.addFile('notes', `QuickNote-${timestamp}`, 'file')
+          // addFile 内部使用 generateFileId() 生成 ID，需从 state 中查找刚创建的文件
+          const updatedFiles = st.getState().files
+          const notesNode = updatedFiles.find(n => n.id === 'notes')
+          const lastChild = notesNode?.children?.slice(-1)[0]
+          if (lastChild) {
+            store.updateFileContent(lastChild.id, content)
+          }
         },
         getNotifications: () => st.getState().notifications,
         version: __APP_VERSION__,

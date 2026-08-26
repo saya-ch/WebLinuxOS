@@ -54,6 +54,11 @@ try {
   console.warn('localStorage 不可用，将使用内存存储。')
 }
 
+// 页面关闭前自动刷写待处理数据，避免丢失
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => flushPendingSaves())
+}
+
 const memoryStore: Record<string, string> = {}
 
 /**
@@ -127,12 +132,9 @@ function safeRemoveItem(key: string): void {
  * @returns    预估字节数
  */
 function estimateSize(str: string): number {
-  try {
-    return new Blob([str]).size
-  } catch {
-    // 某些环境可能不可用 Blob，退化为 length*2（UTF-16 粗估）
-    return str.length * 2
-  }
+  // 快速估算：UTF-16 编码下每个字符约 1-4 字节，取 length*2 作为合理近似
+  // 避免每次调用创建 Blob 对象带来的 GC 压力
+  return str.length * 2
 }
 
 /**

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weblinuxos-v77'
+const CACHE_NAME = 'weblinuxos-v124'
 const BASE_PATH = new URL(self.registration.scope || '/WebLinuxOS/').pathname
 
 const CACHE_ASSETS = [
@@ -38,25 +38,60 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+// 判断是否为静态资源（可安全使用缓存优先策略）
+function isStaticAsset(url) {
+  return /\.(js|css|svg|png|jpg|jpeg|gif|webp|woff2?|ttf|ico)$/.test(url.pathname)
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request
 
-  if (request.method !== 'GET') {
-    return
-  }
-
+  if (request.method !== 'GET') return
   if (request.url.startsWith('chrome-extension://') ||
-      request.url.startsWith('moz-extension://')) {
-    return
-  }
+      request.url.startsWith('moz-extension://')) return
 
-  // Skip caching for API calls and external resources
   const url = new URL(request.url)
   const isExternal = !url.origin.startsWith(self.location.origin)
-  if (isExternal) {
+  if (isExternal) return
+
+  // 导航请求：Network-First（确保用户获得最新版本）
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {})
+        }
+        return response
+      }).catch(() => {
+        return caches.match(request).then((cached) => {
+          return cached || caches.match(BASE_PATH + 'index.html')
+        })
+      })
+    )
     return
   }
 
+  // 静态资源：Cache-First（Vite 构建时文件名含 hash，天然版本控制）
+  if (isStaticAsset(url)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request).then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {})
+          }
+          return response
+        }).catch(() => {
+          return new Response(null, { status: 503, statusText: 'Offline' })
+        })
+      })
+    )
+    return
+  }
+
+  // 其他同源请求：Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const networkFetch = fetch(request).then((networkResponse) => {
@@ -68,21 +103,7 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse
       }).catch(() => {
-        if (cachedResponse) {
-          return cachedResponse
-        }
-
-        if (request.url.match(/\.(js|css|svg|png|jpg|jpeg|gif|webp|json|woff2?)$/)) {
-          return new Response(null, {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain' }
-          })
-        }
-
-        if (request.mode === 'navigate') {
-          return caches.match(BASE_PATH + 'index.html')
-        }
+        return cachedResponse || caches.match(BASE_PATH + 'index.html')
       })
 
       return cachedResponse || networkFetch

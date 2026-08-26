@@ -271,6 +271,10 @@ const getAndUpdateStatsPerfTime = () => {
   return { current, delta }
 }
 
+// localStorage 大小缓存，避免每 5 秒遍历全量 key
+let cachedLocalStorageSize = 0
+let localStorageSizeCacheTime = 0
+
 // 清理所有通知定时器的工具函数，用于 store 重置时释放资源
 const clearAllNotificationTimers = () => {
   notificationTimers.forEach(timer => clearTimeout(timer))
@@ -384,15 +388,14 @@ export const useStore = create<Store>((set, get) => ({
 
         cpuUsage = Math.round(Math.min(100, (timerDrift * 0.5 + fpsImpact + memoryPressure) * 100))
         if (cpuUsage < 0) cpuUsage = 0
-        if (cpuUsage === 0) {
-          cpuUsage = Math.round(3 + Math.random() * 8)
-        }
       }
     } catch {
       cpuUsage = Math.round(10 + Math.random() * 15)
     }
 
-    const localStorageSize = (() => {
+    // localStorage 大小缓存：避免每 5 秒遍历全量 key，改为每 30 秒重算一次
+    let localStorageSize = cachedLocalStorageSize
+    if (Date.now() - localStorageSizeCacheTime > 30000) {
       try {
         let total = 0
         for (let i = 0; i < localStorage.length; i++) {
@@ -404,11 +407,13 @@ export const useStore = create<Store>((set, get) => ({
             }
           }
         }
-        return total
+        localStorageSize = total
+        cachedLocalStorageSize = total
+        localStorageSizeCacheTime = Date.now()
       } catch {
-        return 0
+        localStorageSize = 0
       }
-    })()
+    }
     const STORAGE_LIMIT_BYTES = 5 * 1024 * 1024
     const storageUsage = localStorageSize > 0
       ? Math.min(100, Math.round((localStorageSize / STORAGE_LIMIT_BYTES) * 100))

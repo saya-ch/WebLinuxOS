@@ -64,6 +64,8 @@ class SyncServiceImpl {
   private storageTopicHandler: ((e: StorageEvent) => void) | null = null
   private onlineHandler: (() => void) | null = null
   private offlineHandler: (() => void) | null = null
+  private _beforeunloadHandler: (() => void) | null = null
+  private _pagehideHandler: (() => void) | null = null
 
   constructor() {
     this.tabId = 't_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
@@ -135,12 +137,14 @@ class SyncServiceImpl {
     }, 5000)
 
     // 标签页关闭前，宣布离开
-    window.addEventListener('beforeunload', () => {
+    this._beforeunloadHandler = () => {
       this.announcePresence(false)
-    })
-    window.addEventListener('pagehide', () => {
+    }
+    this._pagehideHandler = () => {
       this.announcePresence(false)
-    })
+    }
+    window.addEventListener('beforeunload', this._beforeunloadHandler)
+    window.addEventListener('pagehide', this._pagehideHandler)
   }
 
   private onMessage(msg: SyncMessage) {
@@ -265,6 +269,8 @@ class SyncServiceImpl {
     if (this.storageTopicHandler) window.removeEventListener('storage', this.storageTopicHandler)
     if (this.onlineHandler) window.removeEventListener('online', this.onlineHandler)
     if (this.offlineHandler) window.removeEventListener('offline', this.offlineHandler)
+    if (this._beforeunloadHandler) window.removeEventListener('beforeunload', this._beforeunloadHandler)
+    if (this._pagehideHandler) window.removeEventListener('pagehide', this._pagehideHandler)
     if (this.channel) {
       try { this.channel.close() } catch { /* ignore */ }
     }
