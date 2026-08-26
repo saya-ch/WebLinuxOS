@@ -81,6 +81,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // v109 创新功能 — WebContainer IDE 浏览器内全栈开发环境
   { id: 'webcontainer-ide', name: 'WebContainer IDE', icon: <Code2Icon />, component: 'WebContainerIDE', category: 'development', defaultWidth: 1300, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '浏览器内全栈开发环境：JavaScript实时执行/HTML预览、5种代码模板、控制台输出捕获、多文件标签、代码分享、自动保存' },
   { id: 'markdown-writer', name: 'Markdown Writer', icon: <NoteIcon />, component: 'MarkdownWriter', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown 写作工具：分屏实时预览、多文档管理、本地持久化、HTML/Markdown导出、字数统计、快捷键(Ctrl+B加粗/Ctrl+I斜体)' },
+  { id: 'markdown-live-preview', name: 'Markdown Live Preview', icon: <NoteIcon />, component: 'MarkdownLivePreview', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown 实时预览编辑器：分屏编辑+实时预览、marked渲染、工具栏快捷操作、导出HTML、字数统计、全屏预览、亮暗主题切换' },
   // v107 创新功能 — AppMarketplace 应用市场：安装/卸载/评分/更新
   { id: 'app-marketplace', name: 'AppMarketplace 应用市场', icon: <ShoppingCartIcon />, component: 'AppMarketplace', category: 'system', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '应用市场：550+应用浏览、搜索、分类筛选、安装/卸载管理、五星评分、下载量统计、更新检测、精选推荐' },
   // v107 创新功能 — CloudDrive 云盘客户端：IndexedDB本地云+WebDAV远程云

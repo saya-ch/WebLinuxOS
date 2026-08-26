@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weblinuxos-v124'
+const CACHE_NAME = 'weblinuxos-v126'
 const BASE_PATH = new URL(self.registration.scope || '/WebLinuxOS/').pathname
 
 const CACHE_ASSETS = [

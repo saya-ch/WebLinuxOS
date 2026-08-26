@@ -610,6 +610,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v109 新增组件 ===
   WebContainerIDE: () => import('../../apps/WebContainerIDE'),
   MarkdownWriter: () => import('../../apps/MarkdownWriter'),
+  MarkdownLivePreview: () => import('../../apps/MarkdownLivePreview'),
   // === v107 新增组件 ===
   AppMarketplace: () => import('../../apps/AppMarketplace'),
   CloudDrive: () => import('../../apps/CloudDrive'),
