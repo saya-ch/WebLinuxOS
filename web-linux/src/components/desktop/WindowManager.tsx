@@ -17,6 +17,10 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v125 创新应用
+  HashCalculator: () => import('../../apps/HashCalculator'),
+  SlideForge: () => import('../../apps/SlideForge'),
+  ColorPaletteGen: () => import('../../apps/ColorPaletteGen'),
   // v124 创新应用
   AICommandPro: () => import('../../apps/AICommandPro'),
   DevOpsHealthCheck: () => import('../../apps/DevOpsHealthCheck'),

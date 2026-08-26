@@ -42,14 +42,14 @@ Most "web desktop" projects are visual shells -- windows you can drag around, bu
 
 | Category | Applications |
 |----------|-------------|
-| **Development** | Monaco code editor, terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, NebulaDev Pro (JWT/CORS/DNS/Web Crypto), AICommandPro (natural language to shell translation) |
+| **Development** | Monaco code editor, terminal (200+ commands), JSON tools, regex tester, API client, Git visualizer, online code runner, code review bot, NebulaDev Pro (JWT/CORS/DNS/Web Crypto), AICommandPro (natural language to shell translation), ColorPaletteGen (color harmony generator with WCAG contrast checking) |
 | **Productivity** | MindSync Pro (pomodoro/tasks/habits/reflection/stats), DevFlow Pro, PomodoroFocus (SomaFM radio streams), QuantumHabit OS (atomic habits framework), MotivationalDashboard |
 | **AI & Creative** | AI chat (Pollinations.ai), AI image generation, AI writing studio, code analyzer, meme generator, prompt engineering lab |
 | **Internet** | Web browser (DuckDuckGo), weather (Open-Meteo), crypto tracker (CoinGecko), news (Hacker News), Wikipedia, GitHub trending, DevRadar, DataVerse Live (multi-source live dashboard), DevOpsHealthCheck (site reliability auditor) |
 | **Data & Analytics** | DataVerse Live (draggable card canvas with 9+ API sources), Advanced data visualization, charts |
-| **Office** | Markdown editor, spreadsheet, PDF viewer, smart notes, LanguageLab Pro (dictionary/translation/flashcards), ResumeForge |
+| **Office** | Markdown editor, spreadsheet, PDF viewer, smart notes, LanguageLab Pro (dictionary/translation/flashcards), ResumeForge, SlideForge (Markdown-to-slides presentation tool) |
 | **Lifestyle** | RecipeForge (TheMealDB + shopping list), EcoTrack Pro (carbon footprint), EcoFoodPrint (diet carbon calculator), SmartDailyHub |
-| **System** | File manager, settings, system monitor (real data), password vault, workspace manager, WebSSH |
+| **System** | File manager, settings, system monitor (real data), password vault, workspace manager, WebSSH, HashCalculator (SHA-1/256/384/512 via Web Crypto API) |
 | **Multimedia** | Music studio, audio visualizer, paint, screen recorder, camera, AI image studio |
 | **Collaboration** | Real-time collaborative whiteboard, document editor |
 | **Games** | Tetris, Snake, 2048, Breakout, dice roller |
@@ -75,7 +75,7 @@ Every data source is a real, public API -- no fake data:
 | Free Dictionary API | Pronunciation, definitions, synonyms |
 | ZenQuotes.io | Motivational quotes |
 | SomaFM | Public internet radio streams |
-| Web Crypto API | SHA/HMAC/AES-GCM (browser-native, fully local) |
+| Web Crypto API | SHA/HMAC/AES-GCM hashing and encryption (browser-native, fully local) |
 | crt.sh | SSL/TLS Certificate Transparency logs |
 | RDAP/WHOIS | Domain registration data |
 | IPCC/FAO | Food emission factors for carbon calculators |
