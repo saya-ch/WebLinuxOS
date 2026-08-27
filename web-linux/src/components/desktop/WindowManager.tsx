@@ -42,6 +42,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   PromptEngineeringLab: () => import('../../apps/PromptEngineeringLab'),
   WebsitePerformanceTester: () => import('../../apps/WebsitePerformanceTester'),
   JsonCrusher: () => import('../../apps/JsonCrusher'),
+  JsonFormatter: () => import('../../apps/JsonFormatter'),
+  EncodingToolkit: () => import('../../apps/EncodingToolkit'),
   CssStudio: () => import('../../apps/CssStudio'),
   RealTimeCollaborationHub: () => import('../../apps/RealTimeCollaborationHub'),
   SmartKnowledgeGraph: () => import('../../apps/SmartKnowledgeGraph'),
@@ -231,7 +233,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   IntelligentCodeGenerator: () => import('../../apps/IntelligentCodeGenerator'),
   IntelligentDashboard: () => import('../../apps/IntelligentDashboard'),
   IPLookup: () => import('../../apps/IPLookup'),
-  JSONFormatter: () => import('../../apps/JSONFormatter'),
   JSONSchemaValidator: () => import('../../apps/JSONSchemaValidator'),
   JSONYAMLConverter: () => import('../../apps/JSONYAMLConverter'),
   JwtDecoder: () => import('../../apps/JwtDecoder'),
@@ -818,7 +819,7 @@ function preloadComponents(): () => void {
 
   const developmentComponents = [
     'CodeRunner',
-    'JSONFormatter',
+    'JsonFormatter',
     'RegexTester',
     'Base64Tools',
     'UnitConverter',

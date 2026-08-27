@@ -13,6 +13,7 @@ import ShortcutPanel from './components/ShortcutPanel'
 import SmartCommandCenter from './components/SmartCommandCenter'
 import QuickNoteOverlay from './components/QuickNoteOverlay'
 import { getSyncService } from './services/syncService'
+import { preloadFilesTree } from './store/storageUtils'
 import './styles/cyberpunk-theme.css'
 import './styles/quantum-theme.css'
 
@@ -115,6 +116,8 @@ const App = memo(function App() {
       // 批量注册，避免 350+ 个应用逐个调用 registerApp 触发的 O(n²) 性能问题
       registerApps(appRegistry)
       registeredRef.current = true
+      // 初始化 IndexedDB 文件存储（从 localStorage 迁移旧数据）
+      preloadFilesTree().catch(() => { /* 静默失败 */ })
     }
   }, [registerApps])
 

@@ -1,3 +1,11 @@
+import {
+  saveFileTree,
+  loadFileTree,
+  clearFileTree,
+  getStorageUsage as getIndexedDBUsage,
+  isIndexedDBSupported,
+} from './indexedDBStorage'
+
 /**
  * 统一的 localStorage 存储 key 集合。
  * - FILES：文件树
@@ -152,6 +160,14 @@ export function isStorageAvailable(): boolean {
  */
 export function loadFromStorage<T>(key: string, defaultValue: T): T {
   try {
+    // 文件树数据优先从 IndexedDB 缓存读取
+    if (key === STORAGE_KEYS.FILES) {
+      if (filesTreeCacheLoaded && filesTreeCache !== undefined) {
+        return filesTreeCache as T
+      }
+      // 缓存未加载时回退到 localStorage（同步兼容）
+    }
+
     const stored = safeGetItem(key)
     if (!stored) return defaultValue
     try {
@@ -172,6 +188,144 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
   }
 }
 
+// 文件树内存缓存，用于同步读写 IndexedDB 数据
+// IndexedDB 是异步 API，启动时通过 preloadFilesTree() 加载到此缓存
+// loadFromStorage 读取 FILES key 时优先从缓存取值
+let filesTreeCache: unknown = undefined
+let filesTreeCacheLoaded = false
+
+/**
+ * 预加载文件树到内存缓存
+ *
+ * 应在应用启动时尽早调用。优先从 IndexedDB 加载，
+ * 若 IndexedDB 中无数据则从 localStorage 迁移（向后兼容）。
+ * 此函数为异步操作，但只需调用一次。
+ */
+export async function preloadFilesTree(): Promise<void> {
+  try {
+    if (isIndexedDBSupported()) {
+      const data = await loadFileTree()
+      if (data !== null) {
+        filesTreeCache = data
+        filesTreeCacheLoaded = true
+        console.info('[storage] 从 IndexedDB 加载文件树成功')
+        return
+      }
+
+      // IndexedDB 无数据，尝试从 localStorage 迁移（向后兼容）
+      const localStorageData = safeGetItem(STORAGE_KEYS.FILES)
+      if (localStorageData) {
+        try {
+          const parsed = JSON.parse(localStorageData)
+          filesTreeCache = parsed
+          // 异步迁移到 IndexedDB
+          await saveFileTree(parsed)
+          console.info('[storage] 已将文件树从 localStorage 迁移到 IndexedDB')
+        } catch {
+          // localStorage 数据无法解析，使用原始字符串
+          filesTreeCache = localStorageData
+          await saveFileTree(localStorageData)
+          console.info('[storage] 已将文件树（原始字符串）从 localStorage 迁移到 IndexedDB')
+        }
+      } else {
+        filesTreeCache = null
+      }
+      filesTreeCacheLoaded = true
+    } else {
+      // IndexedDB 不可用，从 localStorage 读取
+      const localStorageData = safeGetItem(STORAGE_KEYS.FILES)
+      if (localStorageData) {
+        try {
+          filesTreeCache = JSON.parse(localStorageData)
+        } catch {
+          filesTreeCache = localStorageData
+        }
+      } else {
+        filesTreeCache = null
+      }
+      filesTreeCacheLoaded = true
+    }
+  } catch (err) {
+    console.warn('[storage] preloadFilesTree 失败：', (err as Error).message)
+    // 回退到 localStorage
+    try {
+      const localStorageData = safeGetItem(STORAGE_KEYS.FILES)
+      if (localStorageData) {
+        try {
+          filesTreeCache = JSON.parse(localStorageData)
+        } catch {
+          filesTreeCache = localStorageData
+        }
+      } else {
+        filesTreeCache = null
+      }
+    } catch {
+      filesTreeCache = null
+    }
+    filesTreeCacheLoaded = true
+  }
+}
+
+/**
+ * 异步加载文件树（推荐用于需要最新数据的场景）
+ *
+ * 优先从 IndexedDB 读取，回退到 localStorage。
+ * 比同步的 loadFromStorage(key, default) 更可靠。
+ *
+ * @param defaultValue  读取失败时的默认值
+ */
+export async function loadFilesAsync<T>(defaultValue: T): Promise<T> {
+  try {
+    if (isIndexedDBSupported()) {
+      const data = await loadFileTree<T>()
+      if (data !== null) {
+        filesTreeCache = data
+        return data
+      }
+    }
+  } catch (err) {
+    console.warn('[storage] loadFilesAsync IndexedDB 读取失败：', (err as Error).message)
+  }
+
+  // 回退到 localStorage
+  const stored = safeGetItem(STORAGE_KEYS.FILES)
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored)
+      filesTreeCache = parsed
+      return parsed as T
+    } catch {
+      filesTreeCache = stored
+      return stored as unknown as T
+    }
+  }
+
+  filesTreeCache = defaultValue
+  return defaultValue
+}
+
+/**
+ * 异步保存文件树（推荐用于大数据写入）
+ *
+ * 同时更新内存缓存和 IndexedDB，确保数据一致性。
+ *
+ * @param value  文件树数据
+ */
+export async function saveFilesAsync(value: unknown): Promise<void> {
+  filesTreeCache = value
+  try {
+    if (isIndexedDBSupported()) {
+      await saveFileTree(value)
+    } else {
+      // IndexedDB 不可用，回退到 localStorage
+      safeSetItem(STORAGE_KEYS.FILES, JSON.stringify(value))
+    }
+  } catch (err) {
+    console.warn('[storage] saveFilesAsync 失败，回退到 localStorage：', (err as Error).message)
+    safeSetItem(STORAGE_KEYS.FILES, JSON.stringify(value))
+  }
+}
+
 /**
  * 节流保存：在指定时间内重复写入时以最后一次为准；超过大小限制时进行提示并回退。
  *
@@ -187,22 +341,29 @@ export function debouncedSaveToStorage(key: string, value: unknown, delay: numbe
     }
     const timeout = setTimeout(() => {
       try {
-        const serialized = JSON.stringify(value)
-        const size = estimateSize(serialized)
-        if (size > STORAGE_SIZE_LIMIT) {
-          console.warn(
-            `[storage] 数据过大 (${Math.round(size / 1024)}KB)，无法保存到 localStorage [${key}]，已写入最小占位对象。`
-          )
-          // 真正写一个最小占位对象（含原始大小信息），避免 safeSetItem 因 QuotaExceeded 失败导致状态错乱
-          // 注意：之前实现会展开原 value 反而写入更大字符串，这里彻底替换为最小结构
-          const placeholder = JSON.stringify({
-            _truncated: true,
-            _originalSize: size,
-            _truncatedAt: new Date().toISOString(),
+        // 文件树数据使用 IndexedDB 存储
+        if (key === STORAGE_KEYS.FILES) {
+          filesTreeCache = value
+          saveFileTree(value).catch((err) => {
+            console.warn('[storage] IndexedDB saveFileTree 失败，回退到 localStorage：', (err as Error).message)
+            safeSetItem(key, JSON.stringify(value))
           })
-          safeSetItem(key, placeholder)
         } else {
-          safeSetItem(key, serialized)
+          const serialized = JSON.stringify(value)
+          const size = estimateSize(serialized)
+          if (size > STORAGE_SIZE_LIMIT) {
+            console.warn(
+              `[storage] 数据过大 (${Math.round(size / 1024)}KB)，无法保存到 localStorage [${key}]，已写入最小占位对象。`
+            )
+            const placeholder = JSON.stringify({
+              _truncated: true,
+              _originalSize: size,
+              _truncatedAt: new Date().toISOString(),
+            })
+            safeSetItem(key, placeholder)
+          } else {
+            safeSetItem(key, serialized)
+          }
         }
       } catch (err) {
         console.warn(
@@ -228,6 +389,18 @@ export function debouncedSaveToStorage(key: string, value: unknown, delay: numbe
  */
 export function saveToStorage(key: string, value: unknown): boolean {
   try {
+    // 文件树数据使用 IndexedDB 存储，突破 5MB 限制
+    if (key === STORAGE_KEYS.FILES) {
+      // 同步缓存，确保后续 loadFromStorage 能立即读到最新值
+      filesTreeCache = value
+      // 异步写入 IndexedDB
+      saveFileTree(value).catch((err) => {
+        console.warn('[storage] IndexedDB saveFileTree 失败，回退到 localStorage：', (err as Error).message)
+        safeSetItem(key, JSON.stringify(value))
+      })
+      return true
+    }
+
     const serialized = JSON.stringify(value)
     const size = estimateSize(serialized)
     if (size > STORAGE_SIZE_LIMIT) {
@@ -267,7 +440,17 @@ export function removeFromStorage(key: string): void {
 export function clearStorage(...keys: string[]): void {
   try {
     if (!keys || keys.length === 0) return
-    keys.forEach((key) => safeRemoveItem(key))
+    keys.forEach((key) => {
+      safeRemoveItem(key)
+      // 文件树数据同时清除 IndexedDB
+      if (key === STORAGE_KEYS.FILES) {
+        filesTreeCache = undefined
+        filesTreeCacheLoaded = false
+        clearFileTree().catch((err) => {
+          console.warn('[storage] clearFileTree 失败：', (err as Error).message)
+        })
+      }
+    })
   } catch (err) {
     console.warn('[storage] clearStorage 异常：', (err as Error).message)
   }
@@ -280,6 +463,11 @@ export function exportStorageData(): Record<string, unknown> {
   const data: Record<string, unknown> = {}
   try {
     for (const key of Object.values(STORAGE_KEYS)) {
+      // 文件树数据优先从 IndexedDB 缓存读取
+      if (key === STORAGE_KEYS.FILES && filesTreeCacheLoaded && filesTreeCache !== undefined) {
+        data[key] = filesTreeCache
+        continue
+      }
       const value = loadFromStorage(key, null)
       if (value !== null && value !== undefined) {
         data[key] = value
@@ -297,7 +485,16 @@ export function exportStorageData(): Record<string, unknown> {
 export function importStorageData(data: Record<string, unknown>): boolean {
   try {
     for (const [key, value] of Object.entries(data)) {
-      saveToStorage(key, value)
+      if (key === STORAGE_KEYS.FILES) {
+        // 文件树数据异步写入 IndexedDB
+        filesTreeCache = value
+        saveFileTree(value).catch((err) => {
+          console.warn('[storage] importStorageData IndexedDB 写入失败，回退到 localStorage：', (err as Error).message)
+          safeSetItem(key, JSON.stringify(value))
+        })
+      } else {
+        saveToStorage(key, value)
+      }
     }
     return true
   } catch (err) {
@@ -307,9 +504,14 @@ export function importStorageData(data: Record<string, unknown>): boolean {
 }
 
 /**
- * 统计 weblinux 相关 key 的总字节与个数
+ * 统计 weblinux 相关 key 的总字节与个数，并包含 IndexedDB 配额信息
  */
-export function getStorageUsage(): { used: number; keys: number } {
+export async function getStorageUsage(): Promise<{
+  used: number
+  keys: number
+  quota: number
+  percent: number
+}> {
   let used = 0
   let keys = 0
   try {
@@ -326,7 +528,23 @@ export function getStorageUsage(): { used: number; keys: number } {
   } catch (err) {
     console.warn('[storage] getStorageUsage 异常：', (err as Error).message)
   }
-  return { used, keys }
+
+  // 获取 IndexedDB 存储配额信息
+  let quota = 0
+  let percent = 0
+  try {
+    const idbUsage = await getIndexedDBUsage()
+    // 如果 IndexedDB 有配额信息，合并使用量
+    if (idbUsage.quota > 0) {
+      quota = idbUsage.quota
+      used += idbUsage.used
+      percent = quota > 0 ? (used / quota) * 100 : 0
+    }
+  } catch (err) {
+    console.warn('[storage] getStorageUsage IndexedDB 部分异常：', (err as Error).message)
+  }
+
+  return { used, keys, quota, percent }
 }
 
 /**
@@ -341,6 +559,12 @@ export function clearAllStorage(): void {
       if (key.startsWith('weblinux-')) {
         delete memoryStore[key]
       }
+    })
+    // 同时清除 IndexedDB 中的文件树数据
+    filesTreeCache = undefined
+    filesTreeCacheLoaded = false
+    clearFileTree().catch((err) => {
+      console.warn('[storage] clearAllStorage clearFileTree 失败：', (err as Error).message)
     })
   } catch (err) {
     console.warn('[storage] clearAllStorage 异常：', (err as Error).message)

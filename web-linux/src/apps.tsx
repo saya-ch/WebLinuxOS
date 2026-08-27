@@ -17,7 +17,7 @@ import {
   ShareIcon, Link2Icon, PoetryIcon, BookmarkIcon,
   BarChartIcon, ResearchIcon, DatabaseIcon, BarChart3Icon,
   GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon,
-  PlaneIcon,
+  PlaneIcon, FileJsonIcon,
   // v106 新增：仅保留 icons.tsx 独有的，不与 apps.tsx 本地 function 定义冲突
   DailyDashboardIcon
 } from './icons'
@@ -119,6 +119,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'online-code-runner-pro', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerPro', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: '真正的在线代码运行器：支持JavaScript实时执行、HTML/CSS/JS实时预览、代码分享、预置示例模板' },
   
   { id: 'json-crusher', name: 'JSON 超级工具', icon: <WrenchIcon />, component: 'JsonCrusher', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: 'JSON高级工具箱：格式化/压缩、TS类型生成、JSONPath查询、Diff对比、Schema验证、树形视图' },
+  { id: 'json-formatter', name: 'JSON 格式化工具', icon: <FileJsonIcon />, component: 'JsonFormatter', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 600, minHeight: 400, resizable: true, multiple: false, description: 'JSON格式化与验证工具：美化/压缩/验证/转TypeScript类型/转CSV，行号列号错误提示，语法高亮' },
+  { id: 'encoding-toolkit', name: '编码解码工具箱', icon: <LockIcon />, component: 'EncodingToolkit', category: 'utilities', defaultWidth: 850, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: false, description: '编码解码工具箱：Base64编解码、URL编解码、HTML实体编解码、UTF-8字节计数、SHA-256哈希计算，支持文件拖放导入与一键复制' },
   { id: 'css-studio', name: 'CSS 工作室', icon: <PaletteIcon />, component: 'CssStudio', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: 'CSS可视化工具箱：渐变编辑、阴影生成、圆角编辑、动画关键帧、颜色转换、Flexbox布局预览' },
   // AI图像工作室（v58创新功能 — 基于 Pollinations.ai 公开免费 API 的 AI 图像生成工具）
   { id: 'ai-image-studio', name: 'AI图像工作室', icon: <ImageForgeIcon />, component: 'AIImageStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 650, resizable: true, multiple: false,  description: '零配置 AI 图像生成器：基于 Pollinations.ai 公开免费 API，多种艺术风格预设、尺寸选择、模型选择、提示词输入、生成历史与本地收藏' },
@@ -1885,7 +1887,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'news-reader', name: '新闻阅读器', icon: <NewsIcon />, component: 'NewsReader', category: 'internet', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'github-trending', name: 'GitHub 热门', icon: <GitHubIcon />, component: 'GitHubTrending', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'regex-tester', name: '正则表达式测试', icon: <RegexIcon />, component: 'RegexTester', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
-  { id: 'json-formatter', name: 'JSON 格式化', icon: <JsonIcon />, component: 'JSONFormatter', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'json-schema-validator', name: 'JSON Schema 验证', icon: <JsonIcon />, component: 'JSONSchemaValidator', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'markdown-to-html', name: 'Markdown 转 HTML', icon: <FileTextIcon />, component: 'MarkdownToHTML', category: 'office', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'task-dashboard', name: '协作任务看板', icon: <TaskIcon />, component: 'TaskDashboard', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },

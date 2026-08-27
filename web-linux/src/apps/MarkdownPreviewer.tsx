@@ -1,819 +1,380 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useMemo, useCallback, useRef } from 'react'
 import { marked } from 'marked'
-import { useStore } from '../store'
+import { Copy, Download, FileText } from 'lucide-react'
 
-// Configure marked for GFM support
 marked.use({ gfm: true, breaks: true })
 
-const STORAGE_KEY = 'markdown-previewer-content'
-
-// XSS prevention: remove script tags and dangerous attributes/on-event handlers
-const sanitizeHtml = (html: string): string => {
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-    .replace(/<embed\b[^>]*>/gi, '')
-    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
-    .replace(/\shref\s*=\s*["']\s*javascript:[^"']*["']/gi, ' href="#"')
-    .replace(/\ssrc\s*=\s*["']\s*javascript:[^"']*["']/gi, '')
+const COLORS = {
+  bg: '#1a1a2e',
+  editorBg: '#0d1117',
+  previewBg: '#0d1117',
+  text: '#e6e6e6',
+  textMuted: '#8b949e',
+  accent: '#7c6cf0',
+  accentHover: '#6a5ce0',
+  border: 'rgba(255,255,255,0.08)',
+  headerBg: 'rgba(13,17,23,0.9)',
+  toolbarBg: 'rgba(30,30,50,0.95)',
+  codeBg: '#161b22',
+  hoverBg: 'rgba(124,108,240,0.1)',
+  btnBg: 'rgba(255,255,255,0.06)',
+  scrollbar: '#30363d',
+  scrollbarThumb: '#484f58',
 }
 
-// Extract headings for Table of Contents
-interface TocItem {
-  id: string
-  level: number
-  text: string
-}
+const SAMPLE_MARKDOWN = `# Markdown 实时预览器
 
-const extractToc = (html: string): TocItem[] => {
-  const toc: TocItem[] = []
-  const regex = /<h([1-6])[^>]*>(.*?)<\/h\1>/gi
-  let match
-  while ((match = regex.exec(html)) !== null) {
-    const level = parseInt(match[1], 10)
-    const text = match[2].replace(/<[^>]+>/g, '').trim()
-    const id = `heading-${toc.length}`
-    toc.push({ id, level, text })
-  }
-  return toc
-}
-
-// Add IDs to heading tags for TOC linking
-const addHeadingIds = (html: string): string => {
-  let index = 0
-  return html.replace(/<h([1-6])([^>]*)>(.*?)<\/h\1>/gi, (_match, level, attrs, content) => {
-    const id = `heading-${index++}`
-    return `<h${level}${attrs} id="${id}">${content}</h${level}>`
-  })
-}
-
-// Default markdown cheat sheet content
-const DEFAULT_CONTENT = `# Markdown 速查表
-
-## 标题
-
-# 一级标题
-## 二级标题
-### 三级标题
-#### 四级标题
-##### 五级标题
-###### 六级标题
+欢迎使用 Markdown 预览器！在左侧编辑 Markdown，右侧实时预览效果。
 
 ## 文本样式
 
-**粗体文本** 和 __粗体文本__
-
-*斜体文本* 和 _斜体文本_
-
-~~删除线~~
-
-**_粗斜体_** 组合
-
-## 列表
-
-### 无序列表
-- 第一项
-- 第二项
-  - 嵌套项 A
-  - 嵌套项 B
-- 第三项
-
-### 有序列表
-1. 第一步
-2. 第二步
-3. 第三步
-
-### 任务列表
-- [x] 已完成任务
-- [ ] 待办任务
-- [ ] 另一个待办
-
-## 链接与图片
-
-[访问 GitHub](https://github.com)
-
-![示例图片](https://via.placeholder.com/150)
-
-## 引用
-
-> 这是一段引用文本
->
-> > 嵌套引用
+**粗体文本** 和 *斜体文本* 以及 ~~删除线~~
 
 ## 代码
 
 行内代码: \`const x = 42\`
 
 \`\`\`javascript
-// 代码块示例
-function greet(name) {
-  console.log(\`Hello, \${name}!\`);
-  return true;
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
 }
+
+console.log(fibonacci(10)); // 55
 \`\`\`
+
+## 列表
+
+- 第一项
+- 第二项
+  - 嵌套项
+- 第三项
+
+## 有序列表
+
+1. 步骤一
+2. 步骤二
+3. 步骤三
+
+## 引用
+
+> 这是一段引用文本。
+> 
+> > 嵌套引用也可以。
 
 ## 表格
 
-| 特性     | 支持情况 | 备注       |
-| -------- | -------- | ---------- |
-| GFM      | ✅       | GitHub 风格 |
-| 表格     | ✅       | 完整支持   |
-| 任务列表 | ✅       | 复选框     |
-| 删除线   | ✅       | ~~文本~~   |
+| 语言 | 类型 | 用途 |
+|------|------|------|
+| TypeScript | 静态类型 | 前端开发 |
+| Python | 动态类型 | 数据科学 |
+| Rust | 系统编程 | 底层开发 |
 
-## 分割线
+## 链接与图片
 
----
-
-## 数学与特殊
-
-脚注示例[^1]和缩写
-
-[^1]: 这是一个脚注定义
+[访问 GitHub](https://github.com)
 
 ---
 
-*感谢使用 Markdown 预览器！*
+*享受写作的乐趣！*
 `
 
-// Load saved content from localStorage
-const loadSavedContent = (): string => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved !== null ? saved : DEFAULT_CONTENT
-  } catch {
-    return DEFAULT_CONTENT
+const PREVIEW_STYLES = `
+  .md-preview { color: #e6e6e6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; padding: 24px; }
+  .md-preview h1, .md-preview h2, .md-preview h3, .md-preview h4, .md-preview h5, .md-preview h6 { color: #f0f0f0; margin-top: 24px; margin-bottom: 16px; font-weight: 600; line-height: 1.25; }
+  .md-preview h1 { font-size: 2em; border-bottom: 1px solid ${COLORS.border}; padding-bottom: 0.3em; }
+  .md-preview h2 { font-size: 1.5em; border-bottom: 1px solid ${COLORS.border}; padding-bottom: 0.3em; }
+  .md-preview h3 { font-size: 1.25em; }
+  .md-preview p { margin: 0 0 16px; }
+  .md-preview a { color: ${COLORS.accent}; text-decoration: none; }
+  .md-preview a:hover { text-decoration: underline; }
+  .md-preview strong { color: #f0f0f0; }
+  .md-preview blockquote { border-left: 4px solid ${COLORS.accent}; padding: 0 16px; margin: 0 0 16px; color: ${COLORS.textMuted}; background: rgba(124,108,240,0.05); padding: 12px 16px; border-radius: 0 6px 6px 0; }
+  .md-preview code { background: ${COLORS.codeBg}; padding: 2px 6px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.9em; color: #e06c75; }
+  .md-preview pre { background: ${COLORS.codeBg}; border: 1px solid ${COLORS.border}; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0 0 16px; position: relative; }
+  .md-preview pre code { background: transparent; padding: 0; color: #e6e6e6; font-size: 13px; line-height: 1.5; }
+  .md-preview ul, .md-preview ol { padding-left: 24px; margin: 0 0 16px; }
+  .md-preview li { margin: 4px 0; }
+  .md-preview table { border-collapse: collapse; width: 100%; margin: 0 0 16px; }
+  .md-preview th, .md-preview td { border: 1px solid ${COLORS.border}; padding: 8px 12px; text-align: left; }
+  .md-preview th { background: rgba(124,108,240,0.1); color: #f0f0f0; font-weight: 600; }
+  .md-preview tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .md-preview hr { border: none; border-top: 1px solid ${COLORS.border}; margin: 24px 0; }
+  .md-preview img { max-width: 100%; border-radius: 8px; }
+  .md-preview input[type="checkbox"] { margin-right: 6px; accent-color: ${COLORS.accent}; }
+  .md-preview del { color: ${COLORS.textMuted}; }
+  .code-block-wrapper { position: relative; }
+  .code-lang-label { position: absolute; top: 8px; right: 12px; font-size: 11px; color: ${COLORS.textMuted}; text-transform: uppercase; letter-spacing: 0.5px; user-select: none; }
+  .code-copy-btn { position: absolute; top: 6px; right: 60px; background: ${COLORS.btnBg}; border: 1px solid ${COLORS.border}; color: ${COLORS.textMuted}; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
+  .code-copy-btn:hover { background: ${COLORS.hoverBg}; color: ${COLORS.accent}; }
+`
+
+const sanitizeHtml = (html: string): string => {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+}
+
+function highlightCode(code: string, lang: string): string {
+  let escaped = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+  if (['javascript', 'js', 'typescript', 'ts', 'jsx', 'tsx'].includes(lang)) {
+    escaped = escaped
+      .replace(/(\/\/.*$)/gm, '<span style="color:#8b949e">$1</span>')
+      .replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color:#8b949e">$1</span>')
+      .replace(/\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|import|export|from|default|async|await|try|catch|finally|throw|typeof|instanceof|in|of|true|false|null|undefined|void)\b/g, '<span style="color:#c678dd">$1</span>')
+      .replace(/(&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|`[^`]*`|"[^"]*"|'[^']*')/g, '<span style="color:#98c379">$1</span>')
+      .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#d19a66">$1</span>')
+  } else if (['python', 'py'].includes(lang)) {
+    escaped = escaped
+      .replace(/(#.*$)/gm, '<span style="color:#8b949e">$1</span>')
+      .replace(/\b(def|class|return|if|elif|else|for|while|import|from|as|try|except|finally|raise|with|lambda|yield|pass|break|continue|True|False|None|and|or|not|in|is|print)\b/g, '<span style="color:#c678dd">$1</span>')
+      .replace(/(&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|"[^"]*"|'[^']*')/g, '<span style="color:#98c379">$1</span>')
+      .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#d19a66">$1</span>')
+  } else if (['css', 'scss'].includes(lang)) {
+    escaped = escaped
+      .replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color:#8b949e">$1</span>')
+      .replace(/([\w-]+)\s*:/g, '<span style="color:#e06c75">$1</span>:')
+      .replace(/:\s*([^;{]+)/g, ': <span style="color:#98c379">$1</span>')
+  } else if (['html', 'xml'].includes(lang)) {
+    escaped = escaped
+      .replace(/(&lt;\/?)([\w-]+)/g, '$1<span style="color:#e06c75">$2</span>')
+      .replace(/([\w-]+)=/g, '<span style="color:#d19a66">$1</span>=')
+      .replace(/("[^"]*")/g, '<span style="color:#98c379">$1</span>')
+  } else {
+    escaped = escaped
+      .replace(/(#.*$)/gm, '<span style="color:#8b949e">$1</span>')
+      .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#d19a66">$1</span>')
   }
+  return escaped
 }
 
-// Toolbar button definitions
-interface ToolbarBtn {
-  label: string
-  title: string
-  prefix: string
-  suffix: string
-  block?: boolean
-}
-
-const TOOLBAR_BUTTONS: ToolbarBtn[] = [
-  { label: 'B', title: '粗体 (Ctrl+B)', prefix: '**', suffix: '**' },
-  { label: 'I', title: '斜体 (Ctrl+I)', prefix: '*', suffix: '*' },
-  { label: 'H', title: '标题', prefix: '# ', suffix: '', block: true },
-  { label: '🔗', title: '链接', prefix: '[', suffix: '](url)' },
-  { label: '🖼', title: '图片', prefix: '![alt](', suffix: ')' },
-  { label: '</>', title: '代码', prefix: '```\n', suffix: '\n```', block: true },
-  { label: '•', title: '列表', prefix: '- ', suffix: '', block: true },
-  { label: '❝', title: '引用', prefix: '> ', suffix: '', block: true },
-  { label: '⊞', title: '表格', prefix: '', suffix: '', block: true },
-  { label: '―', title: '分割线', prefix: '\n---\n', suffix: '', block: true },
-]
-
-const MarkdownPreviewer = () => {
-  const theme = useStore(s => s.theme)
-  const [markdown, setMarkdown] = useState(loadSavedContent)
-  const [splitRatio, setSplitRatio] = useState(0.4)
+export default function MarkdownPreviewer() {
+  const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN)
   const [copyFeedback, setCopyFeedback] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [splitRatio, setSplitRatio] = useState(0.45)
   const draggingRef = useRef(false)
-  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const isDark = theme === 'dark'
-
-  // Theme colors
-  const colors = useMemo(() => ({
-    bg: isDark ? '#1a1a2e' : '#f5f5f7',
-    bgGradient: isDark
-      ? 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)'
-      : 'linear-gradient(180deg, #f5f5f7 0%, #e8e8ed 100%)',
-    surface: isDark ? '#0f0f1a' : '#ffffff',
-    surfaceLight: isDark ? '#1f1f2f' : '#fafafa',
-    border: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
-    borderLight: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
-    text: isDark ? '#e0e0f0' : '#1d1d1f',
-    textMuted: isDark ? '#9090a0' : '#86868b',
-    accent: isDark ? '#60a5fa' : '#0071e3',
-    accentPurple: isDark ? '#a78bfa' : '#7c3aed',
-    accentPink: isDark ? '#f472b6' : '#e0245e',
-    accentGreen: isDark ? '#34d399' : '#10b981',
-    divider: isDark ? '#3b3b5c' : '#c7c7cc',
-    toolbarBg: isDark ? 'rgba(15,15,26,0.9)' : 'rgba(255,255,255,0.9)',
-    codeBg: isDark ? 'rgba(96,165,250,0.1)' : 'rgba(0,113,227,0.08)',
-    preBg: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
-    btnHover: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-    shadow: isDark ? 'inset 0 2px 8px rgba(0,0,0,0.2)' : 'inset 0 1px 4px rgba(0,0,0,0.06)',
-    tocBg: isDark ? 'rgba(15,15,26,0.6)' : 'rgba(255,255,255,0.6)',
-    lineNumber: isDark ? '#4a4a5c' : '#c7c7cc',
-  }), [isDark])
-
-  // Render markdown to HTML
-  const { html, toc } = useMemo(() => {
+  const html = useMemo(() => {
     try {
-      const rawHtml = marked.parse(markdown) as string
-      const safeHtml = sanitizeHtml(rawHtml)
-      const withIds = addHeadingIds(safeHtml)
-      const extractedToc = extractToc(safeHtml)
-      return { html: withIds, toc: extractedToc }
+      const raw = marked.parse(markdown) as string
+      return sanitizeHtml(raw)
     } catch (err) {
-      return { html: `<p style="color:red">渲染错误: ${String(err)}</p>`, toc: [] }
+      return `<p style="color:#e06c75">渲染错误: ${String(err)}</p>`
     }
   }, [markdown])
 
-  // Word count and character count
+  const highlightedHtml = useMemo(() => {
+    return html.replace(
+      /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
+      (_match, lang, code) => {
+        const highlighted = highlightCode(code, lang)
+        return `<div class="code-block-wrapper"><span class="code-lang-label">${lang}</span><button class="code-copy-btn" onclick="(function(btn){var code=btn.closest('.code-block-wrapper').querySelector('code');var text=code.textContent;navigator.clipboard.writeText(text).then(function(){btn.textContent='已复制';setTimeout(function(){btn.textContent='复制'},1500)});})(this)">复制</button><pre><code class="language-${lang}">${highlighted}</code></pre></div>`
+      }
+    )
+  }, [html])
+
   const stats = useMemo(() => {
     const text = markdown.trim()
-    const chars = text.length
-    const words = text ? text.split(/\s+/).filter(Boolean).length : 0
-    const lines = markdown.split('\n').length
-    return { chars, words, lines }
-  }, [markdown])
-
-  // Auto-save to localStorage
-  useEffect(() => {
-    if (autoSaveTimerRef.current) {
-      clearTimeout(autoSaveTimerRef.current)
-    }
-    autoSaveTimerRef.current = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, markdown)
-      } catch { /* ignore storage errors */ }
-    }, 500)
-    return () => {
-      if (autoSaveTimerRef.current) {
-        clearTimeout(autoSaveTimerRef.current)
-      }
+    return {
+      chars: text.length,
+      words: text ? text.split(/\s+/).filter(Boolean).length : 0,
+      lines: markdown.split('\n').length,
     }
   }, [markdown])
 
-  // Insert formatting at cursor position
-  const insertFormatting = useCallback((prefix: string, suffix: string, block?: boolean) => {
+  const handleExport = useCallback(() => {
+    const fullHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown 文档</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #0d1117; color: #e6e6e6; line-height: 1.6; }
+  h1, h2, h3 { border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.3em; }
+  a { color: #7c6cf0; }
+  code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+  pre { background: #161b22; padding: 16px; border-radius: 8px; overflow-x: auto; }
+  pre code { background: transparent; padding: 0; }
+  blockquote { border-left: 4px solid #7c6cf0; padding: 12px 16px; margin: 0 0 16px; color: #8b949e; background: rgba(124,108,240,0.05); border-radius: 0 6px 6px 0; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; }
+  th { background: rgba(124,108,240,0.1); }
+  hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 24px 0; }
+</style>
+</head>
+<body>
+${html}
+</body>
+</html>`
+    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'document.html'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [html])
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(html).then(() => {
+      setCopyFeedback('已复制!')
+      setTimeout(() => setCopyFeedback(''), 2000)
+    }).catch(() => {
+      setCopyFeedback('复制失败')
+      setTimeout(() => setCopyFeedback(''), 2000)
+    })
+  }, [html])
+
+  const handleInsertFormat = useCallback((prefix: string, suffix: string) => {
     const textarea = textareaRef.current
     if (!textarea) return
-
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
-    const selectedText = markdown.substring(start, end)
-    const before = markdown.substring(0, start)
-    const after = markdown.substring(end)
-
-    let newPrefix = prefix
-    let newSuffix = suffix
-
-    if (block && start > 0 && before[start - 1] !== '\n') {
-      newPrefix = '\n' + prefix
-    }
-
-    const newText = before + newPrefix + selectedText + newSuffix + after
+    const selected = markdown.substring(start, end)
+    const newText = markdown.substring(0, start) + prefix + selected + suffix + markdown.substring(end)
     setMarkdown(newText)
-
     requestAnimationFrame(() => {
       textarea.focus()
-      const cursorPos = start + newPrefix.length + selectedText.length
-      textarea.setSelectionRange(
-        selectedText ? cursorPos : start + newPrefix.length,
-        selectedText ? cursorPos : start + newPrefix.length
-      )
+      const cursorPos = start + prefix.length + selected.length
+      textarea.setSelectionRange(cursorPos, cursorPos)
     })
   }, [markdown])
 
-  // Insert table template
-  const insertTable = useCallback(() => {
-    const table = '\n| 列1 | 列2 | 列3 |\n|------|------|------|\n| 内容 | 内容 | 内容 |\n'
-    insertFormatting(table, '')
-  }, [insertFormatting])
-
-  // Handle toolbar button click
-  const handleToolbarClick = useCallback((btn: ToolbarBtn) => {
-    if (btn.title === '表格') {
-      insertTable()
-      return
-    }
-    insertFormatting(btn.prefix, btn.suffix, btn.block)
-  }, [insertFormatting, insertTable])
-
-  // Export: Copy HTML
-  const copyHtml = useCallback(() => {
-    try {
-      navigator.clipboard.writeText(html).then(() => {
-        setCopyFeedback('已复制 HTML!')
-        setTimeout(() => setCopyFeedback(''), 2000)
-      }).catch(() => {
-        setCopyFeedback('复制失败')
-        setTimeout(() => setCopyFeedback(''), 2000)
-      })
-    } catch {
-      setCopyFeedback('复制失败')
-      setTimeout(() => setCopyFeedback(''), 2000)
-    }
-  }, [html])
-
-  // Export: Download file
-  const downloadFile = useCallback((content: string, filename: string, mimeType: string) => {
-    try {
-      const blob = new Blob([content], { type: mimeType })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch { /* ignore download errors */ }
-  }, [])
-
-  // Keyboard shortcuts
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const mod = e.ctrlKey || e.metaKey
-    if (mod && e.key === 'b') {
-      e.preventDefault()
-      insertFormatting('**', '**')
-    } else if (mod && e.key === 'i') {
-      e.preventDefault()
-      insertFormatting('*', '*')
-    } else if (mod && e.key === 's') {
-      e.preventDefault()
-      downloadFile(markdown, 'document.md', 'text/markdown;charset=utf-8')
-    }
-  }, [insertFormatting, downloadFile, markdown])
-
-  // Draggable divider
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     draggingRef.current = true
-
     const container = containerRef.current
     if (!container) return
-
-    const handleMouseMove = (ev: MouseEvent) => {
+    const handleMove = (ev: MouseEvent) => {
       if (!draggingRef.current) return
       const rect = container.getBoundingClientRect()
-      const ratio = Math.max(0.15, Math.min(0.85, (ev.clientX - rect.left) / rect.width))
+      const ratio = Math.max(0.2, Math.min(0.8, (ev.clientX - rect.left) / rect.width))
       setSplitRatio(ratio)
     }
-
-    const handleMouseUp = () => {
+    const handleUp = () => {
       draggingRef.current = false
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mousemove', handleMove)
+      document.removeEventListener('mouseup', handleUp)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('mouseup', handleUp)
   }, [])
 
-  // Line numbers for the editor
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const mod = e.ctrlKey || e.metaKey
+    if (mod && e.key === 'b') { e.preventDefault(); handleInsertFormat('**', '**') }
+    else if (mod && e.key === 'i') { e.preventDefault(); handleInsertFormat('*', '*') }
+  }, [handleInsertFormat])
+
   const lineNumbers = useMemo(() => {
-    const count = markdown.split('\n').length
-    return Array.from({ length: count }, (_, i) => i + 1)
+    return Array.from({ length: markdown.split('\n').length }, (_, i) => i + 1)
   }, [markdown])
 
-  // Scroll line numbers with textarea
-  const [lineScrollTop, setLineScrollTop] = useState(0)
-  const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
-    setLineScrollTop(e.currentTarget.scrollTop)
-  }, [])
-
-  const toolbarBtnStyle = (): React.CSSProperties => ({
-    background: 'transparent',
-    border: 'none',
-    color: colors.text,
-    cursor: 'pointer',
-    padding: '4px 8px',
-    borderRadius: 4,
-    fontSize: 13,
-    fontWeight: 600,
-    fontFamily: 'inherit',
-    minWidth: 28,
-    textAlign: 'center' as const,
-    transition: 'background 0.15s',
-  })
-
   return (
-    <div
-      style={{
-        background: colors.bgGradient,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ background: COLORS.bg, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <style>{PREVIEW_STYLES}</style>
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '8px 12px',
-          borderBottom: `1px solid ${colors.border}`,
-          flexShrink: 0,
-        }}
-      >
-        <h3 style={{ color: colors.text, margin: 0, fontSize: 16, fontWeight: 600 }}>
-          📝 Markdown 预览器
-        </h3>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <button
-            onClick={copyHtml}
-            style={{
-              ...toolbarBtnStyle(),
-              fontSize: 12,
-              padding: '3px 10px',
-              background: colors.btnHover,
-              border: `1px solid ${colors.border}`,
-            }}
-            title="复制 HTML"
-          >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: COLORS.headerBg, borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FileText size={16} color={COLORS.accent} />
+          <span style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Markdown 预览器</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: COLORS.textMuted, fontSize: 11 }}>{stats.chars} 字符 · {stats.words} 词 · {stats.lines} 行</span>
+          <div style={{ width: 1, height: 16, background: COLORS.border, margin: '0 4px' }} />
+          <button onClick={handleCopy} style={{ display: 'flex', alignItems: 'center', gap: 4, background: COLORS.btnBg, border: `1px solid ${COLORS.border}`, color: COLORS.textMuted, padding: '3px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12, transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = COLORS.hoverBg; e.currentTarget.style.color = COLORS.accent }}
+            onMouseLeave={e => { e.currentTarget.style.background = COLORS.btnBg; e.currentTarget.style.color = COLORS.textMuted }}>
+            <Copy size={12} />
             {copyFeedback || '复制 HTML'}
           </button>
-          <button
-            onClick={() => downloadFile(html, 'document.html', 'text/html;charset=utf-8')}
-            style={{
-              ...toolbarBtnStyle(),
-              fontSize: 12,
-              padding: '3px 10px',
-              background: colors.btnHover,
-              border: `1px solid ${colors.border}`,
-            }}
-            title="下载 HTML"
-          >
-            ⬇ HTML
-          </button>
-          <button
-            onClick={() => downloadFile(markdown, 'document.md', 'text/markdown;charset=utf-8')}
-            style={{
-              ...toolbarBtnStyle(),
-              fontSize: 12,
-              padding: '3px 10px',
-              background: colors.btnHover,
-              border: `1px solid ${colors.border}`,
-            }}
-            title="下载 Markdown (Ctrl+S)"
-          >
-            ⬇ .md
+          <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 4, background: COLORS.accent, border: 'none', color: '#fff', padding: '3px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 500, transition: 'background 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = COLORS.accentHover }}
+            onMouseLeave={e => { e.currentTarget.style.background = COLORS.accent }}>
+            <Download size={12} />
+            导出 HTML
           </button>
         </div>
       </div>
-
       {/* Toolbar */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '4px 8px',
-          gap: 2,
-          background: colors.toolbarBg,
-          borderBottom: `1px solid ${colors.border}`,
-          flexShrink: 0,
-          flexWrap: 'wrap' as const,
-        }}
-      >
-        {TOOLBAR_BUTTONS.map((btn) => (
-          <button
-            key={btn.title}
-            onClick={() => handleToolbarClick(btn)}
-            title={btn.title}
-            style={toolbarBtnStyle()}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = colors.btnHover }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-          >
+      <div style={{ display: 'flex', gap: 2, padding: '4px 12px', background: COLORS.toolbarBg, borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
+        {[
+          { label: 'B', title: '粗体', action: () => handleInsertFormat('**', '**') },
+          { label: 'I', title: '斜体', action: () => handleInsertFormat('*', '*') },
+          { label: 'H', title: '标题', action: () => handleInsertFormat('\n## ', '\n') },
+          { label: '🔗', title: '链接', action: () => handleInsertFormat('[', '](url)') },
+          { label: '🖼', title: '图片', action: () => handleInsertFormat('![alt](', ')') },
+          { label: '</>', title: '代码块', action: () => handleInsertFormat('\n```\n', '\n```\n') },
+          { label: '•', title: '列表', action: () => handleInsertFormat('\n- ', '\n') },
+          { label: '❝', title: '引用', action: () => handleInsertFormat('\n> ', '\n') },
+          { label: '―', title: '分割线', action: () => handleInsertFormat('\n---\n', '') },
+        ].map(btn => (
+          <button key={btn.title} title={btn.title} onClick={btn.action}
+            style={{ background: 'transparent', border: 'none', color: COLORS.textMuted, cursor: 'pointer', padding: '4px 8px', borderRadius: 4, fontSize: 13, fontWeight: 600, minWidth: 28, textAlign: 'center' as const, transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = COLORS.hoverBg; e.currentTarget.style.color = COLORS.accent }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = COLORS.textMuted }}>
             {btn.label}
           </button>
         ))}
       </div>
-
-      {/* Main split pane */}
-      <div
-        ref={containerRef}
-        style={{
-          flex: 1,
-          display: 'flex',
-          minHeight: 0,
-          overflow: 'hidden',
-        }}
-      >
-        {/* Editor pane */}
-        <div
-          style={{
-            width: `${splitRatio * 100}%`,
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 0,
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              color: colors.textMuted,
-              fontSize: 11,
-              fontWeight: 600,
-              textTransform: 'uppercase' as const,
-              letterSpacing: '0.5px',
-              padding: '6px 12px',
-              flexShrink: 0,
-            }}
-          >
-            编辑器
+      {/* Main Content */}
+      <div ref={containerRef} style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* Editor */}
+        <div style={{ width: `${splitRatio * 100}%`, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${COLORS.border}`, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', background: COLORS.editorBg, borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
+            <span style={{ color: COLORS.textMuted, fontSize: 11, textTransform: 'uppercase' as const, letterSpacing: 1 }}>编辑器</span>
           </div>
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              minHeight: 0,
-              background: colors.surface,
-              border: `1px solid ${colors.border}`,
-              borderRadius: 8,
-              overflow: 'hidden',
-              margin: '0 8px',
-              boxShadow: colors.shadow,
-            }}
-          >
-            {/* Line numbers */}
-            <div
-              style={{
-                width: 44,
-                flexShrink: 0,
-                background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
-                borderRight: `1px solid ${colors.borderLight}`,
-                overflow: 'hidden',
-                paddingTop: 12,
-                paddingLeft: 4,
-                paddingRight: 4,
-              }}
-            >
-              <div
-                style={{
-                  transform: `translateY(${-lineScrollTop}px)`,
-                  fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                  color: colors.lineNumber,
-                  textAlign: 'right' as const,
-                  userSelect: 'none' as const,
-                }}
-              >
-                {lineNumbers.map((n) => (
-                  <div key={n}>{n}</div>
-                ))}
-              </div>
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden', background: COLORS.editorBg }}>
+            <div style={{ padding: '12px 0', background: COLORS.editorBg, textAlign: 'right', userSelect: 'none', overflow: 'hidden', flexShrink: 0 }}>
+              {lineNumbers.map(n => (
+                <div key={n} style={{ padding: '0 12px 0 16px', fontSize: 12, lineHeight: '21px', color: '#3b4048', fontFamily: "'SF Mono','Fira Code',monospace" }}>{n}</div>
+              ))}
             </div>
-            {/* Textarea */}
             <textarea
               ref={textareaRef}
               value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              onScroll={handleScroll}
+              onChange={e => setMarkdown(e.target.value)}
               onKeyDown={handleKeyDown}
+              style={{ flex: 1, background: 'transparent', color: COLORS.text, border: 'none', outline: 'none', resize: 'none', padding: '12px 16px', fontSize: 13, lineHeight: '21px', fontFamily: "'SF Mono','Fira Code',monospace", tabSize: 2, whiteSpace: 'pre', overflow: 'auto' }}
               spellCheck={false}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                color: colors.text,
-                border: 'none',
-                padding: '12px 12px',
-                fontSize: 13,
-                lineHeight: 1.6,
-                resize: 'none',
-                outline: 'none',
-                fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace",
-                tabSize: 2,
-                overflow: 'auto',
-              }}
+              placeholder="在此输入 Markdown..."
             />
           </div>
         </div>
-
-        {/* Draggable divider */}
+        {/* Drag Handle */}
         <div
-          onMouseDown={handleMouseDown}
-          style={{
-            width: 6,
-            cursor: 'col-resize',
-            background: colors.divider,
-            flexShrink: 0,
-            transition: 'background 0.15s',
-            zIndex: 1,
-          }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = colors.accent }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = colors.divider }}
-        />
-
-        {/* Preview pane */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 0,
-            overflow: 'hidden',
-          }}
+          onMouseDown={handleDragStart}
+          style={{ width: 5, cursor: 'col-resize', background: COLORS.border, flexShrink: 0, transition: 'background 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onMouseEnter={e => { e.currentTarget.style.background = COLORS.accent }}
+          onMouseLeave={e => { e.currentTarget.style.background = COLORS.border }}
         >
-          <div
-            style={{
-              color: colors.textMuted,
-              fontSize: 11,
-              fontWeight: 600,
-              textTransform: 'uppercase' as const,
-              letterSpacing: '0.5px',
-              padding: '6px 12px',
-              flexShrink: 0,
-            }}
-          >
-            预览
+          <div style={{ width: 2, height: 24, borderRadius: 1, background: COLORS.textMuted, opacity: 0.5 }} />
+        </div>
+        {/* Preview */}
+        <div style={{ width: `${(1 - splitRatio) * 100}%`, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', background: COLORS.previewBg, borderBottom: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
+            <span style={{ color: COLORS.textMuted, fontSize: 11, textTransform: 'uppercase' as const, letterSpacing: 1 }}>预览</span>
           </div>
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              minHeight: 0,
-              overflow: 'hidden',
-              margin: '0 8px',
-              gap: 8,
-            }}
-          >
-            {/* TOC */}
-            {toc.length > 0 && (
-              <div
-                style={{
-                  width: 180,
-                  flexShrink: 0,
-                  background: colors.tocBg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: 8,
-                  padding: '10px 8px',
-                  overflow: 'auto',
-                  fontSize: 12,
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    color: colors.textMuted,
-                    fontSize: 10,
-                    textTransform: 'uppercase' as const,
-                    letterSpacing: '0.5px',
-                    marginBottom: 8,
-                  }}
-                >
-                  目录
-                </div>
-                {toc.map((item) => (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      const el = document.getElementById(item.id)
-                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    }}
-                    style={{
-                      display: 'block',
-                      color: colors.textMuted,
-                      textDecoration: 'none',
-                      padding: `2px 0 2px ${(item.level - 1) * 10}px`,
-                      lineHeight: 1.5,
-                      cursor: 'pointer',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap' as const,
-                      transition: 'color 0.15s',
-                    }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = colors.accent }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = colors.textMuted }}
-                  >
-                    {item.text}
-                  </a>
-                ))}
-              </div>
-            )}
-            {/* Preview content */}
-            <div
-              style={{
-                flex: 1,
-                background: colors.surfaceLight,
-                color: colors.text,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 8,
-                padding: '12px 16px',
-                overflow: 'auto',
-                boxShadow: colors.shadow,
-                lineHeight: 1.6,
-              }}
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
+          <div style={{ flex: 1, overflow: 'auto', background: COLORS.previewBg }}>
+            <div className="md-preview" dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
           </div>
         </div>
       </div>
-
-      {/* Status bar */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '4px 12px',
-          background: colors.toolbarBg,
-          borderTop: `1px solid ${colors.border}`,
-          fontSize: 11,
-          color: colors.textMuted,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', gap: 16 }}>
-          <span>字符: {stats.chars.toLocaleString()}</span>
-          <span>词数: {stats.words.toLocaleString()}</span>
-          <span>行数: {stats.lines}</span>
-        </div>
-        <div style={{ display: 'flex', gap: 12, fontSize: 10 }}>
-          <span>Ctrl+B 粗体</span>
-          <span>Ctrl+I 斜体</span>
-          <span>Ctrl+S 保存</span>
-        </div>
-      </div>
-
-      {/* Preview styling */}
-      <style>{`
-        h1, h2, h3, h4, h5, h6 { margin: 0.8em 0 0.3em 0; }
-        h1 { font-size: 28px; color: ${colors.accent}; }
-        h2 { font-size: 22px; color: ${colors.accentPurple}; }
-        h3 { font-size: 18px; color: ${colors.accentPink}; }
-        h4 { font-size: 16px; color: ${colors.text}; }
-        h5 { font-size: 14px; color: ${colors.text}; }
-        h6 { font-size: 13px; color: ${colors.textMuted}; }
-        p { margin: 0.5em 0; line-height: 1.6; }
-        ul, ol { padding-left: 2em; margin: 0.5em 0; }
-        li { margin: 0.2em 0; }
-        blockquote {
-          border-left: 4px solid ${colors.accent};
-          padding-left: 1em;
-          margin: 0.8em 0;
-          color: ${colors.textMuted};
-        }
-        code {
-          background: ${colors.codeBg};
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-          font-size: 0.9em;
-        }
-        pre {
-          background: ${colors.preBg};
-          padding: 12px;
-          border-radius: 8px;
-          overflow-x: auto;
-          margin: 0.8em 0;
-        }
-        pre code {
-          background: transparent;
-          padding: 0;
-        }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin: 0.8em 0;
-        }
-        td, th {
-          border: 1px solid ${colors.border};
-          padding: 8px 12px;
-          text-align: left;
-        }
-        th {
-          font-weight: 600;
-          background: ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-        }
-        a {
-          color: ${colors.accent};
-          text-decoration: none;
-        }
-        a:hover {
-          text-decoration: underline;
-        }
-        hr {
-          border: none;
-          border-top: 1px solid ${colors.border};
-          margin: 1em 0;
-        }
-        img {
-          max-width: 100%;
-          border-radius: 6px;
-          margin: 0.5em 0;
-        }
-        input[type="checkbox"] {
-          margin-right: 6px;
-        }
-        del {
-          color: ${colors.textMuted};
-        }
-      `}</style>
     </div>
   )
 }
-
-export default MarkdownPreviewer

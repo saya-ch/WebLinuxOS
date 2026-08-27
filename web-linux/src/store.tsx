@@ -281,6 +281,11 @@ let rafFrameCount = 0
 let rafLastCheck = performance.now()
 let cachedFps = 60
 
+// DOM 节点数缓存，避免每5秒遍历整个 DOM 树
+let cachedDomNodeCount = 0
+let domNodeCountCacheTime = 0
+const DOM_NODE_CACHE_INTERVAL = 30000 // 30秒缓存
+
 // 清理所有通知定时器的工具函数，用于 store 重置时释放资源
 const clearAllNotificationTimers = () => {
   notificationTimers.forEach(timer => clearTimeout(timer))
@@ -503,19 +508,33 @@ export const useStore = create<Store>((set, get) => ({
       networkUsage = Math.round(20 + Math.random() * 20)
     }
 
-    // ── 进程数模拟：基于窗口数 + DOM 节点密度 ──
+    // ── 进程数模拟：基于基础系统进程 + 窗口数 + 内存压力 ──
     let processes: number
     try {
       const openWindows = get().windows.length
-      const domNodes = typeof document !== 'undefined'
-        ? document.getElementsByTagName('*').length
-        : 0
-      // 基础进程 = 每个窗口约 3~8 个"进程"，加上 DOM 节点贡献
-      const windowProcesses = openWindows * 5
-      const domProcesses = Math.round(Math.min(30, domNodes / 200))
-      processes = Math.min(100, Math.max(1, windowProcesses + domProcesses))
+
+      // DOM 节点数使用缓存，避免每5秒遍历整个 DOM 树（性能关键）
+      if (Date.now() - domNodeCountCacheTime > DOM_NODE_CACHE_INTERVAL) {
+        try {
+          cachedDomNodeCount = document.querySelectorAll('*').length
+          domNodeCountCacheTime = Date.now()
+        } catch {
+          // 忽略
+        }
+      }
+
+      // 基础系统进程（模拟操作系统后台服务）
+      const baseProcesses = 28
+      // 每个窗口对应 3~5 个进程（渲染进程 + 扩展进程等）
+      const windowProcesses = openWindows * 4
+      // DOM 复杂度贡献（每 500 个节点约 1 个进程，上限 15）
+      const domProcesses = Math.round(Math.min(15, cachedDomNodeCount / 500))
+      // 内存压力贡献：内存使用率越高，模拟的进程越多
+      const memoryPressure = memoryUsage > 80 ? 5 : memoryUsage > 60 ? 2 : 0
+
+      processes = Math.max(1, Math.min(128, baseProcesses + windowProcesses + domProcesses + memoryPressure))
     } catch {
-      processes = Math.round(8 + Math.random() * 7)
+      processes = Math.round(30 + Math.random() * 10)
     }
 
     set({

@@ -5,6 +5,21 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [127.0.0] - 2026-08-27
+
+### Added — v127 性能优化、存储升级与新工具
+
+- **IndexedDB 文件存储** — 虚拟文件系统从 localStorage 迁移到 IndexedDB，突破 5MB 存储限制。自动向后兼容：启动时将 localStorage 中的旧文件数据迁移到 IndexedDB。(`store/indexedDBStorage.ts`, `store/storageUtils.ts`)
+- **Markdown Previewer** — 实时 Markdown 预览编辑器，左右分栏布局，支持完整 Markdown 语法、代码高亮、格式化工具栏、导出 HTML、可拖拽分隔条。(`apps/MarkdownPreviewer.tsx`)
+- **JSON Formatter** — JSON 格式化与验证工具，支持美化/压缩/验证/转换为 TypeScript 类型/转换为 CSV，精确到行号列号的错误提示，JSON 语法高亮。(`apps/JsonFormatter.tsx`)
+- **Encoding Toolkit** — 编码解码工具箱，支持 Base64 编解码、URL 编解码、HTML 实体编解码、UTF-8 字节计数、SHA-256 哈希计算（SubtleCrypto API），支持文件拖放导入。(`apps/EncodingToolkit.tsx`)
+
+### Changed
+
+- **系统监控性能优化** — `refreshSystemStats` 中的 DOM 遍历（`document.getElementsByTagName('*')`）改为缓存机制，每 30 秒才重新计算一次，消除高频 DOM 遍历的性能开销。进程数模拟改为基于基础系统进程(28) + 窗口进程 + DOM 复杂度 + 内存压力的更合理模型。
+- **版本号升级至 127.0.0**（`package.json` 与 README badge）。
+- **README 重写** — 参照高 star 项目风格，精简结构，去掉过度使用的 emoji，新增 IndexedDB 存储和技术亮点描述。
+
 ## [118.0.0] - 2026-08-20
 
 ### Added — v118 创新应用：LexiconForge 词语锻造坊
