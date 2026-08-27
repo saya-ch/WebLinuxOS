@@ -112,11 +112,6 @@ const SPECIAL_FILENAME_MAP: Record<string, string> = {
 
 // ─── Syntax Highlighting ─────────────────────────────────────────────────────
 
-interface HighlightToken {
-  text: string
-  type: 'keyword' | 'string' | 'comment' | 'number' | 'function' | 'operator' | 'tag' | 'attribute' | 'plain'
-}
-
 const JS_KEYWORDS_SET = new Set([
   'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue',
   'debugger', 'default', 'delete', 'do', 'else', 'export', 'extends', 'false',
@@ -169,9 +164,6 @@ function highlightCode(code: string, fileName: string): string {
   const isShell = ['sh', 'bash', 'zsh'].includes(ext)
   const isGo = ext === 'go'
   const isRust = ext === 'rs'
-  const isJSON = ext === 'json'
-  const isYAML = ['yaml', 'yml'].includes(ext)
-  const isMarkdown = ext === 'md'
   const isSQL = ext === 'sql'
 
   const darkColors = {

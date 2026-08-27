@@ -1,12 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { ArrowRightLeft, Copy, Check, Volume2, Star, Trash2, Loader2, RotateCcw, Globe } from 'lucide-react'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface TranslationResult {
-  translatedText: string
-  match: number
-}
+import { ArrowRightLeft, Copy, Check, Volume2, Trash2, Loader2, RotateCcw, Globe } from 'lucide-react'
 
 interface HistoryEntry {
   id: string
