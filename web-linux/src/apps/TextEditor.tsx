@@ -110,6 +110,247 @@ const SPECIAL_FILENAME_MAP: Record<string, string> = {
   '.bowerrc': 'json',
 }
 
+// ─── Syntax Highlighting ─────────────────────────────────────────────────────
+
+interface HighlightToken {
+  text: string
+  type: 'keyword' | 'string' | 'comment' | 'number' | 'function' | 'operator' | 'tag' | 'attribute' | 'plain'
+}
+
+const JS_KEYWORDS_SET = new Set([
+  'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue',
+  'debugger', 'default', 'delete', 'do', 'else', 'export', 'extends', 'false',
+  'finally', 'for', 'from', 'function', 'if', 'import', 'in', 'instanceof',
+  'let', 'new', 'null', 'of', 'return', 'static', 'super', 'switch', 'this',
+  'throw', 'true', 'try', 'typeof', 'undefined', 'var', 'void', 'while', 'with', 'yield',
+])
+
+const PY_KEYWORDS_SET = new Set([
+  'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue',
+  'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from',
+  'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not',
+  'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield',
+  'True', 'False', 'None',
+])
+
+const CSS_PROPS = new Set([
+  'display', 'position', 'width', 'height', 'margin', 'padding', 'border',
+  'background', 'color', 'font-size', 'font-weight', 'text-align', 'flex',
+  'grid', 'z-index', 'opacity', 'overflow', 'cursor', 'transform', 'transition',
+  'animation', 'box-shadow', 'border-radius', 'top', 'left', 'right', 'bottom',
+])
+
+const GO_KEYWORDS = new Set([
+  'break', 'case', 'chan', 'const', 'continue', 'default', 'defer', 'else',
+  'fallthrough', 'for', 'func', 'go', 'goto', 'if', 'import', 'interface',
+  'map', 'package', 'range', 'return', 'select', 'struct', 'switch', 'type', 'var',
+])
+
+const RUST_KEYWORDS = new Set([
+  'as', 'async', 'await', 'break', 'const', 'continue', 'crate', 'dyn',
+  'else', 'enum', 'extern', 'false', 'fn', 'for', 'if', 'impl', 'in',
+  'let', 'loop', 'match', 'mod', 'move', 'mut', 'pub', 'ref', 'return',
+  'self', 'Self', 'static', 'struct', 'super', 'trait', 'true', 'type',
+  'unsafe', 'use', 'where', 'while',
+])
+
+function highlightCode(code: string, fileName: string): string {
+  if (!code) return ''
+  
+  const ext = fileName.split('.').pop()?.toLowerCase() || 'txt'
+  const lines = code.split('\n')
+  
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  
+  const isJSLike = ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs'].includes(ext)
+  const isPython = ext === 'py'
+  const isCSS = ['css', 'scss', 'less'].includes(ext)
+  const isHTML = ['html', 'htm', 'svg', 'vue', 'svelte'].includes(ext)
+  const isShell = ['sh', 'bash', 'zsh'].includes(ext)
+  const isGo = ext === 'go'
+  const isRust = ext === 'rs'
+  const isJSON = ext === 'json'
+  const isYAML = ['yaml', 'yml'].includes(ext)
+  const isMarkdown = ext === 'md'
+  const isSQL = ext === 'sql'
+
+  const darkColors = {
+    keyword: '#c678dd',
+    string: '#98c379',
+    comment: '#5c6370',
+    number: '#d19a66',
+    function: '#61afef',
+    operator: '#56b6c2',
+    tag: '#e06c75',
+    attribute: '#d19a66',
+    property: '#e06c75',
+    punctuation: '#abb2bf',
+    type: '#e5c07b',
+    constant: '#d19a66',
+    regex: '#98c379',
+  }
+
+  return lines.map(line => {
+    let result = ''
+    let i = 0
+    
+    // Process the line character by character
+    while (i < line.length) {
+      // Single-line comments
+      if ((isJSLike || isGo || isRust) && line[i] === '/' && line[i + 1] === '/') {
+        result += `<span style="color:${darkColors.comment}">${esc(line.slice(i))}</span>`
+        break
+      }
+      if (isPython && line[i] === '#') {
+        result += `<span style="color:${darkColors.comment}">${esc(line.slice(i))}</span>`
+        break
+      }
+      if (isShell && line[i] === '#') {
+        result += `<span style="color:${darkColors.comment}">${esc(line.slice(i))}</span>`
+        break
+      }
+      if (isSQL && line.slice(i).startsWith('--')) {
+        result += `<span style="color:${darkColors.comment}">${esc(line.slice(i))}</span>`
+        break
+      }
+
+      // Strings (double quotes)
+      if (line[i] === '"') {
+        let j = i + 1
+        while (j < line.length && line[j] !== '"') {
+          if (line[j] === '\\') j++
+          j++
+        }
+        j = Math.min(j + 1, line.length)
+        result += `<span style="color:${darkColors.string}">${esc(line.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      // Strings (single quotes)
+      if (line[i] === "'") {
+        let j = i + 1
+        while (j < line.length && line[j] !== "'") {
+          if (line[j] === '\\') j++
+          j++
+        }
+        j = Math.min(j + 1, line.length)
+        result += `<span style="color:${darkColors.string}">${esc(line.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      // Template literals (backtick)
+      if (line[i] === '`') {
+        let j = i + 1
+        while (j < line.length && line[j] !== '`') {
+          if (line[j] === '\\') j++
+          j++
+        }
+        j = Math.min(j + 1, line.length)
+        result += `<span style="color:${darkColors.string}">${esc(line.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      // Numbers
+      if (/[0-9]/.test(line[i]) && (i === 0 || /[\s(,=+\-*/<>!&|^~[\]{};]/.test(line[i - 1]))) {
+        let j = i
+        while (j < line.length && /[0-9.xXa-fA-FeE_]/.test(line[j])) j++
+        result += `<span style="color:${darkColors.number}">${esc(line.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      // Words (keywords, functions, etc.)
+      if (/[a-zA-Z_$]/.test(line[i])) {
+        let j = i
+        while (j < line.length && /[a-zA-Z0-9_$]/.test(line[j])) j++
+        const word = line.slice(i, j)
+        
+        let color: string | null = null
+
+        if (isJSLike && JS_KEYWORDS_SET.has(word)) {
+          color = darkColors.keyword
+        } else if (isPython && PY_KEYWORDS_SET.has(word)) {
+          color = darkColors.keyword
+        } else if (isGo && GO_KEYWORDS.has(word)) {
+          color = darkColors.keyword
+        } else if (isRust && RUST_KEYWORDS.has(word)) {
+          color = darkColors.keyword
+        } else if (['true', 'false', 'null', 'undefined', 'None', 'True', 'False', 'nil'].includes(word)) {
+          color = darkColors.constant
+        } else if (['int', 'float', 'str', 'bool', 'number', 'string', 'boolean', 'void', 'any', 'unknown', 'never', 'Promise', 'Array', 'Object', 'Map', 'Set', 'Record', 'Partial', 'Required', 'Readonly', 'React', 'useState', 'useEffect', 'useCallback', 'useRef', 'useMemo'].includes(word)) {
+          color = darkColors.type
+        } else if (isCSS && CSS_PROPS.has(word)) {
+          color = darkColors.property
+        } else if (j < line.length && line[j] === '(') {
+          color = darkColors.function
+        } else if (isHTML && line[i] === '<') {
+          color = darkColors.tag
+        } else {
+          color = null
+        }
+
+        if (color) {
+          result += `<span style="color:${color}">${esc(word)}</span>`
+        } else {
+          result += esc(word)
+        }
+        i = j
+        continue
+      }
+
+      // HTML tags
+      if (isHTML && line[i] === '<' && i + 1 < line.length && (/[a-zA-Z/!]/.test(line[i + 1]))) {
+        let j = i + 1
+        if (line[j] === '/') j++
+        while (j < line.length && /[a-zA-Z0-9-]/.test(line[j])) j++
+        const tagEnd = j
+        result += `<span style="color:${darkColors.punctuation}">&lt;</span>`
+        if (i + 1 < line.length && line[i + 1] === '/') {
+          result += `<span style="color:${darkColors.punctuation}">/</span>`
+        }
+        result += `<span style="color:${darkColors.tag}">${esc(line.slice(line[i + 1] === '/' ? i + 2 : i + 1, tagEnd))}</span>`
+        // Rest of tag until >
+        while (j < line.length && line[j] !== '>') j++
+        if (j < line.length) j++
+        const attrs = line.slice(tagEnd, j - 1)
+        if (attrs) {
+          result += esc(attrs)
+        }
+        if (j > 0 && line[j - 1] === '>') {
+          result += `<span style="color:${darkColors.punctuation}">&gt;</span>`
+        }
+        i = j
+        continue
+      }
+
+      // Operators
+      if (/[+\-*/%=<>!&|^~?:]/.test(line[i])) {
+        let j = i
+        while (j < line.length && /[+\-*/%=<>!&|^~?:]/.test(line[j])) j++
+        result += `<span style="color:${darkColors.operator}">${esc(line.slice(i, j))}</span>`
+        i = j
+        continue
+      }
+
+      // Punctuation
+      if (/[()[\]{};,.]/.test(line[i])) {
+        result += `<span style="color:${darkColors.punctuation}">${esc(line[i])}</span>`
+        i++
+        continue
+      }
+
+      // Everything else
+      result += esc(line[i])
+      i++
+    }
+    
+    return result
+  }).join('\n')
+}
+
 function detectFileType(fileName: string): FileTypeDefinition {
   if (!fileName) return FILE_TYPE_DEFINITIONS.txt
 
@@ -214,6 +455,7 @@ export default function TextEditor() {
   const [goToLineNum, setGoToLineNum] = useState<string>('1')
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark')
   const [wordWrap, setWordWrap] = useState<boolean>(true)
+  const [syntaxHighlighting, setSyntaxHighlighting] = useState<boolean>(true)
   const [cursorLine, setCursorLine] = useState<number>(1)
   const [cursorCol, setCursorCol] = useState<number>(1)
 
@@ -705,6 +947,11 @@ export default function TextEditor() {
     setWordWrap((w) => !w)
   }, [])
 
+  // ── Syntax Highlighting ──
+  const toggleSyntaxHighlighting = useCallback(() => {
+    setSyntaxHighlighting(s => !s)
+  }, [])
+
   // ── Menu ──
   const toggleMenu = useCallback((menuName: string) => {
     setShowMenu((m) => (m === menuName ? null : menuName))
@@ -762,6 +1009,9 @@ export default function TextEditor() {
         case 'word-wrap':
           toggleWordWrap()
           break
+        case 'syntax-highlighting':
+          toggleSyntaxHighlighting()
+          break
         case 'about':
           setShowAbout(true)
           break
@@ -791,6 +1041,7 @@ export default function TextEditor() {
       zoomReset,
       toggleTheme,
       toggleWordWrap,
+      toggleSyntaxHighlighting,
       closeTab,
       closeOtherTabs,
       closeAllTabs,
@@ -827,6 +1078,10 @@ export default function TextEditor() {
   // ── Keyboard Shortcuts ──
   useEffect(() => {
     const handleGlobalKeydown = (e: KeyboardEvent) => {
+      // Only handle shortcuts when the textarea is focused (component is active)
+      const textarea = textareaRef.current
+      if (!textarea || document.activeElement !== textarea) return
+
       const ctrl = e.ctrlKey || e.metaKey
 
       if (ctrl && e.key === 'f') {
@@ -969,6 +1224,11 @@ export default function TextEditor() {
             action: 'word-wrap',
             type: 'item',
           },
+          {
+            label: `Syntax Highlighting${syntaxHighlighting ? ' ✓' : ''}`,
+            action: 'syntax-highlighting',
+            type: 'item',
+          },
           { type: 'separator' },
           {
             label: themeMode === 'dark' ? '☀️ Light Theme' : '🌙 Dark Theme',
@@ -982,7 +1242,7 @@ export default function TextEditor() {
         items: [{ label: 'About Text Editor', action: 'about', type: 'item' }],
       },
     ],
-    [zoomLevel, wordWrap, themeMode]
+    [zoomLevel, wordWrap, syntaxHighlighting, themeMode]
   )
 
   // ── Render ──
@@ -1087,6 +1347,14 @@ export default function TextEditor() {
         }
         .te-line-numbers::-webkit-scrollbar {
           display: none;
+        }
+        .te-highlight-layer::-webkit-scrollbar {
+          display: none;
+        }
+        .te-highlight-layer code {
+          font-family: inherit;
+          font-size: inherit;
+          line-height: inherit;
         }
       `}</style>
 
@@ -1560,39 +1828,86 @@ export default function TextEditor() {
           ))}
         </div>
 
-        {/* Textarea */}
-        <textarea
-          ref={textareaRef}
-          className="te-textarea"
-          value={content}
-          onChange={handleContentChange}
-          onScroll={handleScroll}
-          onClick={updateCursorInfo}
-          onKeyUp={updateCursorInfo}
-          onSelect={updateCursorInfo}
-          spellCheck={false}
-          autoCapitalize="off"
-          autoComplete="off"
-          autoCorrect="off"
-          style={{
-            flex: 1,
-            margin: 0,
-            padding: `${editorLineHeight * 0.5}px 12px`,
-            overflow: 'auto',
-            fontSize: editorFontSize,
-            lineHeight: `${editorLineHeight}px`,
-            fontFamily: 'inherit',
-            whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
-            wordBreak: wordWrap ? 'break-all' : 'normal',
-            background: 'var(--te-bg)',
-            color: 'var(--te-text)',
-            caretColor: 'var(--te-accent)',
-            border: 'none',
-            outline: 'none',
-            resize: 'none',
-          }}
-          placeholder="Start typing…"
-        />
+        {/* Syntax Highlighting Overlay + Textarea */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          {/* Highlighted code layer (behind textarea) */}
+          {syntaxHighlighting ? (
+            <pre
+              className="te-highlight-layer"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                margin: 0,
+                padding: `${editorLineHeight * 0.5}px 12px`,
+                fontSize: editorFontSize,
+                lineHeight: `${editorLineHeight}px`,
+                fontFamily: 'inherit',
+                whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
+                wordBreak: wordWrap ? 'break-all' : 'normal',
+                overflow: 'auto',
+                pointerEvents: 'none',
+                color: 'var(--te-text)',
+              }}
+            >
+              <code
+                dangerouslySetInnerHTML={{
+                  __html: highlightCode(content, fileName) + '\n',
+                }}
+              />
+            </pre>
+          ) : null}
+
+          {/* Textarea (transparent text, visible caret) */}
+          <textarea
+            ref={textareaRef}
+            className="te-textarea"
+            value={content}
+            onChange={handleContentChange}
+            onScroll={(e) => {
+              handleScroll()
+              // Sync highlight layer scroll
+              const target = e.target as HTMLTextAreaElement
+              const highlightEl = target.parentElement?.querySelector('.te-highlight-layer') as HTMLElement | null
+              if (highlightEl) {
+                highlightEl.scrollTop = target.scrollTop
+                highlightEl.scrollLeft = target.scrollLeft
+              }
+            }}
+            onClick={updateCursorInfo}
+            onKeyUp={updateCursorInfo}
+            onSelect={updateCursorInfo}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              margin: 0,
+              padding: `${editorLineHeight * 0.5}px 12px`,
+              overflow: 'auto',
+              fontSize: editorFontSize,
+              lineHeight: `${editorLineHeight}px`,
+              fontFamily: 'inherit',
+              whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
+              wordBreak: wordWrap ? 'break-all' : 'normal',
+              background: 'transparent',
+              color: syntaxHighlighting ? 'transparent' : 'var(--te-text)',
+              caretColor: 'var(--te-accent)',
+              border: 'none',
+              outline: 'none',
+              resize: 'none',
+              zIndex: 1,
+            }}
+            placeholder="Start typing…"
+          />
+        </div>
       </div>
 
       {/* ── Status Bar ── */}
@@ -1650,6 +1965,14 @@ export default function TextEditor() {
           </span>
           <span
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+            onClick={toggleSyntaxHighlighting}
+            title={syntaxHighlighting ? 'Disable syntax highlighting' : 'Enable syntax highlighting'}
+          >
+            {syntaxHighlighting ? '🎨' : '⬜'} 
+            {syntaxHighlighting ? 'HL' : 'No HL'}
+          </span>
+          <span
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
             onClick={toggleTheme}
             title="Toggle theme"
           >
@@ -1698,10 +2021,10 @@ export default function TextEditor() {
               Text Editor
             </h2>
             <p style={{ margin: '0 0 4px', fontSize: 12, color: 'var(--te-text-muted)' }}>
-              Version 2.1.0
+              Version 3.0.0
             </p>
             <p style={{ margin: '0 0 16px', fontSize: 11, color: 'var(--te-text-muted)' }}>
-              Simple & fast text editing
+              Modern text editor with syntax highlighting
             </p>
 
             <div
@@ -1740,6 +2063,7 @@ export default function TextEditor() {
                 <span>📑 Multiple Tabs</span>
                 <span>⌨️ Keyboard Shortcuts</span>
                 <span>📁 File Handling</span>
+                <span>🎨 Syntax Highlighting</span>
               </div>
             </div>
 

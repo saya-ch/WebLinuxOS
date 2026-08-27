@@ -646,6 +646,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   DataVerseLive: () => import('../../apps/DataVerseLive'),
   NebulaDevPro: () => import('../../apps/NebulaDevPro'),
   QuantumHabitOS: () => import('../../apps/QuantumHabitOS'),
+  // === v129 创新应用：DeployMonitor + SmartTranslator
+  DeployMonitor: () => import('../../apps/DeployMonitor'),
+  SmartTranslator: () => import('../../apps/SmartTranslator'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
