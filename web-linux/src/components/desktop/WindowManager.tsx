@@ -17,6 +17,9 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v127 新增应用
+  TimestampConverter: () => import('../../apps/TimestampConverter'),
+  DeveloperCheatSheet: () => import('../../apps/DeveloperCheatSheet'),
   // v125 创新应用
   HashCalculator: () => import('../../apps/HashCalculator'),
   SlideForge: () => import('../../apps/SlideForge'),

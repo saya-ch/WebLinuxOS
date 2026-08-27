@@ -1,1295 +1,837 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import {
-  Globe, Wifi, Server, Zap, ArrowDownToLine, Search, RefreshCw, X,
-  MapPin, Copy, Check, AlertTriangle,
-  Activity, Database,
+  Globe, Search, RefreshCw, Copy, Check,
+  Server, Hash, Lock, ArrowRightLeft,
+  Code2, Layers, AlertTriangle, ChevronRight, Wifi,
 } from 'lucide-react'
 
+// ==================== 颜色方案 ====================
+const COLORS = {
+  bg: '#1a1a2e',
+  cardBg: '#0d1117',
+  text: '#e6e6e6',
+  textMuted: '#8b949e',
+  accent: '#7c6cf0',
+  border: 'rgba(255,255,255,0.08)',
+  success: '#3fb950',
+  error: '#f85149',
+  warning: '#d29922',
+  inputBg: '#161b22',
+  hoverBg: 'rgba(124,108,240,0.1)',
+}
+
 // ==================== 类型定义 ====================
-interface IpInfo {
-  query: string
-  country: string
-  countryCode: string
-  regionName: string
-  city: string
-  lat: number
-  lon: number
-  timezone: string
-  isp: string
-  org: string
-  as: string
+type TabId = 'ip' | 'dns' | 'http' | 'port' | 'base64' | 'url' | 'json'
+
+interface TabDef {
+  id: TabId
+  label: string
+  icon: typeof Globe
 }
 
-interface DnsRecord {
-  type: number
-  TTL: number
-  data: string
-  name: string
-}
+const TABS: TabDef[] = [
+  { id: 'ip', label: 'IP 查询', icon: Globe },
+  { id: 'dns', label: 'DNS 查询', icon: Layers },
+  { id: 'http', label: 'HTTP 状态码', icon: Server },
+  { id: 'port', label: '端口参考', icon: Hash },
+  { id: 'base64', label: 'Base64', icon: Lock },
+  { id: 'url', label: 'URL 编解码', icon: ArrowRightLeft },
+  { id: 'json', label: 'JSON 格式化', icon: Code2 },
+]
 
-interface DnsResult {
-  status: number
-  Answer?: DnsRecord[]
-  Authority?: DnsRecord[]
-  rtt: number
-  error?: string
-}
-
-interface HttpStatusResult {
-  status: number
-  statusText: string
-  headers: Record<string, string>
-  time: number
-  url: string
-  error?: string
-}
-
-interface PingResult {
-  url: string
-  times: number[]
-  avg: number
-  min: number
-  max: number
-  loss: number
-}
-
-interface SpeedTestResult {
-  speed: number // bytes per second
-  downloaded: number // bytes
-  elapsed: number // ms
-  error?: string
-}
-
-type ActiveTab = 'ip' | 'dns' | 'http' | 'ping' | 'speed'
-
+// ==================== 常量数据 ====================
 const DNS_TYPE_MAP: Record<string, number> = {
-  A: 1, AAAA: 28, CNAME: 5, MX: 15, NS: 2, TXT: 16, SOA: 6,
+  A: 1, AAAA: 28, CNAME: 5, MX: 15, TXT: 16, NS: 2,
 }
-const TYPE_NAME_MAP: Record<number, string> = Object.fromEntries(
-  Object.entries(DNS_TYPE_MAP).map(([k, v]) => [v, k])
-)
 
-const DNS_RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA']
+const HTTP_STATUS_CODES: Array<{ code: number; text: string; category: string; desc: string }> = [
+  { code: 100, text: 'Continue', category: '1xx 信息', desc: '服务器已收到请求头，客户端应继续发送请求体' },
+  { code: 101, text: 'Switching Protocols', category: '1xx 信息', desc: '服务器将切换到客户端请求的协议' },
+  { code: 200, text: 'OK', category: '2xx 成功', desc: '请求成功，GET 请求返回资源，POST 请求返回操作结果' },
+  { code: 201, text: 'Created', category: '2xx 成功', desc: '请求成功且服务器创建了新资源' },
+  { code: 202, text: 'Accepted', category: '2xx 成功', desc: '请求已接受但尚未处理完成' },
+  { code: 204, text: 'No Content', category: '2xx 成功', desc: '请求成功但没有需要返回的内容' },
+  { code: 206, text: 'Partial Content', category: '2xx 成功', desc: '服务器成功处理了部分 GET 请求（范围请求）' },
+  { code: 301, text: 'Moved Permanently', category: '3xx 重定向', desc: '资源已永久移动到新 URL' },
+  { code: 302, text: 'Found', category: '3xx 重定向', desc: '资源临时移动到新 URL' },
+  { code: 303, text: 'See Other', category: '3xx 重定向', desc: '应使用 GET 方法从另一个 URI 获取资源' },
+  { code: 304, text: 'Not Modified', category: '3xx 重定向', desc: '资源未修改，客户端可使用缓存' },
+  { code: 307, text: 'Temporary Redirect', category: '3xx 重定向', desc: '资源临时移动，请求方法不变' },
+  { code: 308, text: 'Permanent Redirect', category: '3xx 重定向', desc: '资源永久移动，请求方法不变' },
+  { code: 400, text: 'Bad Request', category: '4xx 客户端错误', desc: '请求语法错误，服务器无法理解' },
+  { code: 401, text: 'Unauthorized', category: '4xx 客户端错误', desc: '需要身份验证才能访问资源' },
+  { code: 403, text: 'Forbidden', category: '4xx 客户端错误', desc: '服务器拒绝请求，权限不足' },
+  { code: 404, text: 'Not Found', category: '4xx 客户端错误', desc: '请求的资源不存在' },
+  { code: 405, text: 'Method Not Allowed', category: '4xx 客户端错误', desc: '请求方法对目标资源不被允许' },
+  { code: 408, text: 'Request Timeout', category: '4xx 客户端错误', desc: '服务器等待请求超时' },
+  { code: 409, text: 'Conflict', category: '4xx 客户端错误', desc: '请求与服务器当前状态冲突' },
+  { code: 410, text: 'Gone', category: '4xx 客户端错误', desc: '资源已永久删除，不再可用' },
+  { code: 413, text: 'Payload Too Large', category: '4xx 客户端错误', desc: '请求体超过服务器限制' },
+  { code: 415, text: 'Unsupported Media Type', category: '4xx 客户端错误', desc: '请求的媒体格式不被服务器支持' },
+  { code: 422, text: 'Unprocessable Entity', category: '4xx 客户端错误', desc: '请求格式正确但语义错误' },
+  { code: 429, text: 'Too Many Requests', category: '4xx 客户端错误', desc: '客户端发送请求过多，触发限流' },
+  { code: 500, text: 'Internal Server Error', category: '5xx 服务端错误', desc: '服务器遇到意外错误' },
+  { code: 501, text: 'Not Implemented', category: '5xx 服务端错误', desc: '服务器不支持请求的功能' },
+  { code: 502, text: 'Bad Gateway', category: '5xx 服务端错误', desc: '网关或代理收到上游无效响应' },
+  { code: 503, text: 'Service Unavailable', category: '5xx 服务端错误', desc: '服务器暂时过载或维护中' },
+  { code: 504, text: 'Gateway Timeout', category: '5xx 服务端错误', desc: '网关或代理等待上游响应超时' },
+]
 
-// ==================== 样式常量 ====================
-const styles = {
-  container: {
-    height: '100%',
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    fontFamily: "'Noto Sans SC', 'JetBrains Mono', system-ui, sans-serif",
-    background: 'linear-gradient(180deg, #070a13 0%, #0a0e1a 100%)',
-    color: '#e2e8f0',
-    fontSize: 13,
-    overflow: 'hidden',
+const PORT_DATA: Array<{ port: number; service: string; protocol: string; desc: string }> = [
+  { port: 20, service: 'FTP 数据', protocol: 'TCP', desc: '文件传输协议 - 数据通道' },
+  { port: 21, service: 'FTP 控制', protocol: 'TCP', desc: '文件传输协议 - 控制通道' },
+  { port: 22, service: 'SSH', protocol: 'TCP', desc: '安全 Shell 远程登录' },
+  { port: 23, service: 'Telnet', protocol: 'TCP', desc: '远程登录协议（不安全）' },
+  { port: 25, service: 'SMTP', protocol: 'TCP', desc: '简单邮件传输协议' },
+  { port: 53, service: 'DNS', protocol: 'TCP/UDP', desc: '域名系统' },
+  { port: 67, service: 'DHCP 服务器', protocol: 'UDP', desc: '动态主机配置协议服务器' },
+  { port: 68, service: 'DHCP 客户端', protocol: 'UDP', desc: '动态主机配置协议客户端' },
+  { port: 69, service: 'TFTP', protocol: 'UDP', desc: '简单文件传输协议' },
+  { port: 80, service: 'HTTP', protocol: 'TCP', desc: '超文本传输协议' },
+  { port: 110, service: 'POP3', protocol: 'TCP', desc: '邮局协议第3版' },
+  { port: 143, service: 'IMAP', protocol: 'TCP', desc: '互联网消息访问协议' },
+  { port: 443, service: 'HTTPS', protocol: 'TCP', desc: '超文本传输安全协议' },
+  { port: 445, service: 'SMB', protocol: 'TCP', desc: '服务器消息块 / Windows 文件共享' },
+  { port: 993, service: 'IMAPS', protocol: 'TCP', desc: 'IMAP over SSL' },
+  { port: 995, service: 'POP3S', protocol: 'TCP', desc: 'POP3 over SSL' },
+  { port: 1433, service: 'MSSQL', protocol: 'TCP', desc: 'Microsoft SQL Server' },
+  { port: 1521, service: 'Oracle', protocol: 'TCP', desc: 'Oracle 数据库' },
+  { port: 3306, service: 'MySQL', protocol: 'TCP', desc: 'MySQL 数据库' },
+  { port: 3389, service: 'RDP', protocol: 'TCP', desc: '远程桌面协议' },
+  { port: 5432, service: 'PostgreSQL', protocol: 'TCP', desc: 'PostgreSQL 数据库' },
+  { port: 5672, service: 'AMQP', protocol: 'TCP', desc: 'RabbitMQ 消息队列' },
+  { port: 6379, service: 'Redis', protocol: 'TCP', desc: 'Redis 内存数据库' },
+  { port: 8080, service: 'HTTP 替代', protocol: 'TCP', desc: '常用 Web 开发/代理端口' },
+  { port: 8443, service: 'HTTPS 替代', protocol: 'TCP', desc: '常用 HTTPS 备用端口' },
+  { port: 9090, service: 'Prometheus', protocol: 'TCP', desc: 'Prometheus 监控系统' },
+  { port: 27017, service: 'MongoDB', protocol: 'TCP', desc: 'MongoDB 文档数据库' },
+]
+
+const getCategoryColor = (code: number): string => {
+  if (code < 200) return COLORS.textMuted
+  if (code < 300) return COLORS.success
+  if (code < 400) return COLORS.warning
+  if (code < 500) return '#f0883e'
+  return COLORS.error
+}
+
+// ==================== 内联样式 ====================
+const S = {
+  root: {
+    height: '100%', width: '100%', display: 'flex', flexDirection: 'column',
+    background: COLORS.bg, color: COLORS.text,
+    fontFamily: "'Noto Sans SC', system-ui, sans-serif", fontSize: 13, overflow: 'hidden',
   } as React.CSSProperties,
-
   header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    padding: '12px 20px',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
-    background: 'linear-gradient(90deg, rgba(124,108,240,0.1) 0%, rgba(124,108,240,0.03) 50%, transparent 100%)',
+    display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px',
+    borderBottom: `1px solid ${COLORS.border}`,
+    background: 'linear-gradient(90deg, rgba(124,108,240,0.12) 0%, transparent 60%)',
   } as React.CSSProperties,
-
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+  logo: {
+    width: 36, height: 36, borderRadius: 12, display: 'flex',
+    alignItems: 'center', justifyContent: 'center',
     background: 'linear-gradient(135deg, #7c6cf0 0%, #5b4cd4 100%)',
-    boxShadow: '0 8px 24px rgba(124,108,240,0.3), inset 0 1px 0 rgba(255,255,255,0.18)',
-    flexShrink: 0,
+    boxShadow: '0 6px 20px rgba(124,108,240,0.35)', flexShrink: 0,
   } as React.CSSProperties,
-
-  tabBar: {
-    display: 'flex',
-    gap: 4,
-    padding: '8px 16px',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
-    overflowX: 'auto',
+  tabRow: {
+    display: 'flex', gap: 2, padding: '6px 16px',
+    borderBottom: `1px solid ${COLORS.border}`, overflowX: 'auto',
   } as React.CSSProperties,
-
-  tabActive: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '6px 14px',
-    borderRadius: 8,
-    fontSize: 12,
-    fontWeight: 500,
-    color: 'white',
-    background: 'linear-gradient(135deg, #7c6cf0, #5b4cd4)',
-    border: 'none',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap' as const,
-    transition: 'all 0.15s',
+  tab: (active: boolean): React.CSSProperties => ({
+    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
+    borderRadius: 8, fontSize: 12, fontWeight: 500,
+    color: active ? '#fff' : COLORS.textMuted,
+    background: active ? 'linear-gradient(135deg, #7c6cf0, #5b4cd4)' : 'transparent',
+    border: active ? 'none' : '1px solid transparent',
+    cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s', flexShrink: 0,
+  }),
+  scroll: {
+    flex: 1, minHeight: 0, overflowY: 'auto', padding: 16,
   } as React.CSSProperties,
-
-  tabInactive: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '6px 14px',
-    borderRadius: 8,
-    fontSize: 12,
-    fontWeight: 500,
-    color: 'rgba(255,255,255,0.45)',
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid transparent',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap' as const,
-    transition: 'all 0.15s',
-  } as React.CSSProperties,
-
-  scrollArea: {
-    flex: 1,
-    minHeight: 0,
-    overflowY: 'auto',
-    padding: 20,
-  } as React.CSSProperties,
-
   card: {
-    borderRadius: 12,
-    border: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.02)',
-    overflow: 'hidden',
+    background: COLORS.cardBg, borderRadius: 12,
+    border: `1px solid ${COLORS.border}`, marginBottom: 12,
   } as React.CSSProperties,
-
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    padding: '12px 16px',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
+  cardTitle: {
+    display: 'flex', alignItems: 'center', gap: 10,
+    padding: '12px 16px', borderBottom: `1px solid ${COLORS.border}`,
   } as React.CSSProperties,
-
-  cardIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, rgba(124,108,240,0.2), rgba(91,76,212,0.12))',
-    flexShrink: 0,
-  } as React.CSSProperties,
-
+  cardBody: { padding: 16 } as React.CSSProperties,
   input: {
-    flex: 1,
-    padding: '10px 14px',
-    borderRadius: 10,
-    fontSize: 13,
-    fontFamily: "'JetBrains Mono', monospace",
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: '#e2e8f0',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    minWidth: 0,
+    width: '100%', padding: '10px 12px', borderRadius: 8,
+    border: `1px solid ${COLORS.border}`, background: COLORS.inputBg,
+    color: COLORS.text, fontSize: 13, fontFamily: "'JetBrains Mono', monospace",
+    outline: 'none', boxSizing: 'border-box' as const,
   } as React.CSSProperties,
-
   btn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '8px 18px',
-    borderRadius: 10,
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'white',
-    border: 'none',
-    cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+    borderRadius: 8, border: 'none',
     background: 'linear-gradient(135deg, #7c6cf0, #5b4cd4)',
-    boxShadow: '0 4px 14px rgba(124,108,240,0.25)',
-    transition: 'all 0.15s',
-    whiteSpace: 'nowrap' as const,
-    flexShrink: 0,
+    color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+    transition: 'all 0.15s', whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
-
-  btnDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed',
+  btnDisabled: { opacity: 0.5, cursor: 'not-allowed' } as React.CSSProperties,
+  btnSmall: {
+    display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px',
+    borderRadius: 6, border: `1px solid ${COLORS.border}`,
+    background: COLORS.hoverBg, color: COLORS.text, fontSize: 11,
+    cursor: 'pointer', transition: 'all 0.15s',
   } as React.CSSProperties,
-
-  btnGhost: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '6px 14px',
-    borderRadius: 8,
-    fontSize: 12,
-    fontWeight: 500,
-    color: 'rgba(255,255,255,0.6)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    cursor: 'pointer',
-    background: 'rgba(255,255,255,0.04)',
-    transition: 'all 0.15s',
-    whiteSpace: 'nowrap' as const,
-    flexShrink: 0,
+  codeArea: {
+    padding: 12, borderRadius: 8, background: 'rgba(0,0,0,0.3)',
+    border: `1px solid ${COLORS.border}`,
+    fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7,
+    color: '#a5b4fc', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+    overflowX: 'auto', minHeight: 60,
   } as React.CSSProperties,
-
-  kvRow: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    padding: '8px 0',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
+  select: {
+    padding: '10px 12px', borderRadius: 8, border: `1px solid ${COLORS.border}`,
+    background: COLORS.inputBg, color: COLORS.text, fontSize: 13,
+    cursor: 'pointer', outline: 'none',
   } as React.CSSProperties,
-
-  kvLabel: {
-    width: 130,
-    flexShrink: 0,
-    fontSize: 11,
-    fontWeight: 500,
-    color: 'rgba(255,255,255,0.4)',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-    paddingTop: 2,
+  badge: (color: string): React.CSSProperties => ({
+    display: 'inline-flex', alignItems: 'center', padding: '2px 8px',
+    borderRadius: 6, fontSize: 11, fontWeight: 600, color,
+    background: `${color}18`, border: `1px solid ${color}30`,
+  }),
+  textarea: {
+    width: '100%', minHeight: 120, padding: 12, borderRadius: 8,
+    border: `1px solid ${COLORS.border}`, background: COLORS.inputBg,
+    color: COLORS.text, fontSize: 12, fontFamily: "'JetBrains Mono', monospace",
+    lineHeight: 1.6, resize: 'vertical' as const, outline: 'none',
+    boxSizing: 'border-box' as const,
   } as React.CSSProperties,
-
-  kvValue: {
-    flex: 1,
-    fontSize: 12.5,
-    fontFamily: "'JetBrains Mono', monospace",
-    color: '#c7d2fe',
-    wordBreak: 'break-all' as const,
-    lineHeight: 1.6,
+  errorMsg: {
+    padding: '10px 14px', borderRadius: 8, marginTop: 10, fontSize: 12,
+    color: COLORS.error, background: 'rgba(248,81,73,0.08)',
+    border: '1px solid rgba(248,81,73,0.15)',
   } as React.CSSProperties,
-
-  statusBadge: (ok: boolean) => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 4,
-    padding: '2px 8px',
-    borderRadius: 6,
-    fontSize: 11,
-    fontWeight: 500,
-    background: ok ? 'rgba(52,211,153,0.12)' : 'rgba(251,113,133,0.12)',
-    color: ok ? '#34d399' : '#fb7185',
-    border: `1px solid ${ok ? 'rgba(52,211,153,0.2)' : 'rgba(251,113,133,0.2)'}`,
-  }) as React.CSSProperties,
-
-  progressRing: (pct: number) => ({
-    width: 52,
-    height: 52,
-    borderRadius: '50%',
-    background: `conic-gradient(#7c6cf0 ${pct * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative' as const,
-  }) as React.CSSProperties,
-
-  ringInner: {
-    width: 42,
-    height: 42,
-    borderRadius: '50%',
-    background: '#0a0e1a',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 12,
-    fontWeight: 700,
-    color: '#c7d2fe',
-    fontFamily: "'JetBrains Mono', monospace",
+  table: {
+    width: '100%', borderCollapse: 'collapse' as const, fontSize: 12,
   } as React.CSSProperties,
-
-  emptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '60px 20px',
-    textAlign: 'center' as const,
-    color: 'rgba(255,255,255,0.3)',
+  th: {
+    padding: '8px 12px', textAlign: 'left' as const, fontSize: 11,
+    fontWeight: 600, color: COLORS.textMuted,
+    borderBottom: `1px solid ${COLORS.border}`, textTransform: 'uppercase',
+    letterSpacing: '0.04em', background: 'rgba(255,255,255,0.02)',
   } as React.CSSProperties,
-
-  codeBlock: {
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 11,
-    fontFamily: "'JetBrains Mono', monospace",
-    background: 'rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255,255,255,0.06)',
-    color: '#a5b4fc',
-    lineHeight: 1.7,
-    overflowX: 'auto' as const,
-    whiteSpace: 'pre-wrap' as const,
-    wordBreak: 'break-all' as const,
+  td: {
+    padding: '7px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)',
+    fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
   } as React.CSSProperties,
-
-  speedBar: {
-    height: 8,
-    borderRadius: 4,
-    background: 'rgba(255,255,255,0.06)',
-    overflow: 'hidden',
+  footer: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '6px 16px', borderTop: `1px solid ${COLORS.border}`,
+    fontSize: 11, color: COLORS.textMuted, flexShrink: 0,
   } as React.CSSProperties,
-
-  speedFill: (pct: number) => ({
-    height: '100%',
-    borderRadius: 4,
-    width: `${Math.min(100, pct)}%`,
-    background: 'linear-gradient(90deg, #7c6cf0, #a78bfa)',
-    transition: 'width 0.3s ease',
-  }) as React.CSSProperties,
 }
 
 // ==================== 工具函数 ====================
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-function formatSpeed(bps: number): string {
-  return formatBytes(bps) + '/s'
-}
-
-function formatMs(ms: number): string {
-  return ms < 1 ? '<1 ms' : ms < 10 ? ms.toFixed(1) + ' ms' : Math.round(ms) + ' ms'
-}
-
-// ==================== API 函数 ====================
-async function queryIpInfo(abortSignal?: AbortSignal): Promise<IpInfo> {
-  const res = await fetch('http://ip-api.com/json/?fields=query,country,countryCode,regionName,city,lat,lon,timezone,isp,org,as', {
-    signal: abortSignal,
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = await res.json()
-  if (data.status === 'fail') throw new Error(data.message || 'IP 查询失败')
-  return data as IpInfo
-}
-
-async function queryDns(domain: string, type: string, abortSignal?: AbortSignal): Promise<DnsResult> {
-  const start = performance.now()
-  const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${DNS_TYPE_MAP[type] || 1}`, {
-    headers: { Accept: 'application/dns-json' },
-    signal: abortSignal,
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = await res.json()
-  return {
-    status: data.Status ?? -1,
-    Answer: data.Answer || [],
-    Authority: data.Authority || [],
-    rtt: performance.now() - start,
-    error: data.Status !== 0 ? `RCODE: ${data.Status}` : undefined,
-  }
-}
-
-async function queryHttpStatus(url: string, abortSignal?: AbortSignal): Promise<HttpStatusResult> {
-  const start = performance.now()
-  try {
-    const res = await fetch(url, {
-      method: 'HEAD',
-      mode: 'no-cors',
-      redirect: 'follow',
-      signal: abortSignal,
-    })
-    const time = performance.now() - start
-    const headers: Record<string, string> = {}
-    res.headers.forEach((v, k) => { headers[k] = v })
-    // no-cors: status 可能是 0
-    return {
-      status: res.status || 0,
-      statusText: res.type === 'opaque' ? 'opaque (跨域受限)' : res.statusText,
-      headers,
-      time,
-      url,
-    }
-  } catch (e) {
-    // 退回 no-cors mode 重试
-    const res2 = await fetch(url, { mode: 'no-cors', redirect: 'follow', signal: abortSignal })
-    const time = performance.now() - start
-    return {
-      status: 0,
-      statusText: res2.type === 'opaque' ? 'opaque (跨域)' : res2.type,
-      headers: {},
-      time,
-      url,
-      error: e instanceof Error ? e.message : String(e),
-    }
-  }
-}
-
-async function measurePing(url: string, count: number, abortSignal?: AbortSignal): Promise<PingResult> {
-  const times: number[] = []
-  for (let i = 0; i < count; i++) {
-    if (abortSignal?.aborted) throw new Error('已取消')
-    const start = performance.now()
-    try {
-      await fetch(url, {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-store',
-        signal: abortSignal,
-      })
-      times.push(performance.now() - start)
-    } catch {
-      // request failed - count as loss
-    }
-  }
-  const sorted = [...times].sort((a, b) => a - b)
-  const avg = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0
-  return {
-    url,
-    times,
-    avg,
-    min: sorted[0] || 0,
-    max: sorted[sorted.length - 1] || 0,
-    loss: count - times.length,
-  }
-}
-
-async function runSpeedTest(
-  abortSignal?: AbortSignal,
-  onProgress?: (downloaded: number, elapsed: number) => void,
-): Promise<SpeedTestResult> {
-  // 下载一个随机化的测试文件（Cloudflare/Google 提供的公开资源）
-  const testUrls = [
-    'https://speed.cloudflare.com/__down?bytes=10485760', // 10MB
-    'https://proof.ovh.net/files/10Mb.dat',
-    'http://speedtest.tele2.net/10MB.zip',
-  ]
-
-  let lastError: string | undefined
-  for (const testUrl of testUrls) {
-    if (abortSignal?.aborted) throw new Error('已取消')
-    try {
-      const start = performance.now()
-      const res = await fetch(testUrl, {
-        cache: 'no-store',
-        signal: abortSignal,
-      })
-      if (!res.ok || !res.body) {
-        lastError = `HTTP ${res.status}`
-        continue
-      }
-      const reader = res.body.getReader()
-      let downloaded = 0
-      while (true) {
-        if (abortSignal?.aborted) { reader.cancel(); throw new Error('已取消') }
-        const { done, value } = await reader.read()
-        if (done) break
-        downloaded += value.byteLength
-        const elapsed = performance.now() - start
-        onProgress?.(downloaded, elapsed)
-      }
-      const elapsed = performance.now() - start
-      return {
-        speed: downloaded / (elapsed / 1000),
-        downloaded,
-        elapsed,
-      }
-    } catch (e) {
-      if (e instanceof Error && e.name === 'AbortError') throw e
-      lastError = e instanceof Error ? e.message : String(e)
-    }
-  }
-  throw new Error(lastError || '所有测速节点不可用')
+function copyText(text: string): void {
+  navigator.clipboard?.writeText(text).catch(() => {})
 }
 
 // ==================== 主组件 ====================
 export default function NetworkToolkitPro() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('ip')
-  const [copied, setCopied] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabId>('ip')
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
-  // IP 信息
+  // IP 状态
   const [ipLoading, setIpLoading] = useState(false)
-  const [ipInfo, setIpInfo] = useState<IpInfo | null>(null)
+  const [ipData, setIpData] = useState<{ ip: string; location?: Record<string, string> } | null>(null)
   const [ipError, setIpError] = useState<string | null>(null)
 
-  // DNS 查询
+  // DNS 状态
   const [dnsDomain, setDnsDomain] = useState('github.com')
   const [dnsType, setDnsType] = useState('A')
   const [dnsLoading, setDnsLoading] = useState(false)
-  const [dnsResult, setDnsResult] = useState<DnsResult | null>(null)
+  const [dnsResult, setDnsResult] = useState<Array<{ type: number; TTL: number; data: string; name: string }> | null>(null)
+  const [dnsStatus, setDnsStatus] = useState<number | null>(null)
   const [dnsError, setDnsError] = useState<string | null>(null)
 
-  // HTTP 状态
-  const [httpUrl, setHttpUrl] = useState('https://github.com')
-  const [httpLoading, setHttpLoading] = useState(false)
-  const [httpResult, setHttpResult] = useState<HttpStatusResult | null>(null)
-  const [httpError, setHttpError] = useState<string | null>(null)
+  // HTTP 状态码搜索
+  const [httpSearch, setHttpSearch] = useState('')
+  const [expandedCode, setExpandedCode] = useState<number | null>(null)
 
-  // Ping
-  const [pingUrl, setPingUrl] = useState('https://github.com')
-  const [pingCount, setPingCount] = useState(5)
-  const [pingLoading, setPingLoading] = useState(false)
-  const [pingResult, setPingResult] = useState<PingResult | null>(null)
-  const [pingError, setPingError] = useState<string | null>(null)
-  const [pingProgress, setPingProgress] = useState(0)
+  // 端口搜索
+  const [portSearch, setPortSearch] = useState('')
 
-  // Speed test
-  const [speedLoading, setSpeedLoading] = useState(false)
-  const [speedResult, setSpeedResult] = useState<SpeedTestResult | null>(null)
-  const [speedError, setSpeedError] = useState<string | null>(null)
-  const [speedProgress, setSpeedProgress] = useState({ downloaded: 0, elapsed: 0 })
+  // Base64 状态
+  const [b64Input, setB64Input] = useState('')
+  const [b64Output, setB64Output] = useState('')
+  const [b64Error, setB64Error] = useState<string | null>(null)
 
-  // Abort controllers
-  const abortRef = useRef<AbortController | null>(null)
+  // URL 编解码
+  const [urlInput, setUrlInput] = useState('')
+  const [urlOutput, setUrlOutput] = useState('')
+  const [urlError, setUrlError] = useState<string | null>(null)
 
-  useEffect(() => {
-    return () => { abortRef.current?.abort() }
-  }, [])
+  // JSON 状态
+  const [jsonInput, setJsonInput] = useState('{\n  "name": "example",\n  "version": 1\n}')
+  const [jsonOutput, setJsonOutput] = useState('')
+  const [jsonError, setJsonError] = useState<string | null>(null)
+  const [jsonValid, setJsonValid] = useState<boolean | null>(null)
 
-  const cancelAll = useCallback(() => {
-    abortRef.current?.abort()
-    abortRef.current = new AbortController()
-    setIpLoading(false)
-    setDnsLoading(false)
-    setHttpLoading(false)
-    setPingLoading(false)
-    setSpeedLoading(false)
-  }, [])
-
-  const copyToClipboard = useCallback((text: string, key: string) => {
-    navigator.clipboard?.writeText(text).then(() => {
-      setCopied(key)
-      setTimeout(() => setCopied(null), 1500)
-    }).catch(() => {})
-  }, [])
-
-  // ============ IP 查询 ============
+  // ==================== 回调：IP 查询 ====================
   const handleIpQuery = useCallback(async () => {
-    cancelAll()
-    const controller = new AbortController()
-    abortRef.current = controller
     setIpLoading(true)
     setIpError(null)
-    setIpInfo(null)
+    setIpData(null)
     try {
-      const info = await queryIpInfo(controller.signal)
-      setIpInfo(info)
+      const res = await fetch('https://api.ipify.org?format=json')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const { ip } = await res.json()
+      try {
+        const locRes = await fetch(`https://ipapi.co/${ip}/json/`)
+        if (locRes.ok) {
+          const loc = await locRes.json()
+          const location: Record<string, string> = {
+            '国家': `${loc.country_name || ''} (${loc.country_code || ''})`,
+            '地区': loc.region || '',
+            '城市': loc.city || '',
+            '邮编': loc.postal || '',
+            '纬度': String(loc.latitude ?? ''),
+            '经度': String(loc.longitude ?? ''),
+            '时区': loc.timezone || '',
+            'ISP': loc.org || '',
+            'ASN': loc.asn || '',
+            '网络': loc.network || '',
+          }
+          setIpData({ ip, location })
+        } else {
+          setIpData({ ip })
+        }
+      } catch {
+        setIpData({ ip })
+      }
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return
-      setIpError(e instanceof Error ? e.message : '查询失败')
+      setIpError(e instanceof Error ? e.message : 'IP 查询失败')
     } finally {
       setIpLoading(false)
     }
-  }, [cancelAll])
+  }, [])
 
-  // ============ DNS 查询 ============
+  // ==================== 回调：DNS 查询 ====================
   const handleDnsQuery = useCallback(async () => {
-    if (!dnsDomain.trim()) return
-    cancelAll()
-    const controller = new AbortController()
-    abortRef.current = controller
+    const domain = dnsDomain.trim()
+    if (!domain) return
     setDnsLoading(true)
     setDnsError(null)
     setDnsResult(null)
+    setDnsStatus(null)
     try {
-      const result = await queryDns(dnsDomain.trim(), dnsType, controller.signal)
-      setDnsResult(result)
+      const typeNum = DNS_TYPE_MAP[dnsType] || 1
+      const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=${typeNum}`
+      const res = await fetch(url, { headers: { Accept: 'application/dns-json' } })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setDnsStatus(data.Status ?? -1)
+      if (data.Status !== 0) {
+        setDnsError(`DNS 查询返回错误码: ${data.Status}`)
+      }
+      setDnsResult(data.Answer || [])
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return
       setDnsError(e instanceof Error ? e.message : 'DNS 查询失败')
     } finally {
       setDnsLoading(false)
     }
-  }, [dnsDomain, dnsType, cancelAll])
+  }, [dnsDomain, dnsType])
 
-  // ============ HTTP 查询 ============
-  const handleHttpQuery = useCallback(async () => {
-    let url = httpUrl.trim()
-    if (!url) return
-    if (!/^https?:\/\//.test(url)) url = 'https://' + url
-    cancelAll()
-    const controller = new AbortController()
-    abortRef.current = controller
-    setHttpLoading(true)
-    setHttpError(null)
-    setHttpResult(null)
+  // ==================== 回调：Base64 ====================
+  const handleBase64Encode = useCallback(() => {
+    setB64Error(null)
     try {
-      const result = await queryHttpStatus(url, controller.signal)
-      setHttpResult(result)
-    } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return
-      setHttpError(e instanceof Error ? e.message : '请求失败')
-    } finally {
-      setHttpLoading(false)
+      setB64Output(btoa(unescape(encodeURIComponent(b64Input))))
+    } catch {
+      setB64Error('Base64 编码失败：输入包含无效字符')
     }
-  }, [httpUrl, cancelAll])
+  }, [b64Input])
 
-  // ============ Ping ============
-  const handlePing = useCallback(async () => {
-    let url = pingUrl.trim()
-    if (!url) return
-    if (!/^https?:\/\//.test(url)) url = 'https://' + url
-    cancelAll()
-    const controller = new AbortController()
-    abortRef.current = controller
-    setPingLoading(true)
-    setPingError(null)
-    setPingResult(null)
-    setPingProgress(0)
+  const handleBase64Decode = useCallback(() => {
+    setB64Error(null)
     try {
-      // 模拟进度
-      const progressInterval = setInterval(() => {
-        setPingProgress(prev => Math.min(prev + (100 / pingCount) * 0.8, 95))
-      }, 300)
-
-      const result = await measurePing(url, pingCount, controller.signal)
-      clearInterval(progressInterval)
-      setPingProgress(100)
-      setPingResult(result)
-    } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return
-      setPingError(e instanceof Error ? e.message : 'Ping 失败')
-    } finally {
-      setPingLoading(false)
+      setB64Output(decodeURIComponent(escape(atob(b64Input.trim()))))
+    } catch {
+      setB64Error('Base64 解码失败：输入不是有效的 Base64 字符串')
     }
-  }, [pingUrl, pingCount, cancelAll])
+  }, [b64Input])
 
-  // ============ Speed Test ============
-  const handleSpeedTest = useCallback(async () => {
-    cancelAll()
-    const controller = new AbortController()
-    abortRef.current = controller
-    setSpeedLoading(true)
-    setSpeedError(null)
-    setSpeedResult(null)
-    setSpeedProgress({ downloaded: 0, elapsed: 0 })
-    try {
-      const result = await runSpeedTest(
-        controller.signal,
-        (downloaded, elapsed) => setSpeedProgress({ downloaded, elapsed }),
-      )
-      setSpeedResult(result)
-    } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return
-      setSpeedError(e instanceof Error ? e.message : '测速失败')
-    } finally {
-      setSpeedLoading(false)
+  // ==================== 回调：URL 编解码 ====================
+  const handleUrlEncode = useCallback(() => {
+    setUrlError(null)
+    try { setUrlOutput(encodeURIComponent(urlInput)) } catch { setUrlError('URL 编码失败') }
+  }, [urlInput])
+
+  const handleUrlDecode = useCallback(() => {
+    setUrlError(null)
+    try { setUrlOutput(decodeURIComponent(urlInput)) } catch { setUrlError('URL 解码失败：输入包含无效编码序列') }
+  }, [urlInput])
+
+  // ==================== 回调：JSON ====================
+  const handleJsonFormat = useCallback(() => {
+    setJsonError(null); setJsonValid(null); setJsonOutput('')
+    try { setJsonOutput(JSON.stringify(JSON.parse(jsonInput), null, 2)); setJsonValid(true) }
+    catch (e) { setJsonValid(false); setJsonError(e instanceof Error ? e.message : 'JSON 解析失败') }
+  }, [jsonInput])
+
+  const handleJsonMinify = useCallback(() => {
+    setJsonError(null); setJsonValid(null); setJsonOutput('')
+    try { setJsonOutput(JSON.stringify(JSON.parse(jsonInput))); setJsonValid(true) }
+    catch (e) { setJsonValid(false); setJsonError(e instanceof Error ? e.message : 'JSON 解析失败') }
+  }, [jsonInput])
+
+  const handleJsonValidate = useCallback(() => {
+    setJsonError(null); setJsonOutput('')
+    try { JSON.parse(jsonInput); setJsonValid(true) }
+    catch (e) { setJsonValid(false); setJsonError(e instanceof Error ? e.message : 'JSON 解析失败') }
+  }, [jsonInput])
+
+  // ==================== 复制 ====================
+  const handleCopy = useCallback((text: string, key: string) => {
+    copyText(text)
+    setCopiedKey(key)
+    setTimeout(() => setCopiedKey(null), 1500)
+  }, [])
+
+  // ==================== 过滤数据 ====================
+  const filteredHttpCodes = HTTP_STATUS_CODES.filter(item => {
+    if (!httpSearch.trim()) return true
+    const q = httpSearch.toLowerCase()
+    return String(item.code).includes(q) || item.text.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q)
+  })
+
+  const httpGroups = filteredHttpCodes.reduce<Record<string, typeof filteredHttpCodes>>((acc, item) => {
+    (acc[item.category] = acc[item.category] || []).push(item)
+    return acc
+  }, {})
+
+  const filteredPorts = PORT_DATA.filter(item => {
+    if (!portSearch.trim()) return true
+    const q = portSearch.toLowerCase()
+    return String(item.port).includes(q) || item.service.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q)
+  })
+
+  // ==================== 卡片头渲染辅助 ====================
+  const renderCardHead = (Icon: typeof Globe, title: string, extra?: string) => (
+    <div style={S.cardTitle}>
+      <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(124,108,240,0.15)' }}>
+        <Icon width={14} height={14} color={COLORS.accent} />
+      </div>
+      <span style={{ fontWeight: 500 }}>{title}</span>
+      {extra && <span style={{ marginLeft: 'auto', fontSize: 11, color: COLORS.textMuted }}>{extra}</span>}
+    </div>
+  )
+
+  // ==================== 渲染各标签内容 ====================
+  const renderContent = () => {
+    switch (activeTab) {
+      // ----- IP 查询 -----
+      case 'ip':
+        return (
+          <div style={S.card}>
+            {renderCardHead(Globe, 'IP 地址信息查询', 'api.ipify.org + ipapi.co')}
+            <div style={S.cardBody}>
+              <button onClick={handleIpQuery} disabled={ipLoading}
+                style={{ ...S.btn, ...(ipLoading ? S.btnDisabled : {}), marginBottom: 14 }}>
+                {ipLoading
+                  ? <><RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} /> 查询中…</>
+                  : <><Search width={14} height={14} /> 查询我的 IP</>}
+              </button>
+              {ipError && (
+                <div style={S.errorMsg}>
+                  <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
+                  {ipError}
+                </div>
+              )}
+              {ipData && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: 'rgba(124,108,240,0.08)', border: '1px solid rgba(124,108,240,0.15)' }}>
+                    <span style={{ fontSize: 12, color: COLORS.textMuted }}>你的 IP</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 15, fontWeight: 600, color: COLORS.accent }}>{ipData.ip}</span>
+                    <button onClick={() => handleCopy(ipData.ip, 'ip')} style={{ marginLeft: 'auto', ...S.btnSmall }} title="复制 IP">
+                      {copiedKey === 'ip' ? <><Check width={11} height={11} color={COLORS.success} /> 已复制</> : <><Copy width={11} height={11} /> 复制</>}
+                    </button>
+                  </div>
+                  {ipData.location && (
+                    <div style={{ borderRadius: 8, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+                      <table style={S.table}>
+                        <thead><tr><th style={S.th}>属性</th><th style={S.th}>值</th></tr></thead>
+                        <tbody>
+                          {Object.entries(ipData.location).map(([k, v]) => v ? (
+                            <tr key={k}>
+                              <td style={{ ...S.td, color: COLORS.textMuted, fontFamily: 'inherit' }}>{k}</td>
+                              <td style={S.td}>{v}</td>
+                            </tr>
+                          ) : null)}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+              {!ipLoading && !ipData && !ipError && (
+                <div style={{ textAlign: 'center', padding: '30px 0', color: COLORS.textMuted, fontSize: 12 }}>
+                  点击「查询我的 IP」获取你的公网 IP 地址和位置信息
+                </div>
+              )}
+            </div>
+          </div>
+        )
+
+      // ----- DNS 查询 -----
+      case 'dns':
+        return (
+          <div style={S.card}>
+            {renderCardHead(Layers, 'DNS 记录查询', 'Cloudflare DoH')}
+            <div style={S.cardBody}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                <input value={dnsDomain} onChange={e => setDnsDomain(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleDnsQuery()}
+                  placeholder="输入域名，如 github.com"
+                  style={{ ...S.input, flex: 1 }} />
+                <select value={dnsType} onChange={e => setDnsType(e.target.value)} style={{ ...S.select, flexShrink: 0 }}>
+                  {Object.keys(DNS_TYPE_MAP).map(t => (
+                    <option key={t} value={t} style={{ background: COLORS.bg, color: COLORS.text }}>{t}</option>
+                  ))}
+                </select>
+                <button onClick={handleDnsQuery} disabled={dnsLoading}
+                  style={{ ...S.btn, ...(dnsLoading ? S.btnDisabled : {}) }}>
+                  {dnsLoading
+                    ? <><RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} /> 查询中…</>
+                    : <><Search width={14} height={14} /> 查询</>}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                {['github.com', 'google.com', 'baidu.com', 'cloudflare.com', 'example.com'].map(d => (
+                  <button key={d} onClick={() => setDnsDomain(d)} style={S.btnSmall}>
+                    <ChevronRight width={10} height={10} />{d}
+                  </button>
+                ))}
+              </div>
+              {dnsError && (
+                <div style={S.errorMsg}>
+                  <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
+                  {dnsError}
+                </div>
+              )}
+              {dnsStatus !== null && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <span style={S.badge(dnsStatus === 0 ? COLORS.success : COLORS.error)}>
+                    {dnsStatus === 0 ? '✓ 解析成功' : `✗ RCODE ${dnsStatus}`}
+                  </span>
+                  {dnsResult && <span style={{ fontSize: 11, color: COLORS.textMuted }}>{dnsResult.length} 条记录</span>}
+                </div>
+              )}
+              {dnsResult && dnsResult.length > 0 && (
+                <div style={{ borderRadius: 8, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+                  <table style={S.table}>
+                    <thead><tr><th style={S.th}>类型</th><th style={S.th}>名称</th><th style={S.th}>TTL</th><th style={S.th}>值</th></tr></thead>
+                    <tbody>
+                      {dnsResult.map((r, i) => (
+                        <tr key={i}>
+                          <td style={S.td}><span style={S.badge(COLORS.accent)}>{Object.entries(DNS_TYPE_MAP).find(([, v]) => v === r.type)?.[0] || r.type}</span></td>
+                          <td style={{ ...S.td, color: '#a78bfa' }}>{r.name}</td>
+                          <td style={{ ...S.td, color: COLORS.textMuted, textAlign: 'right' }}>{r.TTL}s</td>
+                          <td style={{ ...S.td, color: COLORS.success, wordBreak: 'break-all' }}>{r.data}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {!dnsLoading && dnsStatus !== null && dnsResult && dnsResult.length === 0 && (
+                <div style={{ padding: 12, fontSize: 12, color: COLORS.textMuted, textAlign: 'center' }}>
+                  未找到 {dnsType} 类型的 DNS 记录
+                </div>
+              )}
+            </div>
+          </div>
+        )
+
+      // ----- HTTP 状态码 -----
+      case 'http':
+        return (
+          <div style={S.card}>
+            {renderCardHead(Server, 'HTTP 状态码参考表', `${filteredHttpCodes.length} 条`)}
+            <div style={S.cardBody}>
+              <input value={httpSearch} onChange={e => setHttpSearch(e.target.value)}
+                placeholder="搜索状态码，如 404、Not Found、重定向..."
+                style={{ ...S.input, marginBottom: 12 }} />
+              {Object.entries(httpGroups).map(([cat, items]) => (
+                <div key={cat} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {cat}
+                  </div>
+                  <div style={{ borderRadius: 8, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+                    {items.map(item => (
+                      <div key={item.code}
+                        onClick={() => setExpandedCode(expandedCode === item.code ? null : item.code)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
+                          borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer',
+                          transition: 'background 0.1s',
+                          background: expandedCode === item.code ? COLORS.hoverBg : 'transparent',
+                        }}>
+                        <span style={{
+                          display: 'inline-block', minWidth: 42, padding: '2px 6px', borderRadius: 4,
+                          fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
+                          color: getCategoryColor(item.code), textAlign: 'center',
+                          background: `${getCategoryColor(item.code)}12`,
+                        }}>
+                          {item.code}
+                        </span>
+                        <span style={{ fontSize: 12, color: COLORS.text, flex: 1 }}>{item.text}</span>
+                        {expandedCode === item.code && (
+                          <span style={{ fontSize: 11, color: COLORS.textMuted }}>{item.desc}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {filteredHttpCodes.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: COLORS.textMuted, fontSize: 12 }}>
+                  没有匹配的状态码
+                </div>
+              )}
+            </div>
+          </div>
+        )
+
+      // ----- 端口参考 -----
+      case 'port':
+        return (
+          <div style={S.card}>
+            {renderCardHead(Hash, '常见端口号参考', `${filteredPorts.length} 条`)}
+            <div style={S.cardBody}>
+              <input value={portSearch} onChange={e => setPortSearch(e.target.value)}
+                placeholder="搜索端口号、服务名或描述，如 3306、MySQL、数据库..."
+                style={{ ...S.input, marginBottom: 12 }} />
+              <div style={{ borderRadius: 8, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+                <table style={S.table}>
+                  <thead>
+                    <tr>
+                      <th style={S.th}>端口</th>
+                      <th style={S.th}>服务</th>
+                      <th style={S.th}>协议</th>
+                      <th style={S.th}>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPorts.map(item => (
+                      <tr key={item.port}>
+                        <td style={{ ...S.td, color: COLORS.accent, fontWeight: 600 }}>{item.port}</td>
+                        <td style={{ ...S.td, color: COLORS.text, fontFamily: 'inherit' }}>{item.service}</td>
+                        <td style={{ ...S.td }}>
+                          <span style={S.badge(item.protocol.includes('UDP') ? COLORS.warning : COLORS.success)}>
+                            {item.protocol}
+                          </span>
+                        </td>
+                        <td style={{ ...S.td, color: COLORS.textMuted, fontFamily: 'inherit' }}>{item.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filteredPorts.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: COLORS.textMuted, fontSize: 12 }}>
+                  没有匹配的端口
+                </div>
+              )}
+            </div>
+          </div>
+        )
+
+      // ----- Base64 -----
+      case 'base64':
+        return (
+          <div style={S.card}>
+            {renderCardHead(Lock, 'Base64 编解码')}
+            <div style={S.cardBody}>
+              <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 500, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                输入
+              </div>
+              <textarea value={b64Input} onChange={e => setB64Input(e.target.value)}
+                placeholder="在此输入要编码或解码的文本..."
+                style={S.textarea} />
+              <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
+                <button onClick={handleBase64Encode} style={S.btn}>
+                  <ArrowRightLeft width={14} height={14} /> 编码 (Text → Base64)
+                </button>
+                <button onClick={handleBase64Decode} style={{ ...S.btn, background: 'linear-gradient(135deg, #3fb950, #2ea043)' }}>
+                  <ArrowRightLeft width={14} height={14} /> 解码 (Base64 → Text)
+                </button>
+                {b64Output && (
+                  <button onClick={() => handleCopy(b64Output, 'b64')} style={S.btnSmall}>
+                    {copiedKey === 'b64' ? <><Check width={11} height={11} color={COLORS.success} /> 已复制</> : <><Copy width={11} height={11} /> 复制结果</>}
+                  </button>
+                )}
+              </div>
+              {b64Error && (
+                <div style={S.errorMsg}>
+                  <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
+                  {b64Error}
+                </div>
+              )}
+              {b64Output && (
+                <>
+                  <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 500, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    输出
+                  </div>
+                  <div style={S.codeArea}>{b64Output}</div>
+                </>
+              )}
+            </div>
+          </div>
+        )
+
+      // ----- URL 编解码 -----
+      case 'url':
+        return (
+          <div style={S.card}>
+            {renderCardHead(ArrowRightLeft, 'URL 编解码')}
+            <div style={S.cardBody}>
+              <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 500, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                输入
+              </div>
+              <textarea value={urlInput} onChange={e => setUrlInput(e.target.value)}
+                placeholder="在此输入要编码或解码的 URL/文本..."
+                style={{ ...S.textarea, minHeight: 80 }} />
+              <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
+                <button onClick={handleUrlEncode} style={S.btn}>
+                  <ArrowRightLeft width={14} height={14} /> 编码 (encodeURIComponent)
+                </button>
+                <button onClick={handleUrlDecode} style={{ ...S.btn, background: 'linear-gradient(135deg, #3fb950, #2ea043)' }}>
+                  <ArrowRightLeft width={14} height={14} /> 解码 (decodeURIComponent)
+                </button>
+                {urlOutput && (
+                  <button onClick={() => handleCopy(urlOutput, 'url')} style={S.btnSmall}>
+                    {copiedKey === 'url' ? <><Check width={11} height={11} color={COLORS.success} /> 已复制</> : <><Copy width={11} height={11} /> 复制结果</>}
+                  </button>
+                )}
+              </div>
+              {urlError && (
+                <div style={S.errorMsg}>
+                  <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
+                  {urlError}
+                </div>
+              )}
+              {urlOutput && (
+                <>
+                  <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 500, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    输出
+                  </div>
+                  <div style={S.codeArea}>{urlOutput}</div>
+                </>
+              )}
+            </div>
+          </div>
+        )
+
+      // ----- JSON 格式化 -----
+      case 'json':
+        return (
+          <div style={S.card}>
+            {renderCardHead(Code2, 'JSON 格式化 / 验证')}
+            <div style={S.cardBody}>
+              <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 500, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                输入 JSON
+              </div>
+              <textarea value={jsonInput} onChange={e => setJsonInput(e.target.value)}
+                placeholder='在此输入 JSON 字符串，如 {"key": "value"}'
+                style={{ ...S.textarea, minHeight: 100 }} />
+              <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                <button onClick={handleJsonFormat} style={S.btn}>
+                  <Code2 width={14} height={14} /> 格式化
+                </button>
+                <button onClick={handleJsonMinify}
+                  style={{ ...S.btn, background: 'linear-gradient(135deg, #d29922, #b87d14)' }}>
+                  <Code2 width={14} height={14} /> 压缩
+                </button>
+                <button onClick={handleJsonValidate}
+                  style={{ ...S.btn, background: 'linear-gradient(135deg, #3fb950, #2ea043)' }}>
+                  <Check width={14} height={14} /> 验证
+                </button>
+                {jsonOutput && (
+                  <button onClick={() => handleCopy(jsonOutput, 'json')} style={S.btnSmall}>
+                    {copiedKey === 'json' ? <><Check width={11} height={11} color={COLORS.success} /> 已复制</> : <><Copy width={11} height={11} /> 复制结果</>}
+                  </button>
+                )}
+              </div>
+              {jsonValid !== null && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <span style={S.badge(jsonValid ? COLORS.success : COLORS.error)}>
+                    {jsonValid ? '✓ JSON 有效' : '✗ JSON 无效'}
+                  </span>
+                </div>
+              )}
+              {jsonError && (
+                <div style={S.errorMsg}>
+                  <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
+                  {jsonError}
+                </div>
+              )}
+              {jsonOutput && (
+                <>
+                  <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 500, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    输出
+                  </div>
+                  <div style={S.codeArea}>{jsonOutput}</div>
+                </>
+              )}
+            </div>
+          </div>
+        )
     }
-  }, [cancelAll])
+  }
 
-  // ============ Tab 配置 ============
-  const tabs: { id: ActiveTab; label: string; Icon: typeof Globe }[] = [
-    { id: 'ip', label: 'IP 信息', Icon: MapPin },
-    { id: 'dns', label: 'DNS 解析', Icon: Database },
-    { id: 'http', label: 'HTTP 状态', Icon: Server },
-    { id: 'ping', label: 'Ping 延迟', Icon: Activity },
-    { id: 'speed', label: '速度测试', Icon: Zap },
-  ]
-
-  // ==================== 渲染 ====================
+  // ==================== 主渲染 ====================
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.iconBox}>
+    <div style={S.root}>
+      {/* 顶部标题 */}
+      <div style={S.header}>
+        <div style={S.logo}>
           <Wifi width={18} height={18} color="white" />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontWeight: 600, letterSpacing: '-0.01em', fontSize: 15 }}>
-              Network Toolkit Pro
-            </span>
+            <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: '-0.01em' }}>Network Toolkit Pro</span>
             <span style={{
               fontSize: 10, padding: '2px 8px', borderRadius: 6,
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              color: 'rgba(255,255,255,0.4)',
-            }}>
-              网络诊断工具箱
-            </span>
+              color: COLORS.textMuted,
+            }}>网络工具专业版</span>
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
-            IP 查询 · DNS 解析 · HTTP 状态码 · Ping 延迟 · 网络测速
+          <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 2 }}>
+            IP 查询 · DNS 查询 · HTTP 状态码 · 端口参考 · Base64 · URL 编解码 · JSON 格式化
           </div>
         </div>
-        {activeTab && (ipLoading || dnsLoading || httpLoading || pingLoading || speedLoading) && (
-          <button
-            onClick={cancelAll}
-            style={{ ...styles.btnGhost, color: '#fb7185', borderColor: 'rgba(251,113,133,0.3)' }}
-          >
-            <X width={12} height={12} /> 取消
-          </button>
-        )}
       </div>
 
-      {/* Tab Bar */}
-      <div style={styles.tabBar}>
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            style={activeTab === t.id ? styles.tabActive : styles.tabInactive}
-          >
-            <t.Icon width={13} height={13} />
+      {/* 标签页栏 */}
+      <div style={S.tabRow}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={S.tab(activeTab === t.id)}>
+            <t.icon width={13} height={13} />
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      <div style={styles.scrollArea}>
-
-        {/* ===== IP 信息 ===== */}
-        {activeTab === 'ip' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <div style={styles.cardIcon}>
-                  <MapPin width={15} height={15} color="#c7d2fe" />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>
-                  IP 地址归属地查询
-                </span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>
-                  ip-api.com
-                </span>
-              </div>
-              <div style={{ padding: '16px 20px' }}>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                  <button
-                    onClick={handleIpQuery}
-                    disabled={ipLoading}
-                    style={{ ...styles.btn, ...(ipLoading ? styles.btnDisabled : {}) }}
-                  >
-                    {ipLoading ? (
-                      <RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} />
-                    ) : (
-                      <Search width={14} height={14} />
-                    )}
-                    查询我的 IP
-                  </button>
-                </div>
-
-                {ipError && (
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                    fontSize: 12, color: '#fb7185',
-                    background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.15)',
-                  }}>
-                    <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
-                    {ipError}
-                  </div>
-                )}
-
-                {ipLoading && !ipInfo && (
-                  <div style={{ padding: 20, textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>
-                    正在查询 IP 信息…
-                  </div>
-                )}
-
-                {ipInfo && (
-                  <div style={styles.codeBlock}>
-                    {[
-                      ['IP 地址', ipInfo.query],
-                      ['国家', `${ipInfo.country} (${ipInfo.countryCode})`],
-                      ['地区', ipInfo.regionName],
-                      ['城市', ipInfo.city],
-                      ['纬度', String(ipInfo.lat)],
-                      ['经度', String(ipInfo.lon)],
-                      ['时区', ipInfo.timezone],
-                      ['ISP', ipInfo.isp],
-                      ['组织', ipInfo.org],
-                      ['AS', ipInfo.as],
-                    ].map(([label, value]) => (
-                      <div key={label} style={{ display: 'flex', gap: 12, padding: '3px 0' }}>
-                        <span style={{ color: 'rgba(255,255,255,0.35)', width: 50, flexShrink: 0 }}>{label}</span>
-                        <span style={{ color: '#c7d2fe' }}>{value || '—'}</span>
-                        {label === 'IP 地址' && value && (
-                          <button
-                            onClick={() => copyToClipboard(value, 'ip')}
-                            style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 2 }}
-                            title="复制"
-                          >
-                            {copied === 'ip' ? <Check width={12} height={12} color="#34d399" /> : <Copy width={12} height={12} />}
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===== DNS 解析 ===== */}
-        {activeTab === 'dns' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <div style={styles.cardIcon}>
-                  <Database width={15} height={15} color="#c7d2fe" />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>
-                  DNS 解析查询
-                </span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>
-                  Google DoH
-                </span>
-              </div>
-              <div style={{ padding: '16px 20px' }}>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                  <input
-                    value={dnsDomain}
-                    onChange={e => setDnsDomain(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleDnsQuery() }}
-                    placeholder="输入域名，如 github.com"
-                    style={styles.input}
-                  />
-                  <select
-                    value={dnsType}
-                    onChange={e => setDnsType(e.target.value)}
-                    style={{
-                      ...styles.input,
-                      flex: 'none',
-                      width: 100,
-                      cursor: 'pointer',
-                      background: 'rgba(255,255,255,0.03)',
-                    }}
-                  >
-                    {DNS_RECORD_TYPES.map(t => (
-                      <option key={t} value={t} style={{ background: '#1a1a2e', color: '#e2e8f0' }}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleDnsQuery}
-                    disabled={dnsLoading}
-                    style={{ ...styles.btn, ...(dnsLoading ? styles.btnDisabled : {}) }}
-                  >
-                    {dnsLoading ? (
-                      <RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} />
-                    ) : (
-                      <Search width={14} height={14} />
-                    )}
-                    查询
-                  </button>
-                </div>
-
-                {/* 快捷域名 */}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                  {['github.com', 'google.com', 'baidu.com', 'cloudflare.com', 'example.com'].map(d => (
-                    <button
-                      key={d}
-                      onClick={() => setDnsDomain(d)}
-                      style={{
-                        ...styles.btnGhost,
-                        fontSize: 11,
-                        padding: '3px 10px',
-                        fontFamily: "'JetBrains Mono', monospace",
-                      }}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                </div>
-
-                {dnsError && (
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                    fontSize: 12, color: '#fb7185',
-                    background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.15)',
-                  }}>
-                    <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
-                    {dnsError}
-                  </div>
-                )}
-
-                {dnsResult && (
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                      <span style={styles.statusBadge(dnsResult.status === 0)}>
-                        {dnsResult.status === 0 ? '✓ 解析成功' : `✗ RCODE ${dnsResult.status}`}
-                      </span>
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
-                        {formatMs(dnsResult.rtt)} · {dnsResult.Answer?.length || 0} 条记录
-                      </span>
-                    </div>
-
-                    {dnsResult.Answer && dnsResult.Answer.length > 0 && (
-                      <div style={styles.codeBlock}>
-                        {dnsResult.Answer.map((a, i) => (
-                          <div key={i} style={{ display: 'flex', gap: 8, padding: '2px 0' }}>
-                            <span style={{ color: 'rgba(255,255,255,0.35)', width: 40, flexShrink: 0 }}>
-                              {TYPE_NAME_MAP[a.type] || `T${a.type}`}
-                            </span>
-                            <span style={{ color: 'rgba(255,255,255,0.3)', width: 60, textAlign: 'right', flexShrink: 0 }}>
-                              TTL {a.TTL}
-                            </span>
-                            <span style={{ color: '#a78bfa' }}>{a.name}</span>
-                            <span style={{ color: 'rgba(255,255,255,0.2)', margin: '0 2px' }}>→</span>
-                            <span style={{ color: '#34d399' }}>{a.data}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {dnsResult.Authority && dnsResult.Authority.length > 0 && (
-                      <div style={{ marginTop: 8 }}>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
-                          权威记录 (Authority)
-                        </div>
-                        <div style={styles.codeBlock}>
-                          {dnsResult.Authority.map((a, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 8, padding: '2px 0' }}>
-                              <span style={{ color: 'rgba(255,255,255,0.35)', width: 40, flexShrink: 0 }}>
-                                {TYPE_NAME_MAP[a.type] || `T${a.type}`}
-                              </span>
-                              <span style={{ color: 'rgba(255,255,255,0.3)', width: 60, textAlign: 'right', flexShrink: 0 }}>
-                                TTL {a.TTL}
-                              </span>
-                              <span style={{ color: '#fbbf24' }}>{a.data}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {dnsResult.status === 0 && (!dnsResult.Answer || dnsResult.Answer.length === 0) && (
-                      <div style={{ padding: 12, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
-                        未找到 {dnsType} 类型的 DNS 记录
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===== HTTP 状态 ===== */}
-        {activeTab === 'http' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <div style={styles.cardIcon}>
-                  <Server width={15} height={15} color="#c7d2fe" />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>
-                  HTTP 状态码查询
-                </span>
-              </div>
-              <div style={{ padding: '16px 20px' }}>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                  <input
-                    value={httpUrl}
-                    onChange={e => setHttpUrl(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleHttpQuery() }}
-                    placeholder="输入 URL，如 https://github.com"
-                    style={styles.input}
-                  />
-                  <button
-                    onClick={handleHttpQuery}
-                    disabled={httpLoading}
-                    style={{ ...styles.btn, ...(httpLoading ? styles.btnDisabled : {}) }}
-                  >
-                    {httpLoading ? (
-                      <RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} />
-                    ) : (
-                      <Search width={14} height={14} />
-                    )}
-                    查询
-                  </button>
-                </div>
-
-                {httpError && (
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                    fontSize: 12, color: '#fbbf24',
-                    background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.15)',
-                  }}>
-                    <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
-                    {httpError}（跨域 CORS 可能限制了响应头读取）
-                  </div>
-                )}
-
-                {httpResult && (
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-                      <span style={styles.statusBadge(httpResult.status >= 200 && httpResult.status < 400)}>
-                        HTTP {httpResult.status || '?'} {httpResult.statusText}
-                      </span>
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
-                        响应时间: {formatMs(httpResult.time)}
-                      </span>
-                    </div>
-
-                    {Object.keys(httpResult.headers).length > 0 ? (
-                      <div style={styles.codeBlock}>
-                        {Object.entries(httpResult.headers).map(([key, val]) => (
-                          <div key={key} style={{ padding: '2px 0' }}>
-                            <span style={{ color: '#a78bfa' }}>{key}</span>
-                            <span style={{ color: 'rgba(255,255,255,0.2)' }}>: </span>
-                            <span style={{ color: '#34d399' }}>{val}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={{
-                        padding: 16, borderRadius: 8, fontSize: 12, color: 'rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)',
-                        textAlign: 'center',
-                      }}>
-                        跨域限制导致无法读取响应头。可尝试查询允许 CORS 的站点，或使用 curl -I 命令在服务器端查看。
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===== Ping 延迟 ===== */}
-        {activeTab === 'ping' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <div style={styles.cardIcon}>
-                  <Activity width={15} height={15} color="#c7d2fe" />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>
-                  Ping 延迟模拟
-                </span>
-              </div>
-              <div style={{ padding: '16px 20px' }}>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                  <input
-                    value={pingUrl}
-                    onChange={e => setPingUrl(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handlePing() }}
-                    placeholder="输入目标 URL"
-                    style={{ ...styles.input, flex: 2 }}
-                  />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>次数:</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={pingCount}
-                      onChange={e => setPingCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                      style={{ ...styles.input, width: 60, textAlign: 'center', flex: 'none' }}
-                    />
-                  </div>
-                  <button
-                    onClick={handlePing}
-                    disabled={pingLoading}
-                    style={{ ...styles.btn, ...(pingLoading ? styles.btnDisabled : {}) }}
-                  >
-                    {pingLoading ? (
-                      <RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} />
-                    ) : (
-                      <Activity width={14} height={14} />
-                    )}
-                    开始 Ping
-                  </button>
-                </div>
-
-                {/* Progress bar */}
-                {pingLoading && (
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={styles.speedBar}>
-                      <div style={styles.speedFill(pingProgress)} />
-                    </div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 4, textAlign: 'center' }}>
-                      {Math.round(pingProgress)}% · 正在探测延迟…
-                    </div>
-                  </div>
-                )}
-
-                {pingError && (
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                    fontSize: 12, color: '#fb7185',
-                    background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.15)',
-                  }}>
-                    <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
-                    {pingError}
-                  </div>
-                )}
-
-                {pingResult && (
-                  <div>
-                    {/* Summary cards */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-                      {[
-                        { label: '平均延迟', value: formatMs(pingResult.avg), color: '#c7d2fe' },
-                        { label: '最小延迟', value: formatMs(pingResult.min), color: '#34d399' },
-                        { label: '最大延迟', value: formatMs(pingResult.max), color: '#fbbf24' },
-                        { label: '丢包率', value: `${Math.round((pingResult.loss / pingCount) * 100)}%`, color: pingResult.loss > 0 ? '#fb7185' : '#34d399' },
-                      ].map(item => (
-                        <div key={item.label} style={{
-                          padding: '10px 12px', borderRadius: 10,
-                          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                          textAlign: 'center',
-                        }}>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 4, textTransform: 'uppercase' }}>
-                            {item.label}
-                          </div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: item.color, fontFamily: "'JetBrains Mono', monospace" }}>
-                            {item.value}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Per-ping detail */}
-                    <div style={styles.codeBlock}>
-                      <div style={{ color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>
-                        PING {pingResult.url} ({pingResult.times.length} packets)
-                      </div>
-                      {pingResult.times.map((t, i) => (
-                        <div key={i} style={{ padding: '1px 0' }}>
-                          <span style={{ color: 'rgba(255,255,255,0.35)' }}>#{i + 1}</span>
-                          <span style={{ color: 'rgba(255,255,255,0.2)' }}> </span>
-                          <span style={{ color: t < pingResult.avg * 0.8 ? '#34d399' : t > pingResult.avg * 1.2 ? '#fbbf24' : '#a78bfa' }}>
-                            {formatMs(t)}
-                          </span>
-                        </div>
-                      ))}
-                      {pingResult.loss > 0 && (
-                        <div style={{ color: '#fb7185', padding: '2px 0' }}>
-                          ⚠ {pingResult.loss} 个请求超时
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===== 速度测试 ===== */}
-        {activeTab === 'speed' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <div style={styles.cardIcon}>
-                  <ArrowDownToLine width={15} height={15} color="#c7d2fe" />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>
-                  网络速度测试
-                </span>
-              </div>
-              <div style={{ padding: '16px 20px' }}>
-                <div style={{ marginBottom: 16 }}>
-                  <button
-                    onClick={handleSpeedTest}
-                    disabled={speedLoading}
-                    style={{ ...styles.btn, ...(speedLoading ? styles.btnDisabled : {}) }}
-                  >
-                    {speedLoading ? (
-                      <RefreshCw width={14} height={14} style={{ animation: 'spin 1s linear infinite' }} />
-                    ) : (
-                      <Zap width={14} height={14} />
-                    )}
-                    {speedLoading ? '测速中…' : '开始测速'}
-                  </button>
-                </div>
-
-                {speedError && (
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                    fontSize: 12, color: '#fb7185',
-                    background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.15)',
-                  }}>
-                    <AlertTriangle width={12} height={12} style={{ display: 'inline', verticalAlign: -2, marginRight: 6 }} />
-                    {speedError}
-                  </div>
-                )}
-
-                {/* Live progress */}
-                {speedLoading && speedProgress.elapsed > 0 && (
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>实时速度</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#c7d2fe', fontFamily: "'JetBrains Mono', monospace" }}>
-                        {formatSpeed(speedProgress.downloaded / (speedProgress.elapsed / 1000))}
-                      </span>
-                    </div>
-                    <div style={styles.speedBar}>
-                      <div style={styles.speedFill(Math.min(100, (speedProgress.downloaded / (10 * 1024 * 1024)) * 100))} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
-                      <span>已下载 {formatBytes(speedProgress.downloaded)}</span>
-                      <span>用时 {(speedProgress.elapsed / 1000).toFixed(1)}s</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Result */}
-                {speedResult && (
-                  <div>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexDirection: 'column', padding: '24px 0', marginBottom: 16,
-                    }}>
-                      <div style={styles.progressRing(Math.min(100, speedResult.speed / (10 * 1024 * 1024) * 100))}>
-                        <div style={styles.ringInner}>
-                          {speedResult.speed >= 1024 * 1024
-                            ? (speedResult.speed / (1024 * 1024)).toFixed(1)
-                            : (speedResult.speed / 1024).toFixed(0)
-                          }
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 12, fontSize: 22, fontWeight: 700, color: '#c7d2fe', fontFamily: "'JetBrains Mono', monospace" }}>
-                        {formatSpeed(speedResult.speed)}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
-                        下载速度
-                      </div>
-                    </div>
-
-                    <div style={styles.codeBlock}>
-                      {[
-                        ['下载速度', formatSpeed(speedResult.speed)],
-                        ['已下载', formatBytes(speedResult.downloaded)],
-                        ['用时', `${(speedResult.elapsed / 1000).toFixed(2)} 秒`],
-                      ].map(([label, value]) => (
-                        <div key={label} style={{ display: 'flex', gap: 12, padding: '3px 0' }}>
-                          <span style={{ color: 'rgba(255,255,255,0.35)', width: 60, flexShrink: 0 }}>{label}</span>
-                          <span style={{ color: '#c7d2fe' }}>{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {!speedLoading && !speedResult && !speedError && (
-                  <div style={styles.emptyState}>
-                    <Zap width={40} height={40} style={{ opacity: 0.2, marginBottom: 12 }} />
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
-                      点击「开始测速」测量当前网络下载速度
-                    </div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 6 }}>
-                      将下载约 10MB 测试数据计算速度
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+      {/* 内容区域 */}
+      <div style={S.scroll}>
+        {renderContent()}
       </div>
 
-      {/* Bottom status bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '6px 16px', borderTop: '1px solid rgba(255,255,255,0.05)',
-        fontSize: 11, color: 'rgba(255,255,255,0.3)',
-      }}>
+      {/* 底部状态栏 */}
+      <div style={S.footer}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <Globe width={11} height={11} />
             纯前端 · 无后端依赖
           </span>
         </div>
-        <span>AbortController · try-catch 错误处理</span>
+        <span>7 个工具模块 · Cloudflare DoH · React Hooks</span>
       </div>
     </div>
   )

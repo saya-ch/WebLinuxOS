@@ -2,46 +2,96 @@
 
 # WebLinuxOS
 
-**A fully functional Linux desktop environment that runs entirely in your browser.**
-
-**一个完全运行在浏览器中的功能级 Linux 桌面环境。**
+**一个完全运行在浏览器中的功能级 Linux 桌面环境**
 
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS?style=flat&logo=github)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Release](https://img.shields.io/github/v/release/saya-ch/WebLinuxOS?style=flat)](https://github.com/saya-ch/WebLinuxOS/releases)
 [![License](https://img.shields.io/github/license/saya-ch/WebLinuxOS?style=flat&color=blue)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/saya-ch/WebLinuxOS/deploy.yml?branch=main&style=flat&logo=github-actions)](https://github.com/saya-ch/WebLinuxOS/actions)
 
-**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report Issue](https://github.com/saya-ch/WebLinuxOS/issues) | [Contributing](CONTRIBUTING.md) | [Changelog](CHANGELOG.md)
+**[在线演示](https://saya-ch.github.io/WebLinuxOS/)** | [问题反馈](https://github.com/saya-ch/WebLinuxOS/issues) | [贡献指南](CONTRIBUTING.md) | [更新日志](CHANGELOG.md)
 
 </div>
 
 ---
 
-## Overview
+## 项目简介
 
-Most "web desktop" projects are visual shells -- windows you can drag around, but nothing inside works. WebLinuxOS is different. Every application connects to real public APIs, executes real logic, and produces real output. No mock data. No placeholder UI.
+大多数 Web 桌面项目只是视觉壳——能拖拽窗口，但内部功能都是摆设。WebLinuxOS 不同。每个应用都连接真实的公共 API，执行真实逻辑，产生真实输出。没有模拟数据，没有占位界面。
 
-大多数"Web 桌面"项目只是视觉壳——能拖拽窗口，但内部功能都是摆设。WebLinuxOS 不同。每个应用都连接真实的公共 API，执行真实逻辑，产生真实输出。没有模拟数据，没有占位界面。
+## 核心特点
 
-## Features
+- **640+ 内置应用** — 涵盖开发、生产力、AI、互联网、数据分析、工具和游戏
+- **完整窗口管理** — 拖拽、缩放、最小化、最大化、边缘吸附平铺、最多 9 个虚拟桌面
+- **200+ 终端命令** — 完整终端模拟器，支持虚拟文件系统、持久化存储和操作历史
+- **零后端架构** — 所有逻辑在客户端运行，仅调用公共 API，无需服务器
+- **真实 API 集成** — Open-Meteo 天气、CoinGecko 加密货币、Hacker News、Wikipedia 等 20+ 数据源
 
-- **640+ built-in applications** -- covering development, productivity, AI, internet, data analysis, utilities, and games
-- **Full window management** -- drag, resize, minimize, maximize, snap-to-edge tiling, up to 9 virtual desktops
-- **200+ terminal commands** -- complete terminal emulator with virtual filesystem, persistent storage, and operation history
-- **Zero backend** -- all logic runs client-side; only calls public APIs, no server required
-- **Real API integration** -- Open-Meteo weather, CoinGecko crypto, Hacker News, Wikipedia, and 20+ more data sources
-- **Monaco code editor** -- same engine as VS Code, with syntax highlighting and IntelliSense
-- **IndexedDB file storage** -- virtual filesystem backed by IndexedDB, breaking the 5MB localStorage limit
-- **Cross-tab sync** -- real-time theme, file, and state synchronization via BroadcastChannel
-- **PWA support** -- offline-capable, installable to desktop
+## 技术栈
 
-## Quick Start
+- **前端框架**: React 19 + TypeScript 6
+- **构建工具**: Vite 8
+- **状态管理**: Zustand 5
+- **代码编辑器**: Monaco Editor (VS Code 同款引擎)
+- **Python 运行时**: Pyodide (WebAssembly)
+- **图标库**: Lucide React
+- **Markdown 渲染**: Marked
 
-### Online
+## 功能概览
 
-Visit **[saya-ch.github.io/WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/)** -- no installation needed.
+### 开发工具
 
-### Local Development
+- Monaco 代码编辑器（语法高亮、IntelliSense）
+- 终端模拟器（200+ 命令）
+- JSON 格式化器、正则测试器、API 客户端
+- Git 可视化、代码审查工具
+
+### 生产力应用
+
+- 番茄钟、看板板、Markdown 预览器
+- 电子表格、PDF 查看器、简历生成器
+- 日历、待办事项、知识管理
+
+### AI 与创意
+
+- AI 聊天（Pollinations.ai）、AI 图像生成
+- AI 写作工作室、代码分析、提示词工程实验室
+- AI 代码助手、AI 文档生成
+
+### 互联网工具
+
+- Web 浏览器（DuckDuckGo 搜索）
+- 天气预报（Open-Meteo）、加密货币追踪（CoinGecko）
+- 新闻阅读器、维基百科、GitHub 趋势
+
+### 数据分析
+
+- DataVerse Live 多源仪表板
+- 高级数据可视化、图表工具
+- 实时数据监控面板
+
+### 系统工具
+
+- 文件管理器、系统监控器、密码管理器
+- 工作区管理器、WebSSH 终端
+- 安全中心、网络诊断
+
+### 多媒体
+
+- 音乐工作室、音频可视化、画板
+- 屏幕录制、相机、视频播放器
+
+### 游戏
+
+- 俄罗斯方块、贪吃蛇、2048、打砖块
+
+## 快速开始
+
+### 在线使用
+
+直接访问 **[saya-ch.github.io/WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/)**，无需安装。
+
+### 本地开发
 
 ```bash
 git clone https://github.com/saya-ch/WebLinuxOS.git
@@ -50,129 +100,95 @@ npm install
 npm run dev
 ```
 
-The dev server starts at `http://localhost:5173/WebLinuxOS/`.
+开发服务器启动在 `http://localhost:5173/WebLinuxOS/`。
 
-### Production Build
+### 生产构建
 
 ```bash
 cd web-linux
 npm run build
 ```
 
-TypeScript type checking (`tsc -b`) runs automatically before build, requiring zero type errors.
+构建前会自动运行 TypeScript 类型检查（`tsc -b`），要求零类型错误。
 
-## Architecture
+## 项目结构
 
 ```
 WebLinuxOS/
 ├── web-linux/
 │   ├── src/
-│   │   ├── apps/              # 640+ application implementations
-│   │   │   ├── terminal/      # Terminal command system (200+ commands)
-│   │   │   ├── collab/        # Collaborative apps (whiteboard, doc editing)
-│   │   │   ├── algorithms/    # Algorithm visualizations
-│   │   │   └── *.tsx          # Individual application components
-│   │   ├── components/        # Core UI components
-│   │   │   ├── desktop/       # Desktop, window manager, taskbar, start menu, wallpapers
-│   │   │   └── *.tsx          # Command palette, notifications, shortcuts panel
-│   │   ├── store/             # Zustand state, file utilities, IndexedDB persistence
-│   │   ├── services/          # AI service, API service, clipboard, sync
-│   │   ├── config/            # API endpoint configuration (20+ data sources)
-│   │   ├── apps.tsx           # Application registry
-│   │   └── store.tsx          # Global state store
-│   ├── public/                # Static assets, PWA manifest, Service Worker
-│   └── vite.config.ts         # Build config with 50+ code-split chunks
-├── .github/workflows/         # CI/CD: auto-deploy to GitHub Pages
+│   │   ├── apps/              # 640+ 应用实现
+│   │   │   ├── terminal/      # 终端命令系统（200+ 命令）
+│   │   │   ├── collab/        # 协作应用（白板、文档编辑）
+│   │   │   ├── algorithms/    # 算法可视化
+│   │   │   └── *.tsx          # 各应用组件
+│   │   ├── components/        # 核心 UI 组件
+│   │   │   ├── desktop/       # 桌面、窗口管理器、任务栏、开始菜单、壁纸
+│   │   │   └── *.tsx          # 命令面板、通知、快捷键面板
+│   │   ├── store/             # Zustand 状态管理、文件工具、IndexedDB 持久化
+│   │   ├── services/          # AI 服务、API 服务、剪贴板、同步
+│   │   ├── config/            # API 端点配置（20+ 数据源）
+│   │   ├── apps.tsx           # 应用注册表
+│   │   └── store.tsx          # 全局状态存储
+│   ├── public/                # 静态资源、PWA manifest、Service Worker
+│   └── vite.config.ts         # 构建配置（50+ 代码分割块）
+├── .github/workflows/         # CI/CD：自动部署到 GitHub Pages
 └── README.md
 ```
 
-**Tech Stack:** React 19 + TypeScript 6 + Vite 8 + Zustand 5 + Monaco Editor + Pyodide
+## 核心功能详解
 
-**Key Architecture Decisions:**
+### 窗口管理器
 
-| Decision | Description |
-|----------|-------------|
-| Lazy Loading | Each app is an independent Vite chunk, loaded on demand |
-| IndexedDB Storage | File tree persisted to IndexedDB, breaking the 5MB localStorage limit |
-| Virtual Filesystem | JSON tree with undo/redo, path resolution, search, and sorting |
-| Cross-tab Sync | BroadcastChannel-based real-time sync across browser tabs |
-| Offline-first | Service Worker with stale-while-revalidate caching strategy |
-| Zero Backend | All logic runs client-side, only calls public APIs |
+完整的桌面窗口管理：拖拽移动、四方向缩放、双击标题栏最大化、边缘吸附平铺（左/右/上/下/四象限）。支持最多 9 个虚拟桌面，每个桌面独立壁纸设置。任务栏显示所有打开窗口，一键切换。
 
-## Core Features
+### 虚拟文件系统
 
-### Window Manager
+基于 JSON 树的层级文件系统，支持完整 CRUD 操作。所有文件变更持久化到 IndexedDB（带 localStorage 降级），操作历史支持撤销/重做。内置文件类型识别、路径解析、节点搜索和排序。
 
-Full desktop window management: drag to move, four-directional resize, double-click titlebar to maximize, edge-snap tiling (left/right/top/bottom/quadrant). Supports up to 9 virtual desktops, each with independent wallpaper settings. Taskbar shows all open windows with one-click switching.
+### 终端模拟器
 
-### Virtual Filesystem
+200+ 内置命令，涵盖文件操作、系统信息、网络诊断、AI 对话、API 调用、加密等。基于虚拟文件系统构建，支持命令历史、Tab 补全和管道操作。
 
-JSON tree-based hierarchical filesystem with full CRUD operations. All file changes are persisted to IndexedDB (with localStorage fallback), and operation history is recorded to support undo/redo. Built-in file type recognition, path resolution, node search, and sorting.
+## API 集成列表
 
-### 640+ Built-in Applications
+所有数据源均为真实的公共 API，无模拟数据：
 
-| Category | Representative Apps |
-|----------|-------------------|
-| Development | Monaco code editor, terminal (200+ commands), JSON formatter, regex tester, API client, Git visualization |
-| Productivity | Pomodoro timer, kanban board, Markdown previewer, spreadsheet, PDF viewer, resume generator |
-| AI & Creative | AI chat (Pollinations.ai), AI image generation, AI writing studio, code analysis, prompt engineering lab |
-| Internet | Web browser (DuckDuckGo), weather (Open-Meteo), crypto tracker (CoinGecko), news reader |
-| Data Analysis | DataVerse Live multi-source dashboard, advanced data visualization, chart tools |
-| System | File manager, system monitor, password manager, workspace manager, WebSSH |
-| Multimedia | Music studio, audio visualizer, paint, screen recorder, camera |
-| Games | Tetris, Snake, 2048, Breakout, dice |
+- **Open-Meteo** — 全球天气预报和空气质量
+- **Pollinations.ai** — AI 聊天和图像生成（免费，无需 API 密钥）
+- **DuckDuckGo** — Web 搜索（免费）
+- **CoinGecko** — 加密货币价格和市值
+- **Hacker News** — 科技新闻（Firebase API）
+- **Wikipedia** — 百科全书文章
+- **GitHub API** — 仓库探索和趋势
+- **NASA APOD** — 每日天文图片
+- **Frankfurter** — 欧洲央行汇率
+- **TheMealDB** — 食谱数据库
+- **Cloudflare DoH** — DNS over HTTPS 查询
+- **Free Dictionary API** — 发音、定义、同义词
+- **Web Crypto API** — SHA/HMAC/AES-GCM 哈希和加密（浏览器原生）
+- **crt.sh** — SSL/TLS 证书透明度日志
 
-### Terminal Emulator
+## 键盘快捷键
 
-200+ built-in commands covering file operations, system information, network diagnostics, AI conversations, API calls, encryption, and more. Built on the virtual filesystem with command history, tab completion, and pipeline support.
+- `Ctrl/Cmd + Shift + K` — 智能搜索
+- `Ctrl/Cmd + T` — 终端
+- `Ctrl/Cmd + E` — 文件管理器
+- `Ctrl/Cmd + B` — 浏览器
+- `Ctrl/Cmd + Shift + P` — 命令面板
+- `Ctrl/Cmd + Space` — AI 命令中心
+- `Alt + N` — 快速笔记
+- `Ctrl/Cmd + ,` — 设置
+- `Ctrl/Cmd + Q` — 关闭窗口
+- `Ctrl/Cmd + Alt + 1-9` — 切换桌面
+- `Ctrl/Cmd + Shift + Alt + 1-9` — 移动窗口到桌面
+- `Ctrl/Cmd + Shift + Arrow` — 窗口吸附
 
-### Public API Integration
+## 开发指南
 
-All data sources are real, public APIs -- no simulated data:
+### 添加新应用
 
-| API | Purpose |
-|-----|---------|
-| Open-Meteo | Global weather forecasts and air quality |
-| Pollinations.ai | AI chat and image generation (free, no API key) |
-| DuckDuckGo | Web search (free) |
-| CoinGecko | Cryptocurrency prices and market cap |
-| Hacker News | Tech news (Firebase API) |
-| Wikipedia | Encyclopedia articles |
-| GitHub API | Repository exploration and trending |
-| NASA APOD | Astronomy picture of the day |
-| Frankfurter | ECB exchange rates |
-| TheMealDB | Recipe database |
-| Cloudflare DoH | DNS over HTTPS queries |
-| Free Dictionary API | Pronunciation, definitions, synonyms |
-| Web Crypto API | SHA/HMAC/AES-GCM hashing and encryption (browser native) |
-| crt.sh | SSL/TLS certificate transparency logs |
-
-## Keyboard Shortcuts
-
-| Action | Shortcut |
-|--------|----------|
-| Smart Search | `Ctrl/Cmd + Shift + K` |
-| Terminal | `Ctrl/Cmd + T` |
-| File Manager | `Ctrl/Cmd + E` |
-| Browser | `Ctrl/Cmd + B` |
-| Command Palette | `Ctrl/Cmd + Shift + P` |
-| AI Command Center | `Ctrl/Cmd + Space` |
-| Quick Note | `Alt + N` |
-| Settings | `Ctrl/Cmd + ,` |
-| Calculator | `Ctrl/Cmd + Shift + C` |
-| Text Editor | `Ctrl/Cmd + Shift + E` |
-| Close Window | `Ctrl/Cmd + Q` |
-| Launcher | `Ctrl/Cmd + Shift + L` |
-| Switch Desktop | `Ctrl/Cmd + Alt + 1-9` |
-| Move Window to Desktop | `Ctrl/Cmd + Shift + Alt + 1-9` |
-| Window Snap | `Ctrl/Cmd + Shift + Arrow` |
-| Shortcut Help | `Ctrl/Cmd + Shift + ?` |
-
-## Development Guide
-
-### Adding a New Application
-
-Create a new `.tsx` file in `src/apps/` and register it in `src/apps.tsx`:
+在 `src/apps/` 创建新的 `.tsx` 文件，并在 `src/apps.tsx` 中注册：
 
 ```tsx
 // src/apps/MyNewApp.tsx
@@ -182,7 +198,7 @@ const MyNewApp: React.FC = () => {
   return (
     <div style={{ padding: '16px' }}>
       <h2>My New App</h2>
-      <p>Application content...</p>
+      <p>应用内容...</p>
     </div>
   )
 }
@@ -191,58 +207,75 @@ export default MyNewApp
 ```
 
 ```tsx
-// src/apps.tsx (add to registry)
+// src/apps.tsx（添加到注册表）
 {
   id: 'my-new-app',
   name: 'My New App',
   icon: 'Package',
   component: 'MyNewApp',
   category: 'development',
-  description: 'My new application',
+  description: '我的新应用',
 }
 ```
 
-Also add the lazy import in `src/components/desktop/WindowManager.tsx`:
+同时在 `src/components/desktop/WindowManager.tsx` 添加懒加载导入：
 
 ```tsx
-// In the componentMap object
+// 在 componentMap 对象中
 MyNewApp: () => import('../../apps/MyNewApp'),
 ```
 
-Components are dynamically imported via `React.lazy`, and Vite automatically splits them into independent chunks for on-demand loading.
+组件通过 `React.lazy` 动态导入，Vite 自动分割为独立 chunk 实现按需加载。
 
-### Project Commands
+### 项目命令
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server (port 5173) |
-| `npm run build` | Type check + production build |
-| `npm run typecheck` | TypeScript type check only |
-| `npm run lint` | ESLint code linting |
-| `npm run format` | Prettier code formatting |
+- `npm run dev` — 启动开发服务器（端口 5173）
+- `npm run build` — 类型检查 + 生产构建
+- `npm run typecheck` — 仅 TypeScript 类型检查
+- `npm run lint` — ESLint 代码检查
+- `npm run format` — Prettier 代码格式化
 
-## Technical Highlights
+## 技术亮点
 
-- **Application lazy loading** -- 640+ apps as independent chunks; first paint loads only the core framework and a few high-frequency apps. Vite's `manualChunks` precisely splits vendor libraries and large applications
-- **IndexedDB file storage** -- Virtual filesystem backed by IndexedDB, breaking the 5MB localStorage limit while maintaining backward compatibility through automatic data migration
-- **Optimized system monitoring** -- CPU/memory/storage metrics derived from real browser Performance API data (`performance.memory`, `navigator.connection`, `performance.getEntriesByType`), with cached DOM node counting to avoid expensive full-tree traversals
-- **Cross-tab synchronization** -- BroadcastChannel-based real-time sync for theme, file system, and window state across browser tabs
-- **PWA and offline support** -- Service Worker with stale-while-revalidate caching for static resources, installable to desktop with offline capability
-- **Zero backend deployment** -- Pure static site; all logic runs client-side, only calls public APIs, deployable to any static hosting platform
-- **Security headers** -- Development and preview servers configured with COOP/COEP, X-Frame-Options, CSP, and other security response headers
+- **应用懒加载** — 640+ 应用作为独立 chunk；首次加载仅加载核心框架和少量高频应用。Vite 的 `manualChunks` 精确分割 vendor 库和大型应用
+- **IndexedDB 文件存储** — 虚拟文件系统基于 IndexedDB，突破 5MB localStorage 限制，同时通过自动数据迁移保持向后兼容
+- **优化的系统监控** — CPU/内存/存储指标来源于真实浏览器 Performance API（`performance.memory`、`navigator.connection`、`performance.getEntriesByType`），使用缓存的 DOM 节点计数避免昂贵的全树遍历
+- **跨标签页同步** — 基于 BroadcastChannel 的实时同步，支持主题、文件系统和窗口状态跨浏览器标签页同步
+- **PWA 和离线支持** — Service Worker 使用 stale-while-revalidate 缓存策略，可安装到桌面，支持离线使用
+- **零后端部署** — 纯静态站点；所有逻辑在客户端运行，仅调用公共 API，可部署到任何静态托管平台
+- **安全头配置** — 开发和预览服务器配置了 COOP/COEP、X-Frame-Options、CSP 等安全响应头
 
-## License
+## 贡献指南
 
-[MIT License](LICENSE) -- Copyright (c) Saya Ch
+欢迎贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细指南。
 
-## Contributing
+1. Fork 本仓库
+2. 创建特性分支：`git checkout -b feature/my-feature`
+3. 提交更改：`git commit -m 'feat: add my feature'`
+4. 推送到分支：`git push origin feature/my-feature`
+5. 创建 Pull Request
 
-Contributions are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范编写提交信息。
 
-1. Fork this repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit changes: `git commit -m 'feat: add my feature'`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Create a Pull Request
+## 许可证
 
-Please follow [Conventional Commits](https://www.conventionalcommits.org/) when writing commit messages.
+[MIT License](LICENSE) — Copyright (c) 2024-2026 saya-ch and contributors
+
+## 致谢
+
+感谢所有贡献者和开源社区的支持。本项目使用了以下优秀的开源库：
+
+- [React](https://react.dev/) — 用户界面构建库
+- [Vite](https://vitejs.dev/) — 下一代前端构建工具
+- [Zustand](https://zustand-demo.pmnd.rs/) — 轻量级状态管理
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) — 代码编辑器
+- [Pyodide](https://pyodide.org/) — Python WebAssembly 运行时
+- [Lucide](https://lucide.dev/) — 图标库
+
+---
+
+<div align="center">
+
+**[在线体验 WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/)**
+
+</div>

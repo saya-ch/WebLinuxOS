@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 function readAppVersion(): string {
@@ -18,21 +18,6 @@ const APP_VERSION = readAppVersion()
 export default defineConfig(({ mode }) => {
   const outDir = process.env.OUTPUT_DIR || '../dist'
   const basePath = process.env.VITE_BASE_PATH || '/WebLinuxOS/'
-
-  const targetPublicDir = resolve(__dirname, outDir)
-
-  if (!existsSync(targetPublicDir)) {
-    mkdirSync(targetPublicDir, { recursive: true })
-  }
-
-  const publicFiles = ['favicon.svg', 'icons.svg', 'manifest.json', '.nojekyll', '404.html']
-  publicFiles.forEach(file => {
-    const src = resolve(__dirname, 'public', file)
-    const dest = resolve(targetPublicDir, file)
-    if (existsSync(src)) {
-      copyFileSync(src, dest)
-    }
-  })
 
   const isProduction = mode === 'production'
 
@@ -85,24 +70,7 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/monaco-editor')) {
               return 'vendor-monaco'
             }
-            if (id.includes('node_modules/codemirror') || id.includes('node_modules/@codemirror')) {
-              return 'vendor-codemirror'
-            }
-            if (id.includes('node_modules/prismjs')) {
-              return 'vendor-prism'
-            }
-            if (id.includes('node_modules/chart.js')) {
-              return 'vendor-chart'
-            }
-            if (id.includes('node_modules/date-fns')) {
-              return 'vendor-date'
-            }
-            if (id.includes('node_modules/lodash')) {
-              return 'vendor-lodash'
-            }
-            if (id.includes('node_modules/uuid')) {
-              return 'vendor-uuid'
-            }
+
             if (id.includes('src/apps/DevRadar')) {
               return 'app-devradar'
             }

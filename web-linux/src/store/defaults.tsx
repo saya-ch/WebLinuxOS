@@ -31,6 +31,10 @@ export const defaultDesktopIcons: DesktopIcon[] = [
   { id: 'icon-time-capsule', appId: 'time-capsule', name: '时间胶囊', icon: <ClockIcon />, x: 380, y: 320 },
   // === v55.2 新增 LivePulse 实时信息中心
   { id: 'icon-live-pulse', appId: 'live-pulse', name: 'LivePulse', icon: <SparklesIcon />, x: 500, y: 20 },
+  // === 新增三款工具应用 — 时间戳转换 / 开发者速查手册 / 网络工具专业版
+  { id: 'icon-timestamp-converter', appId: 'timestamp-converter', name: 'TimestampConverter', icon: <ClockIcon />, x: 500, y: 120 },
+  { id: 'icon-developer-cheat-sheet', appId: 'developer-cheat-sheet', name: 'DeveloperCheatSheet', icon: <CodeIcon />, x: 500, y: 220 },
+  { id: 'icon-network-toolkit-pro', appId: 'network-toolkit-pro', name: 'NetworkToolkitPro', icon: <ApiLabIcon />, x: 500, y: 320 },
 ]
 
 export const defaultFiles: FileNode[] = [
