@@ -71,6 +71,12 @@ export default defineConfig(({ mode }) => {
               return 'vendor-monaco'
             }
 
+            if (id.includes('src/apps/AmbientSound')) {
+              return 'app-ambientsound'
+            }
+            if (id.includes('src/apps/MarkdownNotebook')) {
+              return 'app-markdownnotebook'
+            }
             if (id.includes('src/apps/DevRadar')) {
               return 'app-devradar'
             }

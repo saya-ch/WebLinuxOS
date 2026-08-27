@@ -5,6 +5,24 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [130.0.0] - 2026-08-28
+
+### Added — v130 创新应用与安全优化
+
+- **AmbientSound 环境音播放器** — 基于 Web Audio API 实时合成的环境音效播放器，12 种音效（雨声、雷声、风声、火焰、海浪、森林、鸟鸣、咖啡馆、白噪声、粉噪声、键盘声、钟表声），支持多音混合、独立音量控制、主音量、5 种预设场景（专注工作、深度睡眠、自然放松、咖啡时光、篝火夜晚）、定时关闭、本地偏好持久化。(`apps/AmbientSound.tsx`)
+- **MarkdownNotebook 智能笔记本** — 功能完整的 Markdown 笔记本：多文档管理、文件夹分类、分屏编辑/预览、收藏标记、实时字数/词数/行数统计、HTML 导出、深色/浅色主题切换、Tab 缩进、搜索过滤、本地持久化存储。基于 marked 库渲染。(`apps/MarkdownNotebook.tsx`)
+
+### Fixed
+
+- **CSP 安全配置** — Content-Security-Policy meta 标签从 main.tsx 的 JavaScript 动态注入改为 index.html head 中的静态声明，确保在页面加载前即生效，避免竞态条件。(`index.html`, `main.tsx`)
+
+### Changed
+
+- **版本号升级至 130.0.0** — package.json、index.html 启动提示、Service Worker 缓存版本、Boot Animation 日志全部同步更新。
+- **Vite 构建配置** — 新增 AmbientSound 和 MarkdownNotebook 的独立 chunk 分割，优化按需加载性能。(`vite.config.ts`)
+- **WindowManager componentMap** — 注册新应用组件的懒加载映射。(`components/desktop/WindowManager.tsx`)
+- **README 更新** — 新增 v130 更新日志、应用数量更新至 642+、新应用功能描述。(`README.md`)
+
 ## [127.0.0] - 2026-08-27
 
 ### Added — v127 性能优化、存储升级与新工具

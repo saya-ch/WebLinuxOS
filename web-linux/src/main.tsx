@@ -113,37 +113,7 @@ if (typeof window !== 'undefined') {
     }
   })
 
-  // 动态设置内容安全策略（CSP）meta 标签
-  // 注：此 meta 标签仅作为浏览器端策略提示；生产环境应主要依赖服务器响应头
-  try {
-    const cspMeta = document.createElement('meta')
-    cspMeta.httpEquiv = 'Content-Security-Policy'
-    // WebLinuxOS 内置多个代码运行器（CodeRunner / OnlineCompiler / WebIDE 等），
-    // 这些应用通过 new Function / eval 在浏览器内执行用户代码；同时也使用 Monaco
-    // 编辑器，需要 'unsafe-eval' 才能正常工作。这里在保留 'self' 与 'unsafe-inline'
-    // 的基础上放开 'unsafe-eval'，但仍禁止远程脚本注入。
-    // - 允许 https: 连接，以便天气/新闻/汇率/AI 等应用调用合规公开 API
-    // - 保留 data: 与 blob: 以便应用内可渲染内容
-    cspMeta.content = [
-      "default-src 'self' https:",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
-      "connect-src 'self' https: wss: ws:",
-      "media-src 'self' blob: https:",
-      "frame-src 'self' https: data:",
-      "object-src 'none'",
-      "base-uri 'self'",
-    ].join('; ')
-    // 避免重复插入
-    const existing = document.querySelector('meta[http-equiv="Content-Security-Policy"]')
-    if (!existing) {
-      document.head.appendChild(cspMeta)
-    }
-  } catch (err) {
-    console.warn('[WebLinuxOS] 无法设置 CSP meta 标签：', err)
-  }
+  // CSP meta 标签已移至 index.html <head> 中，确保在页面加载前即生效
 }
 
 function registerServiceWorker() {
