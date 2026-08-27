@@ -161,6 +161,16 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/ColorName')) {
               return 'app-colors';
             }
+            // v128 新增组件 chunk 分割
+            if (id.includes('src/apps/RegexVisualizer')) {
+              return 'app-regex-visualizer';
+            }
+            if (id.includes('src/apps/JsonTreeView')) {
+              return 'app-json-tree-view';
+            }
+            if (id.includes('src/apps/FocusTimer')) {
+              return 'app-focus-timer';
+            }
             // v107 新增组件 chunk 分割
             if (id.includes('src/apps/GlobalIntelCenter')) {
               return 'app-global-intel';

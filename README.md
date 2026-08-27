@@ -27,6 +27,14 @@
 - **零后端架构** — 所有逻辑在客户端运行，仅调用公共 API，无需服务器
 - **真实 API 集成** — Open-Meteo 天气、CoinGecko 加密货币、Hacker News、Wikipedia 等 20+ 数据源
 
+### v128 新增亮点
+
+- **正则可视化调试器** — 实时匹配高亮、正则语法分解解释、10 个常用模板
+- **JSON 树形查看器** — 可折叠/展开的交互式 JSON 浏览器，支持路径复制和搜索
+- **专注番茄钟** — SVG 环形进度、Web Audio 提示音、桌面通知、任务标签
+- **统一壁纸系统** — 32 款精选壁纸，壁纸画廊支持搜索过滤
+- **共享工具函数库** — 浏览器信息解析、性能监控等工具函数抽离复用
+
 ## 技术栈
 
 - **前端框架**: React 19 + TypeScript 6
@@ -44,11 +52,12 @@
 - Monaco 代码编辑器（语法高亮、IntelliSense）
 - 终端模拟器（200+ 命令）
 - JSON 格式化器、正则测试器、API 客户端
+- 正则可视化调试器、JSON 树形查看器
 - Git 可视化、代码审查工具
 
 ### 生产力应用
 
-- 番茄钟、看板板、Markdown 预览器
+- 专注番茄钟、看板板、Markdown 预览器
 - 电子表格、PDF 查看器、简历生成器
 - 日历、待办事项、知识管理
 
@@ -128,6 +137,7 @@ WebLinuxOS/
 │   │   ├── store/             # Zustand 状态管理、文件工具、IndexedDB 持久化
 │   │   ├── services/          # AI 服务、API 服务、剪贴板、同步
 │   │   ├── config/            # API 端点配置（20+ 数据源）
+│   │   ├── utils/             # 共享工具函数（浏览器信息、壁纸数据等）
 │   │   ├── apps.tsx           # 应用注册表
 │   │   └── store.tsx          # 全局状态存储
 │   ├── public/                # 静态资源、PWA manifest、Service Worker
@@ -244,6 +254,7 @@ MyNewApp: () => import('../../apps/MyNewApp'),
 - **PWA 和离线支持** — Service Worker 使用 stale-while-revalidate 缓存策略，可安装到桌面，支持离线使用
 - **零后端部署** — 纯静态站点；所有逻辑在客户端运行，仅调用公共 API，可部署到任何静态托管平台
 - **安全头配置** — 开发和预览服务器配置了 COOP/COEP、X-Frame-Options、CSP 等安全响应头
+- **共享工具函数库** — 浏览器信息解析、壁纸数据等共用逻辑抽离到 `src/utils/`，消除跨组件重复代码
 
 ## 贡献指南
 

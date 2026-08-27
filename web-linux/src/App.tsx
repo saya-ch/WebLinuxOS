@@ -200,92 +200,91 @@ const App = memo(function App() {
     }
   }, [accentColor])
 
-  // === v58 全局 API 暴露（同步阶段提前挂载 + useEffect 负责生命周期）
   const handleLaunchAppRef = useRef<EventListener | null>(null)
-  if (typeof window !== 'undefined') {
-    const win = window as Window & {
-      __weblinux_api_ready?: boolean
-      WebLinuxOS?: {
-        openApp: (appId: string) => void
-        closeWindow: (windowId: string) => void
-        focusWindow: (windowId: string) => void
-        minimizeWindow: (windowId: string) => void
-        maximizeWindow: (windowId: string) => void
-        restoreWindow: (windowId: string) => void
-        clearWindows: () => void
-        toggleLauncher: () => void
-        switchDesktop: (n: number) => void
-        getApps: () => unknown
-        getWindows: () => unknown
-        getState: () => unknown
-        listApps: () => Array<{ id: string; name: string; category: string }>
-        searchApps: (query: string) => Array<{ id: string; name: string; category: string; description?: string }>
-        getSystemStats: () => unknown
-        refreshSystemStats: () => void
-        addQuickNote: (content: string) => void
-        addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => void
-        getNotifications: () => unknown
-        version: string
-        buildTime: string
-      }
-    }
-    if (!win.__weblinux_api_ready) {
-      // 标记已挂载，防止 StrictMode 双调用导致重复注册
-      Object.defineProperty(win, '__weblinux_api_ready', { value: true, writable: false, configurable: false })
-      const st = useStore
-      const globalApi = {
-        openApp: (appId: string) => st.getState().openApp(appId),
-        closeWindow: (windowId: string) => st.getState().closeWindow(windowId),
-        focusWindow: (windowId: string) => st.getState().focusWindow(windowId),
-        minimizeWindow: (windowId: string) => st.getState().minimizeWindow(windowId),
-        maximizeWindow: (windowId: string) => st.getState().maximizeWindow(windowId),
-        restoreWindow: (windowId: string) => st.getState().restoreWindow(windowId),
-        clearWindows: () => st.getState().clearWindows(),
-        toggleLauncher: () => st.getState().toggleLauncher(),
-        switchDesktop: (n: number) => st.getState().switchDesktop(n),
-        getApps: () => st.getState().apps,
-        getWindows: () => st.getState().windows,
-        addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => st.getState().addNotification(n),
-        getState: () => st.getState(),
-        listApps: () => st.getState().apps.map(a => ({ id: a.id, name: a.name, category: a.category })),
-        searchApps: (query: string) => {
-          const q = query.toLowerCase()
-          return st.getState().apps.filter(a => 
-            a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q)
-          ).map(a => ({ id: a.id, name: a.name, category: a.category, description: a.description }))
-        },
-        getSystemStats: () => st.getState().systemStats,
-        refreshSystemStats: () => st.getState().refreshSystemStats(),
-        addQuickNote: (content: string) => {
-          const store = st.getState()
-          const timestamp = Date.now()
-          store.addFile('notes', `QuickNote-${timestamp}`, 'file')
-          // addFile 内部使用 generateFileId() 生成 ID，需从 state 中查找刚创建的文件
-          const updatedFiles = st.getState().files
-          const notesNode = updatedFiles.find(n => n.id === 'notes')
-          const lastChild = notesNode?.children?.slice(-1)[0]
-          if (lastChild) {
-            store.updateFileContent(lastChild.id, content)
-          }
-        },
-        getNotifications: () => st.getState().notifications,
-        version: __APP_VERSION__,
-        buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
-      }
-      win.WebLinuxOS = globalApi
-      window.dispatchEvent(new CustomEvent('weblinux-ready', { detail: globalApi }))
 
-      handleLaunchAppRef.current = ((e: Event) => {
-        const ce = e as CustomEvent<{ appId?: string; id?: string }>
-        const appId = ce?.detail?.appId || ce?.detail?.id
-        if (appId) st.getState().openApp(appId)
-      }) as EventListener
-      window.addEventListener('weblinux-launch-app', handleLaunchAppRef.current)
-      window.addEventListener('weblinux-open-app', handleLaunchAppRef.current)
-    }
-  }
-
+  // === v58 全局 API 暴露（useEffect 中挂载，确保不在渲染阶段执行副作用）===
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const win = window as Window & {
+        __weblinux_api_ready?: boolean
+        WebLinuxOS?: {
+          openApp: (appId: string) => void
+          closeWindow: (windowId: string) => void
+          focusWindow: (windowId: string) => void
+          minimizeWindow: (windowId: string) => void
+          maximizeWindow: (windowId: string) => void
+          restoreWindow: (windowId: string) => void
+          clearWindows: () => void
+          toggleLauncher: () => void
+          switchDesktop: (n: number) => void
+          getApps: () => unknown
+          getWindows: () => unknown
+          getState: () => unknown
+          listApps: () => Array<{ id: string; name: string; category: string }>
+          searchApps: (query: string) => Array<{ id: string; name: string; category: string; description?: string }>
+          getSystemStats: () => unknown
+          refreshSystemStats: () => void
+          addQuickNote: (content: string) => void
+          addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => void
+          getNotifications: () => unknown
+          version: string
+          buildTime: string
+        }
+      }
+      if (!win.__weblinux_api_ready) {
+        Object.defineProperty(win, '__weblinux_api_ready', { value: true, writable: false, configurable: false })
+        const st = useStore
+        const globalApi = {
+          openApp: (appId: string) => st.getState().openApp(appId),
+          closeWindow: (windowId: string) => st.getState().closeWindow(windowId),
+          focusWindow: (windowId: string) => st.getState().focusWindow(windowId),
+          minimizeWindow: (windowId: string) => st.getState().minimizeWindow(windowId),
+          maximizeWindow: (windowId: string) => st.getState().maximizeWindow(windowId),
+          restoreWindow: (windowId: string) => st.getState().restoreWindow(windowId),
+          clearWindows: () => st.getState().clearWindows(),
+          toggleLauncher: () => st.getState().toggleLauncher(),
+          switchDesktop: (n: number) => st.getState().switchDesktop(n),
+          getApps: () => st.getState().apps,
+          getWindows: () => st.getState().windows,
+          addNotification: (n: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error'; duration?: number }) => st.getState().addNotification(n),
+          getState: () => st.getState(),
+          listApps: () => st.getState().apps.map(a => ({ id: a.id, name: a.name, category: a.category })),
+          searchApps: (query: string) => {
+            const q = query.toLowerCase()
+            return st.getState().apps.filter(a =>
+              a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q)
+            ).map(a => ({ id: a.id, name: a.name, category: a.category, description: a.description }))
+          },
+          getSystemStats: () => st.getState().systemStats,
+          refreshSystemStats: () => st.getState().refreshSystemStats(),
+          addQuickNote: (content: string) => {
+            const store = st.getState()
+            const timestamp = Date.now()
+            store.addFile('notes', `QuickNote-${timestamp}`, 'file')
+            const updatedFiles = st.getState().files
+            const notesNode = updatedFiles.find(n => n.id === 'notes')
+            const lastChild = notesNode?.children?.slice(-1)[0]
+            if (lastChild) {
+              store.updateFileContent(lastChild.id, content)
+            }
+          },
+          getNotifications: () => st.getState().notifications,
+          version: __APP_VERSION__,
+          buildTime: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '',
+        }
+        win.WebLinuxOS = globalApi
+        window.dispatchEvent(new CustomEvent('weblinux-ready', { detail: globalApi }))
+
+        handleLaunchAppRef.current = ((e: Event) => {
+          const ce = e as CustomEvent<{ appId?: string; id?: string }>
+          const appId = ce?.detail?.appId || ce?.detail?.id
+          if (appId) st.getState().openApp(appId)
+        }) as EventListener
+        window.addEventListener('weblinux-launch-app', handleLaunchAppRef.current)
+        window.addEventListener('weblinux-open-app', handleLaunchAppRef.current)
+      }
+    }
+
     return () => {
       if (handleLaunchAppRef.current) {
         window.removeEventListener('weblinux-launch-app', handleLaunchAppRef.current)

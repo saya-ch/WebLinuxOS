@@ -17,6 +17,10 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v128 新增应用
+  RegexVisualizer: () => import('../../apps/RegexVisualizer'),
+  JsonTreeView: () => import('../../apps/JsonTreeView'),
+  FocusTimer: () => import('../../apps/FocusTimer'),
   // v127 新增应用
   TimestampConverter: () => import('../../apps/TimestampConverter'),
   DeveloperCheatSheet: () => import('../../apps/DeveloperCheatSheet'),
@@ -336,7 +340,6 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   SnippetVault: () => import('../../apps/SnippetVault'),
   WikiExplorer: () => import('../../apps/WikiExplorer'),
   RegexTester: () => import('../../apps/RegexTester'),
-  RegexVisualizer: () => import('../../apps/RegexVisualizer'),
   RESTClient: () => import('../../apps/RESTClient'),
   RSSReader: () => import('../../apps/RSSReader'),
   ScreenRecorder: () => import('../../apps/ScreenRecorder'),

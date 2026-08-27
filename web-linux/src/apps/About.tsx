@@ -1,101 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useStore } from '../store'
-
-// ============ 工具函数 ============
-
-function parseUA(ua: string) {
-  let browser = '未知'
-  let version = ''
-  let engine = '未知'
-  let os = '未知'
-
-  if (ua.includes('Firefox/')) {
-    browser = 'Firefox'
-    version = ua.split('Firefox/')[1]?.split(' ')[0] || ''
-    engine = 'Gecko'
-  } else if (ua.includes('Edg/')) {
-    browser = 'Edge'
-    version = ua.split('Edg/')[1]?.split(' ')[0] || ''
-    engine = 'Blink'
-  } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
-    browser = 'Opera'
-    version = ua.split('OPR/')[1]?.split(' ')[0] || ''
-    engine = 'Blink'
-  } else if (ua.includes('Chrome/')) {
-    browser = 'Chrome'
-    version = ua.split('Chrome/')[1]?.split(' ')[0] || ''
-    engine = 'Blink'
-  } else if (ua.includes('Safari/') && ua.includes('Version/')) {
-    browser = 'Safari'
-    version = ua.split('Version/')[1]?.split(' ')[0] || ''
-    engine = 'WebKit'
-  }
-
-  if (ua.includes('Windows NT 10')) os = 'Windows 10/11'
-  else if (ua.includes('Windows NT')) os = 'Windows'
-  else if (ua.includes('Mac OS X')) {
-    const m = ua.match(/Mac OS X (\d+[._]\d+[._]?\d*)/)
-    os = m ? `macOS ${m[1].replace(/_/g, '.')}` : 'macOS'
-  } else if (ua.includes('Android')) {
-    const m = ua.match(/Android (\d+\.?\d*)/)
-    os = m ? `Android ${m[1]}` : 'Android'
-  } else if (ua.includes('iPhone') || ua.includes('iPad')) {
-    const m = ua.match(/OS (\d+[._]\d+)/)
-    os = m ? `iOS ${m[1].replace(/_/g, '.')}` : 'iOS'
-  } else if (ua.includes('Linux')) os = 'Linux'
-  else if (ua.includes('CrOS')) os = 'Chrome OS'
-
-  return { browser, version, engine, os }
-}
-
-function getLoadTime(): string {
-  try {
-    const timing = performance.timing
-    if (timing && timing.loadEventEnd > 0) {
-      const loadTime = timing.loadEventEnd - timing.navigationStart
-      return `${loadTime} ms`
-    }
-    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
-    if (nav && nav.loadEventEnd > 0) {
-      return `${Math.round(nav.loadEventEnd)} ms`
-    }
-  } catch { /* ignore */ }
-  return '加载中...'
-}
-
-function estimateLocalStorageUsage(): string {
-  try {
-    let total = 0
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key) {
-        total += key.length + (localStorage.getItem(key)?.length || 0)
-      }
-    }
-    // UTF-16 每个 char 2 bytes
-    const bytes = total * 2
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-  } catch { /* ignore */ }
-  return '未知'
-}
-
-function countFileNodes(nodes: { children?: any[] }[]): number {
-  let count = 0
-  for (const n of nodes) {
-    count++
-    if (n.children) count += countFileNodes(n.children)
-  }
-  return count
-}
-
-function formatUptime(seconds: number): string {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return `${h}h ${m}m ${s}s`
-}
+import { parseUA, getLoadTime, estimateLocalStorageUsage, countFileNodes, formatUptime, getGPUInfo, getPerformanceMemory } from '../utils/browserInfo'
 
 // ============ FPS 计算组件 ============
 
@@ -209,9 +114,9 @@ export default function About() {
   const overviewItems = [
     { label: '系统名称', value: 'WebLinuxOS', icon: '🐧' },
     { label: '版本号', value: `v${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '64.0.0'}`, icon: '🏷️' },
-    { label: '内核版本', value: 'WebLinuxOS 64.0.0', icon: '⚙️' },
+    { label: '内核版本', value: `WebLinuxOS ${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '127.0.0'}`, icon: '⚙️' },
     { label: '架构', value: 'x86_64 (Browser)', icon: '🖥️' },
-    { label: '桌面环境', value: 'Web DE 64', icon: '🎨' },
+    { label: '桌面环境', value: `Web DE ${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '127.0.0'}`, icon: '🎨' },
     { label: '窗口系统', value: 'Web Window Manager', icon: '🪟' },
     { label: '构建时间', value: typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__! : new Date().toLocaleString('zh-CN'), icon: '🕐' },
     { label: '许可证', value: 'MIT', icon: '📄' },
@@ -596,36 +501,6 @@ export default function About() {
       </div>
     </div>
   )
-}
-
-// ============ 辅助函数 ============
-
-function getGPUInfo(): string {
-  try {
-    const canvas = document.createElement('canvas')
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
-    if (!gl) return '不可用'
-    const debugInfo = (gl as WebGLRenderingContext).getExtension('WEBGL_debug_renderer_info')
-    if (debugInfo) {
-      return (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '未知'
-    }
-    return 'WebGL 支持'
-  } catch {
-    return '不可用'
-  }
-}
-
-function getPerformanceMemory(): string {
-  try {
-    const perf = performance as unknown as Record<string, unknown>
-    const memory = perf.memory as { usedJSHeapSize?: number; jsHeapSizeLimit?: number } | undefined
-    if (memory && memory.usedJSHeapSize && memory.jsHeapSizeLimit) {
-      const used = (memory.usedJSHeapSize / (1024 * 1024)).toFixed(1)
-      const total = (memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(1)
-      return `${used} / ${total} MB`
-    }
-  } catch { /* ignore */ }
-  return '不可用'
 }
 
 // 构建时间注入（由 Vite define 替换，fallback 为当前时间）
