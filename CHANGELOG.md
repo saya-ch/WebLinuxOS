@@ -5,6 +5,28 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [132.0.0] - 2026-08-28
+
+### Added — v132 创新工具与质量优化
+
+- **HTTPToolkit 实用HTTP客户端** — 真实API集成的HTTP请求工具，内置12个公开API模板（httpbin/JSONPlaceholder/GitHub Trending/Open-Meteo天气/CatFact/DogAPI/IP地理定位等），支持7种HTTP方法、请求头编辑器、请求体编辑器、响应格式化查看、请求历史记录、状态码与耗时统计、Ctrl+Enter快捷发送。(`apps/HTTPToolkit.tsx`)
+- **MarkdownLiveStudio 实时Markdown编辑器** — 分屏编辑与实时预览，4种预览主题（GitHub/Dark/Minimal/Solarized），工具栏快捷格式化（标题/粗体/斜体/代码/链接/图片/列表/引用/分割线），可调字号，HTML复制与文件导出，Tab缩进支持，字数/行数/阅读时间统计。(`apps/MarkdownLiveStudio.tsx`)
+
+### Fixed
+
+- **版本号硬编码修复** — index.html启动动画中的版本号从硬编码的v130更新为v131，与package.json版本同步。(`index.html`)
+- **PWA manifest.json完善** — 根目录manifest.json从简化版升级为完整版，添加PWA shortcuts（终端/文件管理器/Nexus AI）、display_override、categories、orientation等字段，修复背景色和主题色不一致问题。(`public/manifest.json`)
+- **生产环境console保留** — 移除vite.config.ts中生产构建对console的drop，保留console.log/warn/error用于线上问题排查，仅删除debugger语句。(`vite.config.ts`)
+
+### Changed
+
+- **启动日志动画更新** — 精简启动日志行数，更新为v132版本信息，移除过时的版本号标注。(`index.html`)
+- **Vite构建配置** — 为HTTPToolkit和MarkdownLiveStudio添加独立chunk分割，优化按需加载。(`vite.config.ts`)
+- **WindowManager componentMap** — 注册新应用组件的懒加载映射。(`components/desktop/WindowManager.tsx`)
+- **应用注册表** — 在apps.tsx中注册HTTPToolkit和MarkdownLiveStudio。(`apps.tsx`)
+- **README更新** — 应用数量更新至700+，新增v132工具描述，完善项目介绍。(`README.md`)
+- **CHANGELOG更新** — 新增v132变更日志条目。(`CHANGELOG.md`)
+
 ## [130.0.0] - 2026-08-28
 
 ### Added — v130 创新应用与安全优化

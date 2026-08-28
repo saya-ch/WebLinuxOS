@@ -1,13 +1,13 @@
 # WebLinuxOS
 
-> 一个功能丰富的基于 Web 的 Linux 桌面操作系统环境
+> 一个功能完整的浏览器端 Linux 桌面环境，包含 700+ 应用、终端模拟器、虚拟文件系统和真实 API 集成
 
 [![Deploy Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-WebLinuxOS 不是又一个"看起来像操作系统"的网页 demo。它是一个功能完整的浏览器端桌面环境，包含约 250 个真正可用的应用程序、支持 200+ 条命令的终端模拟器、由 IndexedDB 驱动的虚拟文件系统，以及通过 Pyodide 实现的 Python 运行时。所有逻辑在客户端执行，无需后端服务。
+WebLinuxOS 不是又一个"看起来像操作系统"的网页 demo。它是一个功能完整的浏览器端桌面环境，包含 700+ 个真正可用的应用程序、支持 200+ 条命令的终端模拟器、由 IndexedDB 驱动的虚拟文件系统，以及通过 Pyodide 实现的 Python 运行时。所有逻辑在客户端执行，无需后端服务。
 
 ---
 
@@ -33,7 +33,7 @@ WebLinuxOS 不是又一个"看起来像操作系统"的网页 demo。它是一�
 
 ### 应用系统
 
-- 约 250 个内置应用 — 涵盖开发、生产力、AI、数据、系统、多媒体和游戏
+- 700+ 内置应用 — 涵盖开发、生产力、AI、数据、系统、多媒体和游戏
 - 应用懒加载 — React.lazy + Vite 代码分割，按需加载
 - 窗口持久化 — 应用状态在刷新后保持
 
@@ -80,6 +80,7 @@ WebLinuxOS 不是又一个"看起来像操作系统"的网页 demo。它是一�
 | 算法可视化 | 排序/搜索/图遍历动画 |
 | Linux 命令实验室 | 交互式命令模拟环境 |
 | 代码片段管理器 | 多语言代码片段管理 |
+| HTTP Toolkit | 真实 API 集成 HTTP 客户端 |
 
 ### AI 与创意
 
@@ -110,6 +111,7 @@ WebLinuxOS 不是又一个"看起来像操作系统"的网页 demo。它是一�
 | 应用 | 说明 |
 |------|------|
 | Markdown 编辑器 | 分屏实时预览 |
+| MarkdownLiveStudio | 多主题实时编辑器，支持导出 |
 | 番茄钟 | 专注计时器 |
 | 任务看板 | Kanban 任务管理 |
 | 日历 | 日程规划 |
@@ -237,7 +239,7 @@ npm run preview
 WebLinuxOS/
 ├── web-linux/
 │   ├── src/
-│   │   ├── apps/              # 约 250 个应用实现
+│   │   ├── apps/              # 700+ 个应用实现
 │   │   │   ├── terminal/      # 终端命令系统（200+ 命令）
 │   │   │   ├── collab/        # 协作应用（白板、文档编辑）
 │   │   │   ├── algorithms/    # 算法可视化

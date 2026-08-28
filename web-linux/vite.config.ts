@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
         supported: {
           'top-level-await': true,
         },
-        drop: isProduction ? ['console', 'debugger'] : [],
+        drop: isProduction ? ['debugger'] : [],
         minifyIdentifiers: isProduction,
         minifySyntax: isProduction,
       },
@@ -79,6 +79,12 @@ export default defineConfig(({ mode }) => {
             }
             if (id.includes('src/apps/TextAnalyzer')) {
               return 'app-text-analyzer'
+            }
+            if (id.includes('src/apps/HTTPToolkit')) {
+              return 'app-http-toolkit'
+            }
+            if (id.includes('src/apps/MarkdownLiveStudio')) {
+              return 'app-markdown-live-studio'
             }
             if (id.includes('src/apps/DevRadar')) {
               return 'app-devradar'

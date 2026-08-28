@@ -1,12 +1,15 @@
 {
   "name": "WebLinuxOS",
   "short_name": "WebLinux",
-  "description": "一个完全运行在浏览器中的功能性Linux桌面环境",
+  "description": "一个完全运行在浏览器中的功能性Linux桌面环境，支持虚拟文件系统、终端、窗口管理和实时API集成",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "display_override": ["fullscreen", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#08080f",
+  "theme_color": "#7c6cf0",
+  "categories": ["productivity", "development", "utilities"],
   "icons": [
     {
       "src": "./favicon.svg",
@@ -14,5 +17,45 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Terminal",
+      "short_name": "Terminal",
+      "description": "Open Terminal",
+      "url": "./#terminal",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "64x64"
+        }
+      ]
+    },
+    {
+      "name": "File Manager",
+      "short_name": "Files",
+      "description": "Open File Manager",
+      "url": "./#files",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "64x64"
+        }
+      ]
+    },
+    {
+      "name": "Nexus AI",
+      "short_name": "AI",
+      "description": "Open AI Assistant",
+      "url": "./#nexusai",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "64x64"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
