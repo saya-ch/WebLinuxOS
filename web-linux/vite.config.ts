@@ -77,6 +77,9 @@ export default defineConfig(({ mode }) => {
             if (id.includes('src/apps/MarkdownNotebook')) {
               return 'app-markdownnotebook'
             }
+            if (id.includes('src/apps/TextAnalyzer')) {
+              return 'app-text-analyzer'
+            }
             if (id.includes('src/apps/DevRadar')) {
               return 'app-devradar'
             }

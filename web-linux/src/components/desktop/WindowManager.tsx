@@ -17,6 +17,8 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v131 新增应用
+  TextAnalyzer: () => import('../../apps/TextAnalyzer'),
   // v130 新增应用
   AmbientSound: () => import('../../apps/AmbientSound'),
   MarkdownNotebook: () => import('../../apps/MarkdownNotebook'),
