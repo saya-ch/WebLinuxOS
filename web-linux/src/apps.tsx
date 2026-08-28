@@ -36,6 +36,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v134 新增创新工具：SystemHealthMonitor 系统健康监控
+  { id: 'system-health-monitor', name: 'SystemHealthMonitor 系统健康监控', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>, component: 'SystemHealthMonitor', category: 'utilities', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '综合系统健康监控仪表盘：实时FPS/内存/DOM节点/资源数/FCP/DCL监控、CPU核心/设备内存/网络状态/屏幕信息、20项历史趋势图、健康评分(0-100)、JSON报告导出' },
   // === v133 新增创新工具：ColorAccessibility + WebPerformanceProfiler + DNSProbe
   { id: 'color-accessibility', name: 'ColorAccessibility 色彩无障碍检查', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="2" fill="currentColor"/><path d="M12 14v4"/><path d="M9 18l3-4 3 4"/></svg>, component: 'ColorAccessibility', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: 'WCAG 2.1色彩无障碍检查：对比度计算器(AA/AAA合规)、8种色盲模拟、6色调色板矩阵分析、智能修复建议、JSON导出报告' },
   { id: 'web-perf-profiler', name: 'WebPerformanceProfiler 性能剖析器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>, component: 'WebPerformanceProfiler', category: 'development', defaultWidth: 1320, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '真实浏览器性能剖析：Core Web Vitals(LCP/CLS/FID)、Navigation/Paint Timing、资源瀑布图、长任务检测、性能评分(0-100)、历史趋势、JSON报告导出' },
@@ -1778,7 +1780,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'git-cheatsheet', name: 'Git 命令速查', icon: <Code2Icon />, component: 'GitCheatsheet', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   // 注：APIHealthMonitor 已以 api-health-monitor 注册（utilities），此处移除重复的 api-health 条目
   { id: 'activity-heatmap', name: '活动热力图', icon: <ActivityIcon />, component: 'ActivityHeatmap', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
-  { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
+  // regex-visualizer 已在 APP_REGISTRY_EXTRAS 中注册（v128），此处移除重复条目
   // === v39.0 全新创新应用 - Snap Studio 浏览器原生图片工坊 ===
   { id: 'snap-studio', name: 'Snap Studio 美图工坊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>, component: 'SnapStudio', category: 'multimedia', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Canvas 像素级图片编辑器：滤镜、微调、缩放、撤销重做、多格式导出' },
   // === v41.0 创新功能扩展 — 真实可用的开发者工具 ===

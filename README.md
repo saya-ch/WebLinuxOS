@@ -40,7 +40,7 @@ A fully functional Linux desktop environment running entirely in the browser, fe
 
 | 类别 | 代表应用 | 说明 |
 |------|----------|------|
-| 系统工具 | 文件管理器、终端、系统设置 | 完整的文件系统操作和系统配置 |
+| 系统工具 | 文件管理器、终端、系统设置、系统健康监控 | 完整的文件系统操作、系统配置和实时性能监控 |
 | 开发工具 | 代码编辑器(Monaco)、WebIDE、API 调试器 | 浏览器内的开发环境 |
 | AI 工具 | AI 聊天、AI 图像生成、代码审查 | 基于 Pollinations.ai 免费 API |
 | 互联网 | 天气、新闻、维基百科、GitHub 趋势 | 真实数据，非模拟 |

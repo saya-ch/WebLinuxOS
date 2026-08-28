@@ -5,6 +5,25 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [134.0.0] - 2026-08-29
+
+### Added — v134 系统健康监控与质量优化
+
+- **SystemHealthMonitor 系统健康监控** — 综合系统健康监控仪表盘：实时FPS/内存使用率/DOM节点数/加载资源数/首次内容绘制(FCP)/DOM加载完成时间(DCL)监控、CPU核心/设备内存/网络状态/屏幕信息/时区等系统信息、20项历史趋势SVG图表、健康评分(0-100)环形图、三视图(仪表盘/详细信息/历史趋势)、JSON报告导出。(`apps/SystemHealthMonitor.tsx`)
+
+### Fixed
+
+- **重复应用ID修复** — `regex-visualizer` ID在v128和早期版本中重复注册，删除appRegistry中的旧版重复条目。(`apps.tsx`)
+
+### Changed
+
+- **版本升级** — 从v133升级至v134。(`package.json`, `index.html`)
+- **启动日志更新** — 更新为v134版本信息，反映新增工具和质量修复。(`index.html`)
+- **WindowManager componentMap** — 注册SystemHealthMonitor应用组件的懒加载映射。(`components/desktop/WindowManager.tsx`)
+- **应用注册表** — 在APP_REGISTRY_EXTRAS中注册v134新应用。(`apps.tsx`)
+- **Vite构建配置** — 为SystemHealthMonitor添加独立chunk分割，优化按需加载。(`vite.config.ts`)
+- **CI/CD优化** — 在GitHub Actions工作流中添加TypeScript类型检查步骤，在构建前自动检测类型错误。(`deploy.yml`)
+
 ## [133.0.0] - 2026-08-28
 
 ### Added — v133 质量修复与创新工具

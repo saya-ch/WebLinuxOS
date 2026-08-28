@@ -35,6 +35,10 @@ jobs:
         working-directory: ./web-linux
         run: npm ci
 
+      - name: TypeScript type check
+        working-directory: ./web-linux
+        run: npm run typecheck
+
       - name: Build (GitHub Pages mode)
         working-directory: ./web-linux
         run: npm run deploy

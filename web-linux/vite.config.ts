@@ -52,6 +52,10 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id: string) {
+            // v134 新增应用 chunk 分割
+            if (id.includes('src/apps/SystemHealthMonitor')) {
+              return 'app-system-health-monitor';
+            }
             if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
               return 'vendor-react'
             }
