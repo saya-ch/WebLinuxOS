@@ -220,14 +220,24 @@ function getCompletions(text: string, lang: string): string[] {
 }
 
 // 查找替换组件
-const FindReplace = memo(({ onFind, onReplace, onClose }: {
+const FindReplace = memo(({ onFind, onReplace, onClose, content }: {
   onFind: (search: string) => void
   onReplace: (search: string, replace: string, all: boolean) => void
   onClose: () => void
+  content?: string
 }) => {
   const [searchText, setSearchText] = useState('')
   const [replaceText, setReplaceText] = useState('')
-  const [matchCount] = useState(0)
+  const matchCount = useMemo(() => {
+    if (!searchText || !content) return 0
+    let count = 0
+    let idx = 0
+    while ((idx = content.indexOf(searchText, idx)) !== -1) {
+      count++
+      idx += searchText.length
+    }
+    return count
+  }, [searchText, content])
 
   return (
     <div style={{
@@ -257,7 +267,7 @@ const FindReplace = memo(({ onFind, onReplace, onClose }: {
           }}
         />
         <span style={{ color: '#6c7086', fontSize: 12 }}>
-          {matchCount > 0 ? `${matchCount} 个匹配` : ''}
+          {searchText ? `${matchCount} 个匹配` : ''}
         </span>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -1095,6 +1105,7 @@ export default function CodeEditor() {
           onFind={handleFind}
           onReplace={handleReplace}
           onClose={() => setShowFindReplace(false)}
+          content={activeTabId ? (tabContents[activeTabId] || '') : ''}
         />
       )}
 

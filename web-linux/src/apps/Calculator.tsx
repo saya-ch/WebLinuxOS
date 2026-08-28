@@ -155,7 +155,7 @@ export default function Calculator() {
         const char = sanitized[i]
         if (char.match(/[0-9.]/)) {
           current += char
-        } else if (char.match(/[+\-*/()]/)) {
+        } else if (char.match(/[+\-*/()%]/)) {
           if (current) {
             tokens.push({ type: 'number', value: current })
             current = ''
@@ -185,13 +185,16 @@ export default function Calculator() {
             if (!isFinite(result)) throw new Error('溢出错误')
             return result
           }
+          case '%':
+            if (b === 0) throw new Error('除零错误')
+            return a % b
           default: throw new Error('未知操作符')
         }
       }
 
       const precedence = (op: string): number => {
         if (op === '**') return 3
-        if (op === '*' || op === '/') return 2
+        if (op === '*' || op === '/' || op === '%') return 2
         if (op === '+' || op === '-') return 1
         return 0
       }

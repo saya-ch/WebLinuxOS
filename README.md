@@ -2,7 +2,7 @@
 
 # WebLinuxOS
 
-**运行在浏览器中的功能级 Linux 桌面环境 — 642+ 应用，零后端，真实 API**
+**运行在浏览器中的功能级 Linux 桌面环境**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -22,16 +22,20 @@
 
 </div>
 
+## 项目简介
+
+WebLinuxOS 不是又一个"看起来像操作系统"的网页 demo。它是一个功能完整的浏览器端桌面环境，包含 350+ 个真正可用的应用程序、支持 200+ 条命令的终端模拟器、由 IndexedDB 驱动的虚拟文件系统，以及通过 Pyodide 实现的 Python 运行时。所有逻辑在客户端执行，无需后端服务。
+
 ## 核心特性
 
-- **642+ 内置应用** — 涵盖开发、生产力、AI、数据分析、工具和游戏
-- **200+ 终端命令** — 完整终端模拟器，虚拟文件系统、持久化存储、操作历史
+- **350+ 内置应用** — 涵盖开发工具、生产力、AI、数据分析、系统工具和游戏
+- **200+ 终端命令** — 完整终端模拟器，支持管道、重定向、Tab 补全、命令历史
 - **20+ 公共 API 集成** — Open-Meteo、CoinGecko、Hacker News、Wikipedia 等真实数据源
-- **零后端架构** — 所有逻辑在客户端运行，仅调用公共 API，可部署到任何静态托管
+- **零后端架构** — 所有逻辑在客户端运行，可部署到任何静态托管平台
 - **完整窗口管理** — 拖拽、缩放、边缘吸附平铺，最多 9 个虚拟桌面
-- **PWA 离线支持** — Service Worker 缓存策略，可安装到桌面，支持离线使用
+- **PWA 离线支持** — Service Worker 缓存策略，可安装到桌面
 - **跨标签页同步** — BroadcastChannel 实时同步主题、文件系统和窗口状态
-- **应用懒加载** — React.lazy + Vite 代码分割，640+ 应用按需加载
+- **应用懒加载** — React.lazy + Vite 代码分割，按需加载
 
 ## 快速开始
 
@@ -60,9 +64,7 @@ npm run dev
 | `npm run lint` | ESLint 代码检查 |
 | `npm run format` | Prettier 代码格式化 |
 
-## 项目架构
-
-### 技术栈
+## 技术栈
 
 | 层 | 选型 |
 |----|------|
@@ -73,14 +75,15 @@ npm run dev
 | Python 运行时 | Pyodide（WebAssembly） |
 | 图标库 | Lucide React |
 | Markdown 渲染 | Marked |
+| 音频引擎 | Web Audio API（实时合成与可视化） |
 
-### 目录结构
+## 项目架构
 
 ```
 WebLinuxOS/
 ├── web-linux/
 │   ├── src/
-│   │   ├── apps/            # 642+ 应用实现
+│   │   ├── apps/            # 350+ 应用实现
 │   │   │   ├── terminal/    # 终端命令系统（200+ 命令）
 │   │   │   ├── collab/      # 协作应用（白板、文档编辑）
 │   │   │   ├── algorithms/  # 算法可视化
@@ -108,7 +111,7 @@ WebLinuxOS/
 | 互联网 | Web 浏览器、天气预报、加密货币追踪、新闻阅读器、维基百科、GitHub 趋势 |
 | 数据分析 | DataVerse Live 多源仪表板、高级数据可视化、实时数据监控 |
 | 系统工具 | 文件管理器、系统监控器、密码管理器、网络诊断、WebSSH 终端 |
-| 多媒体 | 环境音播放器、音乐工作室、画板、屏幕录制、视频播放器 |
+| 多媒体 | 环境音播放器、音乐合成器（Web Audio API）、画板、屏幕录制、视频播放器 |
 | 游戏 | 俄罗斯方块、贪吃蛇、2048、打砖块 |
 
 ## 终端命令系统
@@ -127,7 +130,7 @@ WebLinuxOS/
 
 完整命令列表请在终端中输入 `help` 查看。
 
-## API 集成一览
+## API 集成
 
 所有数据源均为真实公共 API，无模拟数据：
 
@@ -135,7 +138,6 @@ WebLinuxOS/
 |-----|------|
 | Open-Meteo | 全球天气预报和空气质量 |
 | Pollinations.ai | AI 聊天和图像生成（免费，无需密钥） |
-| DuckDuckGo | Web 搜索 |
 | CoinGecko | 加密货币价格和市值 |
 | Hacker News | 科技新闻（Firebase API） |
 | Wikipedia | 百科全书文章 |
@@ -146,7 +148,6 @@ WebLinuxOS/
 | Cloudflare DoH | DNS over HTTPS 查询 |
 | Free Dictionary | 发音、定义、同义词 |
 | Web Crypto API | SHA/HMAC/AES-GCM 哈希和加密（浏览器原生） |
-| crt.sh | SSL/TLS 证书透明度日志 |
 | MyMemory | 多语言实时翻译 |
 
 ## 快捷键速查表
@@ -164,7 +165,6 @@ WebLinuxOS/
 | `Ctrl/Cmd + Q` | 关闭当前窗口 |
 | `Ctrl/Cmd + Alt + 1-9` | 切换虚拟桌面 |
 | `Ctrl/Cmd + Shift + Alt + 1-9` | 移动窗口到指定桌面 |
-| `Ctrl/Cmd + Shift + Arrow` | 窗口边缘吸附 |
 
 ## 自定义配置
 
@@ -202,10 +202,9 @@ export default MyNewApp
 
 ## 贡献指南
 
-欢迎贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细流程。
+欢迎贡献。请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细流程。
 
 ```bash
-# 基本流程
 git checkout -b feature/my-feature
 git commit -m 'feat: add my feature'
 git push origin feature/my-feature
@@ -213,6 +212,17 @@ git push origin feature/my-feature
 
 请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范编写提交信息。
 
-## License
+## 浏览器兼容性
+
+| 浏览器 | 最低版本 |
+|--------|----------|
+| Chrome | 90+ |
+| Firefox | 90+ |
+| Safari | 15+ |
+| Edge | 90+ |
+
+Web Audio API 和 IndexedDB 要求现代浏览器支持。建议使用最新版 Chrome 以获得最佳体验。
+
+## 许可证
 
 [MIT](LICENSE) — Copyright (c) 2024-2026 [saya-ch](https://github.com/saya-ch) and contributors
