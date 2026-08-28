@@ -22,11 +22,11 @@ A fully functional Linux desktop environment running entirely in the browser, fe
 
 - 完整窗口管理: 拖拽、缩放、最大化/最小化、边缘吸附、四象限平铺
 - 虚拟桌面: 最多 9 个独立桌面空间，支持窗口跨桌面移动
-- 多主题: 深色/浅色主题切换，玻璃拟态 UI
+- 多主题: 深色/浅色主题切换，8 种强调色，动态壁纸（极光/粒子/波浪/星云等）
 - 全局搜索: Ctrl+Shift+K 快速启动任意应用
 - 键盘快捷键: 25+ 快捷键，支持自定义
 - PWA 离线支持: Service Worker 缓存，可安装到桌面
-- 跨标签页同步: BroadcastChannel 实时同步状态
+- 跨标签页同步: BroadcastChannel 实时同步主题/文件/设置
 
 ### 终端模拟器
 
@@ -41,12 +41,12 @@ A fully functional Linux desktop environment running entirely in the browser, fe
 | 类别 | 代表应用 | 说明 |
 |------|----------|------|
 | 系统工具 | 文件管理器、终端、系统设置、系统健康监控 | 完整的文件系统操作、系统配置和实时性能监控 |
-| 开发工具 | 代码编辑器(Monaco)、WebIDE、API 调试器 | 浏览器内的开发环境 |
+| 开发工具 | 代码编辑器(Monaco)、WebIDE、API 调试器、浏览器指纹识别、存储检查器 | 浏览器内的开发环境 |
 | AI 工具 | AI 聊天、AI 图像生成、代码审查 | 基于 Pollinations.ai 免费 API |
-| 互联网 | 天气、新闻、维基百科、GitHub 趋势 | 真实数据，非模拟 |
-| 办公效率 | Markdown 编辑器、日历、任务看板、番茄钟 | 生产力工具集 |
-| 多媒体 | 画图、音乐工作室、视频播放器 | Web Audio/Canvas 实现 |
-| 数据工具 | 电子表格、JSON 处理、编码转换 | 数据处理和转换 |
+| 互联网 | 天气、新闻、维基百科、GitHub 趋势、全球情报中心 | 真实数据，非模拟 |
+| 办公效率 | Markdown 编辑器、日历、任务看板、番茄钟、习惯追踪 | 生产力工具集 |
+| 多媒体 | 画图、音乐工作室、视频播放器、环境音播放器 | Web Audio/Canvas 实现 |
+| 数据工具 | 电子表格、JSON 处理、编码转换、正则可视化 | 数据处理和转换 |
 | 游戏 | 贪吃蛇、俄罗斯方块、2048、弹球 | 休闲小游戏 |
 
 ---
@@ -158,7 +158,7 @@ npm run lint          # ESLint 代码检查
 WebLinuxOS/
 ├── web-linux/
 │   ├── src/
-│   │   ├── apps/              # 应用组件
+│   │   ├── apps/              # 应用组件 (700+)
 │   │   │   ├── terminal/      # 终端命令系统
 │   │   │   ├── collab/        # 协作应用
 │   │   │   ├── algorithms/    # 算法可视化
@@ -171,7 +171,8 @@ WebLinuxOS/
 │   │   └── utils/             # 工具函数
 │   ├── public/                # PWA 资源
 │   └── vite.config.ts         # 构建配置
-└── .github/workflows/         # CI/CD 部署
+├── .github/workflows/         # CI/CD 部署
+└── dist/                      # 构建输出
 ```
 
 ---
@@ -191,7 +192,7 @@ WebLinuxOS/
 ### 添加新应用
 
 1. 在 `src/apps/` 创建 `.tsx` 组件
-2. 在 `src/apps.tsx` 注册应用信息
+2. 在 `src/apps.tsx` 的 `APP_REGISTRY_EXTRAS` 数组中注册应用信息
 3. 在 `src/components/desktop/WindowManager.tsx` 的 `componentMap` 中添加懒加载映射
 
 ---

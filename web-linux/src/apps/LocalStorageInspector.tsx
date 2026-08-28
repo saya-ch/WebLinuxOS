@@ -1,1159 +1,491 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  DatabaseIcon, TrashIcon, DownloadIcon, SearchIcon,
-  EyeIcon, EyeOffIcon, CopyIcon, RefreshCwIcon,
-  HardDriveIcon, ShieldIcon, AlertTriangleIcon,
-  ChevronDownIcon, ChevronRightIcon, PlusIcon,
-  FileJsonIcon, KeyIcon, ClockIcon, TableIcon
-} from 'lucide-react'
 
-interface StorageItem {
+// ── 类型定义 ──
+
+interface StorageEntry {
   key: string
   value: string
   size: number
-  type: 'string' | 'json' | 'number' | 'boolean' | 'empty'
-  source: 'localStorage' | 'sessionStorage'
-  createdAt?: number
-  updatedAt?: number
-}
-
-function getStorage(source: 'localStorage' | 'sessionStorage'): Storage {
-  return source === 'localStorage' ? localStorage : sessionStorage
+  type: 'string' | 'json' | 'number' | 'boolean' | 'other'
+  lastModified: number | null
 }
 
 interface StorageStats {
-  localStorageCount: number
-  sessionStorageCount: number
-  localStorageSize: number
-  sessionStorageSize: number
+  totalItems: number
   totalSize: number
-  quotaMB: number
-  usagePercent: number
+  usedPercent: number
+  largestKey: string
+  largestSize: number
 }
 
-interface IndexedDBRecord {
-  dbName: string
-  storeName: string
-  key: IDBValidKey
-  value: any
-  keyPath?: string | string[]
-  autoIncrement?: boolean
+// ── 工具函数 ──
+
+function estimateSize(str: string): number {
+  return new Blob([str]).size
 }
 
-interface IndexedDBStoreInfo {
-  name: string
-  keyPath?: string | string[]
-  autoIncrement: boolean
-  recordCount: number
-  indexes: string[]
-}
-
-interface IndexedDBInfo {
-  name: string
-  version: number
-  stores: IndexedDBStoreInfo[]
-}
-
-const STORAGE_QUOTA_ESTIMATE = 5 * 1024 * 1024
-
-function openDatabase(dbName: string, version?: number): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = version !== undefined ? indexedDB.open(dbName, version) : indexedDB.open(dbName)
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-    request.onupgradeneeded = () => resolve(request.result)
-  })
-}
-
-function getAllDatabases(): Promise<{ name: string; version: number }[]> {
-  return indexedDB.databases().then(dbs => 
-    dbs.filter((db): db is { name: string; version: number } => 
-      db.name !== undefined && db.version !== undefined
-    )
-  )
-}
-
-async function getDatabaseInfo(dbName: string): Promise<IndexedDBInfo> {
-  const db = await openDatabase(dbName)
-  const storeNames = Array.from(db.objectStoreNames)
-  const stores: IndexedDBStoreInfo[] = []
-
-  for (const storeName of storeNames) {
-    const store = db.transaction(storeName, 'readonly').objectStore(storeName)
-    const indexNames = Array.from(store.indexNames)
-    const countRequest = store.count()
-    const recordCount = await new Promise<number>((resolve, reject) => {
-      countRequest.onsuccess = () => resolve(countRequest.result)
-      countRequest.onerror = () => reject(countRequest.error)
-    })
-
-    stores.push({
-      name: storeName,
-      keyPath: (store as IDBObjectStore & { keyPath?: string | string[] }).keyPath,
-      autoIncrement: (store as IDBObjectStore & { autoIncrement?: boolean }).autoIncrement ?? false,
-      recordCount,
-      indexes: indexNames,
-    })
-  }
-
-  const version = db.version
-  db.close()
-
-  return { name: dbName, version, stores }
-}
-
-async function getStoreRecords(dbName: string, storeName: string): Promise<IndexedDBRecord[]> {
-  const db = await openDatabase(dbName)
-  const transaction = db.transaction(storeName, 'readonly')
-  const store = transaction.objectStore(storeName)
-  const request = store.getAll()
-
-  return new Promise<IndexedDBRecord[]>((resolve, reject) => {
-    request.onsuccess = () => {
-      const records: IndexedDBRecord[] = request.result.map((value, index) => {
-        const keyPath = store.keyPath
-        let key: IDBValidKey
-        if (keyPath && typeof keyPath === 'string') {
-          key = (value as Record<string, IDBValidKey>)[keyPath] ?? index
-        } else if (store.autoIncrement || keyPath) {
-          key = index
-        } else {
-          key = index
-        }
-        return {
-          dbName,
-          storeName,
-          key,
-          value,
-          keyPath: typeof keyPath === 'string' || Array.isArray(keyPath) ? keyPath : undefined,
-          autoIncrement: store.autoIncrement,
-        }
-      })
-      db.close()
-      resolve(records)
-    }
-    request.onerror = () => {
-      db.close()
-      reject(request.error)
-    }
-  })
-}
-
-function deleteDatabase(dbName: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.deleteDatabase(dbName)
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve()
-  })
-}
-
-async function deleteRecord(dbName: string, storeName: string, key: IDBValidKey): Promise<void> {
-  const db = await openDatabase(dbName)
-  const transaction = db.transaction(storeName, 'readwrite')
-  const store = transaction.objectStore(storeName)
-  const request = store.delete(key)
-
-  return new Promise<void>((resolve, reject) => {
-    request.onsuccess = () => {
-      db.close()
-      resolve()
-    }
-    request.onerror = () => {
-      db.close()
-      reject(request.error)
-    }
-  })
-}
-
-function analyzeValue(value: string): { type: StorageItem['type']; isJson: boolean } {
-  if (!value) return { type: 'empty', isJson: false }
-  try {
-    const parsed = JSON.parse(value)
-    if (typeof parsed === 'object' && parsed !== null) {
-      return { type: 'json', isJson: true }
-    }
-    if (typeof parsed === 'number') return { type: 'number', isJson: true }
-    if (typeof parsed === 'boolean') return { type: 'boolean', isJson: true }
-  } catch {}
-  
-  if (!isNaN(Number(value)) && value.trim() !== '') return { type: 'number', isJson: false }
-  if (value === 'true' || value === 'false') return { type: 'boolean', isJson: false }
-  return { type: 'string', isJson: false }
-}
-
-function formatSize(bytes: number): string {
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
-export default function LocalStorageInspector() {
-  const [items, setItems] = useState<StorageItem[]>([])
-  const [search, setSearch] = useState('')
-  const [selectedKey, setSelectedKey] = useState<string | null>(null)
-  const [editingValue, setEditingValue] = useState('')
-  const [showValue, setShowValue] = useState(true)
-  const [stats, setStats] = useState<StorageStats>({
-    localStorageCount: 0,
-    sessionStorageCount: 0,
-    localStorageSize: 0,
-    sessionStorageSize: 0,
-    totalSize: 0,
-    quotaMB: 5,
-    usagePercent: 0,
-  })
-  const [activeTab, setActiveTab] = useState<'localStorage' | 'sessionStorage' | 'indexedDB'>('localStorage')
-  const [newKey, setNewKey] = useState('')
-  const [newValue, setNewValue] = useState('')
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [indexedDBDatabases, setIndexedDBDatabases] = useState<{ name: string; version: number }[]>([])
-  const [selectedDB, setSelectedDB] = useState<string | null>(null)
-  const [selectedStore, setSelectedStore] = useState<string | null>(null)
-  const [indexedDBRecords, setIndexedDBRecords] = useState<IndexedDBRecord[]>([])
-  const [indexedDBInfo, setIndexedDBInfo] = useState<IndexedDBInfo | null>(null)
-  const [indexedDBLoading, setIndexedDBLoading] = useState(false)
-  const [selectedRecord, setSelectedRecord] = useState<IndexedDBRecord | null>(null)
+function detectType(value: string): StorageEntry['type'] {
+  if (value === 'true' || value === 'false') return 'boolean'
+  if (/^-?\d+(\.\d+)?$/.test(value)) return 'number'
+  try {
+    const parsed = JSON.parse(value)
+    if (typeof parsed === 'object' && parsed !== null) return 'json'
+    return 'string'
+  } catch {
+    return 'string'
+  }
+}
 
-  const showNotification = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), 2500)
-  }, [])
-
-  const loadIndexedDBDatabases = useCallback(async () => {
-    setIndexedDBLoading(true)
+function prettyPrint(value: string, type: StorageEntry['type']): string {
+  if (type === 'json') {
     try {
-      const dbs = await getAllDatabases()
-      setIndexedDBDatabases(dbs)
-      if (dbs.length > 0 && !selectedDB) {
-        setSelectedDB(dbs[0].name)
-      }
-    } catch (e) {
-      showNotification(`加载 IndexedDB 失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
-    } finally {
-      setIndexedDBLoading(false)
+      return JSON.stringify(JSON.parse(value), null, 2)
+    } catch {
+      return value
     }
-  }, [selectedDB, showNotification])
+  }
+  return value
+}
 
-  const loadDatabaseInfo = useCallback(async (dbName: string) => {
-    setIndexedDBLoading(true)
-    setSelectedStore(null)
-    setIndexedDBRecords([])
-    setSelectedRecord(null)
-    try {
-      const info = await getDatabaseInfo(dbName)
-      setIndexedDBInfo(info)
-      if (info.stores.length > 0) {
-        setSelectedStore(info.stores[0].name)
-      }
-    } catch (e) {
-      showNotification(`加载数据库信息失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
-    } finally {
-      setIndexedDBLoading(false)
-    }
-  }, [showNotification])
-
-  const loadStoreRecords = useCallback(async (dbName: string, storeName: string) => {
-    setIndexedDBLoading(true)
-    setSelectedRecord(null)
-    try {
-      const records = await getStoreRecords(dbName, storeName)
-      setIndexedDBRecords(records)
-    } catch (e) {
-      showNotification(`加载记录失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
-    } finally {
-      setIndexedDBLoading(false)
-    }
-  }, [showNotification])
-
-  const loadStorage = useCallback(() => {
-    const loaded: StorageItem[] = []
-    
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key) {
-        const value = localStorage.getItem(key) || ''
-        const { type } = analyzeValue(value)
-        loaded.push({
-          key,
-          value,
-          size: key.length + value.length,
-          type,
-          source: 'localStorage',
-        })
-      }
-    }
-    
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const key = sessionStorage.key(i)
-      if (key) {
-        const value = sessionStorage.getItem(key) || ''
-        const { type } = analyzeValue(value)
-        loaded.push({
-          key,
-          value,
-          size: key.length + value.length,
-          type,
-          source: 'sessionStorage',
-        })
-      }
-    }
-    
-    setItems(loaded)
-    
-    const lsSize = loaded.filter(i => i.source === 'localStorage').reduce((sum, i) => sum + i.size, 0)
-    const ssSize = loaded.filter(i => i.source === 'sessionStorage').reduce((sum, i) => sum + i.size, 0)
-    const totalSize = lsSize + ssSize
-    
-    setStats({
-      localStorageCount: loaded.filter(i => i.source === 'localStorage').length,
-      sessionStorageCount: loaded.filter(i => i.source === 'sessionStorage').length,
-      localStorageSize: lsSize,
-      sessionStorageSize: ssSize,
-      totalSize,
-      quotaMB: STORAGE_QUOTA_ESTIMATE / (1024 * 1024),
-      usagePercent: Math.round((totalSize / STORAGE_QUOTA_ESTIMATE) * 100),
+function getAllStorage(storageType: 'localStorage' | 'sessionStorage'): StorageEntry[] {
+  const storage = storageType === 'localStorage' ? localStorage : sessionStorage
+  const entries: StorageEntry[] = []
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i)
+    if (key === null) continue
+    const value = storage.getItem(key) || ''
+    entries.push({
+      key,
+      value,
+      size: estimateSize(key) + estimateSize(value),
+      type: detectType(value),
+      lastModified: null,
     })
+  }
+  return entries.sort((a, b) => b.size - a.size)
+}
+
+function computeStats(entries: StorageEntry[]): StorageStats {
+  const totalSize = entries.reduce((sum, e) => sum + e.size, 0)
+  const STORAGE_LIMIT = 5 * 1024 * 1024
+  const largest = entries.reduce((max, e) => e.size > max.size ? e : max, entries[0])
+  return {
+    totalItems: entries.length,
+    totalSize,
+    usedPercent: Math.round((totalSize / STORAGE_LIMIT) * 100),
+    largestKey: largest?.key || '-',
+    largestSize: largest?.size || 0,
+  }
+}
+
+// ── 组件 ──
+
+export default function LocalStorageInspector() {
+  const [storageType, setStorageType] = useState<'localStorage' | 'sessionStorage'>('localStorage')
+  const [entries, setEntries] = useState<StorageEntry[]>([])
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState<string>('all')
+  const [editingValue, setEditingValue] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+
+  const refresh = useCallback(() => {
+    setEntries(getAllStorage(storageType))
+    setSelectedKey(null)
+    setIsEditing(false)
+  }, [storageType])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  const stats = useMemo(() => computeStats(entries), [entries])
+
+  const filteredEntries = useMemo(() => {
+    return entries.filter(e => {
+      const matchesSearch = !searchQuery || e.key.toLowerCase().includes(searchQuery.toLowerCase()) || e.value.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesType = filterType === 'all' || e.type === filterType
+      return matchesSearch && matchesType
+    })
+  }, [entries, searchQuery, filterType])
+
+  const selectedEntry = useMemo(() => entries.find(e => e.key === selectedKey) || null, [entries, selectedKey])
+
+  const showMessage = useCallback((text: string, type: 'success' | 'error') => {
+    setMessage({ text, type })
+    setTimeout(() => setMessage(null), 2500)
   }, [])
 
-  useEffect(() => {
-    loadStorage()
-  }, [loadStorage])
-
-  useEffect(() => {
-    if (activeTab === 'indexedDB') {
-      loadIndexedDBDatabases()
+  const handleSelect = useCallback((key: string) => {
+    setSelectedKey(key)
+    setIsEditing(false)
+    const entry = entries.find(e => e.key === key)
+    if (entry) {
+      setEditingValue(prettyPrint(entry.value, entry.type))
     }
-  }, [activeTab, loadIndexedDBDatabases])
+  }, [entries])
 
-  useEffect(() => {
-    if (selectedDB) {
-      loadDatabaseInfo(selectedDB)
-    }
-  }, [selectedDB, loadDatabaseInfo])
-
-  useEffect(() => {
-    if (selectedDB && selectedStore) {
-      loadStoreRecords(selectedDB, selectedStore)
-    }
-  }, [selectedDB, selectedStore, loadStoreRecords])
-
-  const handleDeleteRecord = useCallback(async (dbName: string, storeName: string, key: IDBValidKey) => {
-    if (!confirm(`确定要删除记录 ${String(key)} 吗？`)) return
-    try {
-      await deleteRecord(dbName, storeName, key)
-      showNotification(`已删除记录 ${String(key)}`, 'success')
-      setSelectedRecord(null)
-      loadStoreRecords(dbName, storeName)
-      loadDatabaseInfo(dbName)
-    } catch (e) {
-      showNotification(`删除失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
-    }
-  }, [showNotification, loadStoreRecords, loadDatabaseInfo])
-
-  const handleDeleteDatabase = useCallback(async (dbName: string) => {
-    if (!confirm(`确定要删除数据库 "${dbName}" 吗？此操作将永久删除该数据库及其所有数据。`)) return
-    try {
-      await deleteDatabase(dbName)
-      showNotification(`已删除数据库 "${dbName}"`, 'success')
-      setSelectedDB(null)
-      setSelectedStore(null)
-      setIndexedDBRecords([])
-      setIndexedDBInfo(null)
-      setSelectedRecord(null)
-      loadIndexedDBDatabases()
-    } catch (e) {
-      showNotification(`删除数据库失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
-    }
-  }, [showNotification, loadIndexedDBDatabases])
-
-  const handleExportIndexedDB = useCallback(async () => {
-    if (!selectedDB) return
-    try {
-      const exportData: Record<string, unknown> = {
-        database: selectedDB,
-        exportTime: new Date().toISOString(),
-        stores: {},
-      }
-      const info = await getDatabaseInfo(selectedDB)
-      for (const store of info.stores) {
-        const records = await getStoreRecords(selectedDB, store.name)
-        ;(exportData.stores as Record<string, unknown>)[store.name] = records.map(r => ({
-          key: r.key,
-          value: r.value,
-        }))
-      }
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `indexeddb-${selectedDB}-${Date.now()}.json`
-      a.click()
-      URL.revokeObjectURL(url)
-      showNotification('导出成功', 'success')
-    } catch (e) {
-      showNotification(`导出失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
-    }
-  }, [selectedDB, showNotification])
-
-  const filteredItems = useMemo(() => {
-    let result = items
-    if (activeTab === 'localStorage') {
-      result = result.filter(i => i.source === 'localStorage')
-    } else if (activeTab === 'sessionStorage') {
-      result = result.filter(i => i.source === 'sessionStorage')
-    }
-    if (search) {
-      const q = search.toLowerCase()
-      result = result.filter(i => 
-        i.key.toLowerCase().includes(q) || 
-        i.value.toLowerCase().includes(q)
-      )
-    }
-    return result.sort((a, b) => b.size - a.size)
-  }, [items, activeTab, search])
-
-  const handleSelectItem = useCallback((item: StorageItem) => {
-    setSelectedKey(item.key)
-    setEditingValue(item.value)
-  }, [])
-
-  const handleSaveValue = useCallback(() => {
+  const handleSave = useCallback(() => {
     if (!selectedKey) return
-    const item = items.find(i => i.key === selectedKey)
-    if (!item) return
-    
+    const storage = storageType === 'localStorage' ? localStorage : sessionStorage
     try {
-      getStorage(item.source).setItem(selectedKey, editingValue)
-      showNotification(`已保存 "${selectedKey}"`, 'success')
-      loadStorage()
-    } catch (e) {
-      showNotification(`保存失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
+      storage.setItem(selectedKey, editingValue)
+      showMessage('保存成功', 'success')
+      refresh()
+    } catch (err) {
+      showMessage(`保存失败: ${err instanceof Error ? err.message : '未知错误'}`, 'error')
     }
-  }, [selectedKey, editingValue, items, showNotification, loadStorage])
+  }, [selectedKey, editingValue, storageType, showMessage, refresh])
 
-  const handleDeleteItem = useCallback((key: string) => {
-    const item = items.find(i => i.key === key)
-    if (!item) return
-    
-    if (!confirm(`确定要删除 "${key}" 吗？`)) return
-    
+  const handleDelete = useCallback((key: string) => {
+    const storage = storageType === 'localStorage' ? localStorage : sessionStorage
     try {
-      getStorage(item.source).removeItem(key)
-      showNotification(`已删除 "${key}"`, 'success')
-      setSelectedKey(null)
-      loadStorage()
-    } catch (e) {
-      showNotification(`删除失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
+      storage.removeItem(key)
+      showMessage(`已删除: ${key}`, 'success')
+      if (selectedKey === key) setSelectedKey(null)
+      refresh()
+    } catch (err) {
+      showMessage(`删除失败: ${err instanceof Error ? err.message : '未知错误'}`, 'error')
     }
-  }, [items, showNotification, loadStorage])
+  }, [storageType, selectedKey, showMessage, refresh])
 
   const handleClearAll = useCallback(() => {
-    const source = activeTab === 'localStorage' ? localStorage : 
-                   activeTab === 'sessionStorage' ? sessionStorage : null
-    if (!source) return
-    
-    const count = source.length
-    if (count === 0) {
-      showNotification('存储已为空', 'info')
-      return
-    }
-    
-    if (!confirm(`确定要清空 ${activeTab} 吗？共 ${count} 项将被删除。`)) return
-    
+    const storage = storageType === 'localStorage' ? localStorage : sessionStorage
     try {
-      source.clear()
-      showNotification(`已清空 ${count} 项数据`, 'success')
+      storage.clear()
+      showMessage('已清空所有存储', 'success')
       setSelectedKey(null)
-      loadStorage()
-    } catch (e) {
-      showNotification(`清空失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
+      refresh()
+    } catch (err) {
+      showMessage(`清空失败: ${err instanceof Error ? err.message : '未知错误'}`, 'error')
     }
-  }, [activeTab, showNotification, loadStorage])
+  }, [storageType, showMessage, refresh])
 
   const handleExport = useCallback(() => {
-    const exportData: Record<string, Record<string, string>> = {
-      localStorage: {},
-      sessionStorage: {},
-    }
-    
-    items.forEach(item => {
-      exportData[item.source][item.key] = item.value
-    })
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const data: Record<string, string> = {}
+    for (const e of entries) data[e.key] = e.value
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `storage-export-${Date.now()}.json`
+    a.download = `${storageType}-export-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
-    showNotification('导出成功', 'success')
-  }, [items, showNotification])
+    showMessage('导出成功', 'success')
+  }, [entries, storageType, showMessage])
 
-  const handleCopy = useCallback((text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      showNotification('已复制到剪贴板', 'success')
-    })
-  }, [showNotification])
-
-  const handleAddItem = useCallback(() => {
-    if (!newKey.trim()) {
-      showNotification('请输入键名', 'error')
-      return
-    }
-    
-    try {
-      if (activeTab === 'localStorage') {
-        localStorage.setItem(newKey.trim(), newValue)
-      } else if (activeTab === 'sessionStorage') {
-        sessionStorage.setItem(newKey.trim(), newValue)
+  const handleImport = useCallback(() => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      try {
+        const text = await file.text()
+        const data = JSON.parse(text) as Record<string, string>
+        const storage = storageType === 'localStorage' ? localStorage : sessionStorage
+        let count = 0
+        for (const [k, v] of Object.entries(data)) {
+          if (typeof v === 'string') {
+            storage.setItem(k, v)
+            count++
+          }
+        }
+        showMessage(`已导入 ${count} 条记录`, 'success')
+        refresh()
+      } catch (err) {
+        showMessage(`导入失败: ${err instanceof Error ? err.message : 'JSON格式错误'}`, 'error')
       }
-      showNotification(`已添加 "${newKey.trim()}"`, 'success')
-      setNewKey('')
-      setNewValue('')
-      setShowAddModal(false)
-      loadStorage()
-    } catch (e) {
-      showNotification(`添加失败: ${e instanceof Error ? e.message : '未知错误'}`, 'error')
     }
-  }, [newKey, newValue, activeTab, showNotification, loadStorage])
+    input.click()
+  }, [storageType, showMessage, refresh])
 
-  const toggleSection = useCallback((key: string) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
-  }, [])
+  const handleCopyKey = useCallback(async (key: string) => {
+    try {
+      await navigator.clipboard.writeText(key)
+      showMessage('已复制 key', 'success')
+    } catch { /* ignore */ }
+  }, [showMessage])
 
-  const typeColors: Record<StorageItem['type'], string> = {
-    string: '#3b82f6',
-    json: '#10b981',
-    number: '#f59e0b',
-    boolean: '#8b5cf6',
-    empty: '#6b7280',
+  const typeColors: Record<string, string> = {
+    json: '#7c6cf0', string: '#3b82f6', number: '#10b981', boolean: '#f59e0b', other: '#6b7280',
   }
 
-  const usagePercent = stats.usagePercent
-  const usageColor = usagePercent > 90 ? '#ef4444' : usagePercent > 70 ? '#f59e0b' : '#10b981'
-
   return (
-    <div className="h-full flex flex-col bg-slate-900 text-slate-100">
-      {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in ${
-          notification.type === 'success' ? 'bg-emerald-600' :
-          notification.type === 'error' ? 'bg-red-600' :
-          'bg-blue-600'
-        }`}>
-          {notification.message}
+    <div style={{
+      height: '100%', display: 'flex', flexDirection: 'column',
+      background: 'var(--bg-primary, #0a0a1a)', color: 'var(--text-primary, #e0e0e8)',
+      fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: 13,
+    }}>
+      {/* 消息提示 */}
+      {message && (
+        <div style={{
+          position: 'absolute', top: 8, right: 8, zIndex: 100,
+          padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+          background: message.type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+          color: message.type === 'success' ? '#10b981' : '#ef4444',
+          border: `1px solid ${message.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
+          backdropFilter: 'blur(8px)',
+        }}>
+          {message.text}
         </div>
       )}
 
-      <div className="p-4 border-b border-slate-700 bg-slate-800/50">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <DatabaseIcon size={20} />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold">本地存储管理器</h1>
-              <p className="text-xs text-slate-400">浏览器存储分析与管理工具</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={loadStorage}
-              className="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors flex items-center gap-2 text-sm"
-            >
-              <RefreshCwIcon size={14} />
-              刷新
-            </button>
-            <button
-              onClick={handleExport}
-              className="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors flex items-center gap-2 text-sm"
-            >
-              <DownloadIcon size={14} />
-              导出
-            </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center gap-2 text-sm"
-            >
-              <PlusIcon size={14} />
-              新建
-            </button>
+      {/* 顶栏 */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(255,255,255,0.02)', flexShrink: 0, flexWrap: 'wrap', gap: 8,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18 }}>{'\u{1F4BE}'}</span>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>存储检查器</span>
+          <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+            {(['localStorage', 'sessionStorage'] as const).map(type => (
+              <button
+                key={type}
+                onClick={() => setStorageType(type)}
+                style={{
+                  padding: '4px 12px', border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                  background: storageType === type ? 'var(--accent, #7c6cf0)' : 'transparent',
+                  color: storageType === type ? '#fff' : 'var(--text-secondary, #a0a0c8)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {type === 'localStorage' ? 'Local' : 'Session'}
+              </button>
+            ))}
           </div>
         </div>
-
-        <div className="grid grid-cols-5 gap-3 mb-4">
-          <div className="bg-slate-700/50 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-              <KeyIcon size={12} />
-              LocalStorage
-            </div>
-            <div className="text-xl font-semibold">{stats.localStorageCount}</div>
-            <div className="text-xs text-slate-500">{formatSize(stats.localStorageSize)}</div>
-          </div>
-          <div className="bg-slate-700/50 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-              <ClockIcon size={12} />
-              SessionStorage
-            </div>
-            <div className="text-xl font-semibold">{stats.sessionStorageCount}</div>
-            <div className="text-xs text-slate-500">{formatSize(stats.sessionStorageSize)}</div>
-          </div>
-          <div className="bg-slate-700/50 rounded-lg p-3 col-span-2">
-            <div className="flex items-center gap-2 text-slate-400 text-xs mb-2">
-              <HardDriveIcon size={12} />
-              存储使用量
-            </div>
-            <div className="h-2 bg-slate-600 rounded-full overflow-hidden mb-1">
-              <div 
-                className="h-full rounded-full transition-all"
-                style={{ width: `${Math.min(100, usagePercent)}%`, backgroundColor: usageColor }}
-              />
-            </div>
-            <div className="text-xs text-slate-400">
-              {formatSize(stats.totalSize)} / {stats.quotaMB} MB ({usagePercent}%)
-            </div>
-          </div>
-          <div className="bg-slate-700/50 rounded-lg p-3 flex items-center justify-center">
-            <div className="text-center">
-              {usagePercent > 90 ? (
-                <AlertTriangleIcon size={32} className="text-red-500 mx-auto mb-1" />
-              ) : usagePercent > 70 ? (
-                <ShieldIcon size={32} className="text-amber-500 mx-auto mb-1" />
-              ) : (
-                <ShieldIcon size={32} className="text-emerald-500 mx-auto mb-1" />
-              )}
-              <div className="text-xs text-slate-400">
-                {usagePercent > 90 ? '即将满' : usagePercent > 70 ? '使用较多' : '空间充足'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mb-3">
-          {(['localStorage', 'sessionStorage', 'indexedDB'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab 
-                  ? 'bg-indigo-600 text-white' 
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-            >
-              {tab === 'localStorage' ? 'LocalStorage' : tab === 'sessionStorage' ? 'SessionStorage' : 'IndexedDB'}
-            </button>
-          ))}
-          <div className="flex-1" />
-          <div className="relative">
-            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="搜索键或值..."
-              className="pl-9 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-indigo-500 w-64"
-            />
-          </div>
-          <button
-            onClick={handleClearAll}
-            className="px-3 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
-            disabled={activeTab === 'indexedDB'}
-          >
-            <TrashIcon size={14} />
-            清空
-          </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={handleImport} style={toolBtnStyle}>{'\u{1F4E5}'} 导入</button>
+          <button onClick={handleExport} style={toolBtnStyle}>{'\u{1F4E4}'} 导出</button>
+          <button onClick={handleClearAll} style={{ ...toolBtnStyle, color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}>{'\u{1F5D1}'} 清空</button>
         </div>
       </div>
 
-      {activeTab === 'indexedDB' ? (
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-64 border-r border-slate-700 overflow-y-auto">
-            <div className="p-3 border-b border-slate-700">
-              <label className="text-xs text-slate-400 block mb-2">数据库</label>
-              <select
-                value={selectedDB || ''}
-                onChange={(e) => setSelectedDB(e.target.value)}
-                className="w-full px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
+      {/* 统计条 */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 20, padding: '8px 16px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 11,
+        color: 'var(--text-secondary, #a0a0c8)', flexShrink: 0,
+      }}>
+        <span>{stats.totalItems} 项</span>
+        <span>总大小: {formatBytes(stats.totalSize)}</span>
+        <div style={{ flex: 1, maxWidth: 200, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(100, stats.usedPercent)}%`, borderRadius: 2, background: stats.usedPercent > 80 ? '#ef4444' : stats.usedPercent > 50 ? '#f59e0b' : '#10b981', transition: 'width 0.3s' }} />
+        </div>
+        <span>{stats.usedPercent}% of 5MB</span>
+        {stats.largestKey !== '-' && <span>最大: {stats.largestKey.slice(0, 20)} ({formatBytes(stats.largestSize)})</span>}
+      </div>
+
+      {/* 搜索和过滤 */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0,
+      }}>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="搜索 key 或 value..."
+          style={{
+            flex: 1, padding: '6px 12px', borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+            color: 'var(--text-primary, #e0e0e8)', fontSize: 12, outline: 'none',
+          }}
+        />
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['all', 'json', 'string', 'number', 'boolean'].map(t => (
+            <button
+              key={t}
+              onClick={() => setFilterType(t)}
+              style={{
+                padding: '4px 8px', borderRadius: 4, border: 'none', fontSize: 10, fontWeight: 600,
+                cursor: 'pointer', textTransform: 'uppercase',
+                background: filterType === t ? (typeColors[t] || '#6b7280') + '30' : 'transparent',
+                color: filterType === t ? (typeColors[t] || '#6b7280') : 'var(--text-tertiary, #6a6a8a)',
+                transition: 'all 0.15s',
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <button onClick={refresh} style={toolBtnStyle}>{'\u{1F504}'}</button>
+      </div>
+
+      {/* 主内容区 */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* 键列表 */}
+        <div style={{
+          width: selectedEntry ? 260 : '100%', flexShrink: 0, overflow: 'auto',
+          borderRight: selectedEntry ? '1px solid rgba(255,255,255,0.06)' : 'none',
+          transition: 'width 0.2s',
+        }}>
+          {filteredEntries.length === 0 ? (
+            <div style={{
+              padding: 40, textAlign: 'center', color: 'var(--text-tertiary, #6a6a8a)',
+              fontSize: 13,
+            }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>{'\u{1F4C2}'}</div>
+              {entries.length === 0 ? '存储为空' : '无匹配结果'}
+            </div>
+          ) : (
+            filteredEntries.map(entry => (
+              <div
+                key={entry.key}
+                onClick={() => handleSelect(entry.key)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 12px', cursor: 'pointer',
+                  background: selectedKey === entry.key ? 'rgba(124,108,240,0.12)' : 'transparent',
+                  borderLeft: selectedKey === entry.key ? '2px solid var(--accent, #7c6cf0)' : '2px solid transparent',
+                  transition: 'all 0.1s',
+                  borderBottom: '1px solid rgba(255,255,255,0.03)',
+                }}
               >
-                <option value="">选择数据库...</option>
-                {indexedDBDatabases.map(db => (
-                  <option key={db.name} value={db.name}>{db.name} (v{db.version})</option>
-                ))}
-              </select>
-              <div className="flex gap-2 mt-2">
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                  background: typeColors[entry.type],
+                }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontWeight: 500, fontSize: 12, overflow: 'hidden',
+                    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    color: 'var(--text-primary, #e0e0e8)',
+                  }}>
+                    {entry.key}
+                  </div>
+                  <div style={{
+                    fontSize: 10, color: 'var(--text-tertiary, #6a6a8a)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {entry.type.toUpperCase()} / {formatBytes(entry.size)}
+                  </div>
+                </div>
                 <button
-                  onClick={loadIndexedDBDatabases}
-                  className="flex-1 px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs flex items-center justify-center gap-1"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(entry.key) }}
+                  style={{
+                    padding: '2px 4px', border: 'none', background: 'transparent',
+                    color: 'var(--text-tertiary, #6a6a8a)', cursor: 'pointer', fontSize: 12,
+                    borderRadius: 4, transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary, #6a6a8a)')}
+                  title="删除"
                 >
-                  <RefreshCwIcon size={12} /> 刷新
+                  {'\u{2715}'}
                 </button>
-                {selectedDB && (
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* 详情面板 */}
+        {selectedEntry && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* 详情顶栏 */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(255,255,255,0.02)', flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 600, fontSize: 13, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {selectedEntry.key}
+                </span>
+                <span style={{
+                  fontSize: 10, padding: '2px 6px', borderRadius: 4,
+                  background: typeColors[selectedEntry.type] + '20',
+                  color: typeColors[selectedEntry.type],
+                  fontWeight: 600, textTransform: 'uppercase',
+                }}>
+                  {selectedEntry.type}
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--text-tertiary, #6a6a8a)' }}>
+                  {formatBytes(selectedEntry.size)}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => handleCopyKey(selectedEntry.key)}
+                  style={{ ...toolBtnStyle, fontSize: 10, padding: '3px 8px' }}
+                >
+                  复制 Key
+                </button>
+                <button
+                  onClick={() => {
+                    if (isEditing) { handleSave(); setIsEditing(false) }
+                    else { setEditingValue(prettyPrint(selectedEntry!.value, selectedEntry!.type)); setIsEditing(true) }
+                  }}
+                  style={{
+                    ...toolBtnStyle, fontSize: 10, padding: '3px 8px',
+                    background: isEditing ? 'rgba(16,185,129,0.15)' : undefined,
+                    color: isEditing ? '#10b981' : undefined,
+                    borderColor: isEditing ? 'rgba(16,185,129,0.3)' : undefined,
+                  }}
+                >
+                  {isEditing ? '保存' : '编辑'}
+                </button>
+                {isEditing && (
                   <button
-                    onClick={() => handleDeleteDatabase(selectedDB)}
-                    className="px-2 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs flex items-center justify-center gap-1"
-                    title="删除数据库"
+                    onClick={() => setIsEditing(false)}
+                    style={{ ...toolBtnStyle, fontSize: 10, padding: '3px 8px' }}
                   >
-                    <TrashIcon size={12} />
+                    取消
                   </button>
                 )}
               </div>
             </div>
 
-            {indexedDBLoading && !selectedDB ? (
-              <div className="p-4 text-center text-slate-500 text-sm">加载中...</div>
-            ) : indexedDBDatabases.length === 0 ? (
-              <div className="p-4 text-center text-slate-500 text-sm">暂无 IndexedDB 数据库</div>
-            ) : !selectedDB ? (
-              <div className="p-4 text-center text-slate-500 text-sm">请选择一个数据库</div>
-            ) : indexedDBInfo ? (
-              <div>
-                <div className="px-3 py-2 text-xs text-slate-400 border-b border-slate-700">
-                  Stores ({indexedDBInfo.stores.length})
-                </div>
-                {indexedDBInfo.stores.map(store => (
-                  <div
-                    key={store.name}
-                    onClick={() => setSelectedStore(store.name)}
-                    className={`px-3 py-2 border-b border-slate-700/50 cursor-pointer transition-colors ${
-                      selectedStore === store.name ? 'bg-slate-700' : 'hover:bg-slate-800'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <TableIcon size={14} className="text-indigo-400" />
-                        <span className="text-sm truncate">{store.name}</span>
-                      </div>
-                      <span className="text-xs text-slate-500">{store.recordCount}</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-                      {store.keyPath && (
-                        <span className="px-1.5 py-0.5 bg-slate-700 rounded">
-                          keyPath: {Array.isArray(store.keyPath) ? store.keyPath.join(', ') : store.keyPath}
-                        </span>
-                      )}
-                      {store.autoIncrement && (
-                        <span className="px-1.5 py-0.5 bg-slate-700 rounded text-amber-400">auto</span>
-                      )}
-                    </div>
-                    {store.indexes.length > 0 && (
-                      <div className="flex gap-1 mt-1 flex-wrap">
-                        {store.indexes.map(idx => (
-                          <span key={idx} className="text-xs px-1.5 py-0.5 bg-slate-700/50 rounded text-slate-400">
-                            idx: {idx}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="flex-1 flex overflow-hidden">
-            <div className="flex-1 overflow-y-auto border-r border-slate-700">
-              <div className="sticky top-0 bg-slate-900 z-10 p-3 border-b border-slate-700 flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-sm">
-                    {selectedStore || '选择 Store'} 
-                    {indexedDBRecords.length > 0 && (
-                      <span className="text-slate-500 font-normal ml-2">({indexedDBRecords.length} 条记录)</span>
-                    )}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedDB && (
-                    <button
-                      onClick={handleExportIndexedDB}
-                      className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs flex items-center gap-1"
-                      title="导出为 JSON"
-                    >
-                      <DownloadIcon size={12} /> 导出
-                    </button>
-                  )}
-                  {selectedDB && selectedStore && (
-                    <button
-                      onClick={() => loadStoreRecords(selectedDB, selectedStore)}
-                      className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs flex items-center gap-1"
-                    >
-                      <RefreshCwIcon size={12} /> 刷新
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {indexedDBLoading ? (
-                <div className="p-8 text-center text-slate-500 text-sm">加载中...</div>
-              ) : !selectedStore ? (
-                <div className="p-8 text-center text-slate-500">
-                  <TableIcon size={32} className="mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">请选择一个 Store</p>
-                </div>
-              ) : indexedDBRecords.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">
-                  <DatabaseIcon size={32} className="mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">该 Store 为空</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-slate-700/50">
-                  {indexedDBRecords.map((record, idx) => (
-                    <div
-                      key={String(record.key) + '-' + idx}
-                      onClick={() => setSelectedRecord(record)}
-                      className={`p-3 cursor-pointer transition-colors ${
-                        selectedRecord && selectedRecord.key === record.key && selectedRecord.storeName === record.storeName
-                          ? 'bg-slate-700' 
-                          : 'hover:bg-slate-800'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <KeyIcon size={12} className="text-amber-400" />
-                          <span className="text-xs text-slate-400">{String(record.key)}</span>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDeleteRecord(record.dbName, record.storeName, record.key)
-                          }}
-                          className="p-1 rounded hover:bg-red-600/30 transition-colors"
-                          title="删除记录"
-                        >
-                          <TrashIcon size={12} className="text-red-400" />
-                        </button>
-                      </div>
-                      <div className="text-xs text-slate-500 font-mono truncate">
-                        {typeof record.value === 'object' 
-                          ? JSON.stringify(record.value).slice(0, 80) + (JSON.stringify(record.value).length > 80 ? '...' : '')
-                          : String(record.value).slice(0, 80) + (String(record.value).length > 80 ? '...' : '')
-                        }
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="w-96 overflow-y-auto p-4">
-              {selectedRecord ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-semibold break-all">
-                        {String(selectedRecord.key)}
-                      </h2>
-                      <p className="text-sm text-slate-400">
-                        {selectedRecord.dbName} / {selectedRecord.storeName}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleCopy(JSON.stringify(selectedRecord.value, null, 2))}
-                        className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
-                        title="复制"
-                      >
-                        <CopyIcon size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteRecord(selectedRecord.dbName, selectedRecord.storeName, selectedRecord.key)}
-                        className="p-2 rounded-lg bg-red-600 hover:bg-red-500 transition-colors"
-                        title="删除记录"
-                      >
-                        <TrashIcon size={16} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {selectedRecord.keyPath && (
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="text-xs px-2 py-1 bg-slate-700 rounded">
-                        keyPath: {Array.isArray(selectedRecord.keyPath) ? selectedRecord.keyPath.join(', ') : selectedRecord.keyPath}
-                      </span>
-                      {selectedRecord.autoIncrement && (
-                        <span className="text-xs px-2 py-1 bg-amber-900/50 text-amber-400 rounded">autoIncrement</span>
-                      )}
-                    </div>
-                  )}
-
-                  <div>
-                    <div 
-                      className="flex items-center justify-between cursor-pointer p-2 bg-slate-700/50 rounded-t-lg border border-slate-600"
-                      onClick={() => toggleSection('indexeddb-preview')}
-                    >
-                      <span className="text-sm font-medium">JSON 预览</span>
-                      {expandedSections['indexeddb-preview'] !== false ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}
-                    </div>
-                    {expandedSections['indexeddb-preview'] !== false && (
-                      <div className="border border-t-0 border-slate-600 rounded-b-lg p-3 bg-slate-800">
-                        <pre className="text-sm overflow-auto max-h-96">
-                          {(() => {
-                            try {
-                              return JSON.stringify(selectedRecord.value, null, 2)
-                            } catch {
-                              return String(selectedRecord.value)
-                            }
-                          })()}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <div 
-                      className="flex items-center justify-between cursor-pointer p-2 bg-slate-700/50 rounded-t-lg border border-slate-600"
-                      onClick={() => toggleSection('indexeddb-raw')}
-                    >
-                      <span className="text-sm font-medium">原始值</span>
-                      {expandedSections['indexeddb-raw'] !== false ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}
-                    </div>
-                    {expandedSections['indexeddb-raw'] !== false && (
-                      <div className="border border-t-0 border-slate-600 rounded-b-lg p-3 bg-slate-800">
-                        <code className="text-xs text-slate-300 break-all">
-                          {typeof selectedRecord.value === 'object'
-                            ? JSON.stringify(selectedRecord.value)
-                            : String(selectedRecord.value)}
-                        </code>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-500">
-                  <div className="text-center">
-                    <FileJsonIcon size={48} className="mx-auto mb-4 opacity-50" />
-                    <p className="text-sm">选择记录查看详情</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-96 border-r border-slate-700 overflow-y-auto">
-            {filteredItems.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">
-                <DatabaseIcon size={32} className="mx-auto mb-2 opacity-50" />
-                <p className="text-sm">暂无数据</p>
-              </div>
-            ) : (
-              filteredItems.map(item => (
-                <div
-                  key={item.key}
-                  onClick={() => handleSelectItem(item)}
-                  className={`p-3 border-b border-slate-700/50 cursor-pointer transition-colors ${
-                    selectedKey === item.key ? 'bg-slate-700' : 'hover:bg-slate-800'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <FileJsonIcon size={14} style={{ color: typeColors[item.type] }} />
-                      <span className="font-medium text-sm truncate">{item.key}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span 
-                        className="text-xs px-1.5 py-0.5 rounded"
-                        style={{ backgroundColor: typeColors[item.type] + '20', color: typeColors[item.type] }}
-                      >
-                        {item.type}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span className="truncate max-w-[200px]">
-                      {showValue ? item.value.slice(0, 50) + (item.value.length > 50 ? '...' : '') : '••••••••'}
-                    </span>
-                    <span>{formatSize(item.size)}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4">
-            {selectedKey ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold">{selectedKey}</h2>
-                    <p className="text-sm text-slate-400">
-                      {items.find(i => i.key === selectedKey)?.source} · 
-                      {items.find(i => i.key === selectedKey)?.type} · 
-                      {formatSize(items.find(i => i.key === selectedKey)?.size || 0)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowValue(!showValue)}
-                      className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
-                      title={showValue ? '隐藏值' : '显示值'}
-                    >
-                      {showValue ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-                    </button>
-                    <button
-                      onClick={() => handleCopy(editingValue)}
-                      className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
-                      title="复制值"
-                    >
-                      <CopyIcon size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteItem(selectedKey)}
-                      className="p-2 rounded-lg bg-red-600 hover:bg-red-500 transition-colors"
-                      title="删除"
-                    >
-                      <TrashIcon size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <div 
-                    className="flex items-center justify-between cursor-pointer p-2 bg-slate-700/50 rounded-t-lg border border-slate-600"
-                    onClick={() => toggleSection('editor')}
-                  >
-                    <span className="text-sm font-medium">值编辑器</span>
-                    {expandedSections.editor !== false ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}
-                  </div>
-                  {expandedSections.editor !== false && (
-                    <div className="border border-t-0 border-slate-600 rounded-b-lg">
-                      <textarea
-                        value={editingValue}
-                        onChange={(e) => setEditingValue(e.target.value)}
-                        className="w-full h-64 p-3 bg-slate-800 text-slate-100 font-mono text-sm resize-none focus:outline-none"
-                        spellCheck={false}
-                      />
-                      <div className="p-2 bg-slate-700/30 flex items-center justify-between">
-                        <span className="text-xs text-slate-400">
-                          {editingValue.length} 字符 · {new Blob([editingValue]).size} 字节
-                        </span>
-                        <button
-                          onClick={handleSaveValue}
-                          className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition-colors"
-                        >
-                          保存更改
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <div 
-                    className="flex items-center justify-between cursor-pointer p-2 bg-slate-700/50 rounded-t-lg border border-slate-600"
-                    onClick={() => toggleSection('preview')}
-                  >
-                    <span className="text-sm font-medium">JSON 预览</span>
-                    {expandedSections.preview !== false ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}
-                  </div>
-                  {expandedSections.preview !== false && (
-                    <div className="border border-t-0 border-slate-600 rounded-b-lg p-3 bg-slate-800">
-                      <pre className="text-sm overflow-auto max-h-64">
-                        {(() => {
-                          try {
-                            const parsed = JSON.parse(editingValue)
-                            return JSON.stringify(parsed, null, 2)
-                          } catch {
-                            return <span className="text-slate-500">非 JSON 格式，无法预览</span>
-                          }
-                        })()}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <div 
-                    className="flex items-center justify-between cursor-pointer p-2 bg-slate-700/50 rounded-t-lg border border-slate-600"
-                    onClick={() => toggleSection('raw')}
-                  >
-                    <span className="text-sm font-medium">原始值</span>
-                    {expandedSections.raw !== false ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}
-                  </div>
-                  {expandedSections.raw !== false && (
-                    <div className="border border-t-0 border-slate-600 rounded-b-lg p-3 bg-slate-800">
-                      <code className="text-xs text-slate-300 break-all">{showValue ? editingValue : '••••••••••••'}</code>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center text-slate-500">
-                <div className="text-center">
-                  <DatabaseIcon size={48} className="mx-auto mb-4 opacity-50" />
-                  <p className="text-sm">选择左侧的条目查看详情</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl border border-slate-600">
-            <h2 className="text-lg font-semibold mb-4">新建存储项</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-slate-400 mb-1 block">存储位置</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setActiveTab('localStorage')}
-                    className={`flex-1 py-2 rounded-lg text-sm ${
-                      activeTab === 'localStorage' ? 'bg-indigo-600' : 'bg-slate-700'
-                    }`}
-                  >
-                    LocalStorage
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('sessionStorage')}
-                    className={`flex-1 py-2 rounded-lg text-sm ${
-                      activeTab === 'sessionStorage' ? 'bg-indigo-600' : 'bg-slate-700'
-                    }`}
-                  >
-                    SessionStorage
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm text-slate-400 mb-1 block">键名</label>
-                <input
-                  type="text"
-                  value={newKey}
-                  onChange={(e) => setNewKey(e.target.value)}
-                  placeholder="例如: my-key"
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-slate-400 mb-1 block">值</label>
+            {/* 内容区 */}
+            <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+              {isEditing ? (
                 <textarea
-                  value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
-                  placeholder="输入值（支持 JSON）"
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg h-32 resize-none focus:outline-none focus:border-indigo-500"
+                  value={editingValue}
+                  onChange={e => setEditingValue(e.target.value)}
+                  style={{
+                    width: '100%', height: '100%', minHeight: 300, padding: 12,
+                    borderRadius: 8, border: '1px solid rgba(124,108,240,0.3)',
+                    background: 'rgba(0,0,0,0.3)', color: '#e0e0e8',
+                    fontFamily: 'monospace', fontSize: 12, lineHeight: 1.6,
+                    resize: 'none', outline: 'none', boxSizing: 'border-box',
+                  }}
+                  spellCheck={false}
                 />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleAddItem}
-                className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm transition-colors"
-              >
-                添加
-              </button>
+              ) : (
+                <pre style={{
+                  margin: 0, padding: 12, borderRadius: 8,
+                  background: 'rgba(0,0,0,0.3)', fontSize: 12, lineHeight: 1.6,
+                  fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                  color: 'var(--text-primary, #e0e0e8)', overflow: 'auto', minHeight: 200,
+                  maxHeight: '100%',
+                }}>
+                  {prettyPrint(selectedEntry.value, selectedEntry.type)}
+                </pre>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
+}
+
+const toolBtnStyle: React.CSSProperties = {
+  padding: '5px 10px', borderRadius: 6,
+  border: '1px solid rgba(255,255,255,0.1)',
+  background: 'transparent', color: 'var(--text-secondary, #a0a0c8)',
+  fontSize: 11, fontWeight: 600, cursor: 'pointer',
+  transition: 'all 0.15s', whiteSpace: 'nowrap' as const,
 }
