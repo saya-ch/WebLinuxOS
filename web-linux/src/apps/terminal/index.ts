@@ -72,3 +72,6 @@ import './innovativeCommands'
 
 // 19. v109 终端增强命令集：edit/write增强/wc增强/tee增强/run/whereis
 import './terminalEnhancedCommands'
+
+// 20. v133 网络诊断命令集：dig/curl/speedtest/whois/wikipedia/qr/weather
+import './networkDiagnosticCommands'

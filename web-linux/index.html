@@ -273,7 +273,7 @@
       <div class="progress">
         <div class="progress-bar"></div>
       </div>
-      <div class="hint" id="boot-hint">v131.0 · 启动中 · 请稍候</div>
+      <div class="hint" id="boot-hint">v133.0 · 启动中 · 请稍候</div>
     </div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06060c;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
@@ -289,20 +289,19 @@
       // 启动日志动画
       (function() {
         var lines = [
-          { type: 'info', text: '[ OK ] Started WebLinuxOS v131 init process' },
+          { type: 'info', text: '[ OK ] Started WebLinuxOS v133 init process' },
           { type: 'info', text: '[ OK ] Reached target Multi-User System' },
           { type: 'info', text: '[ OK ] Listening on virtual desktop 0.0.0.0:5173' },
           { type: 'ok',   text: '[ OK ] Loaded 700+ integrated applications' },
           { type: 'ok',   text: '[ OK ] Mounted virtual file system via IndexedDB' },
+          { type: 'ok',   text: '[ OK ] Bug fixes: duplicate app IDs resolved' },
+          { type: 'ok',   text: '[ OK ] WebHealthChecker + APIInspector + OfflineProbe loaded' },
+          { type: 'ok',   text: '[ OK ] Smart terminal commands enhanced' },
           { type: 'ok',   text: '[ OK ] GlobalPulse + MindSync + PomodoroFocus loaded' },
           { type: 'ok',   text: '[ OK ] SmartDailyHub + WebDevChecklist + RecipeForge loaded' },
-          { type: 'ok',   text: '[ OK ] DataVerseLive + NebulaDevPro + QuantumHabitOS loaded' },
-          { type: 'ok',   text: '[ OK ] AICommandPro + DevOpsHealthCheck + EcoFoodPrint loaded' },
-          { type: 'ok',   text: '[ OK ] AmbientSound + MarkdownNotebook + TextAnalyzer loaded' },
-          { type: 'ok',   text: '[ OK ] HTTPToolkit + APIForge v131 new tools loaded' },
           { type: 'ok',   text: '[ OK ] Global CORS fallback layer online' },
           { type: 'warn', text: '[INFO] Realtime cross-tab sync initialized' },
-          { type: 'info', text: '[ OK ] WebLinuxOS v131 ready · Productivity suite online' },
+          { type: 'info', text: '[ OK ] WebLinuxOS v133 ready · Quality & innovation update' },
         ];
         var el = document.getElementById('boot-log');
         if (!el) return;

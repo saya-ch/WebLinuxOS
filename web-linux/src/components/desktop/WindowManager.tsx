@@ -20,6 +20,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // v132 新增应用
   HTTPToolkit: () => import('../../apps/HTTPToolkit'),
   MarkdownLiveStudio: () => import('../../apps/MarkdownLiveStudio'),
+  ColorAccessibility: () => import('../../apps/ColorAccessibility'),
+  WebPerformanceProfiler: () => import('../../apps/WebPerformanceProfiler'),
+  DNSProbe: () => import('../../apps/DNSProbe'),
   // v131 新增应用
   TextAnalyzer: () => import('../../apps/TextAnalyzer'),
   // v130 新增应用

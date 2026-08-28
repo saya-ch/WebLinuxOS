@@ -1,6 +1,6 @@
 # WebLinuxOS
 
-> 一个功能完整的浏览器端 Linux 桌面环境，包含 700+ 应用、终端模拟器、虚拟文件系统和真实 API 集成
+> 一个功能完整的浏览器端 Linux 桌面环境 v133，包含 700+ 应用、终端模拟器、虚拟文件系统和真实 API 集成
 
 [![Deploy Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)

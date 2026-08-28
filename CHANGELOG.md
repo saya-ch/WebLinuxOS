@@ -5,6 +5,30 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [133.0.0] - 2026-08-28
+
+### Added — v133 质量修复与创新工具
+
+- **ColorAccessibility 色彩无障碍检查器** — WCAG 2.1对比度计算器(AA/AAA合规检测)、8种色盲类型模拟(Protanopia/Deuteranopia/Tritanopia/Achromatopsia及弱视变体)、6色调色板两两对比度矩阵分析、智能修复建议(自动搜索最近通过色)、JSON报告导出。(`apps/ColorAccessibility.tsx`)
+- **WebPerformanceProfiler 浏览器性能剖析器** — 基于Performance API的真实浏览器性能监控：Core Web Vitals(LCP/CLS/FID via PerformanceObserver)、Navigation/Paint Timing、资源瀑布图(按类型着色)、长任务检测(>50ms)、0-100性能评分(环形图展示)、历史趋势SVG柱状图、JSON报告导出。(`apps/WebPerformanceProfiler.tsx`)
+- **DNSProbe 网络诊断工具** — 7合1网络诊断套件：DNS查询(Cloudflare/Google DoH双端点，8种记录类型)、HTTP头检查(状态码/响应头/重定向链)、CORS策略检测(4种来源测试)、端口连通测试(18个常见端口并行)、路由追踪估算(DNS+地理定位)、网络质量测速(延迟/抖动/带宽/综合评分)、IP地理信息(ip-api.com)。(`apps/DNSProbe.tsx`)
+- **终端网络诊断命令集** — 7个新终端命令：`dig`(DNS查询)、`curl`(HTTP请求)、`speedtest`(网速测试)、`whois`(域名注册查询/RDAP)、`wikipedia`(百科搜索)、`qr`(打开QR生成器)、`weather`(打开天气应用)。(`apps/terminal/networkDiagnosticCommands.ts`)
+
+### Fixed
+
+- **重复应用ID修复** — `crypto-dashboard` ID在v61和v104版本中重复注册(分别指向CryptoTracker和CryptoDashboard两个不同组件)，导致后者覆盖前者。将v61版本重命名为`crypto-market-tracker`。(`apps.tsx`)
+- **重复应用ID修复** — `system-optimizer` ID在v79和v104版本中重复注册，删除旧版重复条目。(`apps.tsx`)
+- **TypeScript严格模式兼容** — 修复3个新应用文件中的TypeScript编译错误：未使用变量清理、CSS类型修复、Performance API类型断言、Response API属性修正。(`ColorAccessibility.tsx`, `DNSProbe.tsx`, `WebPerformanceProfiler.tsx`, `networkDiagnosticCommands.ts`)
+
+### Changed
+
+- **版本升级** — 从v131升级至v133。(`package.json`, `index.html`)
+- **启动日志更新** — 更新为v133版本信息，反映新增工具和质量修复。(`index.html`)
+- **WindowManager componentMap** — 注册3个新应用组件的懒加载映射。(`components/desktop/WindowManager.tsx`)
+- **应用注册表** — 在APP_REGISTRY_EXTRAS中注册3个v133新应用。(`apps.tsx`)
+- **终端命令索引** — 导入v133网络诊断命令集。(`apps/terminal/index.ts`)
+- **README更新** — 新增v133应用描述和API数据源。(`README.md`)
+
 ## [132.0.0] - 2026-08-28
 
 ### Added — v132 创新工具与质量优化
