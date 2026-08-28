@@ -14,9 +14,9 @@
           // Safari 隐私模式下可能抛出，忽略。
         }
         // 支持任意 base 路径：相对当前 origin 的根路径 + 脚本检测 repo 名
-        var base = location.pathname.split('/').slice(0, -1).filter(Boolean).join('/');
-        var target = base ? '/' + base + '/' : '/';
-        location.replace(target);
+        var repo = location.pathname.match(/^\/([^/]+)\/?/);
+        var base = repo ? '/' + repo[1] : '';
+        location.replace(base + '/');
       })();
     </script>
     <noscript>

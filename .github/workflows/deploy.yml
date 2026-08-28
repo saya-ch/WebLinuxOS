@@ -39,6 +39,12 @@ jobs:
         working-directory: ./web-linux
         run: npm run deploy
 
+      - name: Copy public assets to dist
+        run: |
+          cp ./web-linux/public/sw.js ./dist/sw.js
+          cp ./web-linux/public/404.html ./dist/404.html
+          cp ./web-linux/public/.nojekyll ./dist/.nojekyll
+
       - name: Verify build output
         run: |
           echo "--- Checking dist/index.html exists ---"
@@ -51,6 +57,8 @@ jobs:
           test -f ./dist/manifest.json && echo "OK: dist/manifest.json exists" || echo "WARN: dist/manifest.json missing"
           echo "--- Checking dist/.nojekyll ---"
           test -f ./dist/.nojekyll && echo "OK: dist/.nojekyll exists" || echo "WARN: dist/.nojekyll missing"
+          echo "--- Checking dist/sw.js ---"
+          test -f ./dist/sw.js && echo "OK: dist/sw.js exists" || (echo "FAIL: dist/sw.js missing - PWA will not work" && exit 1)
           echo ""
           echo "--- Deployment inventory ---"
           echo "Dist root files:"

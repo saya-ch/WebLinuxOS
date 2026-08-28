@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 
 interface CalendarEvent {
   id: string
@@ -22,6 +22,12 @@ export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [events, setEvents] = useState<CalendarEvent[]>(() => {
+    try {
+      const stored = localStorage.getItem('weblinux-calendar-events')
+      if (stored) {
+        return JSON.parse(stored)
+      }
+    } catch {}
     const now = Date.now()
     return [
       { id: '1', date: new Date().toISOString().split('T')[0], title: '团队会议', description: '每周例会', time: '10:00', color: '#3b82f6' },
@@ -30,6 +36,13 @@ export default function Calendar() {
       { id: '4', date: new Date(now + 86400000 * 2).toISOString().split('T')[0], title: '发布新版本', description: 'WebLinuxOS v3.4', time: '15:00', color: '#a855f7' },
     ]
   })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('weblinux-calendar-events', JSON.stringify(events))
+    } catch {}
+  }, [events])
+
   const [showAddEvent, setShowAddEvent] = useState(false)
   const [eventTitle, setEventTitle] = useState('')
   const [eventDescription, setEventDescription] = useState('')
