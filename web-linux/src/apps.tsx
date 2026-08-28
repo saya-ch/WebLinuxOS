@@ -8,8 +8,8 @@ import {
   LockIcon, BackupIcon, ZipIcon, FileSearchIcon, TypeIcon,
   LanguagesIcon, MapPinIcon, VideoRecorderIcon, MicIcon,
   BluetoothIcon, BatteryIcon, InfoIcon, HelpIcon, CommandIcon,
-  PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon, ChatIcon, BoardIcon,
-  LightningIcon, SearchIcon, PomodoroIcon, PetIcon,
+  PaletteIcon, MagnifierIcon, SnakeIcon, TetrisIcon, BoardIcon,
+  LightningIcon, SearchIcon, PetIcon,
   WallpaperIcon, MindMapIcon, StickyNotesIcon, ParticleIcon, WhiteboardIcon, AutomationIcon,
   VoiceIcon, GraduationCapIcon, WrenchIcon, SparklesIcon, ApiLabIcon, Code2Icon, RocketIcon, WandIcon,
   LayersIcon, ClipboardIcon, UsersIcon, NetworkIcon, FolderOpenIcon,
@@ -48,10 +48,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'regex-visualizer', name: 'RegexVisualizer 正则可视化调试器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>, component: 'RegexVisualizer', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '正则表达式可视化调试器：实时匹配高亮、正则语法分解解释、10个常用模板、捕获组详情、错误诊断' },
   { id: 'json-tree-view', name: 'JsonTreeView JSON树形查看器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v6"/><path d="M6 12H3"/><path d="M12 12h9"/><path d="M6 12v6"/><path d="M18 12v6"/><circle cx="12" cy="3" r="1.5" fill="currentColor"/><circle cx="3" cy="12" r="1.5" fill="currentColor"/><circle cx="21" cy="12" r="1.5" fill="currentColor"/><circle cx="6" cy="18" r="1.5" fill="currentColor"/><circle cx="18" cy="18" r="1.5" fill="currentColor"/></svg>, component: 'JsonTreeView', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '交互式JSON树形查看器：可折叠/展开、语法高亮、路径复制、搜索过滤、格式化/压缩、数据统计' },
   { id: 'focus-timer', name: 'FocusTimer 专注番茄钟', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>, component: 'FocusTimer', category: 'office', defaultWidth: 900, defaultHeight: 750, minWidth: 600, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '专注番茄钟：SVG环形进度、工作/短休/长休循环、Web Audio提示音、桌面通知、自定义时长、任务标签、历史记录' },
-  // === v127 新增创新工具：TimestampConverter + DeveloperCheatSheet + NetworkToolkitPro
+  // === v127 创新工具：TimestampConverter
   { id: 'timestamp-converter', name: 'TimestampConverter 时间戳转换', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, component: 'TimestampConverter', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '专业时间戳转换工具：Unix时间戳与日期双向转换、12个时区同时显示、时间戳计算器、人类可读时间差、实时时钟' },
-  { id: 'developer-cheat-sheet', name: 'DeveloperCheatSheet 开发者速查手册', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>, component: 'DeveloperCheatSheet', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '开发者速查手册：JS/Python/Git/Linux/CSS/SQL/Docker/正则8大分类80+命令，语法高亮、搜索过滤、收藏功能' },
-  { id: 'network-toolkit-pro', name: 'NetworkToolkitPro 网络工具专业版', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, component: 'NetworkToolkitPro', category: 'utilities', defaultWidth: 1050, defaultHeight: 780, minWidth: 750, minHeight: 580, resizable: true, multiple: false, isNew: true, description: '网络工具专业版：IP查询+Cloudflare DoH DNS查询+HTTP状态码参考+端口号参考+Base64编解码+URL编解码+JSON格式化' },
   // === v125 创新应用：HashCalculator + SlideForge + ColorPaletteGen
   { id: 'hash-calculator', name: 'HashCalculator 哈希计算器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>, component: 'HashCalculator', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false, isNew: true, description: '基于Web Crypto API的专业哈希计算器：SHA-1/256/384/512四种算法同步计算，支持文本和文件输入，一键复制，大小写双格式显示' },
   { id: 'slide-forge', name: 'SlideForge 幻灯片工坊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polyline points="6 10 10 10 10 8"/></svg>, component: 'SlideForge', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'Markdown转幻灯片工具：分屏编辑与预览、---分隔幻灯片、三种主题（极简/深邃/渐变）、全屏演示模式、键盘导航、独立HTML导出' },
@@ -84,15 +82,11 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'motivational-dashboard', name: 'MotivationalDashboard · 励志仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 15 8l6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" fill="currentColor" fillOpacity="0.15"/></svg>, component: 'MotivationalDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 840, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '五合一心灵充电站：ZenQuotes/Stoic公共API每日箴言+Picsum每日灵感图+4种呼吸冥想模式（Web Audio音效引导）+今日目标追踪+感恩日记+小成就墙+程序员小幽默+8套梦幻主题配色，全部本地持久化，科学支撑的幸福感提升工具' },
   // === v116 创新应用：PomodoroFocus 番茄钟 + SomaFM 电台 ===
   { id: 'pomodoro-focus', name: 'PomodoroFocus · 番茄电台', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/><path d="M9 1h6"/></svg>, component: 'PomodoroFocus', category: 'office', defaultWidth: 1180, defaultHeight: 780, minWidth: 880, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '番茄钟 + SomaFM 公开电台 + 任务看板 + 专注统计：三阶段计时、8个真实SomaFM MP3流、Web Audio结束提示、任务番茄分配、7日专注柱状图，数据本地持久化' },
-  // === v116 创新应用：UtilityStack 公共 API 工具集 ===
-  { id: 'utility-stack', name: 'UtilityStack · 公共API工具集', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, component: 'UtilityStack', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 560, resizable: true, multiple: false, isNew: true, description: '公共API工具集：IP归属地查询、每日箴言收藏、LoremFlickr图片灵感、Punk随机啤酒推荐、ChuckNorris冷知识，数据实时获取' },
   // === v115 创新应用：DevRadar 开发者技术雷达 ===
   { id: 'dev-radar', name: 'DevRadar 技术雷达', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12 2 2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'DevRadar', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '开发者技术雷达：聚合Hacker News+GitHub Trending+GitHub Releases实时信息流，支持多源筛选、热门/最新/趋势排序、全文搜索、本地收藏、自动刷新、详情面板' },
   // === v114 创新应用：MindSync Pro 效率中心 ===
   { id: 'mind-sync-pro', name: 'MindSync Pro · 效率中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"/></svg>, component: 'MindSyncPro', category: 'office', defaultWidth: 1280, defaultHeight: 900, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '效率中心：番茄钟计时器+任务看板(Kanban)+21天习惯追踪+每日反思日记+可视化效率统计，五合一个人效率系统，全部数据本地持久化，支持声音提示与自动开始下一阶段' },
-  // === v110 创新应用套件：DataPulsePro + AICodeMentorPro + DevFlowPro ===
-  { id: 'data-pulse-pro', name: 'DataPulse Pro · 数据脉搏仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>, component: 'DataPulsePro', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '实时数据脉搏仪表盘：接入Open-Meteo天气+AQICN空气质量+Frankfurter汇率+CoinGecko加密货币+WorldTime多源真实API，自动刷新，本地缓存，多城市收藏' },
-  { id: 'ai-code-mentor-pro', name: 'AICodeMentor Pro · AI代码导师', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, component: 'AICodeMentorPro', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI代码导师工作台：基于 Pollinations.ai 免费公开API，提供代码解释、智能审查、优化建议、Bug修复、测试用例生成、算法讲解六大核心功能，多语言支持' },
+  // === v110 创新应用套件 ===
   { id: 'dev-flow-pro', name: 'DevFlow Pro · 开发者工作流中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>, component: 'DevFlowPro', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '开发者工作流中心：番茄钟(Pomodoro)+任务看板(Kanban)+代码片段管理(Snippets)+每日目标追踪四大模块，数据本地持久化，支持拖拽排序与高效管理' },
   // v109 创新功能 — WebContainer IDE 浏览器内全栈开发环境
   { id: 'webcontainer-ide', name: 'WebContainer IDE', icon: <Code2Icon />, component: 'WebContainerIDE', category: 'development', defaultWidth: 1300, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '浏览器内全栈开发环境：JavaScript实时执行/HTML预览、5种代码模板、控制台输出捕获、多文件标签、代码分享、自动保存' },
@@ -132,7 +126,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // v72 创新功能 — URL 工具箱 Pro：集成 is.gd 真实缩短 API + QR 码生成
   { id: 'url-tools-enhanced', name: 'URL 工具箱 Pro', icon: <Link2Icon />, component: 'URLToolsEnhanced', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: '增强版URL工具箱：真实URL缩短服务（is.gd API）、QR码生成、编码解码解析、历史记录管理' },
   { id: 'open-source-hub', name: '开源项目导航', icon: <GitHubIcon />, component: 'OpenSourceHub', category: 'internet', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: 'GitHub开源项目探索：仓库搜索、热门项目、语言筛选、星标排序、搜索历史' },
-  { id: 'online-code-runner-pro', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerPro', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: '真正的在线代码运行器：支持JavaScript实时执行、HTML/CSS/JS实时预览、代码分享、预置示例模板' },
   
   { id: 'json-crusher', name: 'JSON 超级工具', icon: <WrenchIcon />, component: 'JsonCrusher', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: 'JSON高级工具箱：格式化/压缩、TS类型生成、JSONPath查询、Diff对比、Schema验证、树形视图' },
   { id: 'json-formatter', name: 'JSON 格式化工具', icon: <FileJsonIcon />, component: 'JsonFormatter', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 600, minHeight: 400, resizable: true, multiple: false, description: 'JSON格式化与验证工具：美化/压缩/验证/转TypeScript类型/转CSV，行号列号错误提示，语法高亮' },
@@ -169,7 +162,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // 实时代码协作平台（v47创新功能 — 多语言支持+实时协作+代码执行）
   { id: 'realtime-code-collab', name: '实时代码协作', icon: <UserIcon />, component: 'RealTimeCodeCollab', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: '实时代码协作平台：支持JavaScript/TypeScript/Python/Java/C++/Go/Rust/HTML/CSS，模拟协作者光标，代码实时执行，会话分享' },
   // AI智能代码分析器（v47创新功能 — 代码质量分析+改进建议+实时反馈）
-  { id: 'ai-code-analyzer-pro', name: 'AI代码分析器 Pro', icon: <SparklesIcon />, component: 'AICodeAnalyzerPro', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: '智能代码质量分析：代码复杂度评估+重复代码检测+魔法数字识别+长行警告+改进建议生成，支持7种编程语言' },
   { id: 'audio-viz', name: 'AudioViz 音乐可视化', icon: <AudioVizIcon />, component: 'AudioViz', category: 'multimedia', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false,  description: '实时音频可视化器：频谱柱状图/波形图/圆形频谱/粒子效果/脉冲圆环，支持麦克风/文件/演示模式' },
   { id: 'pulse-board', name: 'PulseBoard 实时仪表盘', icon: <PulseIcon />, component: 'PulseBoard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: '实时信息仪表盘：系统监控+天气+新闻+加密货币+多时区时钟，数据实时刷新' },
   { id: 'knowledge-vine', name: 'KnowledgeVine 知识花园', icon: <VineIcon />, component: 'KnowledgeVine', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: '可视化知识管理：知识树+思维导图+笔记卡片，让你的想法像植物一样生长' },
@@ -202,10 +194,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'online-programming-lab', name: '在线编程实验室', icon: <Code2Icon />, component: 'OnlineProgrammingLab', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // 新增智能代码助手（v28.0创新功能）
   { id: 'intelligent-code-assistant', name: '智能代码助手', icon: <SparklesIcon />, component: 'IntelligentCodeAssistant', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  // 新增增强应用（v16.0迭代）
-  { id: 'ai-chat-enhanced', name: 'AI聊天增强', icon: <ChatIcon />, component: 'AIChatEnhanced', category: 'utilities', defaultWidth: 800, defaultHeight: 600, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  // 新增AI Code Companion（v17.0迭代）
-  { id: 'ai-code-companion', name: 'AI Code Companion', icon: <SparklesIcon />, component: 'AICodeCompanion', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   // 新增DevKit开发者工具箱（v23.0迭代）
   { id: 'dev-kit', name: 'DevKit 开发者工具箱', icon: <WrenchIcon />, component: 'DevKit', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // 新增CyberHub赛博格控制中心（v26.0迭代）
@@ -232,10 +220,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'code-assistant-pro', name: '代码助手专业版', icon: <CodeIcon />, component: 'CodeAssistantPro', category: 'development', defaultWidth: 900, defaultHeight: 600, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // 系统监控仪表盘（v37.2新增）
   { id: 'system-monitor-dashboard', name: '系统监控仪表盘', icon: <ActivityIcon />, component: 'SystemMonitorDashboard', category: 'utilities', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  // 在线代码运行器增强版（v38.1新增）
-  { id: 'online-code-runner-enhanced', name: '在线代码运行器 Pro', icon: <Code2Icon />, component: 'OnlineCodeRunnerEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
-  // 高级代码运行器（v42新增）- 支持JavaScript实时执行，带控制台输出捕获和示例代码
-  { id: 'code-runner-advanced', name: '高级代码运行器', icon: <TerminalIcon />, component: 'CodeRunnerAdvanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false,  description: 'JavaScript 实时执行环境：控制台输出捕获+算法示例+函数式编程示例' },
   // 代码搜索（v38.2新增）- 搜索GitHub开源项目
   { id: 'code-search', name: '代码搜索', icon: <SearchIcon />, component: 'CodeSearch', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // PromptForge 提示词工程工作室（v41创新功能 — 模板库+变量插值+实时测试+AI优化建议）
@@ -362,7 +346,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // === v74 新增创新应用套件 ===
   { id: 'ai-poetry-generator', name: 'AI 诗歌生成器', icon: <PoetryIcon />, component: 'AIPoetryGenerator', category: 'utilities', defaultWidth: 800, defaultHeight: 900, minWidth: 700, minHeight: 700, resizable: true, multiple: false,  description: 'AI 驱动的诗歌创作工具：8种诗歌风格（唐诗/宋词/现代诗/俳句/十四行诗等）、8种情感基调、历史记录、收藏管理、本地持久化，基于Pollinations AI API' },
   { id: 'ai-story-writer', name: 'AI 故事创作工坊', icon: <BookmarkIcon />, component: 'AIStoryWriter', category: 'multimedia', defaultWidth: 1000, defaultHeight: 850, minWidth: 800, minHeight: 650, resizable: true, multiple: false,  description: 'AI 故事创作助手：多体裁支持（奇幻/科幻/悬疑/ romance/寓言）、角色设定、情节生成、续写模式、多章节管理、风格调整，支持导出与本地收藏' },
-  { id: 'code-playground-pro', name: '代码游乐场 Pro', icon: <Code2Icon />, component: 'CodePlaygroundPro', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '增强版在线代码游乐场：支持JavaScript/TypeScript实时执行、HTML/CSS/JS分屏预览、多文件项目、实时Console输出、代码保存与分享' },
   { id: 'crypto-portfolio-tracker', name: '加密投资组合追踪', icon: <TrendingUpIcon />, component: 'CryptoPortfolioTracker', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '个人加密货币投资组合管理：多资产持仓录入、实时市值计算、总价值/盈亏/24h浮动、资产配置饼图、历史趋势、基于CoinGecko API' },
   // === v75 新增创新应用套件 ===
   { id: 'cross-device-sync', name: '跨设备同步', icon: <ShareIcon />, component: 'CrossDeviceSync', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: '跨标签页/窗口实时同步工具：基于BroadcastChannel API实现多设备消息传递、智能内容类型识别、连接状态可视化、同步历史记录管理' },
@@ -373,8 +356,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   // v77 创新功能 — InstantTools 即时开发者工具箱 & DataVizWorkbench
   { id: 'instant-tools', name: 'InstantTools 即时工具箱', icon: <WrenchIcon />, component: 'InstantTools', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '开发者即时工具箱：文本对比、进制转换、URL编解码、Base64编解码、时间戳转换、哈希生成、UUID生成、正则测试、Cron解析、JWT解码，10大工具一站式服务' },
   { id: 'dataviz-workbench', name: 'DataViz 数据可视化', icon: <BarChartIcon />, component: 'DataVizWorkbench', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '数据可视化工作台：支持手动编辑/CSV导入/预设数据三种模式，6种图表类型（柱状/折线/饼图/面积/雷达/散点），SVG导出，实时统计分析' },
-  // FocusFlow Pro — 真实番茄钟专注计时器
-  { id: 'focus-flow-pro', name: 'FocusFlow 专注计时器', icon: <PomodoroIcon />, component: 'FocusFlowPro', category: 'utilities', defaultWidth: 900, defaultHeight: 720, minWidth: 800, minHeight: 640, resizable: true, multiple: false,  description: '真实番茄钟计时器：25/5分钟工作休息循环、任务列表管理、完成统计（番茄数/专注时间/今日统计）、LocalStorage持久化、键盘快捷键（Space开始暂停、R重置）、精美进度环形可视化' },
   { id: 'daily-agenda', name: '每日议程 DailyAgenda', icon: <CalendarIcon />, component: 'DailyAgenda', category: 'utilities', defaultWidth: 1100, defaultHeight: 780, minWidth: 800, minHeight: 600, resizable: true, multiple: false,  description: '专业日程规划器：日视图时间块、事件拖拽调整、分类色彩编码、周视图切换、LocalStorage持久化' },
   { id: 'markdown-quick-note', name: 'Markdown 速记', icon: <NoteIcon />, component: 'MarkdownQuickNote', category: 'office', defaultWidth: 1000, defaultHeight: 700, minWidth: 750, minHeight: 500, resizable: true, multiple: false,  description: '快速Markdown笔记：分屏编辑预览、语法高亮、实时渲染、字数统计、导出MD文件、LocalStorage持久化' },
   // === v78 新增 LiveDataCenter 实时数据中心 ===
@@ -387,7 +368,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'database-designer', name: '数据库设计器', icon: <Code2Icon />, component: 'DatabaseDesigner', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false,  description: '可视化数据库表结构设计器：字段类型选择、主键外键索引设置、SQL DDL生成、ER图可视化' },
   // === v81 创新应用套件 — FinanceDashboard / AICodeReviewPro / NetworkSpeedTestPro / ProductivityDashboard ===
   { id: 'finance-dashboard', name: '个人财务仪表盘', icon: <TrendingUpIcon />, component: 'FinanceDashboard', category: 'internet', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '实时加密货币行情（CoinGecko API）、实时汇率查询（Frankfurter API）、投资组合管理（本地存储）、价格走势图（Canvas绘制）、玻璃拟态深色UI设计' },
-  { id: 'ai-code-review-pro', name: 'AI代码审查专家', icon: <SparklesIcon />, component: 'AICodeReviewPro', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '基于 Pollinations AI 公开API的代码审查：支持JavaScript/TypeScript/Python、代码质量评分(0-100)、改进建议列表、安全性检查、性能优化建议、Markdown格式报告导出' },
   { id: 'network-speed-test-pro', name: '网络速度测试 Pro', icon: <ActivityIcon />, component: 'NetworkSpeedTestPro', category: 'networking', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: '真实下载速度测量（Hetzner测速服务器）、真实上传速度测量（httpbin.org）、延迟Ping测试、抖动计算、测试历史图表、网络评级（5G/4G/3G等）、结果分享' },
   { id: 'productivity-dashboard', name: '生产力仪表盘', icon: <ZapIcon />, component: 'ProductivityDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false,  description: 'Pomodor计时器、任务追踪、每日统计、连续打卡可视化、实时时钟、天气小组件（Open-Meteo API）、每日名言（ZenQuotes API）、本地存储持久化' },
   // 创新应用套件 — AI壁纸工作室 & 快速翻译
@@ -466,7 +446,6 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'markdown-slides', name: 'Markdown转幻灯片', icon: <PresentationIcon />, component: 'MarkdownToSlides', category: 'office', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'Markdown转幻灯片：实时编辑预览、多种动画主题、导出独立HTML' },
   { id: 'color-mixer-pro', name: '专业配色混合器', icon: <PaletteIcon />, component: 'ColorMixerPro', category: 'graphics', defaultWidth: 1100, defaultHeight: 780, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '专业配色工具：颜色混合、和谐度分析、调色板生成、Tailwind导出' },
   { id: 'datetime-calculator', name: '日期时间计算器', icon: <ClockIcon />, component: 'DateTimeCalculator', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '日期时间计算：差值计算、工作日计算、时区转换、倒计时' },
-  { id: 'password-generator-pro', name: '密码生成器 Pro', icon: <LockIcon />, component: 'PasswordGeneratorPro', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '专业密码生成器：真随机生成、强度评估、熵计算、批量生成' },
   { id: 'batch-image-processor', name: '批量图片处理', icon: <ImageIcon />, component: 'BatchImageProcessor', category: 'graphics', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '批量图片处理：尺寸调整、格式转换、水印添加、滤镜批量应用' },
   { id: 'terminal-pro', name: '增强终端 Pro', icon: <TerminalIcon />, component: 'TerminalPro', category: 'system', defaultWidth: 1000, defaultHeight: 700, minWidth: 750, minHeight: 500, resizable: true, multiple: true, isNew: true, description: '增强版终端：多会话管理、语法高亮、主题切换、会话录制' },
   // === v94 创新应用 — 实时协作代码片段管理器 ===
@@ -485,9 +464,8 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'smart-theme-generator', name: '智能主题生成器', icon: <PaletteIcon />, component: 'SmartThemeGenerator', category: 'system', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的主题生成工具：关键词生成配色、色彩和谐算法、WCAG对比度检查、CSS变量导出' },
   { id: 'code-screenshotter', name: '代码截图生成器', icon: <MonitorIcon />, component: 'CodeScreenshotter', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '代码美化截图工具：支持多种语言高亮、主题切换、窗口样式、PNG/SVG导出' },
   { id: 'smart-rss-reader', name: '智能 RSS 阅读器', icon: <Link2Icon />, component: 'SmartRSSReader', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '功能完备的RSS阅读器：多源订阅、离线缓存、文章收藏、分类阅读、未读管理' },
-  // === v97 创新应用套件 — 呼吸冥想、专注模式、AI图像放大、网页提取 ===
+  // === v97 创新应用套件 — 呼吸冥想、AI图像放大、网页提取 ===
   { id: 'zen-breath', name: 'ZenBreath 呼吸冥想', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>, component: 'ZenBreath', category: 'utilities', defaultWidth: 800, defaultHeight: 720, minWidth: 680, minHeight: 560, resizable: true, multiple: false, isNew: true, description: '正念呼吸冥想工具：4种呼吸模式（盒式/478/平静/活力）、4种主题配色、Web Audio音调反馈、练习统计、累计时长记录' },
-  { id: 'deep-focus', name: 'DeepFocus 专注模式', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'DeepFocus', category: 'utilities', defaultWidth: 1200, defaultHeight: 860, minWidth: 960, minHeight: 680, resizable: true, multiple: false, isNew: true, description: '深度专注番茄钟：可调节时长、任务列表追踪、统计热力图、桌面通知、Web Audio提示音、LocalStorage持久化' },
   { id: 'ai-upscaler', name: 'AI 图像放大', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 7h4v4H7zM13 13h4v4h-4zM14 3v2M18 3h2M14 17v2M18 17h2"/></svg>, component: 'AIUpscaler', category: 'multimedia', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI智能图像放大：Pollinations AI API、1.5-4倍放大、5种增强预设、滑动对比预览、历史记录、PNG下载' },
   { id: 'smart-web-clipper', name: '网页内容提取器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h8M8 14h5"/></svg>, component: 'SmartWebClipper', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '智能网页内容提取：URL抓取、正文提取、图片/链接/元数据分离、结构可视化、关键词搜索、Markdown导出、历史收藏' },
   // === v98 创新应用套件 — 系统分析器、快捷键定制中心 ===
@@ -524,8 +502,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'enhanced-code-sandbox', name: '增强代码沙盒', icon: <Code2Icon />, component: 'EnhancedCodeSandbox', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '浏览器内真实代码执行环境：iframe沙盒隔离、实时控制台输出、4种代码模板、执行耗时统计、代码导出分享' },
   { id: 'enhanced-api-debugger', name: '增强API调试器', icon: <ApiLabIcon />, component: 'EnhancedApiDebugger', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '专业HTTP调试工具：支持7种请求方法、Headers/Body管理、响应时间/状态码展示、20+常用API模板、请求历史、JSON格式化、代码复制' },
   { id: 'dataviz-workbench-v2', name: '数据可视化工作台', icon: <BarChart3Icon />, component: 'DataVizWorkbench', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '纯SVG数据可视化工作台：4种图表类型（柱状/折线/面积/饼图）、自定义数据输入、4种示例数据集、统计摘要、SVG/PNG导出' },
-  // === v111 创新应用套件 — AI代码审查工作台、AI代码片段生成器、AI正则表达式生成器 ===
-  { id: 'ai-code-review-workbench', name: 'AI代码审查工作台', icon: <Code2Icon />, component: 'AICodeReviewWorkbench', category: 'development', defaultWidth: 1320, defaultHeight: 880, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI驱动的专业代码审查工作台：Pollinations AI真实代码分析、5种示例代码、4维评估指标（复杂度/可维护性/安全性/性能）、详细问题列表（错误/警告/建议）、Markdown报告导出、审查历史记录' },
+  // === v111 创新应用套件 ===
   { id: 'ai-snippet-generator', name: 'AI代码片段生成器', icon: <CodeIcon />, component: 'AISnippetGenerator', category: 'development', defaultWidth: 1280, defaultHeight: 860, minWidth: 960, minHeight: 640, resizable: true, multiple: false, isNew: true, description: 'AI代码片段生成器：Pollinations AI真实代码生成、7种代码类型（函数/类/算法/API/测试/配置/SQL）、12种语言支持、创造性参数调节、复制下载、历史记录' },
   { id: 'ai-regex-generator', name: 'AI正则表达式生成器', icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 16.98h-6c-.66 0-1.33-.14-2-.4"/><circle cx="6" cy="6" r="2"/><path d="M6 12v6"/><path d="M18 4l-6 6 6 6"/></svg>, component: 'AIRegexGenerator', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'AI正则表达式生成器：自然语言描述生成正则、实时测试匹配、6种预设示例、历史记录、快速参考' },
   // === v112 创新应用套件 — AI智能写作工作台、实时加密货币仪表盘、天气环境监测中心 ===
@@ -622,15 +599,6 @@ function DevPortalIcon() {
   )
 }
 
-function FocusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
-      <circle cx="12" cy="12" r="8"/>
-    </svg>
-  )
-}
 
 function DiceIcon() {
   return (
@@ -683,16 +651,6 @@ function RegexIcon() {
   )
 }
 
-function ChartIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-      <path d="M3 20h18" />
-    </svg>
-  )
-}
 
 function TextFormatIcon() {
   return (
@@ -877,15 +835,6 @@ function StockTrackerIcon() {
   );
 }
 
-function RealTimeTranslatorIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-      <path d="M2 17l10 5 10-5" />
-      <path d="M2 12l10 5 10-5" />
-    </svg>
-  );
-}
 
 function ComponentSandboxIcon() {
   return (
@@ -902,25 +851,7 @@ function ComponentSandboxIcon() {
   );
 }
 
-function OnlineToolkitIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-      <line x1="12" y1="22.08" x2="12" y2="12" />
-    </svg>
-  );
-}
 
-function RecipeBookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      <path d="M8 7h8M8 11h8M8 15h6" />
-    </svg>
-  )
-}
 
 function NexusHubIcon() {
   return (
@@ -1086,60 +1017,10 @@ function Base64ToolsIcon() {
   )
 }
 
-function AIChatAssistantIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="10" cy="10" r="1" fill="currentColor" />
-      <circle cx="14" cy="10" r="1" fill="currentColor" />
-      <path d="M8 14c1 1.5 3 2.5 4 2.5s3-1 4-2.5" />
-    </svg>
-  )
-}
 
-function RealTimeDashboardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <line x1="3" y1="9" x2="21" y2="9" />
-      <polyline points="7 17 11 13 14 16 19 11" />
-    </svg>
-  )
-}
 
-function RealTimeDashboardEnhancedIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" strokeDasharray="2 1" />
-      <circle cx="12" cy="12" r="6" fill="none" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" />
-      <path d="M12 2 L14 4 M12 2 L10 4 M12 22 L14 20 M12 22 L10 20 M2 12 L4 10 M2 12 L4 14 M22 12 L20 10 M22 12 L20 14" />
-    </svg>
-  )
-}
 
-function AICodeAssistantIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" strokeDasharray="3 2" />
-      <path d="M8 12 L10 12 L10 8 L14 8 L14 12 L16 12" />
-      <circle cx="9" cy="16" r="1" fill="currentColor" />
-      <circle cx="15" cy="16" r="1" fill="currentColor" />
-      <path d="M7 8 Q12 4 17 8" />
-    </svg>
-  )
-}
 
-function SmartNewsReaderIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 17.5" />
-      <line x1="8" y1="6" x2="18" y2="6" />
-      <line x1="8" y1="10" x2="15" y2="10" />
-    </svg>
-  )
-}
 
 function WikipediaReaderIcon() {
   return (
@@ -1245,15 +1126,6 @@ function SystemHealthDashboardIcon() {
   )
 }
 
-function OnlineCodeRunnerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" />
-    </svg>
-  )
-}
 
 function WebToolsHubIcon() {
   return (
@@ -1266,39 +1138,8 @@ function WebToolsHubIcon() {
   )
 }
 
-function AIAssistantProIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-      <line x1="9" y1="9" x2="9.01" y2="9" />
-      <line x1="15" y1="9" x2="15.01" y2="9" />
-      <path d="M12 2v4M12 18v4" />
-    </svg>
-  )
-}
 
-function AISmartAssistantIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="4" fill="currentColor" />
-      <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
-    </svg>
-  )
-}
 
-function NotesAppIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  )
-}
 
 function CodeDiffIcon() {
   return (
@@ -1335,16 +1176,6 @@ function CustomMusicIcon() {
   )
 }
 
-function NewsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-      <path d="M18 14h-8" />
-      <path d="M15 18h-5" />
-      <path d="M10 6h8v4h-8V6Z" />
-    </svg>
-  )
-}
 
 function GitHubIcon() {
   return (
@@ -1376,31 +1207,7 @@ function WhiteboardProIcon() {
   )
 }
 
-function NewsHubIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-      <path d="M18 14h-8" />
-      <path d="M15 18h-5" />
-      <path d="M10 6h8v4h-8V6Z" />
-    </svg>
-  )
-}
 
-function DataVizDashboardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <path d="M7 7v0" />
-      <path d="M18 7v0" />
-      <path d="M18 18v0" />
-      <path d="M7 18v0" />
-    </svg>
-  )
-}
 
 function CustomClipboardIcon() {
   return (
@@ -1419,17 +1226,6 @@ function CloudIcon() {
   )
 }
 
-function GameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <line x1="6" y1="12" x2="10" y2="12" />
-      <line x1="8" y1="10" x2="8" y2="14" />
-      <line x1="15" y1="13" x2="15.01" y2="13" />
-      <line x1="18" y1="11" x2="18.01" y2="11" />
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-    </svg>
-  )
-}
 
 function ZapIcon() {
   return (
@@ -1479,15 +1275,6 @@ function BookmarkManagerIcon() {
   )
 }
 
-function CodeSnippetShareIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-    </svg>
-  )
-}
 
 function CodeFormatterIcon() {
   return (
@@ -1499,20 +1286,6 @@ function CodeFormatterIcon() {
   )
 }
 
-function TaskManagerProIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <line x1="9" y1="3" x2="9" y2="21" />
-      <line x1="3" y1="9" x2="21" y2="9" />
-      <circle cx="6" cy="6" r="1" fill="currentColor" />
-      <circle cx="12" cy="6" r="1" fill="currentColor" />
-      <circle cx="18" cy="6" r="1" fill="currentColor" />
-      <circle cx="6" cy="12" r="1" fill="currentColor" />
-      <circle cx="6" cy="18" r="1" fill="currentColor" />
-    </svg>
-  )
-}
 
 function CodeSandboxIcon() {
   return (
@@ -1536,30 +1309,7 @@ function RESTClientIcon() {
   )
 }
 
-function AdvancedDataVizIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M7 17l4-4 3 3 5-6" />
-      <circle cx="7" cy="17" r="1" fill="currentColor" />
-      <circle cx="11" cy="13" r="1" fill="currentColor" />
-      <circle cx="14" cy="16" r="1" fill="currentColor" />
-      <circle cx="19" cy="10" r="1" fill="currentColor" />
-    </svg>
-  )
-}
 
-function AICodeTutorIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M12 3L2 9l10 6 10-6-10-6z" />
-      <path d="M2 15l10 6 10-6" />
-      <path d="M12 12l-4-2" />
-      <path d="M12 12l4-2" />
-      <path d="M12 12v8" />
-    </svg>
-  )
-}
 
 function IntelligentCodeGeneratorIcon() {
   return (
@@ -1711,18 +1461,6 @@ function SpaceExplorerIcon() {
   )
 }
 
-function QuickNotesProIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <line x1="10" y1="9" x2="8" y2="9" />
-      <circle cx="18" cy="18" r="3" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
 
 function WorkflowIcon() {
   return (
@@ -1816,22 +1554,10 @@ function SmartAIHubIcon() {
   )
 }
 
-function WorkspaceHubIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </svg>
-  )
-}
-
 // 注意（校验提示）：以下所有条目在 src/apps/ 下均应存在同名 .tsx 组件文件，
 // 且每个 id 必须全局唯一。如新增注册，请先确认组件文件已就位。
 // （当前 201 项已完成组件存在性与 id 去重校验，无异常。）
 export const appRegistry: AppDefinition[] = [
-  { id: 'workspace-hub', name: '工作空间中心', icon: <WorkspaceHubIcon />, component: 'WorkspaceHub', category: 'system', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-ai-hub', name: '智能AI中心', icon: <SmartAIHubIcon />, component: 'SmartAIHub', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-dev-flow', name: '智能开发工作台', icon: <SmartDevFlowIcon />, component: 'SmartDevFlow', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'unified-dashboard', name: '统一数据仪表盘', icon: <UnifiedDashboardIcon />, component: 'UnifiedDashboard', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
@@ -1843,30 +1569,16 @@ export const appRegistry: AppDefinition[] = [
   { id: 'intelligent-code-generator', name: '智能代码生成器', icon: <IntelligentCodeGeneratorIcon />, component: 'IntelligentCodeGenerator', category: 'development', defaultWidth: 1300, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'code-formatter', name: '代码格式化', icon: <CodeFormatterIcon />, component: 'CodeFormatter', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'whiteboard-pro', name: '专业白板', icon: <WhiteboardProIcon />, component: 'WhiteboardPro', category: 'office', defaultWidth: 1200, defaultHeight: 900, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'news-hub', name: '新闻聚合中心', icon: <NewsHubIcon />, component: 'NewsHub', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'data-viz-dashboard', name: '数据可视化仪表盘', icon: <DataVizDashboardIcon />, component: 'DataVizDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'github-explorer', name: 'GitHub 探索器', icon: <GitHubExplorerIcon />, component: 'GitHubExplorer', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
-  { id: 'ai-code-tutor', name: 'AI 编程导师', icon: <AICodeTutorIcon />, component: 'AICodeTutor', category: 'development', defaultWidth: 1400, defaultHeight: 900, minWidth: 1000, minHeight: 600, resizable: true, multiple: false },
   { id: 'component-sandbox', name: '组件开发沙盒', icon: <ComponentSandboxIcon />, component: 'ComponentSandbox', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
-  { id: 'realtime-dashboard', name: '实时数据仪表盘', icon: <RealTimeDashboardIcon />, component: 'RealTimeDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'realtime-dashboard-enhanced', name: '实时数据仪表盘 Pro', icon: <RealTimeDashboardEnhancedIcon />, component: 'RealTimeDashboardEnhanced', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  { id: 'ai-code-assistant', name: 'AI 编程助手', icon: <AICodeAssistantIcon />, component: 'AICodeAssistant', category: 'development', defaultWidth: 1400, defaultHeight: 850, minWidth: 1000, minHeight: 650, resizable: true, multiple: false },
-  { id: 'smart-news-reader', name: '智能新闻阅读器', icon: <SmartNewsReaderIcon />, component: 'SmartNewsReader', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'wikipedia-reader', name: '维基百科阅读器', icon: <WikipediaReaderIcon />, component: 'WikipediaReader', category: 'internet', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'advanced-data-viz', name: '高级数据可视化', icon: <AdvancedDataVizIcon />, component: 'AdvancedDataViz', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'dev-assistant', name: '开发助手', icon: <DevAssistantIcon />, component: 'DevAssistant', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'habit-tracker', name: '习惯追踪', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /><circle cx="12" cy="7" r="1" fill="currentColor" /><circle cx="8" cy="14.5" r="1" fill="currentColor" /><circle cx="16" cy="14.5" r="1" fill="currentColor" /></svg>, component: 'HabitTracker', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'code-sandbox', name: '代码沙盒', icon: <CodeSandboxIcon />, component: 'CodeSandbox', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'rest-client', name: 'REST 客户端', icon: <RESTClientIcon />, component: 'RESTClient', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
-  { id: 'ai-chat-assistant', name: 'AI 聊天助手', icon: <AIChatAssistantIcon />, component: 'AIChatAssistant', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'task-manager-pro', name: '专业任务管理', icon: <TaskManagerProIcon />, component: 'TaskManagerPro', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'api-docs-viewer', name: 'API 文档中心', icon: <ApiIcon />, component: 'ApiDocsViewer', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'url-tools', name: 'URL 工具箱', icon: <URLToolsIcon />, component: 'URLTools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'base64-tools', name: 'Base64 工具箱', icon: <Base64ToolsIcon />, component: 'Base64Tools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'recipe-book', name: '食谱大全', icon: <RecipeBookIcon />, component: 'RecipeBook', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
-  { id: 'recipe-lab', name: '食谱实验室', icon: <RecipeBookIcon />, component: 'RecipeLab', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'online-toolkit', name: '在线工具中心', icon: <OnlineToolkitIcon />, component: 'OnlineToolkit', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
-  { id: 'realtime-translator', name: '实时翻译助手', icon: <RealTimeTranslatorIcon />, component: 'RealTimeTranslator', category: 'utilities', defaultWidth: 900, defaultHeight: 800, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'stock-tracker', name: '股票市场追踪器', icon: <StockTrackerIcon />, component: 'StockTracker', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'stock-dashboard', name: '实时股票仪表盘', icon: <StockTrackerIcon />, component: 'StockDashboard', category: 'utilities', defaultWidth: 1100, defaultHeight: 820, minWidth: 850, minHeight: 650, resizable: true, multiple: false, isNew: true, description: '实时股票仪表盘：基于 Stooq API 的实时行情、多股票监控、迷你走势图、市场指数概览、玻璃拟态设计' },
   { id: 'smart-project-hub', name: '智能项目管理', icon: <SmartProjectHubIcon />, component: 'SmartProjectHub', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
@@ -1878,34 +1590,23 @@ export const appRegistry: AppDefinition[] = [
   { id: 'data-exporter', name: '数据导入导出', icon: <DataExporterIcon />, component: 'DataExporter', category: 'system', defaultWidth: 950, defaultHeight: 700, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'code-reviewer', name: '代码审查助手', icon: <CodeReviewIcon />, component: 'CodeReviewer', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'creative-toolkit', name: '创意工具箱', icon: <CreativeToolkitIcon />, component: 'CreativeToolkit', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
-  { id: 'markdown-previewer', name: 'Markdown 预览器', icon: <FileTextIcon />, component: 'MarkdownPreviewer', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 500, resizable: true, multiple: false },
-  { id: 'notes-app', name: '便签应用', icon: <NoteIcon />, component: 'Notes', category: 'office', defaultWidth: 800, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: true },
-  { id: 'clipboard-history', name: '剪贴板管理 (基础版)', icon: <CustomClipboardIcon />, component: 'ClipboardHistory', category: 'utilities', defaultWidth: 700, defaultHeight: 500, minWidth: 500, minHeight: 350, resizable: true, multiple: false },
-  { id: 'password-generator', name: '密码生成器', icon: <LockIcon />, component: 'PasswordGenerator', category: 'utilities', defaultWidth: 500, defaultHeight: 800, minWidth: 400, minHeight: 600, resizable: true, multiple: false },
   { id: 'text-diff', name: '文本比较工具', icon: <DiffIcon />, component: 'TextDiffViewer', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'autoflow', name: 'AutoFlow 工作流', icon: <AutoFlowIcon />, component: 'AutoFlow', category: 'utilities', defaultWidth: 1300, defaultHeight: 800, minWidth: 1000, minHeight: 600, resizable: true, multiple: false },
-  { id: 'focus-mode', name: '专注模式', icon: <FocusIcon />, component: 'FocusMode', category: 'utilities', defaultWidth: 1100, defaultHeight: 750, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
-  { id: 'task-board', name: '任务看板', icon: <BoardIcon />, component: 'TaskBoard', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'idea-capture', name: '灵感速记', icon: <IdeaIcon />, component: 'IdeaCapture', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'code-diff-viewer', name: '代码差异查看器', icon: <DiffIcon />, component: 'CodeDiffViewer', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'image-optimizer', name: '图片优化器', icon: <ImageOptimizeIcon />, component: 'ImageOptimizer', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'network-speed-test', name: '网络速度测试', icon: <SpeedTestIcon />, component: 'NetworkSpeedTest', category: 'utilities', defaultWidth: 600, defaultHeight: 700, minWidth: 500, minHeight: 500, resizable: true, multiple: false },
   { id: 'learning-platform', name: '学习平台', icon: <GraduationCapIcon />, component: 'LearningPlatform', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'crypto-tracker', name: '加密货币追踪器', icon: <CryptoIcon />, component: 'CryptoTracker', category: 'utilities', defaultWidth: 600, defaultHeight: 900, minWidth: 450, minHeight: 600, resizable: true, multiple: false },
   { id: 'country-info', name: '国家信息', icon: <MapPinIcon />, component: 'CountryInfo', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'code-snippets', name: '代码片段管理', icon: <CodeSnippetsIcon />, component: 'CodeSnippetsManager', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 500, resizable: true, multiple: false },
   { id: 'chat-ai', name: 'AI 智能助手', icon: <ChatAIIcon />, component: 'ChatAI', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'ai-chat', name: 'AI 聊天 (基础版)', icon: <ChatIcon />, component: 'AIChat', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'code-studio', name: 'Code Studio', icon: <CodeStudioIcon />, component: 'CodeStudio', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
   { id: 'text-formatter', name: '文本格式化', icon: <TextFormatIcon />, component: 'TextFormatter', category: 'utilities', defaultWidth: 850, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'currency-converter', name: '汇率转换', icon: <CurrencyIcon />, component: 'CurrencyConverter', category: 'utilities', defaultWidth: 850, defaultHeight: 650, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'voice-transcriber', name: '语音转录', icon: <VoiceIcon />, component: 'VoiceTranscriber', category: 'utilities', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'news-reader', name: '新闻阅读器', icon: <NewsIcon />, component: 'NewsReader', category: 'internet', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'github-trending', name: 'GitHub 热门', icon: <GitHubIcon />, component: 'GitHubTrending', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'regex-tester', name: '正则表达式测试', icon: <RegexIcon />, component: 'RegexTester', category: 'development', defaultWidth: 900, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'json-schema-validator', name: 'JSON Schema 验证', icon: <JsonIcon />, component: 'JSONSchemaValidator', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'markdown-to-html', name: 'Markdown 转 HTML', icon: <FileTextIcon />, component: 'MarkdownToHTML', category: 'office', defaultWidth: 1000, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
-  { id: 'task-dashboard', name: '协作任务看板', icon: <TaskIcon />, component: 'TaskDashboard', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'system-dashboard', name: '系统仪表盘', icon: <SystemIcon />, component: 'SystemDashboard', category: 'system', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'task-automation', name: '任务自动化', icon: <AutomationIcon />, component: 'TaskAutomation', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'music-visualizer', name: '音乐可视化', icon: <CustomMusicIcon />, component: 'MusicVisualizer', category: 'multimedia', defaultWidth: 1000, defaultHeight: 750, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
@@ -1915,8 +1616,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'virtual-pet', name: '虚拟宠物', icon: <PetIcon />, component: 'VirtualPet', category: 'games', defaultWidth: 400, defaultHeight: 650, minWidth: 350, minHeight: 550, resizable: true, multiple: false },
   { id: 'wallpaper-gallery', name: '壁纸画廊', icon: <WallpaperIcon />, component: 'WallpaperGallery', category: 'utilities', defaultWidth: 700, defaultHeight: 600, minWidth: 500, minHeight: 450, resizable: true, multiple: false },
   { id: 'mind-map', name: '思维导图', icon: <MindMapIcon />, component: 'MindMap', category: 'office', defaultWidth: 900, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
-  { id: 'pomodoro', name: '番茄工作法', icon: <PomodoroIcon />, component: 'Pomodoro', category: 'utilities', defaultWidth: 500, defaultHeight: 650, minWidth: 400, minHeight: 550, resizable: true, multiple: false },
-  { id: 'pomodoro-timer', name: '番茄钟', icon: <PomodoroIcon />, component: 'PomodoroTimer', category: 'utilities', defaultWidth: 400, defaultHeight: 500, minWidth: 320, minHeight: 400, resizable: true, multiple: false },
   { id: 'smart-search', name: '智慧搜索', icon: <SearchIcon />, component: 'SmartSearch', category: 'utilities', defaultWidth: 700, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
   { id: 'network-explorer', name: '网络探索', icon: <ApiLabIcon />, component: 'NetworkExplorer', category: 'development', defaultWidth: 1100, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'files', name: '文件管理器', icon: <FolderIcon />, component: 'FileManager', category: 'system', defaultWidth: 900, defaultHeight: 600, minWidth: 500, minHeight: 350, resizable: true, multiple: true },
@@ -1940,8 +1639,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'software-center', name: '软件中心', icon: <ShoppingCartIcon />, component: 'SoftwareCenter', category: 'system', defaultWidth: 800, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
   { id: 'disk-usage', name: '磁盘使用分析器', icon: <HardDriveIcon />, component: 'DiskUsage', category: 'system', defaultWidth: 600, defaultHeight: 450, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'task-manager', name: '任务管理器', icon: <ListTodoIcon />, component: 'TaskManager', category: 'system', defaultWidth: 700, defaultHeight: 500, minWidth: 500, minHeight: 350, resizable: true, multiple: false },
-  { id: 'process-monitor', name: '进程监视器', icon: <ServerIcon />, component: 'ProcessMonitor', category: 'system', defaultWidth: 750, defaultHeight: 500, minWidth: 500, minHeight: 350, resizable: true, multiple: false },
-  { id: 'system-task-manager', name: '系统任务管理器 Pro', icon: <ActivityIcon />, component: 'SystemTaskManager', category: 'system', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '增强版系统任务管理器：实时进程监控、窗口进程终止、CPU/内存统计、进程分类筛选、系统资源可视化' },
   { id: 'network-monitor', name: '网络监视器', icon: <WifiIcon />, component: 'NetworkMonitor', category: 'system', defaultWidth: 650, defaultHeight: 450, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'speed-test', name: '网络速度测试', icon: <ActivityIcon />, component: 'SpeedTest', category: 'system', defaultWidth: 800, defaultHeight: 750, minWidth: 650, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '真实网络测速：下载/上传速度测试、延迟测量、历史记录图表、公开测速服务器、结果本地存储' },
   { id: 'firewall', name: '防火墙设置', icon: <ShieldIcon />, component: 'Firewall', category: 'system', defaultWidth: 600, defaultHeight: 450, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
@@ -1950,13 +1647,11 @@ export const appRegistry: AppDefinition[] = [
   { id: 'paint', name: '画图', icon: <PaintIcon />, component: 'Paint', category: 'multimedia', defaultWidth: 850, defaultHeight: 600, minWidth: 500, minHeight: 350, resizable: true, multiple: true },
   { id: 'draw-pad', name: '绘图板', icon: <PaintIcon />, component: 'DrawPad', category: 'multimedia', defaultWidth: 960, defaultHeight: 680, minWidth: 700, minHeight: 500, resizable: true, multiple: true },
   { id: 'code-share', name: '代码分享', icon: <CodeIcon />, component: 'CodeShare', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'snippet-manager', name: '代码片段管理器', icon: <CodeIcon />, component: 'SnippetManager', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '个人代码片段库：预置经典代码、多语言支持、收藏标记、快速搜索、一键复制、JS执行测试、HTML预览' },
   { id: 'spreadsheet', name: '电子表格', icon: <GridIcon />, component: 'Spreadsheet', category: 'office', defaultWidth: 900, defaultHeight: 600, minWidth: 550, minHeight: 350, resizable: true, multiple: true },
   { id: 'presentation', name: '演示文稿', icon: <PresentationIcon />, component: 'Presentation', category: 'office', defaultWidth: 900, defaultHeight: 600, minWidth: 550, minHeight: 350, resizable: true, multiple: true },
   { id: 'email', name: '邮件客户端', icon: <MailIcon />, component: 'Email', category: 'internet', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
   { id: 'chat', name: '即时通讯', icon: <MessageIcon />, component: 'Chat', category: 'internet', defaultWidth: 700, defaultHeight: 550, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'contacts', name: '通讯录', icon: <ContactsIcon />, component: 'Contacts', category: 'office', defaultWidth: 650, defaultHeight: 500, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
-  { id: 'password-manager', name: '密码管理器', icon: <LockIcon />, component: 'PasswordManager', category: 'utilities', defaultWidth: 650, defaultHeight: 500, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'backup-tool', name: '备份工具', icon: <BackupIcon />, component: 'BackupTool', category: 'system', defaultWidth: 550, defaultHeight: 450, minWidth: 400, minHeight: 300, resizable: true, multiple: false },
   { id: 'archive-manager', name: '归档管理器', icon: <ZipIcon />, component: 'ArchiveManager', category: 'utilities', defaultWidth: 600, defaultHeight: 450, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'disk-utility', name: '磁盘工具', icon: <HardDriveIcon />, component: 'DiskUtility', category: 'system', defaultWidth: 600, defaultHeight: 450, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
@@ -1965,7 +1660,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'font-viewer', name: '字体查看器', icon: <TypeIcon />, component: 'FontViewer', category: 'utilities', defaultWidth: 600, defaultHeight: 450, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'web-services', name: 'Web服务工具箱', icon: <CustomGlobeIcon />, component: 'WebServicesToolbox', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'dictionary', name: '字典', icon: <CustomBookIcon />, component: 'Dictionary', category: 'office', defaultWidth: 600, defaultHeight: 500, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
-  { id: 'translator', name: '翻译器', icon: <LanguagesIcon />, component: 'Translator', category: 'office', defaultWidth: 650, defaultHeight: 500, minWidth: 450, minHeight: 350, resizable: true, multiple: false },
   { id: 'maps', name: '地图', icon: <MapPinIcon />, component: 'Maps', category: 'internet', defaultWidth: 800, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
   { id: 'camera', name: '摄像头', icon: <CameraIcon />, component: 'Camera', category: 'multimedia', defaultWidth: 640, defaultHeight: 520, minWidth: 400, minHeight: 350, resizable: true, multiple: false },
   { id: 'screen-recorder', name: '屏幕录制器', icon: <VideoRecorderIcon />, component: 'ScreenRecorder', category: 'multimedia', defaultWidth: 500, defaultHeight: 400, minWidth: 350, minHeight: 300, resizable: true, multiple: false },
@@ -1985,126 +1679,72 @@ export const appRegistry: AppDefinition[] = [
   { id: 'game-2048', name: '2048', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7 7h4v4H7zM13 7h4v4h-4zM7 13h4v4H7zM13 13h4v4h-4z"/></svg>, component: 'Game2048', category: 'games', defaultWidth: 380, defaultHeight: 520, minWidth: 320, minHeight: 450, resizable: false, multiple: false },
   { id: 'game-memory', name: '记忆翻牌', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M9 8H8M13 8H8M9 16H8M13 16H8"/></svg>, component: 'GameMemory', category: 'games', defaultWidth: 550, defaultHeight: 550, minWidth: 400, minHeight: 450, resizable: false, multiple: false },
   { id: 'game-breakout', name: '弹球游戏', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/><circle cx="12" cy="20" r="2"/></svg>, component: 'GameBreakout', category: 'games', defaultWidth: 420, defaultHeight: 560, minWidth: 380, minHeight: 500, resizable: false, multiple: false },
-  { id: 'ai-helper', name: 'AI 助手', icon: <ChatIcon />, component: 'AIHelper', category: 'utilities', defaultWidth: 500, defaultHeight: 600, minWidth: 350, minHeight: 400, resizable: true, multiple: false },
   { id: 'kanban-board', name: '任务看板', icon: <BoardIcon />, component: 'KanbanBoard', category: 'office', defaultWidth: 900, defaultHeight: 600, minWidth: 500, minHeight: 400, resizable: true, multiple: false },
   { id: 'clipboard-manager', name: '剪贴板管理', icon: <CustomClipboardIcon />, component: 'ClipboardManager', category: 'utilities', defaultWidth: 800, defaultHeight: 500, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
   { id: 'quick-commands', name: '快捷命令', icon: <LightningIcon />, component: 'QuickCommands', category: 'utilities', defaultWidth: 850, defaultHeight: 550, minWidth: 600, minHeight: 400, resizable: true, multiple: false },
   { id: 'cloud-sync', name: '云同步', icon: <CloudIcon />, component: 'CloudSync', category: 'utilities', defaultWidth: 700, defaultHeight: 650, minWidth: 500, minHeight: 450, resizable: true, multiple: false },
-  { id: 'code-playground', name: '代码运行器', icon: <GameIcon />, component: 'CodePlayground', category: 'development', defaultWidth: 950, defaultHeight: 650, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'api-tester', name: 'API 测试器', icon: <ApiIcon />, component: 'ApiTester', category: 'development', defaultWidth: 1050, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'data-viz', name: '数据可视化', icon: <ChartIcon />, component: 'DataViz', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'data-visualizer', name: '高级数据可视化', icon: <ChartIcon />, component: 'DataVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'clipboard-manager-advanced', name: '智能剪贴板管理', icon: <CustomClipboardIcon />, component: 'ClipboardManagerAdvanced', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'quick-launcher', name: '快速启动器', icon: <RocketIcon />, component: 'QuickLauncher', category: 'utilities', defaultWidth: 550, defaultHeight: 650, minWidth: 400, minHeight: 450, resizable: true, multiple: false },
   { id: 'activity-tracker', name: '活动追踪器', icon: <ActivityIcon />, component: 'ActivityTracker', category: 'utilities', defaultWidth: 500, defaultHeight: 700, minWidth: 400, minHeight: 500, resizable: true, multiple: false },
-  { id: 'performance-monitor', name: '性能监控', icon: <ZapIcon />, component: 'PerformanceMonitor', category: 'system', defaultWidth: 800, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'project-manager', name: '项目管理', icon: <TaskIcon />, component: 'ProjectManager', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'ip-lookup', name: 'IP & DNS 查询', icon: <CustomGlobeIcon />, component: 'IPLookup', category: 'utilities', defaultWidth: 700, defaultHeight: 550, minWidth: 550, minHeight: 450, resizable: true, multiple: false },
   
   { id: 'system-toolbox', name: '系统工具箱', icon: <WrenchIcon />, component: 'SystemToolbox', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'dev-tools', name: '开发者工具箱', icon: <WrenchIcon />, component: 'DevTools', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'regex-builder', name: '正则表达式构建器', icon: <RegexIcon />, component: 'RegexBuilder', category: 'development', defaultWidth: 900, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   { id: 'ai-generator', name: 'AI文本生成器', icon: <SparklesIcon />, component: 'AIGenerator', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'collaborative-whiteboard', name: '实时协作白板', icon: <WhiteboardIcon />, component: 'CollaborativeWhiteboard', category: 'office', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'password-checker', name: '密码安全中心', icon: <ShieldIcon />, component: 'PasswordChecker', category: 'utilities', defaultWidth: 600, defaultHeight: 800, minWidth: 450, minHeight: 600, resizable: true, multiple: false },
   { id: 'bookmark-manager', name: '网络书签管理', icon: <BookmarkManagerIcon />, component: 'BookmarkManager', category: 'internet', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'code-snippet-share', name: '代码片段分享', icon: <CodeSnippetShareIcon />, component: 'CodeSnippetShare', category: 'development', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'system-health-dashboard', name: '智能系统健康监控', icon: <SystemHealthDashboardIcon />, component: 'SystemHealthDashboard', category: 'system', defaultWidth: 1200, defaultHeight: 900, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'qr-generator-enhanced', name: '增强版二维码生成器', icon: <QRCodeIcon />, component: 'QRGeneratorEnhanced', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'api-tester-enhanced', name: '增强版API测试器', icon: <ApiIcon />, component: 'ApiTesterEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
-  { id: 'password-manager-enhanced', name: '增强版密码管理器', icon: <LockIcon />, component: 'PasswordManagerEnhanced', category: 'utilities', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'code-diff-enhanced', name: '增强版代码差异查看器', icon: <CodeDiffIcon />, component: 'CodeDiffViewerEnhanced', category: 'development', defaultWidth: 1300, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'api-docs-enhanced', name: '增强版API文档查看器', icon: <EnhancedApiDocsIcon />, component: 'ApiDocsViewerEnhanced', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'online-code-runner', name: '在线代码运行器', icon: <OnlineCodeRunnerIcon />, component: 'OnlineCodeRunner', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'web-tools-hub', name: 'Web工具中心', icon: <WebToolsHubIcon />, component: 'WebToolsHub', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'ai-assistant-pro', name: 'AI智能助手Pro', icon: <AIAssistantProIcon />, component: 'AIAssistantPro', category: 'utilities', defaultWidth: 850, defaultHeight: 700, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
-  { id: 'ai-smart-assistant', name: 'AI智能对话助手', icon: <AISmartAssistantIcon />, component: 'AISmartAssistant', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'notes-app-pro', name: '专业笔记应用', icon: <NotesAppIcon />, component: 'NotesApp', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'system-health-dashboard-enhanced', name: '增强版系统健康监控', icon: <SystemHealthDashboardIcon />, component: 'SystemHealthDashboardEnhanced', category: 'system', defaultWidth: 1200, defaultHeight: 900, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'code-collaboration-hub', name: '代码协作中心', icon: <CodeStudioIcon />, component: 'CodeCollaborationHub', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'api-tester-pro', name: 'API测试器Pro', icon: <ApiIcon />, component: 'APITesterPro', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'api-testing-pro', name: 'API测试专业版', icon: <ApiIcon />, component: 'APITestingPro', category: 'development', defaultWidth: 1200, defaultHeight: 820, minWidth: 900, minHeight: 620, resizable: true, multiple: false, isNew: true, description: '专业级API测试工具：完整HTTP方法支持、请求头管理、JSON验证、响应高亮、请求历史、代码片段生成、环境变量、集合导入导出' },
-  { id: 'productivity-hub', name: '生产力中心', icon: <ListTodoIcon />, component: 'ProductivityHub', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
 
-  { id: 'smart-hub', name: '智能聚合面板', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/></svg>, component: 'SmartHub', category: 'utilities', defaultWidth: 1350, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'utility-center', name: '实用工具中心', icon: <WrenchIcon />, component: 'UtilityCenter', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'currency-live', name: '实时汇率', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, component: 'CurrencyLive', category: 'utilities', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'dns-lookup', name: 'DNS 查询工具', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, component: 'DnsLookup', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   { id: 'hacker-news-reader', name: 'Hacker News 阅读', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7l2 5 2-5M10 13h2"/></svg>, component: 'HackerNewsReader', category: 'internet', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'uuid-tools', name: 'UUID 工具', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg>, component: 'UuidTools', category: 'development', defaultWidth: 800, defaultHeight: 650, minWidth: 500, minHeight: 450, resizable: true, multiple: false },
   { id: 'emoji-browser', name: '表情浏览器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>, component: 'EmojiBrowser', category: 'utilities', defaultWidth: 800, defaultHeight: 700, minWidth: 550, minHeight: 450, resizable: true, multiple: false },
-  { id: 'system-status-dashboard', name: '系统状态仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>, component: 'SystemStatusDashboard', category: 'system', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
-  { id: 'web-dev-toolkit', name: 'Web开发工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, component: 'WebDevToolkit', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'air-quality-monitor', name: '空气质量监测', icon: <AirQualityIcon />, component: 'AirQualityMonitor', category: 'utilities', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
   { id: 'devops-tools', name: 'DevOps 工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/><line x1="7.5" y1="12.5" x2="11.5" y2="16.5"/><line x1="15.5" y1="4.5" x2="19.5" y2="8.5"/></svg>, component: 'DevOpsTools', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 780, minHeight: 550, resizable: true, multiple: false },
   { id: 'chinese-poetry', name: '中国古诗词', icon: <ChinesePoetryIcon />, component: 'ChinesePoetry', category: 'utilities', defaultWidth: 1000, defaultHeight: 800, minWidth: 680, minHeight: 500, resizable: true, multiple: false },
   { id: 'rss-reader', name: 'RSS 订阅阅读器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="6" cy="18" r="2" fill="currentColor" stroke="none"/><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/></svg>, component: 'RSSReader', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 760, minHeight: 540, resizable: true, multiple: false },
   { id: 'space-explorer', name: '宇宙探索', icon: <SpaceExplorerIcon />, component: 'SpaceExplorer', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
-  { id: 'code-interpreter', name: 'AI代码解释器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><circle cx="12" cy="12" r="3"/><path d="M12 9v6"/></svg>, component: 'CodeInterpreter', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'smart-schedule', name: '智能日程助手', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>, component: 'SmartScheduleAssistant', category: 'office', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'online-api-hub', name: '在线API工具中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M12 6v12M6 12h12"/></svg>, component: 'OnlineAPIHub', category: 'utilities', defaultWidth: 1000, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   { id: 'system-assistant', name: '系统助手', icon: <SystemAssistantIcon />, component: 'SystemAssistant', category: 'system', defaultWidth: 900, defaultHeight: 700, minWidth: 650, minHeight: 500, resizable: true, multiple: false },
   { id: 'knowledge-cards', name: '知识卡片记忆', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="17" x2="22" y2="17"/><line x1="8" y1="21" x2="16" y2="21"/><circle cx="12" cy="10" r="2" fill="currentColor" stroke="none"/></svg>, component: 'KnowledgeCards', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 750, minHeight: 550, resizable: true, multiple: false },
-  { id: 'space-explorer-pro', name: '太空探索专业版', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2a10 10 0 0 1 0 20M2 12h20"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>, component: 'SpaceExplorerPro', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 850, minHeight: 650, resizable: true, multiple: false },
   { id: 'css-toolbox', name: 'CSS 工具箱', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M4 4h16l-2 16H6L4 4z"/><path d="M8 10h8M8 14h8"/></svg>, component: 'CSSToolbox', category: 'development', defaultWidth: 1250, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'quick-notes-pro', name: '便签专业版', icon: <QuickNotesProIcon />, component: 'QuickNotesPro', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
-  { id: 'dev-toolbox-pro', name: '开发者工具箱Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/><line x1="7.5" y1="12.5" x2="11.5" y2="16.5"/><line x1="15.5" y1="4.5" x2="19.5" y2="8.5"/></svg>, component: 'DevToolboxPro', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },
   { id: 'markdown-editor-pro', name: 'Markdown编辑器Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>, component: 'MarkdownEditorPro', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'system-monitor-pro', name: '系统监视器Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 17h20M8 21h8"/></svg>, component: 'SystemMonitorPro', category: 'system', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'pomodoro-pro', name: '番茄钟Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 22c5 0 9-4 9-9V9H3v4c0 5 4 9 9 9z"/><path d="M18 2l-3 3M22 5l-3 3M12 2v5M8 2v5"/><circle cx="12" cy="15" r="3"/></svg>, component: 'PomodoroPro', category: 'utilities', defaultWidth: 500, defaultHeight: 650, minWidth: 400, minHeight: 500, resizable: true, multiple: false },
-  // === 新增创新应用 ===
-  { id: 'ai-programming-assistant-pro', name: 'AI编程助手Pro', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 9h8M8 13h6"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4"/></svg>, component: 'AIProgrammingAssistantPro', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'realtime-data-dashboard', name: '实时数据仪表板', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/><rect x="7" y="11" width="3" height="6" fill="currentColor" stroke="none"/><rect x="11" y="13" width="3" height="4" fill="currentColor" stroke="none"/><rect x="15" y="10" width="3" height="7" fill="currentColor" stroke="none"/></svg>, component: 'RealTimeDataDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'collaborative-whiteboard-enhanced', name: '在线协作白板', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/><path d="M7 13l3 3 4-6 3 3"/></svg>, component: 'CollaborativeWhiteboardEnhanced', category: 'office', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // === v3.2.0 新增安全与设计工具 ===
   { id: 'jwt-decoder', name: 'JWT 解码与验证', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>, component: 'JwtDecoder', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'color-palette-extractor', name: '配色方案提取器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="10" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>, component: 'ColorPaletteExtractor', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'password-strength', name: '密码强度分析', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>, component: 'PasswordStrength', category: 'utilities', defaultWidth: 950, defaultHeight: 800, minWidth: 700, minHeight: 600, resizable: true, multiple: false },
   // === v5.0.0 新增创新工具应用 ===
-  { id: 'network-toolkit', name: '网络工具站', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'NetworkToolkit', category: 'utilities', defaultWidth: 950, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
-  { id: 'codelab', name: '代码实验室', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9 3v2H5v14h14V5h-4V3H9zm2 4h2v2h-2V7zm-4 4h10v2H7v-2zm0 4h10v2H7v-2z"/></svg>, component: 'CodeLab', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'smart-code-assistant', name: '智能代码助手', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 10h8M8 14h6"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M3 12l4 4M21 12l-4 4"/></svg>, component: 'SmartCodeAssistant', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   // === v6.4.0 新增知识管理与内容收藏应用 ===
   { id: 'knowledge-garden', name: '知识花园', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>, component: 'KnowledgeGarden', category: 'office', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   { id: 'web-clipper', name: '网页剪藏', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>, component: 'WebClipper', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false },
   // === v7.0.0 新增AI智能中心与实用工具聚合 ===
-  { id: 'ai-smart-hub', name: 'AI智能中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>, component: 'AISmartHub', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
-  { id: 'utility-hub', name: '实用工具聚合中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/></svg>, component: 'UtilityHub', category: 'utilities', defaultWidth: 1300, defaultHeight: 850, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  { id: 'api-playbook', name: 'API演练场', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>, component: 'APIPlaybook', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false },
   { id: 'icon-gallery', name: '图标画廊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, component: 'IconGallery', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   
   { id: 'api-explorer', name: 'API探索器', icon: <ApiIcon />, component: 'APIExplorer', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false },
   // === v8.0.0 新增创新应用 ===
-  { id: 'dev-hub', name: '开发者工具中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="17" cy="17" r="2" fill="currentColor"/></svg>, component: 'DevHub', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
-  { id: 'ai-assistant-enhanced', name: 'AI智能助手增强版', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M12 2v4M12 18v4"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>, component: 'AIAssistantEnhanced', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'api-explorer-enhanced', name: '公开API探索器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M12 6v12M6 12h12"/></svg>, component: 'APIExplorerEnhanced', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // === v8.1.0 新增公共 API 集成应用 ===
-  { id: 'astro-daily', name: '天文每日', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>, component: 'AstroDaily', category: 'internet', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'reading-list', name: '阅读清单', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>, component: 'ReadingList', category: 'office', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   { id: 'github-profile', name: 'GitHub 资料', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>, component: 'GitHubProfile', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
   // === v8.2.0 新增实用工具 ===
   { id: 'hash-generator', name: 'Hash 生成器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>, component: 'HashGenerator', category: 'development', defaultWidth: 800, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
   // === v9.0.0 新增创新应用 ===
-  { id: 'ai-code-analyzer', name: 'AI代码分析器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 9h8M8 13h6"/><path d="M12 6v3M12 15v3"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M9 19l3-3 3 3"/></svg>, component: 'AICodeAnalyzer', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   { id: 'network-status-dashboard', name: '网络状态仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M6 8l6 4M12 12l6-4"/></svg>, component: 'NetworkStatusDashboard', category: 'system', defaultWidth: 1100, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false },
   // === v9.2.0 新增工作流自动化应用 ===
   { id: 'workflow-automation', name: '工作流自动化', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4"/></svg>, component: 'WorkflowAutomation', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // === v10.0.0 新增创新协作与监控工具 ===
   { id: 'markdown-collaborator', name: '实时Markdown协作编辑器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/><circle cx="18" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="6" cy="18" r="3" fill="currentColor" stroke="none"/></svg>, component: 'MarkdownCollaborator', category: 'office', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
   { id: 'api-health-monitor', name: 'API健康监控中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M8 10l4 2 4-2"/><path d="M12 14v4"/></svg>, component: 'APIHealthMonitor', category: 'utilities', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  { id: 'code-snippet-hub', name: '代码片段分享中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><path d="M12 2v4M12 18v4"/></svg>, component: 'CodeSnippetHub', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  // === v11.0.0 新增创新生产力与学习工具 ===
-  { id: 'time-management-master', name: '时间管理大师', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><rect x="3" y="3" width="6" height="6" rx="1" fill="currentColor" stroke="none"/><rect x="15" y="15" width="6" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M6 8h3M15 17h3"/></svg>, component: 'TimeManagementMaster', category: 'office', defaultWidth: 1300, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  { id: 'ai-learning-companion', name: 'AI学习伴侣', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/><path d="M2 7l4 5-4 5"/><path d="M22 7l-4 5 4 5"/><rect x="6" y="4" width="12" height="3" rx="1" fill="currentColor" stroke="none"/></svg>, component: 'AILearningCompanion', category: 'utilities', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'creative-inspiration-workshop', name: '创意灵感工坊', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/><path d="M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>, component: 'CreativeInspirationWorkshop', category: 'utilities', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false },
-  { id: 'dev-ecosystem', name: '开发者生态系统', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 9V5M12 15v4M9 12H5M15 12h4"/><path d="M7 7l3 3M14 14l3 3M7 17l3-3M14 10l3-3"/></svg>, component: 'DevEcosystem', category: 'development', defaultWidth: 1400, defaultHeight: 900, minWidth: 1000, minHeight: 700, resizable: true, multiple: false },
-  // === v12.1.0 新增实用工具箱 ===
-  { id: 'utility-toolkit', name: '实用工具箱', icon: <WrenchIcon />, component: 'UtilityToolkit', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
+  // === v10.0.0 新增创新协作与监控工具 ===
   // === v13.0.0 新增创新应用 ===
   { id: 'code-interview-prep', name: '编程面试准备', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/><path d="M14 4l-4 16"/></svg>, component: 'CodeInterviewPrep', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  { id: 'api-playground', name: 'API游乐场', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="3"/></svg>, component: 'APIPlayground', category: 'development', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   // === v14.0 新增实用工具应用 ===
-  { id: 'smart-overview', name: '智能概览', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/></svg>, component: 'SmartOverview', category: 'system', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   // === v15.0 新增创新应用 ===
   { id: 'web-ide', name: 'WebIDE 在线开发环境', icon: <Code2Icon />, component: 'WebIDE', category: 'development', defaultWidth: 1300, defaultHeight: 900, minWidth: 950, minHeight: 700, resizable: true, multiple: false },
   { id: 'global-search', name: '全局搜索中心', icon: <SearchIcon />, component: 'GlobalSearch', category: 'utilities', defaultWidth: 1000, defaultHeight: 750, minWidth: 750, minHeight: 550, resizable: true, multiple: false },
@@ -2112,13 +1752,7 @@ export const appRegistry: AppDefinition[] = [
   // === v19.0 新增实时全球情报仪表盘（集成多个免费公开 API） ===
   { id: 'world-pulse', name: 'WorldPulse 全球脉搏', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg>, component: 'WorldPulse', category: 'internet', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false },
   // === v20.0 新增智能综合仪表盘 ===
-  { id: 'intelligent-dashboard', name: '智能综合仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/><rect x="5" y="11" width="4" height="6" fill="currentColor" stroke="none"/><rect x="10" y="13" width="4" height="4" fill="currentColor" stroke="none"/><rect x="15" y="11" width="4" height="6" fill="currentColor" stroke="none"/><circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none"/></svg>, component: 'IntelligentDashboard', category: 'utilities', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false },
-  // === v21.0 新增生产力中心 ===
-  { id: 'productivity-center', name: '生产力中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>, component: 'ProductivityCenter', category: 'office', defaultWidth: 900, defaultHeight: 750, minWidth: 650, minHeight: 550, resizable: true, multiple: false },
-  // === v22.0 新增知识探索中心 ===
-  { id: 'knowledge-explorer', name: '知识探索中心', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><circle cx="12" cy="12" r="3"/></svg>, component: 'KnowledgeExplorer', category: 'internet', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   // === v24.0 新增AI助手Ultra（增强版智能助手）===
-  { id: 'ai-assistant-ultra', name: 'AI智能助手 Ultra', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" stroke="none"/></svg>, component: 'AIAssistantUltra', category: 'utilities', defaultWidth: 950, defaultHeight: 750, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
   // === v25.0 新增灵感流 - 快速捕捉想法与灵感 ===
   { id: 'idea-stream', name: '灵感流', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/><path d="M12 6v6M9 9l3 3 3-3"/></svg>, component: 'IdeaStream', category: 'office', defaultWidth: 820, defaultHeight: 720, minWidth: 560, minHeight: 480, resizable: true, multiple: false },
   // === v27.0 新增创新应用 - NexusAI 智能中枢与 DevForge 开发者锻造台 ===
@@ -2126,10 +1760,7 @@ export const appRegistry: AppDefinition[] = [
   { id: 'dev-forge', name: 'DevForge 开发者锻造台', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, component: 'DevForge', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   // === v29.0 新增核心实用工具 ===
   { id: 'live-info-center', name: '实时信息中心', icon: <ActivityIcon />, component: 'LiveInfoCenter', category: 'internet', defaultWidth: 1200, defaultHeight: 850, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
-  // === v30.0 新增实时协作文档编辑器 ===
-  { id: 'realtime-doc-editor', name: '实时协作文档编辑器', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2"/></svg>, component: 'RealtimeDocumentEditor', category: 'office', defaultWidth: 1300, defaultHeight: 900, minWidth: 900, minHeight: 650, resizable: true, multiple: false },
   // === v33.0 新增创新实用工具 ===
-  { id: 'dev-console', name: 'DevConsole 开发者控制台', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>, component: 'DevConsole', category: 'development', defaultWidth: 1000, defaultHeight: 700, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'live-dashboard', name: 'Live Dashboard 实时仪表板', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/><path d="M7 14l2 2 3-4"/></svg>, component: 'LiveDashboard', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false },
   // === v33.0 新增实时数据中心（集成真实公开API） ===
   { id: 'live-data-hub', name: '实时数据中心', icon: <ActivityIcon />, component: 'LiveDataHub', category: 'internet', defaultWidth: 950, defaultHeight: 780, minWidth: 700, minHeight: 550, resizable: true, multiple: false },
@@ -2139,7 +1770,6 @@ export const appRegistry: AppDefinition[] = [
   { id: 'github-trending-app', name: 'GitHub 趋势', icon: <GitHubIcon />, component: 'GitHubTrendingApp', category: 'development', defaultWidth: 1000, defaultHeight: 750, minWidth: 700, minHeight: 500, resizable: true, multiple: false },
   { id: 'css-gradient', name: 'CSS 渐变工作室', icon: <PaletteIcon />, component: 'CssGradientStudio', category: 'development', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
   { id: 'git-cheatsheet', name: 'Git 命令速查', icon: <Code2Icon />, component: 'GitCheatsheet', category: 'development', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false },
-  { id: 'pomodoro-studio', name: 'Pomodoro Studio', icon: <PomodoroIcon />, component: 'PomodoroStudio', category: 'office', defaultWidth: 1100, defaultHeight: 720, minWidth: 800, minHeight: 540, resizable: true, multiple: false },
   // 注：APIHealthMonitor 已以 api-health-monitor 注册（utilities），此处移除重复的 api-health 条目
   { id: 'activity-heatmap', name: '活动热力图', icon: <ActivityIcon />, component: 'ActivityHeatmap', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 450, resizable: true, multiple: false },
   { id: 'regex-visualizer', name: '正则表达式可视化', icon: <Code2Icon />, component: 'RegexVisualizer', category: 'development', defaultWidth: 1100, defaultHeight: 750, minWidth: 800, minHeight: 550, resizable: true, multiple: false },

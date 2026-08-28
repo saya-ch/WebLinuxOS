@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
       minify: isProduction ? 'terser' : false,
       cssMinify: isProduction,
       target: 'es2022',
-      chunkSizeWarningLimit: 3000,
+      chunkSizeWarningLimit: 1000,
       reportCompressedSize: false,
       modulePreload: {
         polyfill: false,

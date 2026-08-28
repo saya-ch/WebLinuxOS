@@ -40,7 +40,7 @@ interface SystemInfo {
   webGL: boolean
   webGL2: boolean
   wasm: boolean
-  webAssembly: boolean
+  sharedArrayBuffer: boolean
   crypto: boolean
   webRTC: boolean
   webAudio: boolean
@@ -100,7 +100,7 @@ function getSystemInfo(): SystemInfo {
     webGL,
     webGL2,
     wasm: typeof WebAssembly !== 'undefined',
-    webAssembly: typeof win.SharedArrayBuffer !== 'undefined',
+    sharedArrayBuffer: typeof win.SharedArrayBuffer !== 'undefined',
     crypto: !!crypto?.subtle,
     webRTC: typeof RTCPeerConnection !== 'undefined',
     webAudio: typeof AudioContext !== 'undefined' || typeof (window as Window & { webkitAudioContext?: typeof AudioContext}).webkitAudioContext !== 'undefined',
@@ -549,8 +549,8 @@ const SystemInfoPro = () => {
               <h3>核心 Web API</h3>
               <FeatureRow label="WebGL" available={info.webGL} description="3D 图形渲染" />
               <FeatureRow label="WebGL 2" available={info.webGL2} description="增强 3D 渲染" />
-              <FeatureRow label="WebAssembly" available={info.webAssembly} description="高性能代码执行" />
-              <FeatureRow label="SharedArrayBuffer" available={info.webAssembly} description="多线程内存共享" />
+              <FeatureRow label="WebAssembly" available={info.wasm} description="高性能代码执行" />
+              <FeatureRow label="SharedArrayBuffer" available={info.sharedArrayBuffer} description="多线程内存共享" />
               <FeatureRow label="Web Crypto" available={info.crypto} description="加密与哈希" />
               <FeatureRow label="WebRTC" available={info.webRTC} description="实时通信" />
             </div>

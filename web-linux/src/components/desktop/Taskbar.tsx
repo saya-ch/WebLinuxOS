@@ -97,28 +97,31 @@ const WindowContextMenu = memo(function WindowContextMenu({
 
   return (
     <div style={style} onClick={(e) => e.stopPropagation()}>
-      <div
-        style={itemStyle}
-        {...hoverHandlers}
-        onClick={() => {
-          restoreWindow(winId)
-          onClose()
-        }}
-      >
-        <span><RefreshCwIcon size={14} /></span>
-        <span>还原</span>
-      </div>
-      <div
-        style={itemStyle}
-        {...hoverHandlers}
-        onClick={() => {
-          minimizeWindow(winId)
-          onClose()
-        }}
-      >
-        <span><MinusIcon size={14} /></span>
-        <span>最小化</span>
-      </div>
+      {win?.minimized ? (
+        <div
+          style={itemStyle}
+          {...hoverHandlers}
+          onClick={() => {
+            restoreWindow(winId)
+            onClose()
+          }}
+        >
+          <span><RefreshCwIcon size={14} /></span>
+          <span>还原</span>
+        </div>
+      ) : (
+        <div
+          style={itemStyle}
+          {...hoverHandlers}
+          onClick={() => {
+            minimizeWindow(winId)
+            onClose()
+          }}
+        >
+          <span><MinusIcon size={14} /></span>
+          <span>最小化</span>
+        </div>
+      )}
       <div
         style={itemStyle}
         {...hoverHandlers}
@@ -128,7 +131,7 @@ const WindowContextMenu = memo(function WindowContextMenu({
         }}
       >
         <span><SquareIcon size={14} /></span>
-        <span>{win?.maximized ? '还原' : '最大化'}</span>
+        <span>{win?.maximized ? '还原大小' : '最大化'}</span>
       </div>
       <div
         style={{ ...itemStyle, color: '#ff6b6b' }}

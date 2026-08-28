@@ -306,8 +306,6 @@ const Desktop = memo(function Desktop() {
   const updateDesktopIconPosition = useStore((s) => s.updateDesktopIconPosition)
 
   const [selectedIconId, setSelectedIconId] = useState<string | null>(null)
-  const [showSplash, setShowSplash] = useState(true)
-  const [splashPhase, setSplashPhase] = useState(0)
   // 开机动画：图标交错淡入
   const [booted, setBooted] = useState(false)
   // 桌面小部件总开关与单项可见性，持久化到 localStorage
@@ -486,24 +484,10 @@ const Desktop = memo(function Desktop() {
     }
   }, [])
 
-  // 开机动画：分阶段切换启动状态文本
+  // 桌面就绪后立即标记 booted，让图标交错入场动画立即开始
   useEffect(() => {
-    const t1 = setTimeout(() => setSplashPhase(1), 800)
-    const t2 = setTimeout(() => setSplashPhase(2), 1600)
-    const t3 = setTimeout(() => setSplashPhase(3), 2400)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
-    }
-  }, [])
-
-  // 3秒后关闭开机动画并标记启动完成
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false)
-      setBooted(true)
-    }, 3000)
+    // 延迟极短时间确保 DOM 已渲染，然后触发图标入场动画
+    const timer = setTimeout(() => setBooted(true), 50)
     return () => clearTimeout(timer)
   }, [])
 
@@ -666,47 +650,6 @@ const Desktop = memo(function Desktop() {
           'radial-gradient(ellipse at 50% 50%, rgba(255, 107, 107, 0.12) 0%, transparent 60%), ' +
           'linear-gradient(135deg, #0a0a18 0%, #161630 30%, #0f0f23 70%, #161630 100%)'
       }
-
-  if (showSplash) {
-    return (
-      <div className="splash-screen">
-        <div className="splash-screen-orb">
-          <div className="splash-screen-orb-1" />
-          <div className="splash-screen-orb-2" />
-          <div className="splash-screen-orb-3" />
-          <div className="splash-screen-orb-4" />
-        </div>
-        
-        <div className="splash-logo">
-          <TerminalIcon size={48} />
-        </div>
-        <div className="splash-title">
-          WebLinuxOS
-        </div>
-        <div className="splash-subtitle">
-          Web-Based Linux Desktop Environment
-        </div>
-        <div className="splash-version" style={{
-          fontSize: '13px',
-          color: 'rgba(139, 124, 240, 0.7)',
-          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-          marginBottom: '24px',
-          letterSpacing: '0.5px',
-        }}>
-          v{__APP_VERSION__}
-        </div>
-        <div className="splash-status">
-          {splashPhase === 0 && 'Initializing kernel modules...'}
-          {splashPhase === 1 && 'Loading desktop environment...'}
-          {splashPhase === 2 && 'Starting window manager...'}
-          {splashPhase === 3 && 'Welcome to WebLinuxOS'}
-        </div>
-        <div className="splash-progress-container">
-          <div className="splash-progress-bar" />
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div

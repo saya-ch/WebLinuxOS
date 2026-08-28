@@ -95,7 +95,7 @@ function BootAnimation({ onComplete }: BootAnimationProps) {
     setTimeout(() => {
       setShowContent(false)
       onComplete()
-    }, 600)
+    }, 700)
   }, [onComplete])
 
   useEffect(() => {
@@ -261,17 +261,24 @@ function BootAnimation({ onComplete }: BootAnimationProps) {
         }
 
         .boot-overlay.fading {
-          animation: bootFadeOut 0.6s ease-out forwards;
+          animation: bootFadeOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
         @keyframes bootFadeOut {
           0% {
             opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+          40% {
+            opacity: 0.8;
+            transform: scale(1.02);
             filter: blur(0px);
           }
           100% {
             opacity: 0;
-            filter: blur(10px);
+            transform: scale(1.05);
+            filter: blur(6px);
             visibility: hidden;
             pointer-events: none;
           }
@@ -333,15 +340,15 @@ function BootAnimation({ onComplete }: BootAnimationProps) {
           flex-direction: column;
           align-items: center;
           gap: 28px;
-          animation: bootSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: bootSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
           z-index: 1;
         }
 
         @keyframes bootSlideUp {
           from {
             opacity: 0;
-            transform: translateY(40px) scale(0.95);
-            filter: blur(10px);
+            transform: translateY(50px) scale(0.92);
+            filter: blur(12px);
           }
           to {
             opacity: 1;

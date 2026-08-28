@@ -205,11 +205,9 @@ function RootApp() {
   // 启动动画完成后，平滑过渡到主应用
   const handleBootComplete = useCallback(() => {
     setBootComplete(true)
-    // 使用 requestAnimationFrame 确保 DOM 更新后再触发过渡
+    // 单次 rAF 后立即标记 ready，让 CSS 过渡自然衔接
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setAppReady(true)
-      })
+      setAppReady(true)
     })
   }, [])
 
