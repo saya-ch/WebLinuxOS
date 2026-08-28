@@ -49,7 +49,7 @@ function getCanvasFingerprint(): string {
 function getWebGLInfo(): { vendor: string; renderer: string } {
   try {
     const canvas = document.createElement('canvas')
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null
     if (!gl) return { vendor: '不可用', renderer: '不可用' }
     const ext = gl.getExtension('WEBGL_debug_renderer_info')
     if (!ext) {
@@ -69,9 +69,9 @@ function getWebGLInfo(): { vendor: string; renderer: string } {
 
 function getAudioFingerprint(): string {
   try {
-    const AC = window.AudioContext || (window as Record<string, unknown>)['webkitAudioContext'] as typeof AudioContext | undefined
-    if (!AC) return '不可用'
-    const ctx = new AC()
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+    if (!AudioCtx) return '不可用'
+    const ctx = new AudioCtx()
     const osc = ctx.createOscillator()
     const analyser = ctx.createAnalyser()
     const gain = ctx.createGain()
@@ -173,9 +173,9 @@ export default function BrowserFingerprint() {
       const canvasFp = getCanvasFingerprint()
       const audioFp = getAudioFingerprint()
 
-      const hasWekbit = typeof window.webkitMediaDevices !== 'undefined'
-      const hasWebBluetooth = typeof navigator.bluetooth !== 'undefined'
-      const hasWebUSB = typeof navigator.usb !== 'undefined'
+      const hasWekbit = typeof (window as unknown as { webkitMediaDevices?: unknown }).webkitMediaDevices !== 'undefined'
+      const hasWebBluetooth = typeof (navigator as unknown as { bluetooth?: unknown }).bluetooth !== 'undefined'
+      const hasWebUSB = typeof (navigator as unknown as { usb?: unknown }).usb !== 'undefined'
       const hasWebGPU = typeof navigator.gpu !== 'undefined'
       const hasServiceWorker = 'serviceWorker' in navigator
       const hasIndexedDB = typeof indexedDB !== 'undefined'
@@ -187,13 +187,11 @@ export default function BrowserFingerprint() {
       try { localStorageCount = localStorage.length } catch { /* ignore */ }
       try { sessionStorageCount = sessionStorage.length } catch { /* ignore */ }
 
-      const perfMemory = (performance as Record<string, unknown>)['memory'] as { jsHeapSizeLimit?: number } | undefined
+      const perfMemory = (performance as unknown as { memory?: { jsHeapSizeLimit?: number } }).memory
       const jsHeapSizeLimit = perfMemory?.jsHeapSizeLimit
 
       const hwConcurrency = navigator.hardwareConcurrency || 0
-      const deviceMemory = (navigator as Record<string, unknown>)['deviceMemory'] as number | undefined
-
-      const webglInfo = getWebGLInfo()
+      const deviceMemory = (navigator as unknown as { deviceMemory?: number }).deviceMemory
 
       const sections: FingerprintSection[] = [
         {
@@ -467,10 +465,9 @@ export default function BrowserFingerprint() {
                               <span style={{ fontWeight: 500, color: 'var(--text-primary, #e0e0e8)' }}>{item.label}</span>
                             </div>
                             <div style={{
-                              fontSize: 12, color: 'var(--text-secondary, #a0a0c8)',
+                              fontSize: item.value.length > 30 ? 11 : 12, color: 'var(--text-secondary, #a0a0c8)',
                               wordBreak: 'break-all', lineHeight: 1.5,
                               fontFamily: item.value.length > 30 ? 'monospace' : 'inherit',
-                              fontSize: item.value.length > 30 ? 11 : 12,
                             }}>
                               {item.value}
                             </div>

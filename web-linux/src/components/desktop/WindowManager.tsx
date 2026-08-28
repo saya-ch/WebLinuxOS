@@ -19,7 +19,6 @@ interface WindowComponent {
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
   // v135 新增应用
   BrowserFingerprint: () => import('../../apps/BrowserFingerprint'),
-  LocalStorageInspector: () => import('../../apps/LocalStorageInspector'),
   // v134 新增应用
   SystemHealthMonitor: () => import('../../apps/SystemHealthMonitor'),
   // v132 新增应用
