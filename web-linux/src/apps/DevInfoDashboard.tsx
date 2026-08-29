@@ -220,9 +220,7 @@ export default function DevInfoDashboard() {
       fpsRef.current.count++
       const now = performance.now()
       if (now - fpsRef.current.lastTime >= 1000) {
-        const val = Math.round((fpsRef.current.count * 1000) / (now - fpsRef.current.lastTime))
-        fpsValueRef.current = val
-        setFps(val)
+        fpsValueRef.current = Math.round((fpsRef.current.count * 1000) / (now - fpsRef.current.lastTime))
         fpsRef.current.count = 0
         fpsRef.current.lastTime = now
       }
