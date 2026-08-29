@@ -257,6 +257,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   IntelligentCodeGenerator: () => import('../../apps/IntelligentCodeGenerator'),
   IntelligentDashboard: () => import('../../apps/IntelligentDashboard'),
   IPLookup: () => import('../../apps/IPLookup'),
+  IPInfoDashboard: () => import('../../apps/IPInfoDashboard'),
   JSONSchemaValidator: () => import('../../apps/JSONSchemaValidator'),
   JSONYAMLConverter: () => import('../../apps/JSONYAMLConverter'),
   JwtDecoder: () => import('../../apps/JwtDecoder'),

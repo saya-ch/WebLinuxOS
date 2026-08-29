@@ -1,689 +1,657 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import {
   Globe,
-  Plus,
-  Trash2,
-  GripVertical,
   Clock,
-  Calendar,
+  Search,
+  Plus,
+  X,
+  ArrowRightLeft,
+  MapPin,
   Sun,
   Moon,
-  X,
-  Check,
-  MapPin,
-  Sunrise,
-  Sunset,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react'
 
-interface CityClock {
+// ── 数据定义 ──────────────────────────────────────────────
+
+interface CityEntry {
   id: string
   city: string
+  country: string
   timezone: string
+  emoji: string
   custom?: boolean
 }
 
-const DEFAULT_CITIES: CityClock[] = [
-  { id: 'beijing', city: '北京', timezone: 'Asia/Shanghai' },
-  { id: 'tokyo', city: '东京', timezone: 'Asia/Tokyo' },
-  { id: 'newyork', city: '纽约', timezone: 'America/New_York' },
-  { id: 'london', city: '伦敦', timezone: 'Europe/London' },
-  { id: 'paris', city: '巴黎', timezone: 'Europe/Paris' },
-  { id: 'sydney', city: '悉尼', timezone: 'Australia/Sydney' },
+const DEFAULT_CITIES: CityEntry[] = [
+  { id: 'newyork', city: 'New York', country: 'USA', timezone: 'America/New_York', emoji: '🗽' },
+  { id: 'london', city: 'London', country: 'UK', timezone: 'Europe/London', emoji: '🇬🇧' },
+  { id: 'tokyo', city: 'Tokyo', country: 'Japan', timezone: 'Asia/Tokyo', emoji: '🗼' },
+  { id: 'shanghai', city: 'Shanghai', country: 'China', timezone: 'Asia/Shanghai', emoji: '🇨🇳' },
+  { id: 'paris', city: 'Paris', country: 'France', timezone: 'Europe/Paris', emoji: '🗼' },
+  { id: 'sydney', city: 'Sydney', country: 'Australia', timezone: 'Australia/Sydney', emoji: '🦘' },
+  { id: 'dubai', city: 'Dubai', country: 'UAE', timezone: 'Asia/Dubai', emoji: '🏙️' },
+  { id: 'mumbai', city: 'Mumbai', country: 'India', timezone: 'Asia/Kolkata', emoji: '🇮🇳' },
+  { id: 'saopaulo', city: 'São Paulo', country: 'Brazil', timezone: 'America/Sao_Paulo', emoji: '🇧🇷' },
+  { id: 'losangeles', city: 'Los Angeles', country: 'USA', timezone: 'America/Los_Angeles', emoji: '🌴' },
+  { id: 'singapore', city: 'Singapore', country: 'Singapore', timezone: 'Asia/Singapore', emoji: '🇸🇬' },
+  { id: 'berlin', city: 'Berlin', country: 'Germany', timezone: 'Europe/Berlin', emoji: '🇩🇪' },
 ]
 
-const AVAILABLE_TIMEZONES = [
-  'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Seoul', 'Asia/Hong_Kong',
-  'Asia/Singapore', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok',
-  'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Moscow',
-  'Europe/Istanbul', 'America/New_York', 'America/Los_Angeles',
-  'America/Chicago', 'America/Toronto', 'America/Sao_Paulo',
-  'Australia/Sydney', 'Australia/Melbourne', 'Pacific/Auckland',
-]
-
-const STORAGE_KEY = 'weblinux-worldclock-settings'
-
-interface Settings {
-  cities: CityClock[]
-  is24Hour: boolean
-  isDark: boolean
+const ALL_TIMEZONES: Record<string, string> = {
+  'America/New_York': 'New York',
+  'America/Los_Angeles': 'Los Angeles',
+  'America/Chicago': 'Chicago',
+  'America/Toronto': 'Toronto',
+  'America/Sao_Paulo': 'São Paulo',
+  'America/Argentina/Buenos_Aires': 'Buenos Aires',
+  'America/Mexico_City': 'Mexico City',
+  'America/Denver': 'Denver',
+  'Europe/London': 'London',
+  'Europe/Paris': 'Paris',
+  'Europe/Berlin': 'Berlin',
+  'Europe/Moscow': 'Moscow',
+  'Europe/Istanbul': 'Istanbul',
+  'Europe/Rome': 'Rome',
+  'Europe/Madrid': 'Madrid',
+  'Europe/Amsterdam': 'Amsterdam',
+  'Asia/Tokyo': 'Tokyo',
+  'Asia/Shanghai': 'Shanghai',
+  'Asia/Kolkata': 'Mumbai',
+  'Asia/Dubai': 'Dubai',
+  'Asia/Singapore': 'Singapore',
+  'Asia/Hong_Kong': 'Hong Kong',
+  'Asia/Seoul': 'Seoul',
+  'Asia/Bangkok': 'Bangkok',
+  'Asia/Taipei': 'Taipei',
+  'Australia/Sydney': 'Sydney',
+  'Australia/Melbourne': 'Melbourne',
+  'Pacific/Auckland': 'Auckland',
+  'Pacific/Honolulu': 'Honolulu',
+  'Africa/Cairo': 'Cairo',
+  'Africa/Lagos': 'Lagos',
+  'Africa/Johannesburg': 'Johannesburg',
 }
 
-function loadSettings(): Settings {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      const parsed = JSON.parse(saved) as Settings
-      return {
-        cities: parsed.cities || DEFAULT_CITIES,
-        is24Hour: parsed.is24Hour ?? true,
-        isDark: parsed.isDark ?? true,
-      }
-    }
-  } catch {
-  }
-  return { cities: DEFAULT_CITIES, is24Hour: true, isDark: true }
-}
+// ── 工具函数 ──────────────────────────────────────────────
 
-function getTimeParts(timezone: string, date?: Date): {
-  hours: number
-  minutes: number
-  seconds: number
-  year: number
-  month: number
-  day: number
-  weekday: string
-  dayPeriod: string
-} {
+function getTimeParts(tz: string, date: Date) {
   try {
-    const targetDate = date || new Date()
-    const formatter = new Intl.DateTimeFormat('zh-CN', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-      weekday: 'short',
-      hourCycle: 'h23',
+    const f = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false, hourCycle: 'h23', weekday: 'short',
     })
-    const parts = formatter.formatToParts(targetDate)
-    const get = (type: string) => parts.find(p => p.type === type)?.value || '0'
-
-    const hours = parseInt(get('hour'))
-    const minutes = parseInt(get('minute'))
-    const seconds = parseInt(get('second'))
-
+    const p = f.formatToParts(date)
+    const g = (t: string) => p.find(x => x.type === t)?.value ?? '0'
+    const h = parseInt(g('hour'))
     return {
-      hours,
-      minutes,
-      seconds,
-      year: parseInt(get('year')),
-      month: parseInt(get('month')),
-      day: parseInt(get('day')),
-      weekday: get('weekday'),
-      dayPeriod: hours >= 6 && hours < 18 ? '白天' : '夜晚',
+      hours: h, minutes: parseInt(g('minute')), seconds: parseInt(g('second')),
+      year: parseInt(g('year')), month: parseInt(g('month')), day: parseInt(g('day')),
+      weekday: g('weekday'), isDaytime: h >= 6 && h < 18,
     }
   } catch {
-    return {
-      hours: 0, minutes: 0, seconds: 0,
-      year: 2024, month: 1, day: 1, weekday: '周日', dayPeriod: '夜晚',
-    }
+    return { hours: 0, minutes: 0, seconds: 0, year: 2026, month: 1, day: 1, weekday: 'Sun', isDaytime: false }
   }
 }
 
-function formatOffset(timezone: string, date?: Date): string {
+function getOffsetLabel(tz: string, date: Date): string {
   try {
-    const targetDate = date || new Date()
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: timezone,
-      timeZoneName: 'shortOffset',
-    })
-    const parts = formatter.formatToParts(targetDate)
-    const tzPart = parts.find(p => p.type === 'timeZoneName')
-    return tzPart?.value || ''
-  } catch {
-    return ''
-  }
+    const f = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
+    const p = f.formatToParts(date)
+    return p.find(x => x.type === 'timeZoneName')?.value ?? ''
+  } catch { return '' }
 }
+
+function calcHourDiff(tzA: string, tzB: string, date: Date): number {
+  const getOffsetMinutes = (tz: string) => {
+    const local = new Date(date.toLocaleString('en-US', { timeZone: tz }))
+    const utc = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
+    return (local.getTime() - utc.getTime()) / 60000
+  }
+  return Math.round((getOffsetMinutes(tzB) - getOffsetMinutes(tzA)) / 60)
+}
+
+function pad(n: number) { return String(n).padStart(2, '0') }
+
+// ── 子组件 ──────────────────────────────────────────────
+
+const AnalogClock = memo(({ seconds, minutes, hours, accent }: {
+  seconds: number; minutes: number; hours: number; accent: string
+}) => {
+  const s = 140
+  const cx = s / 2, cy = s / 2, r = s / 2 - 6
+  const hourAngle = ((hours % 12) + minutes / 60) * 30
+  const minAngle = (minutes + seconds / 60) * 6
+  const secAngle = seconds * 6
+
+  const hand = (angle: number, len: number, w: number, color: string) => {
+    const rad = ((angle - 90) * Math.PI) / 180
+    return { x2: cx + len * Math.cos(rad), y2: cy + len * Math.sin(rad), stroke: color, strokeWidth: w }
+  }
+
+  return (
+    <svg viewBox={`0 0 ${s} ${s}`} style={{ width: s, height: s }}>
+      <circle cx={cx} cy={cy} r={r} fill="rgba(0,0,0,0.3)" stroke={accent} strokeWidth="1.5" opacity={0.8} />
+      {Array.from({ length: 60 }, (_, i) => {
+        const a = (i * 6 - 90) * Math.PI / 180
+        const main = i % 5 === 0
+        const ir = r - (main ? 10 : 5)
+        return <line key={i} x1={cx + ir * Math.cos(a)} y1={cy + ir * Math.sin(a)}
+          x2={cx + (r - 2) * Math.cos(a)} y2={cy + (r - 2) * Math.sin(a)}
+          stroke={main ? accent : 'rgba(255,255,255,0.2)'} strokeWidth={main ? 2 : 0.5} />
+      })}
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = (i * 30 - 90) * Math.PI / 180
+        const nr = r - 22
+        return <text key={i} x={cx + nr * Math.cos(a)} y={cy + nr * Math.sin(a)}
+          fill={accent} fontSize="8" textAnchor="middle" dominantBaseline="central"
+          fontFamily="monospace" fontWeight="bold">
+          {i === 0 ? 12 : i}
+        </text>
+      })}
+      <line x1={cx} y1={cy} {...hand(hourAngle, r * 0.5, 3.5, '#e0e0e0')} strokeLinecap="round" />
+      <line x1={cx} y1={cy} {...hand(minAngle, r * 0.72, 2, '#b0b0b0')} strokeLinecap="round" />
+      <line x1={cx} y1={cy} {...hand(secAngle, r * 0.82, 1, accent)} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={3} fill={accent} />
+      <circle cx={cx} cy={cy} r={1.5} fill="#fff" />
+    </svg>
+  )
+})
+AnalogClock.displayName = 'AnalogClock'
+
+// ── 主组件 ──────────────────────────────────────────────
 
 export default function WorldClock() {
-  const [settings, setSettings] = useState<Settings>(loadSettings)
-  const [now, setNow] = useState(new Date())
+  const [cities, setCities] = useState<CityEntry[]>(DEFAULT_CITIES)
+  const [now, setNow] = useState(() => new Date())
+  const [showAnalog, setShowAnalog] = useState(false)
+  const [is24h, setIs24h] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [tzSearch, setTzSearch] = useState('')
   const [newCityName, setNewCityName] = useState('')
-  const [newCityTz, setNewCityTz] = useState('')
-  const [searchTz, setSearchTz] = useState('')
-  const [dragId, setDragId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const [selectedTz, setSelectedTz] = useState('')
+  const [diffCityA, setDiffCityA] = useState('')
+  const [diffCityB, setDiffCityB] = useState('')
+  const [showDiffPanel, setShowDiffPanel] = useState(false)
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
+  // 实时更新 — 每秒
   useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 60000)
-    return () => clearInterval(interval)
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
   }, [])
 
-  useEffect(() => {
-    setNow(new Date())
-  }, [])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    } catch {
-    }
-  }, [settings])
-
-  const toggleHourFormat = useCallback(() => {
-    setSettings(prev => ({ ...prev, is24Hour: !prev.is24Hour }))
-  }, [])
-
-  const toggleTheme = useCallback(() => {
-    setSettings(prev => ({ ...prev, isDark: !prev.isDark }))
-  }, [])
-
-  const removeCity = useCallback((id: string) => {
-    setSettings(prev => ({
-      ...prev,
-      cities: prev.cities.filter(c => c.id !== id),
-    }))
-  }, [])
-
+  // 添加城市
   const addCity = useCallback(() => {
-    if (!newCityName.trim() || !newCityTz) return
-    const id = `custom-${Date.now()}`
-    setSettings(prev => ({
-      ...prev,
-      cities: [...prev.cities, {
-        id,
-        city: newCityName.trim(),
-        timezone: newCityTz,
-        custom: true,
-      }],
-    }))
-    setNewCityName('')
-    setNewCityTz('')
-    setSearchTz('')
-    setShowAddModal(false)
-  }, [newCityName, newCityTz])
+    if (!newCityName.trim() || !selectedTz) return
+    const entry: CityEntry = {
+      id: `custom-${Date.now()}`, city: newCityName.trim(),
+      country: 'Custom', timezone: selectedTz, emoji: '🌍', custom: true,
+    }
+    setCities(prev => [...prev, entry])
+    setNewCityName(''); setSelectedTz(''); setTzSearch(''); setShowAddModal(false)
+  }, [newCityName, selectedTz])
 
-  const handleDragStart = useCallback((id: string) => {
-    setDragId(id)
+  // 删除城市
+  const removeCity = useCallback((id: string) => {
+    setCities(prev => prev.filter(c => c.id !== id))
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent, id: string) => {
-    e.preventDefault()
-    setDragOverId(id)
+  // 重置为默认
+  const resetCities = useCallback(() => {
+    setCities(DEFAULT_CITIES)
   }, [])
 
-  const handleDragEnd = useCallback(() => {
-    setDragId(null)
-    setDragOverId(null)
-  }, [])
+  // 格式化时间
+  const formatTime = useCallback((h: number, m: number, s: number) => {
+    if (is24h) return `${pad(h)}:${pad(m)}:${pad(s)}`
+    const period = h >= 12 ? 'PM' : 'AM'
+    return `${pad(h % 12 || 12)}:${pad(m)}:${pad(s)} ${period}`
+  }, [is24h])
 
-  const handleDrop = useCallback((targetId: string) => {
-    if (!dragId || dragId === targetId) return
-    setSettings(prev => {
-      const newCities = [...prev.cities]
-      const dragIndex = newCities.findIndex(c => c.id === dragId)
-      const targetIndex = newCities.findIndex(c => c.id === targetId)
-      if (dragIndex === -1 || targetIndex === -1) return prev
-      const [removed] = newCities.splice(dragIndex, 1)
-      newCities.splice(targetIndex, 0, removed)
-      return { ...prev, cities: newCities }
-    })
-    setDragId(null)
-    setDragOverId(null)
-  }, [dragId])
+  // 格式化简短时间（不带秒）
+  const formatTimeShort = useCallback((h: number, m: number) => {
+    if (is24h) return `${pad(h)}:${pad(m)}`
+    const period = h >= 12 ? 'PM' : 'AM'
+    return `${pad(h % 12 || 12)}:${pad(m)} ${period}`
+  }, [is24h])
 
-  const filteredTimezones = AVAILABLE_TIMEZONES.filter(tz =>
-    tz.toLowerCase().includes(searchTz.toLowerCase())
+  // 时区搜索过滤
+  const filteredTzList = Object.entries(ALL_TIMEZONES).filter(
+    ([tz, name]) => tz.toLowerCase().includes(tzSearch.toLowerCase()) ||
+      name.toLowerCase().includes(tzSearch.toLowerCase())
   )
 
-  const bgStyle = settings.isDark
-    ? 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)'
-    : 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 50%, #fbc2eb 100%)'
+  // 城市搜索过滤
+  const filteredCities = cities.filter(c =>
+    c.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.timezone.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
-  const textColor = settings.isDark ? '#e8e8f0' : '#2d2d3f'
-  const subTextColor = settings.isDark ? 'rgba(232,232,240,0.6)' : 'rgba(45,45,63,0.6)'
-  const cardBorder = settings.isDark
-    ? 'rgba(255,255,255,0.12)'
-    : 'rgba(255,255,255,0.6)'
-  const headerBg = settings.isDark
-    ? 'rgba(255,255,255,0.08)'
-    : 'rgba(255,255,255,0.35)'
-  const btnBg = settings.isDark
-    ? 'rgba(255,255,255,0.1)'
-    : 'rgba(255,255,255,0.5)'
-  const accentColor = settings.isDark ? '#7c6cf0' : '#5b4cc4'
-  const dangerColor = '#ef4444'
+  // 时差计算
+  const diffResult = diffCityA && diffCityB
+    ? (() => {
+        const cA = cities.find(c => c.id === diffCityA)
+        const cB = cities.find(c => c.id === diffCityB)
+        if (!cA || !cB) return null
+        const diff = calcHourDiff(cA.timezone, cB.timezone, now)
+        const abs = Math.abs(diff)
+        const sign = diff > 0 ? '+' : diff < 0 ? '' : ''
+        return { cityA: cA.city, cityB: cB.city, diff, abs, sign, tzA: cA.timezone, tzB: cB.timezone }
+      })()
+    : null
 
-  const styles = {
+  // 样式
+  const theme = {
+    bg: '#1a1a2e',
+    bgCard: '#16213e',
+    bgElevated: '#0f3460',
+    accent: '#e94560',
+    accentSoft: 'rgba(233,69,96,0.15)',
+    text: '#e8e8f0',
+    textDim: 'rgba(232,232,240,0.55)',
+    border: 'rgba(255,255,255,0.08)',
+    surface: 'rgba(255,255,255,0.04)',
+  }
+
+  const S = {
     container: {
-      height: '100%',
-      overflowY: 'auto' as const,
-      padding: 20,
-      background: bgStyle,
-      color: textColor,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      height: '100%', overflowY: 'auto' as const, background: theme.bg,
+      color: theme.text, fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", monospace',
+      padding: 20, boxSizing: 'border-box' as const,
     },
-    glassHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-      padding: '14px 18px',
-      borderRadius: 16,
-      background: headerBg,
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      border: `1px solid ${cardBorder}`,
-      marginBottom: 20,
-      boxShadow: settings.isDark
-        ? '0 8px 32px rgba(0,0,0,0.3)'
-        : '0 8px 32px rgba(31,38,135,0.15)',
+    header: {
+      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,
+      flexWrap: 'wrap' as const,
     },
     title: {
-      fontSize: 20,
-      fontWeight: 700,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      marginRight: 'auto',
+      display: 'flex', alignItems: 'center', gap: 10, fontSize: 22, fontWeight: 800,
+      letterSpacing: '-0.02em', marginRight: 'auto',
     },
-    toolbar: {
-      display: 'flex',
-      gap: 8,
+    titleDot: {
+      width: 10, height: 10, borderRadius: '50%', background: theme.accent,
+      boxShadow: `0 0 12px ${theme.accent}88`, animation: 'pulse 2s infinite',
     },
-    iconBtn: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 38,
-      height: 38,
-      borderRadius: 12,
-      background: btnBg,
-      border: `1px solid ${cardBorder}`,
-      color: textColor,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
+    toolbar: { display: 'flex', gap: 6, alignItems: 'center' },
+    iconBtn: (active?: boolean) => ({
+      display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36,
+      borderRadius: 10, border: `1px solid ${active ? theme.accent : theme.border}`,
+      background: active ? theme.accentSoft : theme.surface, color: active ? theme.accent : theme.textDim,
+      cursor: 'pointer' as const, transition: 'all 0.2s',
+    }),
+    primaryBtn: {
+      display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
+      borderRadius: 10, background: theme.accent, border: 'none', color: '#fff',
+      cursor: 'pointer' as const, fontSize: 13, fontWeight: 600,
+      boxShadow: `0 4px 16px ${theme.accent}44`, transition: 'all 0.2s',
     },
-    addBtn: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      padding: '8px 16px',
-      borderRadius: 12,
-      background: accentColor,
-      border: 'none',
-      color: '#fff',
-      cursor: 'pointer',
-      fontSize: 14,
-      fontWeight: 600,
-      transition: 'all 0.2s ease',
-      boxShadow: `0 4px 14px ${accentColor}66`,
+    searchBox: {
+      display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px',
+      borderRadius: 10, background: theme.surface, border: `1px solid ${theme.border}`,
+      marginBottom: 16, width: '100%', boxSizing: 'border-box' as const,
+    },
+    searchInput: {
+      flex: 1, background: 'none', border: 'none', outline: 'none', color: theme.text,
+      fontSize: 13, fontFamily: 'inherit',
     },
     grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-      gap: 16,
+      display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14,
     },
-    card: (isDaytime: boolean, isDragging: boolean, isDragOver: boolean) => ({
-      padding: 20,
-      borderRadius: 20,
-      background: isDaytime
-        ? (settings.isDark
-            ? 'linear-gradient(135deg, rgba(255,183,77,0.12) 0%, rgba(255,152,0,0.08) 100%)'
-            : 'linear-gradient(135deg, rgba(255,256,255,0.5) 0%, rgba(255,256,255,0.35) 100%)')
-        : (settings.isDark
-            ? 'linear-gradient(135deg, rgba(30,30,60,0.4) 0%, rgba(20,20,40,0.3) 100%)'
-            : 'linear-gradient(135deg, rgba(100,100,160,0.25) 0%, rgba(70,70,120,0.15) 100%)'),
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      border: `1px solid ${cardBorder}`,
-      boxShadow: isDragOver
-        ? `0 0 0 2px ${accentColor}, 0 8px 32px rgba(0,0,0,0.2)`
-        : settings.isDark
-            ? '0 8px 32px rgba(0,0,0,0.25)'
-            : '0 8px 32px rgba(31,38,135,0.12)',
-      cursor: 'grab',
-      opacity: isDragging ? 0.5 : 1,
-      transform: isDragging ? 'scale(0.98)' : 'scale(1)',
-      transition: 'all 0.25s ease',
-      position: 'relative' as const,
-      overflow: 'hidden' as const,
+    card: (isHovered: boolean, _isDay: boolean) => ({
+      padding: 16, borderRadius: 14, position: 'relative' as const,
+      background: isHovered
+        ? `linear-gradient(135deg, ${theme.bgCard} 0%, ${theme.bgElevated} 100%)`
+        : theme.bgCard,
+      border: `1px solid ${isHovered ? theme.accent + '44' : theme.border}`,
+      transition: 'all 0.25s ease', cursor: 'default',
+      boxShadow: isHovered ? `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)` : 'none',
     }),
     cardTop: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 12,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10,
     },
-    dragHandle: {
-      cursor: 'grab',
-      opacity: 0.4,
-      display: 'flex',
-      alignItems: 'center',
-      color: subTextColor,
+    cityLabel: {
+      display: 'flex', alignItems: 'center', gap: 8,
     },
-    cityName: {
-      fontSize: 17,
-      fontWeight: 700,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-    },
-    dayBadge: (isDaytime: boolean) => ({
-      display: 'flex',
-      alignItems: 'center',
-      gap: 4,
-      padding: '3px 10px',
-      borderRadius: 999,
-      fontSize: 11,
-      fontWeight: 600,
-      background: isDaytime
-        ? (settings.isDark ? 'rgba(255,183,77,0.2)' : 'rgba(255,152,0,0.25)')
-        : (settings.isDark ? 'rgba(100,100,200,0.2)' : 'rgba(80,80,140,0.2)'),
-      color: isDaytime
-        ? (settings.isDark ? '#ffb74d' : '#e65100')
-        : (settings.isDark ? '#b39ddb' : '#4527a0'),
+    emoji: { fontSize: 20 },
+    cityName: { fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' },
+    country: { fontSize: 11, color: theme.textDim, fontWeight: 400 },
+    dayBadge: (isDay: boolean) => ({
+      padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+      background: isDay ? 'rgba(255,200,50,0.12)' : 'rgba(100,120,200,0.12)',
+      color: isDay ? '#f0c040' : '#8090d0',
     }),
     timeDisplay: {
-      fontSize: 42,
-      fontWeight: 200,
-      letterSpacing: '0.02em',
-      lineHeight: 1,
-      marginBottom: 8,
-      fontVariantNumeric: 'tabular-nums',
-      fontFamily: '"SF Mono", "Fira Code", monospace',
+      fontSize: 36, fontWeight: 200, lineHeight: 1, marginBottom: 8,
+      fontVariantNumeric: 'tabular-nums' as const,
+      letterSpacing: '0.01em',
     },
-    dateDisplay: {
-      fontSize: 13,
-      color: subTextColor,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 4,
-      marginBottom: 6,
+    dateLine: {
+      display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.textDim, marginBottom: 6,
     },
-    tzDisplay: {
-      fontSize: 11,
-      color: subTextColor,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 4,
-      opacity: 0.8,
+    tzLine: {
+      display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: theme.textDim, opacity: 0.7,
     },
     removeBtn: {
-      position: 'absolute' as const,
-      top: 12,
-      right: 12,
-      width: 28,
-      height: 28,
-      borderRadius: 8,
-      background: 'rgba(239,68,68,0.15)',
-      border: 'none',
-      color: dangerColor,
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      opacity: 0,
-      transition: 'opacity 0.2s',
+      position: 'absolute' as const, top: 10, right: 10, width: 26, height: 26,
+      borderRadius: 7, background: 'rgba(233,69,96,0.12)', border: 'none',
+      color: theme.accent, cursor: 'pointer' as const,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
     },
     modal: {
-      position: 'fixed' as const,
-      inset: 0,
-      background: 'rgba(0,0,0,0.5)',
-      backdropFilter: 'blur(8px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: 20,
+      position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.6)',
+      backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', zIndex: 1000, padding: 20,
     },
-    modalContent: {
-      width: '100%',
-      maxWidth: 420,
-      borderRadius: 24,
-      background: settings.isDark
-        ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-        : 'linear-gradient(135deg, #ffffff 0%, #f0f0f5 100%)',
-      border: `1px solid ${cardBorder}`,
-      boxShadow: '0 25px 80px rgba(0,0,0,0.4)',
-      padding: 28,
-      color: textColor,
+    modalBox: {
+      width: '100%', maxWidth: 440, borderRadius: 16, background: theme.bg,
+      border: `1px solid ${theme.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', padding: 24,
     },
-    modalHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 20,
+    modalTitle: {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18,
     },
     input: {
-      width: '100%',
-      padding: '12px 14px',
-      borderRadius: 12,
-      background: settings.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-      border: `1px solid ${cardBorder}`,
-      color: textColor,
-      fontSize: 14,
-      outline: 'none',
-      marginBottom: 12,
-      boxSizing: 'border-box' as const,
+      width: '100%', padding: '10px 12px', borderRadius: 10,
+      background: theme.surface, border: `1px solid ${theme.border}`,
+      color: theme.text, fontSize: 13, outline: 'none', marginBottom: 12,
+      boxSizing: 'border-box' as const, fontFamily: 'inherit',
     },
-    label: {
-      fontSize: 13,
-      fontWeight: 600,
-      marginBottom: 6,
-      display: 'block' as const,
-      color: subTextColor,
-    },
+    label: { fontSize: 12, fontWeight: 600, marginBottom: 6, display: 'block' as const, color: theme.textDim },
     tzList: {
-      maxHeight: 180,
-      overflowY: 'auto' as const,
-      borderRadius: 12,
-      border: `1px solid ${cardBorder}`,
-      background: settings.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
-      marginBottom: 16,
+      maxHeight: 160, overflowY: 'auto' as const, borderRadius: 10,
+      border: `1px solid ${theme.border}`, background: theme.surface, marginBottom: 14,
     },
-    tzItem: (selected: boolean) => ({
-      padding: '10px 14px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      borderBottom: `1px solid ${settings.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-      background: selected
-        ? (settings.isDark ? 'rgba(124,108,240,0.2)' : 'rgba(91,76,196,0.12)')
-        : 'transparent',
-      fontSize: 13,
-      transition: 'background 0.15s',
+    tzItem: (sel: boolean) => ({
+      padding: '8px 12px', cursor: 'pointer', fontSize: 12,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      borderBottom: `1px solid ${theme.border}`,
+      background: sel ? theme.accentSoft : 'transparent', transition: 'all 0.15s',
     }),
-    modalActions: {
-      display: 'flex',
-      gap: 10,
-      justifyContent: 'flex-end',
-    },
+    modalActions: { display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 },
     cancelBtn: {
-      padding: '10px 20px',
-      borderRadius: 12,
-      background: btnBg,
-      border: `1px solid ${cardBorder}`,
-      color: textColor,
-      cursor: 'pointer',
-      fontSize: 14,
-      fontWeight: 500,
+      padding: '8px 16px', borderRadius: 10, background: theme.surface,
+      border: `1px solid ${theme.border}`, color: theme.text, cursor: 'pointer' as const, fontSize: 13,
     },
-    confirmBtn: {
-      padding: '10px 20px',
-      borderRadius: 12,
-      background: accentColor,
-      border: 'none',
-      color: '#fff',
-      cursor: 'pointer',
-      fontSize: 14,
-      fontWeight: 600,
-      boxShadow: `0 4px 14px ${accentColor}66`,
+    confirmBtn: (enabled: boolean) => ({
+      padding: '8px 16px', borderRadius: 10, background: enabled ? theme.accent : theme.surface,
+      border: 'none', color: enabled ? '#fff' : theme.textDim,
+      cursor: enabled ? ('pointer' as const) : ('not-allowed' as const),
+      fontSize: 13, fontWeight: 600, opacity: enabled ? 1 : 0.5,
+    }),
+    diffPanel: {
+      padding: 18, borderRadius: 14, background: theme.bgCard,
+      border: `1px solid ${theme.border}`, marginBottom: 16,
     },
-    localCard: {
-      padding: 24,
-      borderRadius: 20,
-      background: settings.isDark
-        ? 'linear-gradient(135deg, rgba(124,108,240,0.2) 0%, rgba(79,70,229,0.12) 100%)'
-        : 'linear-gradient(135deg, rgba(91,76,196,0.15) 0%, rgba(167,139,250,0.1) 100%)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      border: `1px solid ${settings.isDark ? 'rgba(124,108,240,0.3)' : 'rgba(91,76,196,0.25)'}`,
-      marginBottom: 20,
-      textAlign: 'center' as const,
+    diffHeader: {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14,
     },
-    localLabel: {
-      fontSize: 12,
-      color: subTextColor,
-      marginBottom: 8,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 6,
+    diffTitle: {
+      display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700,
     },
-    localTime: {
-      fontSize: 52,
-      fontWeight: 200,
-      letterSpacing: '0.02em',
-      lineHeight: 1,
-      fontVariantNumeric: 'tabular-nums',
-      fontFamily: '"SF Mono", "Fira Code", monospace',
-      marginBottom: 8,
+    diffBody: {
+      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' as const,
     },
+    diffSelect: {
+      flex: '1 1 160px', padding: '8px 12px', borderRadius: 10,
+      background: theme.surface, border: `1px solid ${theme.border}`,
+      color: theme.text, fontSize: 12, outline: 'none', fontFamily: 'inherit',
+    },
+    diffResult: {
+      textAlign: 'center' as const, padding: '14px 0 4px', fontSize: 13, color: theme.textDim,
+    },
+    diffValue: {
+      fontSize: 28, fontWeight: 700, color: theme.accent, fontFamily: 'inherit',
+      letterSpacing: '-0.02em',
+    },
+    diffTimesRow: {
+      display: 'flex', justifyContent: 'center', gap: 24, marginTop: 8, fontSize: 12,
+    },
+    diffTimeBox: {
+      display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2,
+    },
+    diffTimeLabel: { color: theme.textDim, fontSize: 10, fontWeight: 600 },
+    diffTimeValue: { color: theme.text, fontSize: 14, fontWeight: 600 },
     footer: {
-      marginTop: 20,
-      padding: 14,
-      borderRadius: 14,
-      background: settings.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.2)',
-      textAlign: 'center' as const,
-      fontSize: 12,
-      color: subTextColor,
-      backdropFilter: 'blur(10px)',
-      border: `1px solid ${cardBorder}`,
+      marginTop: 16, padding: '12px 16px', borderRadius: 10, textAlign: 'center' as const,
+      fontSize: 11, color: theme.textDim, background: theme.surface,
+      border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center',
+      justifyContent: 'center', gap: 6,
     },
     emptyState: {
-      textAlign: 'center' as const,
-      padding: 60,
-      color: subTextColor,
+      display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
+      justifyContent: 'center', padding: 60, color: theme.textDim, gap: 10,
     },
+    clockToggle: {
+      display: 'flex', borderRadius: 8, overflow: 'hidden', border: `1px solid ${theme.border}`,
+    },
+    clockToggleBtn: (active: boolean) => ({
+      padding: '5px 10px', fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer' as const,
+      background: active ? theme.accent : 'transparent',
+      color: active ? '#fff' : theme.textDim, transition: 'all 0.2s',
+    }),
   }
 
   const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone
   const localParts = getTimeParts(localTz, now)
 
-  const formatTime12 = (h: number, m: number) => {
-    const period = h >= 12 ? 'PM' : 'AM'
-    const displayH = h % 12 || 12
-    return `${String(displayH).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`
-  }
-
-  const formatTime24 = (h: number, m: number) => {
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-  }
-
-  const getDisplayTime = (h: number, m: number) => {
-    return settings.is24Hour ? formatTime24(h, m) : formatTime12(h, m)
-  }
-
   return (
-    <div style={styles.container}>
-      <div style={styles.glassHeader}>
-        <div style={styles.title}>
-          <Globe size={22} style={{ color: accentColor }} />
-          世界时钟
+    <div style={S.container}>
+      {/* 顶部标题栏 */}
+      <div style={S.header}>
+        <div style={S.title}>
+          <Globe size={22} style={{ color: theme.accent }} />
+          <span>World Clock</span>
         </div>
-        <div style={styles.toolbar}>
-          <button
-            style={styles.iconBtn}
-            onClick={toggleHourFormat}
-            title={settings.is24Hour ? '切换12小时制' : '切换24小时制'}
-          >
-            <Clock size={18} />
+        <div style={S.toolbar}>
+          <div style={S.clockToggle}>
+            <button style={S.clockToggleBtn(!showAnalog)} onClick={() => setShowAnalog(false)}>
+              Digital
+            </button>
+            <button style={S.clockToggleBtn(showAnalog)} onClick={() => setShowAnalog(true)}>
+              Analog
+            </button>
+          </div>
+          <button style={S.iconBtn(is24h)} onClick={() => setIs24h(p => !p)} title="切换12/24小时制">
+            <Clock size={16} />
           </button>
-          <button
-            style={styles.iconBtn}
-            onClick={toggleTheme}
-            title={settings.isDark ? '切换亮色主题' : '切换暗色主题'}
-          >
-            {settings.isDark ? <Sun size={18} /> : <Moon size={18} />}
+          <button style={S.iconBtn(showDiffPanel)} onClick={() => setShowDiffPanel(p => !p)} title="时差计算器">
+            <ArrowRightLeft size={16} />
           </button>
-          <button
-            style={styles.addBtn}
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus size={16} />
-            添加城市
+          <button style={S.iconBtn(false)} onClick={resetCities} title="重置为默认城市">
+            <RotateCcw size={16} />
+          </button>
+          <button style={S.primaryBtn} onClick={() => setShowAddModal(true)}>
+            <Plus size={14} /> 添加城市
           </button>
         </div>
       </div>
 
-      <div style={styles.localCard}>
-        <div style={styles.localLabel}>
-          <MapPin size={14} />
-          本地时区 · {localTz}
-        </div>
-        <div style={styles.localTime}>
-          {getDisplayTime(localParts.hours, localParts.minutes)}
-        </div>
-        <div style={{ fontSize: 14, color: subTextColor, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          <Calendar size={14} />
-          {localParts.year}年{localParts.month}月{localParts.day}日 {localParts.weekday}
+      {/* 本地时钟 */}
+      <div style={{
+        ...S.card(false, localParts.isDaytime), padding: 20, marginBottom: 16,
+        background: `linear-gradient(135deg, ${theme.bgElevated} 0%, ${theme.bgCard} 100%)`,
+        border: `1px solid ${theme.accent}33`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <MapPin size={16} style={{ color: theme.accent }} />
+            <div>
+              <div style={{ fontSize: 12, color: theme.textDim, marginBottom: 2 }}>LOCAL TIME</div>
+              <div style={{ fontSize: 38, fontWeight: 200, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.01em', lineHeight: 1 }}>
+                {formatTime(localParts.hours, localParts.minutes, localParts.seconds)}
+              </div>
+              <div style={{ fontSize: 12, color: theme.textDim, marginTop: 4 }}>
+                {localParts.year}-{pad(localParts.month)}-{pad(localParts.day)} {localParts.weekday}
+              </div>
+            </div>
+          </div>
+          {showAnalog && (
+            <AnalogClock
+              seconds={localParts.seconds} minutes={localParts.minutes}
+              hours={localParts.hours} accent={theme.accent}
+            />
+          )}
         </div>
       </div>
 
-      {settings.cities.length === 0 ? (
-        <div style={styles.emptyState}>
-          <Globe size={48} style={{ opacity: 0.3, marginBottom: 12 }} />
-          <div>暂无城市，点击"添加城市"开始</div>
+      {/* 时差计算器面板 */}
+      {showDiffPanel && (
+        <div style={S.diffPanel}>
+          <div style={S.diffHeader}>
+            <div style={S.diffTitle}>
+              <ArrowRightLeft size={16} style={{ color: theme.accent }} />
+              <span>时差计算器</span>
+            </div>
+            <button style={S.iconBtn(false)} onClick={() => { setShowDiffPanel(false); setDiffCityA(''); setDiffCityB('') }}>
+              <X size={14} />
+            </button>
+          </div>
+          <div style={S.diffBody}>
+            <select
+              style={S.diffSelect} value={diffCityA}
+              onChange={e => setDiffCityA(e.target.value)}
+            >
+              <option value="">选择城市 A</option>
+              {cities.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.city}</option>)}
+            </select>
+            <ArrowRightLeft size={16} style={{ color: theme.accent, flexShrink: 0 }} />
+            <select
+              style={S.diffSelect} value={diffCityB}
+              onChange={e => setDiffCityB(e.target.value)}
+            >
+              <option value="">选择城市 B</option>
+              {cities.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.city}</option>)}
+            </select>
+          </div>
+          {diffResult && (
+            <div style={S.diffResult}>
+              <div style={{ marginBottom: 4 }}>
+                <span style={{ color: theme.text }}>{diffResult.cityA}</span>
+                {' → '}
+                <span style={{ color: theme.text }}>{diffResult.cityB}</span>
+              </div>
+              <div style={S.diffValue}>
+                {diffResult.diff === 0 ? '同时' : `${diffResult.sign}${diffResult.abs} 小时`}
+              </div>
+              {diffResult.diff !== 0 && (
+                <div style={{ fontSize: 11, color: theme.textDim, marginTop: 2 }}>
+                  {diffResult.diff > 0
+                    ? `${diffResult.cityB} 比 ${diffResult.cityA} 快 ${diffResult.abs} 小时`
+                    : `${diffResult.cityA} 比 ${diffResult.cityB} 快 ${diffResult.abs} 小时`
+                  }
+                </div>
+              )}
+              <div style={S.diffTimesRow}>
+                <div style={S.diffTimeBox}>
+                  <span style={S.diffTimeLabel}>{diffResult.cityA}</span>
+                  <span style={S.diffTimeValue}>
+                    {(() => { const p = getTimeParts(diffResult.tzA, now); return formatTimeShort(p.hours, p.minutes) })()}
+                  </span>
+                </div>
+                <div style={S.diffTimeBox}>
+                  <span style={S.diffTimeLabel}>{diffResult.cityB}</span>
+                  <span style={S.diffTimeValue}>
+                    {(() => { const p = getTimeParts(diffResult.tzB, now); return formatTimeShort(p.hours, p.minutes) })()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 搜索框 */}
+      <div style={S.searchBox}>
+        <Search size={15} style={{ color: theme.textDim, flexShrink: 0 }} />
+        <input
+          style={S.searchInput}
+          placeholder="搜索城市、国家或时区..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button
+            style={{ background: 'none', border: 'none', color: theme.textDim, cursor: 'pointer', padding: 2, display: 'flex' }}
+            onClick={() => setSearchQuery('')}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {/* 城市时钟网格 */}
+      {filteredCities.length === 0 ? (
+        <div style={S.emptyState}>
+          <Globe size={40} style={{ opacity: 0.2 }} />
+          <span style={{ fontSize: 13 }}>{searchQuery ? '未找到匹配的城市' : '暂无城市，点击"添加城市"开始'}</span>
         </div>
       ) : (
-        <div style={styles.grid}>
-          {settings.cities.map(city => {
-            const parts = getTimeParts(city.timezone, now)
-            const isDay = parts.hours >= 6 && parts.hours < 18
-            const offset = formatOffset(city.timezone, now)
-            const isDragging = dragId === city.id
-            const isDragOver = dragOverId === city.id
+        <div style={S.grid}>
+          {filteredCities.map(city => {
+            const p = getTimeParts(city.timezone, now)
+            const offset = getOffsetLabel(city.timezone, now)
+            const isHov = hoveredCard === city.id
 
             return (
               <div
                 key={city.id}
-                draggable
-                onDragStart={() => handleDragStart(city.id)}
-                onDragOver={(e) => handleDragOver(e, city.id)}
-                onDragLeave={() => setDragOverId(null)}
-                onDrop={() => handleDrop(city.id)}
-                onDragEnd={handleDragEnd}
-                style={styles.card(isDay, isDragging, isDragOver)}
-                onMouseEnter={(e) => {
-                  const btn = e.currentTarget.querySelector('button') as HTMLButtonElement
-                  if (btn) btn.style.opacity = '1'
-                }}
-                onMouseLeave={(e) => {
-                  const btn = e.currentTarget.querySelector('button') as HTMLButtonElement
-                  if (btn) btn.style.opacity = '0'
-                }}
+                style={S.card(isHov, p.isDaytime)}
+                onMouseEnter={() => setHoveredCard(city.id)}
+                onMouseLeave={() => setHoveredCard(null)}
               >
                 {city.custom && (
                   <button
-                    style={styles.removeBtn}
+                    style={{ ...S.removeBtn, opacity: isHov ? 1 : 0 }}
                     onClick={() => removeCity(city.id)}
-                    title="删除城市"
+                    title="删除"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} />
                   </button>
                 )}
 
-                <div style={styles.cardTop}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={styles.dragHandle}>
-                      <GripVertical size={16} />
-                    </div>
-                    <div style={styles.cityName}>
-                      {city.city}
+                <div style={S.cardTop}>
+                  <div style={S.cityLabel}>
+                    <span style={S.emoji}>{city.emoji}</span>
+                    <div>
+                      <div style={S.cityName}>{city.city}</div>
+                      <div style={S.country}>{city.country}</div>
                     </div>
                   </div>
-                  <div style={styles.dayBadge(isDay)}>
-                    {isDay ? <Sunrise size={12} /> : <Sunset size={12} />}
-                    {parts.dayPeriod}
+                  <div style={S.dayBadge(p.isDaytime)}>
+                    {p.isDaytime ? <Sun size={10} style={{ marginRight: 3 }} /> : <Moon size={10} style={{ marginRight: 3 }} />}
+                    {p.isDaytime ? 'DAY' : 'NIGHT'}
                   </div>
                 </div>
 
-                <div style={styles.timeDisplay}>
-                  {getDisplayTime(parts.hours, parts.minutes)}
-                </div>
+                {showAnalog ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <AnalogClock
+                      seconds={p.seconds} minutes={p.minutes}
+                      hours={p.hours} accent={theme.accent}
+                    />
+                    <div>
+                      <div style={{ ...S.timeDisplay, fontSize: 20 }}>
+                        {formatTimeShort(p.hours, p.minutes)}
+                      </div>
+                      <div style={S.dateLine}>
+                        {p.year}-{pad(p.month)}-{pad(p.day)} {p.weekday}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={S.timeDisplay}>{formatTime(p.hours, p.minutes, p.seconds)}</div>
+                    <div style={S.dateLine}>
+                      {p.year}-{pad(p.month)}-{pad(p.day)} {p.weekday}
+                    </div>
+                  </>
+                )}
 
-                <div style={styles.dateDisplay}>
-                  <Calendar size={13} />
-                  {parts.year}年{parts.month}月{parts.day}日 {parts.weekday}
-                </div>
-
-                <div style={styles.tzDisplay}>
-                  <Globe size={12} />
+                <div style={S.tzLine}>
+                  <MapPin size={10} />
                   {city.timezone}
                   {offset && ` · ${offset}`}
                 </div>
@@ -693,83 +661,62 @@ export default function WorldClock() {
         </div>
       )}
 
-      <div style={styles.footer}>
-        💡 拖拽卡片调整顺序 · 点击按钮切换主题和时间格式 · 设置自动保存
+      {/* 底部 */}
+      <div style={S.footer}>
+        <Clock size={12} />
+        <span>{cities.length} 个城市 · 每秒更新 · 本地时区 {localTz}</span>
       </div>
 
+      {/* 添加城市弹窗 */}
       {showAddModal && (
-        <div style={styles.modal} onClick={() => setShowAddModal(false)}>
-          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
+        <div style={S.modal} onClick={() => setShowAddModal(false)}>
+          <div style={S.modalBox} onClick={e => e.stopPropagation()}>
+            <div style={S.modalTitle}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 12,
-                  background: accentColor + '33',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Globe size={18} style={{ color: accentColor }} />
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 700 }}>添加城市</div>
+                <Globe size={18} style={{ color: theme.accent }} />
+                <span style={{ fontSize: 16, fontWeight: 700 }}>添加城市</span>
               </div>
-              <button
-                style={styles.iconBtn}
-                onClick={() => setShowAddModal(false)}
-              >
-                <X size={18} />
+              <button style={S.iconBtn(false)} onClick={() => setShowAddModal(false)}>
+                <X size={16} />
               </button>
             </div>
 
-            <label style={styles.label}>城市名称</label>
+            <label style={S.label}>城市名称</label>
             <input
-              style={styles.input}
-              placeholder="例如：首尔"
-              value={newCityName}
-              onChange={e => setNewCityName(e.target.value)}
-              autoFocus
+              style={S.input} placeholder="例如：Seoul"
+              value={newCityName} onChange={e => setNewCityName(e.target.value)} autoFocus
             />
 
-            <label style={styles.label}>搜索时区</label>
+            <label style={S.label}>搜索时区</label>
             <input
-              style={{ ...styles.input, marginBottom: 8 }}
-              placeholder="搜索时区..."
-              value={searchTz}
-              onChange={e => setSearchTz(e.target.value)}
+              style={{ ...S.input, marginBottom: 8 }} placeholder="搜索时区或城市名..."
+              value={tzSearch} onChange={e => setTzSearch(e.target.value)}
             />
 
-            <div style={styles.tzList}>
-              {filteredTimezones.length === 0 ? (
-                <div style={{ padding: 16, textAlign: 'center', color: subTextColor, fontSize: 13 }}>
+            <div style={S.tzList}>
+              {filteredTzList.length === 0 ? (
+                <div style={{ padding: 16, textAlign: 'center', color: theme.textDim, fontSize: 12 }}>
                   未找到匹配的时区
                 </div>
               ) : (
-                filteredTimezones.map(tz => (
+                filteredTzList.map(([tz, name]) => (
                   <div
-                    key={tz}
-                    style={styles.tzItem(newCityTz === tz)}
-                    onClick={() => setNewCityTz(tz)}
+                    key={tz} style={S.tzItem(selectedTz === tz)}
+                    onClick={() => setSelectedTz(tz)}
                   >
-                    <span>{tz}</span>
-                    {newCityTz === tz && <Check size={16} style={{ color: accentColor }} />}
+                    <span>{name} — <span style={{ opacity: 0.5 }}>{tz}</span></span>
+                    {selectedTz === tz && <span style={{ color: theme.accent, fontWeight: 700 }}>✓</span>}
                   </div>
                 ))
               )}
             </div>
 
-            <div style={styles.modalActions}>
+            <div style={S.modalActions}>
+              <button style={S.cancelBtn} onClick={() => setShowAddModal(false)}>取消</button>
               <button
-                style={styles.cancelBtn}
-                onClick={() => setShowAddModal(false)}
-              >
-                取消
-              </button>
-              <button
-                style={{
-                  ...styles.confirmBtn,
-                  opacity: !newCityName.trim() || !newCityTz ? 0.5 : 1,
-                  cursor: !newCityName.trim() || !newCityTz ? 'not-allowed' : 'pointer',
-                }}
+                style={S.confirmBtn(!!(newCityName.trim() && selectedTz))}
                 onClick={addCity}
-                disabled={!newCityName.trim() || !newCityTz}
+                disabled={!newCityName.trim() || !selectedTz}
               >
                 添加
               </button>

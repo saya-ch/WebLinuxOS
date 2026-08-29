@@ -52,10 +52,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id: string) {
-            // v134 新增应用 chunk 分割
-            if (id.includes('src/apps/SystemHealthMonitor')) {
-              return 'app-system-health-monitor';
-            }
+            // ===== Vendor chunks (explicit) =====
             if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
               return 'vendor-react'
             }
@@ -75,230 +72,94 @@ export default defineConfig(({ mode }) => {
               return 'vendor-monaco'
             }
 
-            if (id.includes('src/apps/AmbientSound')) {
-              return 'app-ambientsound'
-            }
-            if (id.includes('src/apps/MarkdownNotebook')) {
-              return 'app-markdownnotebook'
-            }
-            if (id.includes('src/apps/TextAnalyzer')) {
-              return 'app-text-analyzer'
-            }
-            if (id.includes('src/apps/HTTPToolkit')) {
-              return 'app-http-toolkit'
-            }
-            if (id.includes('src/apps/MarkdownLiveStudio')) {
-              return 'app-markdown-live-studio'
-            }
-            if (id.includes('src/apps/DevRadar')) {
-              return 'app-devradar'
-            }
-            if (id.includes('src/apps/terminal')) {
-              return 'app-terminal'
-            }
-            if (id.includes('src/apps/NexusAI')) {
-              return 'app-nexusai'
-            }
-            if (id.includes('src/apps/CodeEditor') || id.includes('src/apps/CodeForge')) {
-              return 'app-codeeditor'
-            }
-            if (id.includes('src/apps/FileManager')) {
-              return 'app-filemanager'
-            }
-            if (id.includes('src/apps/WebBrowser') || id.includes('src/apps/Browser')) {
-              return 'app-browser'
-            }
-            if (id.includes('src/apps/BookFinder')) {
-              return 'app-bookfinder'
-            }
-            if (id.includes('src/apps/QuickTranslate')) {
-              return 'app-translate'
-            }
-            if (id.includes('src/apps/AICraft')) {
-              return 'app-aicraft'
-            }
-            if (id.includes('src/apps/CodeVault')) {
-              return 'app-codevault'
-            }
-            if (id.includes('src/apps/Email')) {
-              return 'app-email'
-            }
-            if (id.includes('src/apps/Calendar')) {
-              return 'app-calendar'
-            }
-            if (id.includes('src/apps/Calculator')) {
-              return 'app-calculator'
-            }
-            if (id.includes('src/apps/Clock')) {
-              return 'app-clock'
-            }
-            if (id.includes('src/apps/MusicPlayer') || id.includes('src/apps/MusicStudio')) {
-              return 'app-music'
-            }
-            if (id.includes('src/apps/VideoPlayer')) {
-              return 'app-video'
-            }
-            if (id.includes('src/apps/Paint')) {
-              return 'app-paint'
-            }
-            if (id.includes('src/apps/Notepad')) {
-              return 'app-notepad'
-            }
-            if (id.includes('src/apps/Weather')) {
-              return 'app-weather';
-            }
-            if (id.includes('src/apps/WebsitePerformanceTester') || id.includes('src/apps/PerformanceDashboard')) {
-              return 'app-perf-tester';
-            }
-            if (id.includes('src/apps/PromptEngineeringLab') || id.includes('src/apps/PromptForge')) {
-              return 'app-prompt-lab';
-            }
-            if (id.includes('src/apps/Game')) {
-              return 'app-games'
-            }
-            if (id.includes('src/apps/DevTools')) {
-              return 'app-devtools'
-            }
-            if (id.includes('src/apps/SystemDashboard')) {
-              return 'app-dashboard'
-            }
-            if (id.includes('src/apps/QuickQuote') || id.includes('src/apps/Quote')) {
-              return 'app-quote';
-            }
-            if (id.includes('src/apps/AstroViewer')) {
-              return 'app-astrophys';
-            }
-            if (id.includes('src/apps/EnhancedCodeSandbox')) {
-              return 'app-enhanced-sandbox';
-            }
-            if (id.includes('src/apps/EnhancedApiDebugger')) {
-              return 'app-enhanced-api-debugger';
-            }
-            if (id.includes('src/apps/DataVizWorkbench')) {
-              return 'app-dataviz-workbench';
-            }
-            if (id.includes('src/apps/ColorName')) {
-              return 'app-colors';
-            }
-            // v128 新增组件 chunk 分割
-            if (id.includes('src/apps/RegexVisualizer')) {
-              return 'app-regex-visualizer';
-            }
-            if (id.includes('src/apps/JsonTreeView')) {
-              return 'app-json-tree-view';
-            }
-            if (id.includes('src/apps/FocusTimer')) {
-              return 'app-focus-timer';
-            }
-            // v107 新增组件 chunk 分割
-            if (id.includes('src/apps/GlobalIntelCenter')) {
-              return 'app-global-intel';
-            }
-            if (id.includes('src/apps/SnippetForge')) {
-              return 'app-snippet-forge';
-            }
-            if (id.includes('src/apps/AppMarketplace')) {
-              return 'app-marketplace';
-            }
-            if (id.includes('src/apps/CloudDrive')) {
-              return 'app-cloud-drive';
-            }
-            if (id.includes('src/apps/WebSSHTerminal')) {
-              return 'app-web-ssh';
-            }
-            if (id.includes('src/apps/WorkspaceLayout')) {
-              return 'app-workspace-layout';
-            }
-            if (id.includes('src/apps/RSSAggregator')) {
-              return 'app-rss-aggregator';
-            }
-            if (id.includes('src/apps/SmartNotesPro')) {
-              return 'app-smart-notes-pro';
-            }
-            if (id.includes('src/apps/DevOpsDashboard')) {
-              return 'app-devops-dashboard';
-            }
-            if (id.includes('src/apps/SystemOptimizer')) {
-              return 'app-system-optimizer';
-            }
-            if (id.includes('src/apps/FontPairing')) {
-              return 'app-fonts';
-            }
-            if (id.includes('src/apps/DailyChallenge')) {
-              return 'app-challenge';
-            }
-            if (id.includes('src/apps/FocusFlow')) {
-              return 'app-focusflow';
-            }
-            if (id.includes('src/apps/QuickShare')) {
-              return 'app-quickshare';
-            }
-            if (id.includes('src/apps/RegexMaster')) {
-              return 'app-regexmaster';
-            }
-            if (id.includes('src/apps/DevBox')) {
-              return 'app-devbox';
-            }
-            if (id.includes('src/apps/BrowserInfo')) {
-              return 'app-browserinfo';
-            }
-            if (id.includes('src/apps/APILab')) {
-              return 'app-apilab';
-            }
-            if (id.includes('src/apps/LinkAnalyzer')) {
-              return 'app-linkanalyzer';
-            }
-            if (id.includes('src/apps/JsonToYamlConverter')) {
-              return 'app-jsontolint';
-            }
-            if (id.includes('src/apps/OnlineRegexTester')) {
-              return 'app-regextester';
-            }
-            if (id.includes('src/apps/APILoadTester')) {
-              return 'app-loadtester';
-            }
-            if (id.includes('src/apps/MarkdownToSlides')) {
-              return 'app-mk-slides';
-            }
-            if (id.includes('src/apps/ColorMixerPro')) {
-              return 'app-colormixer';
-            }
-            if (id.includes('src/apps/DateTimeCalculator')) {
-              return 'app-datetime';
-            }
-            if (id.includes('src/apps/PasswordGeneratorPro')) {
-              return 'app-passwordgen';
-            }
-            if (id.includes('src/apps/BatchImageProcessor')) {
-              return 'app-batchimg';
-            }
-            if (id.includes('src/apps/TerminalPro')) {
-              return 'app-terminalpro';
-            }
-            if (id.includes('src/apps/LocalStorageInspector') || id.includes('src/apps/CookieManager')) {
-              return 'app-storage';
-            }
-            if (id.includes('src/apps/WebSocketClient')) {
-              return 'app-websocket';
-            }
-            if (id.includes('src/apps/ZenBreath') || id.includes('src/apps/DeepFocus')) {
-              return 'app-mindfulness';
-            }
-            if (id.includes('src/apps/AIUpscaler') || id.includes('src/apps/AIBackgroundRemover')) {
-              return 'app-ai-images';
-            }
-            if (id.includes('src/apps/SmartWebClipper') || id.includes('src/apps/WebToMarkdown')) {
-              return 'app-web-tools';
-            }
-            if (id.includes('src/apps/GlobalPulse')) {
-              return 'app-global-pulse'
-            }
-            if (id.includes('src/apps/CodeSnapPro')) {
-              return 'app-code-snap'
-            }
+            // ===== Core components =====
             if (id.includes('src/components')) {
               return 'components-shared'
             }
+
+            // ===== Terminal (large multi-module app) =====
+            if (id.includes('src/apps/terminal')) {
+              return 'app-terminal'
+            }
+
+            // ===== Pattern-based auto chunking for apps =====
+            // Large apps with submodules or complex dependencies get their own chunks
+            const LARGE_APP_PATTERNS: [RegExp, string][] = [
+              [/CodeEditor|CodeForge|CodeStudio/i, 'app-codeeditor'],
+              [/FileManager/i, 'app-filemanager'],
+              [/WebBrowser|Browser(?!Fingerprint)/i, 'app-browser'],
+              [/Weather(?!Dashboard)/i, 'app-weather'],
+              [/MusicPlayer|MusicStudio/i, 'app-music'],
+              [/VideoPlayer/i, 'app-video'],
+              [/Game/i, 'app-games'],
+              [/NexusAI|AICraft|AIBackgroundRemover|AIUpscaler|AICodeReview/i, 'app-ai-suite'],
+              [/TerminalPro/i, 'app-terminalpro'],
+              [/Calendar/i, 'app-calendar'],
+              [/Calculator/i, 'app-calculator'],
+              [/Clock/i, 'app-clock'],
+              [/Paint/i, 'app-paint'],
+              [/Notepad/i, 'app-notepad'],
+              [/Email/i, 'app-email'],
+              [/DevTools|DevBox|DevRadar/i, 'app-devtools'],
+              [/SystemDashboard|SystemOptimizer|SystemHealthMonitor/i, 'app-system'],
+              [/RegexVisualizer|RegexMaster|OnlineRegexTester/i, 'app-regex'],
+              [/JsonTreeView|JsonFormatter|JsonCrusher|JsonToYamlConverter/i, 'app-json'],
+              [/PromptEngineeringLab|PromptForge|AIWritingStudio/i, 'app-prompt'],
+              [/EnhancedCodeSandbox|OnlineCodeRunnerPro/i, 'app-sandbox'],
+              [/EnhancedApiDebugger|APILab|APILoadTester/i, 'app-api-tools'],
+              [/BookFinder/i, 'app-bookfinder'],
+              [/QuickTranslate|SmartTranslator|LanguageLab/i, 'app-translate'],
+              [/ColorName|ColorMixerPro|ColorPaletteGen|ColorAccessibility/i, 'app-colors'],
+              [/GlobalPulse|GlobalIntelCenter|InfoPulseCenter/i, 'app-global-data'],
+              [/SmartNotesPro|MarkdownNotebook|MarkdownLiveStudio|MarkdownLivePreview/i, 'app-notes'],
+              [/RSSAggregator/i, 'app-rss'],
+              [/WebSSHTerminal/i, 'app-web-ssh'],
+              [/CloudDrive|WorkspaceLayout/i, 'app-workspace'],
+              [/DevOpsDashboard/i, 'app-devops'],
+              [/FontPairing/i, 'app-fonts'],
+              [/FocusTimer|FocusFlow|ZenBreath|DeepFocus/i, 'app-focus'],
+              [/QuickShare/i, 'app-quickshare'],
+              [/BrowserInfo|DevInfoDashboard/i, 'app-browser-info'],
+              [/LinkAnalyzer/i, 'app-link'],
+              [/BatchImageProcessor/i, 'app-batchimg'],
+              [/LocalStorageInspector|CookieManager/i, 'app-storage'],
+              [/WebSocketClient/i, 'app-websocket'],
+              [/ZenBreath|DeepFocus/i, 'app-mindfulness'],
+              [/SmartWebClipper|WebToMarkdown/i, 'app-web-tools'],
+              [/CodeSnapPro/i, 'app-code-snap'],
+              [/AmbientSound/i, 'app-ambientsound'],
+              [/TextAnalyzer/i, 'app-text-analyzer'],
+              [/HTTPToolkit/i, 'app-http-toolkit'],
+              [/DevRadar/i, 'app-devradar'],
+              [/AstroViewer/i, 'app-astrophys'],
+              [/DataVizWorkbench/i, 'app-dataviz'],
+              [/QuickQuote|Quote/i, 'app-quote'],
+              [/DailyChallenge/i, 'app-challenge'],
+              [/SmartWebClipper/i, 'app-web-tools'],
+              [/CryptoDashboard/i, 'app-crypto'],
+              [/WeatherDashboard/i, 'app-weather-dash'],
+              [/GlobalTravelAssistant/i, 'app-travel'],
+              [/WebsitePerformanceTester|PerformanceDashboard/i, 'app-perf'],
+              [/PasswordGeneratorPro/i, 'app-password'],
+              [/DateTimeCalculator/i, 'app-datetime'],
+              [/MarkdownToSlides|SlideForge/i, 'app-slides'],
+              [/RegexMaster/i, 'app-regexmaster'],
+              [/SnippetForge/i, 'app-snippet'],
+              [/AppMarketplace/i, 'app-marketplace'],
+              [/WorldClock/i, 'app-world-clock'],
+              [/CurrencyConverter/i, 'app-currency'],
+              [/IPInfoDashboard/i, 'app-ip-info'],
+            ]
+
+            for (const [pattern, chunkName] of LARGE_APP_PATTERNS) {
+              if (pattern.test(id)) return chunkName
+            }
+
+            // All remaining apps: group into a single "apps-misc" chunk
+            if (id.includes('src/apps/')) {
+              return 'apps-misc'
+            }
+
             return undefined
           },
           entryFileNames: 'assets/[name]-[hash].js',

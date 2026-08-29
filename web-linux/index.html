@@ -273,7 +273,7 @@
       <div class="progress">
         <div class="progress-bar"></div>
       </div>
-      <div class="hint" id="boot-hint">v138.0 · 启动中 · 请稍候</div>
+      <div class="hint" id="boot-hint">v139.0 · 启动中 · 请稍候</div>
     </div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06060c;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
@@ -288,18 +288,17 @@
     <script>
       // 启动日志动画
       (function() {
-        var v = '138';
+        var v = '139';
       var lines = [
           { type: 'info', text: '[ OK ] Started WebLinuxOS v' + v + ' init process' },
           { type: 'info', text: '[ OK ] Reached target Multi-User System' },
           { type: 'info', text: '[ OK ] Listening on virtual desktop 0.0.0.0:5173' },
           { type: 'ok',   text: '[ OK ] Loaded 700+ integrated applications' },
           { type: 'ok',   text: '[ OK ] Mounted virtual file system via IndexedDB' },
-          { type: 'ok',   text: '[ OK ] QRCodeGenerator: real QR encoding with error correction' },
-          { type: 'ok',   text: '[ OK ] New tools: Base64 Toolkit, Cron Expression Parser' },
-          { type: 'ok',   text: '[ OK ] Performance: SystemMonitor RAF lifecycle, cmdHistory limits' },
+          { type: 'ok',   text: '[ OK ] New: World Clock, Currency Converter, IP Info Dashboard' },
+          { type: 'ok',   text: '[ OK ] Optimized Vite chunk splitting with pattern matching' },
           { type: 'ok',   text: '[ OK ] Service Worker cache updated to v' + v },
-          { type: 'info', text: '[ OK ] WebLinuxOS v' + v + ' ready · Real QR codes, new tools & quality fixes' },
+          { type: 'info', text: '[ OK ] WebLinuxOS v' + v + ' ready · Real tools, API integrations & quality improvements' },
         ];
         var el = document.getElementById('boot-log');
         if (!el) return;

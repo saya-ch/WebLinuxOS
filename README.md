@@ -1,20 +1,69 @@
+<div align="center">
+
 # WebLinuxOS
 
-A complete Linux desktop environment running entirely in the browser -- no server, no backend, no dependencies. Built with React, TypeScript, and Vite.
+**A complete Linux desktop environment running entirely in the browser.**
 
-**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)**
+No server. No backend. No dependencies.
 
-[![Deploy](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions)
+[![Deploy Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
+[![Version](https://img.shields.io/badge/version-139.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+
+**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** &nbsp;|&nbsp; [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) &nbsp;|&nbsp; [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
+
+<br />
+
+</div>
 
 ---
 
-## What is this?
+## Table of Contents
 
-WebLinuxOS is a browser-based desktop environment that replicates a full Linux experience. It includes window management, a virtual file system backed by IndexedDB, a terminal emulator with 200+ commands, 700+ applications, and integrations with 25+ public APIs. Everything runs client-side -- no data leaves your browser unless an app explicitly calls a public API.
+- [Overview](#overview)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Applications](#applications)
+- [API Integrations](#api-integrations)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-## Core Features
+---
+
+## Overview
+
+WebLinuxOS replicates a full Linux desktop experience in the browser. It features window management, a virtual file system backed by IndexedDB, a terminal emulator with 200+ commands, 700+ applications, and integrations with 25+ public APIs. Everything runs client-side -- no data leaves your browser unless an app explicitly calls a public API.
+
+---
+
+## Screenshots
+
+<div align="center">
+
+| Desktop | Application Launcher |
+|:-------:|:--------------------:|
+| ![Desktop](web-linux/screenshots/01-desktop.png) | ![Launcher](web-linux/screenshots/02-launcher.png) |
+
+| File Manager | Terminal |
+|:------------:|:--------:|
+| ![File Manager](web-linux/screenshots/03-file-manager.png) | ![Terminal](web-linux/screenshots/04-terminal.png) |
+
+| Text Editor | Final Desktop |
+|:-----------:|:-------------:|
+| ![Text Editor](web-linux/screenshots/05-text-editor.png) | ![Final Desktop](web-linux/screenshots/06-final-desktop.png) |
+
+</div>
+
+---
+
+## Features
 
 ### Desktop Environment
 
@@ -22,7 +71,7 @@ WebLinuxOS is a browser-based desktop environment that replicates a full Linux e
 - Up to 9 virtual desktops with cross-desktop window migration
 - Dark and light themes with 8 accent color presets
 - Dynamic wallpapers: aurora, particles, waves, nebula, and 32 gradient options
-- Global search (Ctrl+Shift+K) to launch any app instantly
+- Global search (`Ctrl+Shift+K`) to launch any app instantly
 - 25+ keyboard shortcuts for power users
 - Start menu with categorized app launcher and search history
 
@@ -42,22 +91,73 @@ WebLinuxOS is a browser-based desktop environment that replicates a full Linux e
 - Undo/redo support (up to 100 operations)
 - Automatic migration from localStorage to IndexedDB
 
-### PWA Support
+### PWA & Cross-Tab Sync
 
-- Installable as a standalone app
-- Works offline via Service Worker with smart caching
-- Automatic update detection
-
-### Cross-Tab Synchronization
-
+- Installable as a standalone app with offline support via Service Worker
 - Theme, accent color, and file changes sync across browser tabs via BroadcastChannel
 - Presence awareness: see which tabs are open with human-readable names
 - Clipboard sharing between tabs
 
-## Applications (700+)
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|:------|:-----------|:--------|
+| UI Framework | React 19 | Component-based UI rendering |
+| Language | TypeScript 6 | Type-safe development |
+| Build Tool | Vite 8 | Fast bundling and HMR |
+| State Management | Zustand 5 | Lightweight global state |
+| Code Editor | Monaco Editor 4.7 | VS Code-powered editor |
+| Python Runtime | Pyodide 0.26 | Browser-based Python execution |
+| Markdown | marked 18 | Markdown parsing and rendering |
+| Icons | lucide-react | Consistent icon library |
+| Storage | IndexedDB + localStorage | Persistent file system and settings |
+| PWA | Service Worker | Offline support and caching |
+
+---
+
+## Getting Started
+
+### Online
+
+Visit **[saya-ch.github.io/WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/)** -- no installation required.
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/saya-ch/WebLinuxOS.git
+cd WebLinuxOS/web-linux
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Open `http://localhost:5173/WebLinuxOS/` in your browser.
+
+### Build & Deploy
+
+```bash
+npm run build        # TypeScript check + production build
+npm run typecheck    # Type checking only
+npm run lint         # ESLint analysis
+npm run format       # Format code with Prettier
+```
+
+The production build outputs to `../dist/` with Vite-optimized chunks and PWA assets.
+
+---
+
+## Applications
+
+WebLinuxOS ships with **700+ applications** across 10+ categories:
 
 | Category | Examples |
-|----------|----------|
+|:---------|:---------|
 | System | File Manager, Terminal, Settings, System Monitor, DevInfo Dashboard |
 | Development | Code Editor (Monaco), Markdown Live Preview, API Debugger, Web IDE, Git Assistant |
 | AI | AI Chat, AI Code Assistant, Pollinations Image Gen, Prompt Engineering Lab |
@@ -70,84 +170,50 @@ WebLinuxOS is a browser-based desktop environment that replicates a full Linux e
 
 All apps use real public APIs for live data -- no mock or placeholder content.
 
+---
+
 ## API Integrations
 
-| API | Data |
-|-----|------|
-| Open-Meteo | Weather forecasts |
-| CoinGecko | Cryptocurrency prices |
-| Hacker News | Tech news |
-| Wikipedia | Encyclopedia articles |
-| GitHub API | Repository data |
-| Pollinations.ai | AI chat and images |
-| NASA APOD | Astronomy pictures |
-| Frankfurter | Exchange rates |
-| Free Dictionary | Word definitions |
-| MyMemory | Translation |
-| TheMealDB | Recipes |
-| Cloudflare DoH | DNS resolution |
-| ZenQuotes | Motivational quotes |
-| Datamuse | Word relationships |
+WebLinuxOS integrates with **25+ public APIs**:
 
-## Tech Stack
+| API | Data | Used By |
+|:----|:-----|:--------|
+| Open-Meteo | Weather forecasts | Weather, Weather Dashboard |
+| CoinGecko | Cryptocurrency prices | Crypto Tracker, Finance Dashboard |
+| Hacker News | Tech news | HackerNewsReader, NewsHub |
+| Wikipedia | Encyclopedia articles | WikiExplorer, WikipediaReader |
+| GitHub API | Repository data | GitHubExplorer, GitHubTrending |
+| Pollinations.ai | AI chat and images | AIChat, PollinationsStudio |
+| NASA APOD | Astronomy pictures | AstroDaily, AstroViewer |
+| Frankfurter | Exchange rates | CurrencyConverter, ExchangeRate |
+| Free Dictionary | Word definitions | Dictionary, LexiconForge |
+| MyMemory | Translation | Translator, SmartTranslator |
+| TheMealDB | Recipes | RecipeBook, RecipeForge |
+| Cloudflare DoH | DNS resolution | DNSLookup, DnsDiagnostics |
+| ZenQuotes | Motivational quotes | DailyQuote, QuickQuote |
+| Datamuse | Word relationships | KnowledgeExplorer |
 
-| Layer | Technology |
-|-------|-----------|
-| UI | React 19 |
-| Language | TypeScript 6 |
-| Build | Vite 8 |
-| State | Zustand 5 |
-| Editor | Monaco Editor 4.7 |
-| Python | Pyodide 0.26 |
-| Markdown | marked 18 |
-| Icons | lucide-react |
-| Storage | IndexedDB + localStorage |
-| PWA | Service Worker |
-
-## Getting Started
-
-### Online
-
-Visit **[saya-ch.github.io/WebLinuxOS](https://saya-ch.github.io/WebLinuxOS/)** -- no installation required.
-
-### Local Development
-
-```bash
-git clone https://github.com/saya-ch/WebLinuxOS.git
-cd WebLinuxOS/web-linux
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173/WebLinuxOS/` in your browser.
-
-### Build & Deploy
-
-```bash
-npm run build        # TypeScript check + production build
-npm run typecheck    # Type checking only
-npm run lint         # ESLint analysis
-```
-
-The production build outputs to `../dist/` with Vite-optimized chunks and PWA assets.
+---
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
-|----------|--------|
-| Ctrl/Cmd+Shift+K | Global search |
-| Ctrl/Cmd+T | Open terminal |
-| Ctrl/Cmd+E | File manager |
-| Ctrl/Cmd+B | Web browser |
-| Ctrl/Cmd+P | Command palette |
-| Ctrl/Cmd+Space | Smart command center |
-| Alt+N | Quick note |
-| Ctrl/Cmd+Q | Close window |
-| Ctrl/Cmd+M | Minimize window |
-| Ctrl/Cmd+/ | Shortcut reference |
-| Ctrl/Cmd+Alt+1-9 | Switch desktop |
-| Ctrl/Cmd+Shift+Arrow | Move window to desktop |
-| F11 | Toggle fullscreen |
+|:---------|:-------|
+| `Ctrl/Cmd+Shift+K` | Global search |
+| `Ctrl/Cmd+T` | Open terminal |
+| `Ctrl/Cmd+E` | File manager |
+| `Ctrl/Cmd+B` | Web browser |
+| `Ctrl/Cmd+P` | Command palette |
+| `Ctrl/Cmd+Space` | Smart command center |
+| `Alt+N` | Quick note |
+| `Ctrl/Cmd+Q` | Close window |
+| `Ctrl/Cmd+M` | Minimize window |
+| `Ctrl/Cmd+/` | Shortcut reference |
+| `Ctrl/Cmd+Alt+1-9` | Switch desktop |
+| `Ctrl/Cmd+Shift+Arrow` | Move window to desktop |
+| `F11` | Toggle fullscreen |
+
+---
 
 ## Project Structure
 
@@ -161,26 +227,25 @@ WebLinuxOS/
 │   │   │   ├── algorithms/    # Algorithm visualizations
 │   │   │   └── *.tsx          # Individual apps
 │   │   ├── components/        # Core UI (desktop, windows, taskbar)
-│   │   ├── store/             # Zustand state + IndexedDB
+│   │   ├── store/             # Zustand state management + IndexedDB
 │   │   ├── services/          # Sync, clipboard, API services
 │   │   ├── styles/            # CSS themes
 │   │   └── utils/             # Utility functions
 │   ├── public/                # PWA assets (sw.js, manifest.json)
+│   ├── screenshots/           # Project screenshots
+│   ├── package.json
 │   └── vite.config.ts         # Build config with chunk splitting
 ├── .github/workflows/         # GitHub Actions CI/CD
+├── CONTRIBUTING.md
+├── LICENSE
 └── README.md
 ```
 
-## Browser Support
-
-| Browser | Minimum Version |
-|---------|----------------|
-| Chrome | 90+ |
-| Firefox | 90+ |
-| Safari | 15+ |
-| Edge | 90+ |
+---
 
 ## Contributing
+
+Contributions are welcome. Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
@@ -196,6 +261,17 @@ WebLinuxOS/
 3. Register it in `src/apps.tsx` within `APP_REGISTRY_EXTRAS`
 4. Add a lazy import in `src/components/desktop/WindowManager.tsx`
 
+### Browser Support
+
+| Browser | Minimum Version |
+|:--------|:----------------|
+| Chrome | 90+ |
+| Firefox | 90+ |
+| Safari | 15+ |
+| Edge | 90+ |
+
+---
+
 ## Roadmap
 
 - [ ] i18n multi-language support
@@ -204,6 +280,8 @@ WebLinuxOS/
 - [ ] File System Access API integration
 - [ ] Playwright end-to-end testing in CI
 
+---
+
 ## License
 
-[MIT](LICENSE) -- Copyright (c) 2024-2026 [saya-ch](https://github.com/saya-ch)
+[MIT](LICENSE) &copy; 2024-2026 [saya-ch](https://github.com/saya-ch)
