@@ -712,29 +712,35 @@ const Weather = memo(function Weather() {
       })
       const { latitude, longitude } = pos.coords
 
-      // 反向地理编码 - 用 Open-Meteo geocoding 的 reverse 模式
-      // Open-Meteo 没有 reverse geocoding，所以我们用 forecast API 中的 timezone 来推断，
-      // 或者直接添加坐标作为城市
+      // 反向地理编码：使用 OpenStreetMap Nominatim 获取真实城市名称
       let cityName = '当前位置'
       let countryName = ''
       let adminName = ''
 
-      // 尝试用 geocoding 搜索附近的已知城市来获取名称
       try {
-        // 使用一个粗略的方式：获取天气数据中的 timezone 推断位置
-        const tzUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`
-        const tzRes = await fetch(tzUrl)
-        if (tzRes.ok) {
-          const tzData = await tzRes.json()
-          const timezone = tzData.timezone || ''
-          // 从时区提取城市名 (如 "Asia/Shanghai" -> "Shanghai")
-          const parts = timezone.split('/')
-          if (parts.length >= 2) {
-            cityName = parts[parts.length - 1].replace(/_/g, ' ')
-          }
+        const revUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=zh-CN&zoom=10`
+        const revRes = await fetch(revUrl, { headers: { 'User-Agent': 'WebLinuxOS/138' } })
+        if (revRes.ok) {
+          const revData = await revRes.json()
+          const addr = revData.address || {}
+          cityName = addr.city || addr.town || addr.village || addr.county || addr.state || '当前位置'
+          countryName = addr.country || ''
+          adminName = addr.state || ''
         }
       } catch {
-        // 无法获取名称，使用默认
+        // 回退到时区推断
+        try {
+          const tzUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`
+          const tzRes = await fetch(tzUrl)
+          if (tzRes.ok) {
+            const tzData = await tzRes.json()
+            const timezone = tzData.timezone || ''
+            const parts = timezone.split('/')
+            if (parts.length >= 2) {
+              cityName = parts[parts.length - 1].replace(/_/g, ' ')
+            }
+          }
+        } catch { /* 使用默认名称 */ }
       }
 
       const geoCity: CityInfo = {

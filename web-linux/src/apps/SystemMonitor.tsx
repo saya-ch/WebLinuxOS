@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, Monitor, Play, Pause, Server } from 'lucide-react'
+import { Activity, Cpu, HardDrive, Wifi, Battery, MemoryStick, Clock, Monitor, Play, Pause, Server, Shield } from 'lucide-react'
 import { useStore } from '../store'
 
 // --- Type declarations for browser APIs not in standard TypeScript lib ---
@@ -784,7 +784,15 @@ const SystemMonitor = () => {
               </div>
               <div className="sm-info-row">
                 <span>屏幕</span>
-                <strong>{screen.width}×{screen.height}</strong>
+                <strong>{screen.width}x{screen.height}</strong>
+              </div>
+              <div className="sm-info-row">
+                <span>像素比</span>
+                <strong>{window.devicePixelRatio.toFixed(1)}x</strong>
+              </div>
+              <div className="sm-info-row">
+                <span>色彩深度</span>
+                <strong>{screen.colorDepth} bit</strong>
               </div>
               <div className="sm-info-row">
                 <span>帧率</span>
@@ -800,6 +808,41 @@ const SystemMonitor = () => {
                 <span>平台</span>
                 <strong>{navigator.platform || '—'}</strong>
               </div>
+            </div>
+          </div>
+
+          <div className="sm-card">
+            <div className="sm-card-head">
+              <Shield size={16} />
+              <span>Web 能力检测</span>
+            </div>
+            <div className="sm-cap-grid">
+              {[
+                { name: 'Service Worker', ok: 'serviceWorker' in navigator },
+                { name: 'Web Worker', ok: typeof Worker !== 'undefined' },
+                { name: 'IndexedDB', ok: 'indexedDB' in window },
+                { name: 'WebGL', ok: (() => { try { return !!document.createElement('canvas').getContext('webgl') } catch { return false } })() },
+                { name: 'WebGL 2', ok: (() => { try { return !!document.createElement('canvas').getContext('webgl2') } catch { return false } })() },
+                { name: 'WebSocket', ok: 'WebSocket' in window },
+                { name: 'Geolocation', ok: 'geolocation' in navigator },
+                { name: 'Notifications', ok: 'Notification' in window },
+                { name: 'Clipboard', ok: 'clipboard' in navigator },
+                { name: 'SharedArrayBuffer', ok: typeof SharedArrayBuffer !== 'undefined' },
+                { name: 'WebAssembly', ok: typeof WebAssembly !== 'undefined' },
+                { name: 'Web Audio', ok: 'AudioContext' in window || 'webkitAudioContext' in window },
+                { name: 'Touch Events', ok: 'ontouchstart' in window || navigator.maxTouchPoints > 0 },
+                { name: 'File System API', ok: 'showOpenFilePicker' in window },
+                { name: 'Web Share', ok: 'share' in navigator },
+                { name: 'Bluetooth', ok: 'bluetooth' in navigator },
+              ].map((cap) => (
+                <div key={cap.name} className="sm-cap-item">
+                  <span className={`sm-cap-dot ${cap.ok ? 'sm-cap-ok' : 'sm-cap-no'}`} />
+                  <span className="sm-cap-name">{cap.name}</span>
+                  <span className={`sm-cap-status ${cap.ok ? 'sm-cap-ok-text' : 'sm-cap-no-text'}`}>
+                    {cap.ok ? '可用' : '不可用'}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1337,47 +1380,100 @@ const SystemMonitor = () => {
           font-size: 12px;
         }
 
-        @media (prefers-color-scheme: light) {
-          .sm-root {
-            background: #f5f5f7;
-            color: #1f2937;
-          }
-          .sm-header {
-            background: #fff;
-            border-color: #e5e7eb;
-          }
-          .sm-card {
-            background: #fff;
-            border-color: #e5e7eb;
-          }
-          .sm-gauge-bar,
-          .sm-bars,
-          .sm-net-item,
-          .sm-info-row {
-            background: #f3f4f6;
-          }
-          .sm-info-row {
-            border-bottom-color: #e5e7eb;
-          }
-          .sm-process-header {
-            border-bottom-color: #e5e7eb;
-          }
-          .sm-process-row {
-            border-bottom-color: #f3f4f6;
-          }
-          .sm-toggle-slider {
-            background: #d1d5db;
-          }
-          .sm-interval {
-            background: #fff;
-            border-color: #e5e7eb;
-            color: #1f2937;
-          }
-          .sm-refresh-btn {
-            background: #fff;
-            border-color: #e5e7eb;
-            color: #1f2937;
-          }
+        .sm-cap-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 4px;
+        }
+
+        .sm-cap-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 6px;
+          border-radius: 4px;
+          font-size: 11px;
+          background: var(--window-bg, #0f0f1a);
+        }
+
+        .sm-cap-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .sm-cap-ok {
+          background: #22c55e;
+          box-shadow: 0 0 4px #22c55e88;
+        }
+
+        .sm-cap-no {
+          background: #6b7280;
+        }
+
+        .sm-cap-name {
+          flex: 1;
+          color: var(--text-secondary, #9ca3af);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .sm-cap-status {
+          font-weight: 600;
+          font-family: 'Monaco', monospace;
+          font-size: 10px;
+        }
+
+        .sm-cap-ok-text {
+          color: #22c55e;
+        }
+
+        .sm-cap-no-text {
+          color: #6b7280;
+        }
+
+        .light .sm-root {
+          background: #f5f5f7;
+          color: #1f2937;
+        }
+        .light .sm-header {
+          background: #fff;
+          border-color: #e5e7eb;
+        }
+        .light .sm-card {
+          background: #fff;
+          border-color: #e5e7eb;
+        }
+        .light .sm-gauge-bar,
+        .light .sm-bars,
+        .light .sm-net-item,
+        .light .sm-info-row,
+        .light .sm-cap-item {
+          background: #f3f4f6;
+        }
+        .light .sm-info-row {
+          border-bottom-color: #e5e7eb;
+        }
+        .light .sm-process-header {
+          border-bottom-color: #e5e7eb;
+        }
+        .light .sm-process-row {
+          border-bottom-color: #f3f4f6;
+        }
+        .light .sm-toggle-slider {
+          background: #d1d5db;
+        }
+        .light .sm-interval {
+          background: #fff;
+          border-color: #e5e7eb;
+          color: #1f2937;
+        }
+        .light .sm-refresh-btn {
+          background: #fff;
+          border-color: #e5e7eb;
+          color: #1f2937;
         }
       `}</style>
     </div>

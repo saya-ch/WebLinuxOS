@@ -196,6 +196,14 @@ WebLinuxOS/
 3. Register it in `src/apps.tsx` within `APP_REGISTRY_EXTRAS`
 4. Add a lazy import in `src/components/desktop/WindowManager.tsx`
 
+## Roadmap
+
+- [ ] i18n multi-language support
+- [ ] Plugin system for third-party extensions
+- [ ] WebRTC screen sharing
+- [ ] File System Access API integration
+- [ ] Playwright end-to-end testing in CI
+
 ## License
 
 [MIT](LICENSE) -- Copyright (c) 2024-2026 [saya-ch](https://github.com/saya-ch)
