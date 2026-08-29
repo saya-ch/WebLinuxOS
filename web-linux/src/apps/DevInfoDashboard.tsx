@@ -208,7 +208,6 @@ export default function DevInfoDashboard() {
   const [lsEntries, setLsEntries] = useState<StorageEntry[]>([])
   const [ssEntries, setSsEntries] = useState<StorageEntry[]>([])
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  const [fps, setFps] = useState(0)
   const fpsRef = useRef({ count: 0, lastTime: performance.now() })
   const animRef = useRef<number>(0)
   const fpsValueRef = useRef(0)
@@ -233,48 +232,47 @@ export default function DevInfoDashboard() {
     return () => cancelAnimationFrame(animRef.current)
   }, [])
 
-  // 数据采集（不依赖 state，避免循环）
-  useEffect(() => {
-    const collectData = () => {
-      const browser = detectBrowser()
-      const device = detectDevice()
-      const sys = detectSystem()
-      const net = detectNetwork()
-      const sec = detectSecurity()
-      const apis = detectWebAPIs()
-      const page = detectPageInfo()
+  // 数据采集函数
+  const collectData = useCallback(() => {
+    const browser = detectBrowser()
+    const device = detectDevice()
+    const sys = detectSystem()
+    const net = detectNetwork()
+    const sec = detectSecurity()
+    const apis = detectWebAPIs()
+    const page = detectPageInfo()
 
-      // 性能数据
-      const perf = performance as Performance & { memory?: { usedJSHeapSize: number } }
-      const mem = perf.memory
-      const jsHeapStr = mem ? `${(mem.usedJSHeapSize / 1048576).toFixed(1)} MB` : '不可用'
+    // 性能数据
+    const perf = performance as Performance & { memory?: { usedJSHeapSize: number } }
+    const mem = perf.memory
+    const jsHeapStr = mem ? `${(mem.usedJSHeapSize / 1048576).toFixed(1)} MB` : '不可用'
 
-      const lsKeys = Object.keys(localStorage)
-      const lsSize = lsKeys.reduce((acc, key) => {
-        const item = localStorage.getItem(key) || ''
-        return acc + key.length + item.length
-      }, 0)
-      const lsUsageStr = `${(lsSize / 1024).toFixed(1)} KB (${lsKeys.length} 项)`
+    const lsKeys = Object.keys(localStorage)
+    const lsSize = lsKeys.reduce((acc, key) => {
+      const item = localStorage.getItem(key) || ''
+      return acc + key.length + item.length
+    }, 0)
+    const lsUsageStr = `${(lsSize / 1024).toFixed(1)} KB (${lsKeys.length} 项)`
 
-      let perfTimingStr = '不可用'
-      try {
-        const timing = performance.timing
-        if (timing && timing.navigationStart) {
-          const ttfb = timing.responseStart - timing.navigationStart
-          const domReady = timing.domContentLoadedEventEnd - timing.navigationStart
-          const loadTime = timing.loadEventEnd - timing.navigationStart
-          perfTimingStr = `TTFB: ${ttfb}ms | DOM: ${domReady}ms | Load: ${loadTime}ms`
-        }
-      } catch { /* ignore */ }
+    let perfTimingStr = '不可用'
+    try {
+      const timing = performance.timing
+      if (timing && timing.navigationStart) {
+        const ttfb = timing.responseStart - timing.navigationStart
+        const domReady = timing.domContentLoadedEventEnd - timing.navigationStart
+        const loadTime = timing.loadEventEnd - timing.navigationStart
+        perfTimingStr = `TTFB: ${ttfb}ms | DOM: ${domReady}ms | Load: ${loadTime}ms`
+      }
+    } catch { /* ignore */ }
 
-      // 存储
-      const newLsEntries = getStorageEntries(localStorage)
-      const newSsEntries = getStorageEntries(sessionStorage)
-      setLsEntries(newLsEntries)
-      setSsEntries(newSsEntries)
-      estimateIndexedDB().then((size) => { indexedDBSizeRef.current = size })
+    // 存储
+    const newLsEntries = getStorageEntries(localStorage)
+    const newSsEntries = getStorageEntries(sessionStorage)
+    setLsEntries(newLsEntries)
+    setSsEntries(newSsEntries)
+    estimateIndexedDB().then((size) => { indexedDBSizeRef.current = size })
 
-      const newSections: InfoSection[] = [
+    const newSections: InfoSection[] = [
       {
         id: 'browser',
         title: '浏览器信息',
@@ -402,12 +400,14 @@ export default function DevInfoDashboard() {
 
     setSections(newSections)
     setTimestamp(new Date().toLocaleString('zh-CN'))
-    }
+  }, [])
 
+  // 自动刷新
+  useEffect(() => {
     collectData()
     const timer = setInterval(collectData, 5000)
     return () => clearInterval(timer)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [collectData])
 
   const handleCopy = useCallback(async (key: string, value: string) => {
     try {
