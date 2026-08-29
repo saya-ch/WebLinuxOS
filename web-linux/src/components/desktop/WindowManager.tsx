@@ -665,6 +665,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v129 创新应用：DeployMonitor + SmartTranslator
   DeployMonitor: () => import('../../apps/DeployMonitor'),
   SmartTranslator: () => import('../../apps/SmartTranslator'),
+  // === v137 新增应用 ===
+  PomodoroTimer: () => import('../../apps/PomodoroTimer'),
+  CountdownTimer: () => import('../../apps/CountdownTimer'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

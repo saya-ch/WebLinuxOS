@@ -36,6 +36,12 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v137 新增实用工具：PomodoroTimer 番茄时钟（组件已存在于 apps/ 目录但未注册）
+  { id: 'pomodoro-timer', name: '番茄时钟', icon: <ClockIcon />, component: 'PomodoroTimer', category: 'utilities', defaultWidth: 420, defaultHeight: 520, minWidth: 360, minHeight: 440, resizable: false, multiple: false, isNew: true, description: '经典番茄工作法计时器：25分钟专注+5分钟休息循环，自定义时长，统计与历史记录' },
+  // === v137 新增实用工具：CountdownTimer 倒计时器
+  { id: 'countdown-timer', name: '倒计时器', icon: <ClockIcon />, component: 'CountdownTimer', category: 'utilities', defaultWidth: 420, defaultHeight: 540, minWidth: 360, minHeight: 460, resizable: false, multiple: false, isNew: true, description: '优雅的倒计时工具：自定义时长、预设快捷按钮、圆环进度可视化、历史记录' },
+  // === v137 新增实用工具：MarkdownLivePreview Markdown实时预览
+  { id: 'markdown-live-preview', name: 'Markdown 实时预览', icon: <CodeIcon />, component: 'MarkdownLivePreview', category: 'development', defaultWidth: 1000, defaultHeight: 680, minWidth: 720, minHeight: 480, resizable: true, multiple: false, isNew: true, description: '左右分栏 Markdown 编辑器：实时渲染、语法高亮、导出 HTML、可调分栏' },
   // === v136 新增实用工具：DevInfoDashboard 开发者信息仪表盘
   { id: 'dev-info-dashboard', name: 'DevInfoDashboard 开发者仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>, component: 'DevInfoDashboard', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '浏览器开发者信息仪表盘：实时FPS/内存/存储监控、设备与系统信息、网络状态、Web API支持检测、安全策略分析、页面信息概览，一键复制任意值' },
   // === v135 新增创新工具：BrowserFingerprint 浏览器指纹识别

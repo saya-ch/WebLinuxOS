@@ -106,15 +106,8 @@ interface FileOperation {
   fileName?: string
 }
 
-interface Notification {
-  id: string
-  title: string
-  message: string
-  icon?: string
-  type?: 'info' | 'success' | 'warning' | 'error'
-  duration?: number
-  timestamp?: Date
-}
+// 使用 types.ts 中统一的 Notification 类型定义，避免重复声明
+import type { Notification } from './types'
 
 interface SystemStats {
   cpuUsage: number
@@ -678,9 +671,14 @@ export const useStore = create<Store>((set, get) => ({
       zIndex: w.zIndex,
     }))
     try {
+      const MAX_SAVED_WORKSPACES = 10
       const savedWorkspaces = loadFromStorage<typeof workspaceData[]>('weblinux_saved_workspaces', [])
       savedWorkspaces.push({ timestamp: Date.now(), windows: workspaceData } as never)
-      saveToStorage('weblinux_saved_workspaces', savedWorkspaces)
+      // 限制保存的工作区数量，防止 localStorage 空间膨胀
+      const trimmed = savedWorkspaces.length > MAX_SAVED_WORKSPACES
+        ? savedWorkspaces.slice(savedWorkspaces.length - MAX_SAVED_WORKSPACES)
+        : savedWorkspaces
+      saveToStorage('weblinux_saved_workspaces', trimmed)
     } catch {
       // 静默处理存储错误
     }

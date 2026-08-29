@@ -78,6 +78,20 @@ jobs:
           echo "Asset files count:"
           ls ./dist/assets 2>/dev/null | wc -l || echo 0
 
+      - name: Bundle size report
+        run: |
+          echo "--- Bundle size analysis ---"
+          du -sh ./dist/
+          echo ""
+          echo "--- JS bundle sizes (top 20) ---"
+          find ./dist/assets -name "*.js" -exec ls -lhS {} + 2>/dev/null | head -20 || true
+          echo ""
+          echo "--- CSS sizes ---"
+          find ./dist/assets -name "*.css" -exec ls -lhS {} + 2>/dev/null || true
+          echo ""
+          echo "--- Total asset count ---"
+          find ./dist/assets -type f | wc -l
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
