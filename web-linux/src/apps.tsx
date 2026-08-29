@@ -36,6 +36,9 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v138 新增工具：Base64Toolkit 增强版Base64编解码 + CronExpressionParser Cron解析器
+  { id: 'base64-toolkit', name: 'Base64 增强版编解码', icon: <CodeIcon />, component: 'Base64Toolkit', category: 'utilities', defaultWidth: 900, defaultHeight: 600, minWidth: 600, minHeight: 400, resizable: true, multiple: false, isNew: true, description: '全功能Base64编解码工具：文本/文件编码解码、URL安全Base64、Data URL生成、拖拽上传、编码比统计、双向交换' },
+  { id: 'cron-parser', name: 'Cron 表达式解析器', icon: <ClockIcon />, component: 'CronExpressionParser', category: 'utilities', defaultWidth: 900, defaultHeight: 700, minWidth: 600, minHeight: 500, resizable: true, multiple: false, isNew: true, description: 'Cron调度表达式解析器：字段可视化拆解、自然语言描述、下N次执行时间预览、10个常用表达式预设' },
   // === v137 新增实用工具：PomodoroTimer 番茄时钟（组件已存在于 apps/ 目录但未注册）
   { id: 'pomodoro-timer', name: '番茄时钟', icon: <ClockIcon />, component: 'PomodoroTimer', category: 'utilities', defaultWidth: 420, defaultHeight: 520, minWidth: 360, minHeight: 440, resizable: false, multiple: false, isNew: true, description: '经典番茄工作法计时器：25分钟专注+5分钟休息循环，自定义时长，统计与历史记录' },
   // === v137 新增实用工具：CountdownTimer 倒计时器
@@ -427,7 +430,7 @@ export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
   { id: 'http-status', name: 'HTTP 状态码', icon: <ListTodoIcon />, component: 'HttpStatusCodes', category: 'development', defaultWidth: 600, defaultHeight: 500, minWidth: 400, minHeight: 350, resizable: true, multiple: false,  description: 'HTTP 状态码参考工具：1xx-5xx 全部状态码、搜索过滤、分类标签、一键复制、cURL 命令生成、HTTP 方法速查' },
   // 系统监控仪表盘
   { id: 'system-monitor', name: '系统监控', icon: <ActivityIcon />, component: 'SystemMonitor', category: 'system', defaultWidth: 700, defaultHeight: 500, minWidth: 500, minHeight: 400, resizable: true, multiple: false,  description: '实时系统监控仪表盘：CPU/内存/磁盘/网络可视化、进程列表、自动刷新开关、系统运行时间、电池状态、主题感知' },
-  { id: 'qr-generator', name: '二维码生成器', icon: <GridIcon />, component: 'QRCodeGenerator', category: 'utilities', defaultWidth: 450, defaultHeight: 520, minWidth: 380, minHeight: 420, resizable: true, multiple: false,  description: '纯JS二维码生成器：文本/URL输入、尺寸选择、颜色自定义、PNG下载、剪贴板复制、历史记录持久化、主题感知' },
+  { id: 'qr-generator', name: '二维码生成器', icon: <GridIcon />, component: 'QRCodeGenerator', category: 'utilities', defaultWidth: 500, defaultHeight: 520, minWidth: 380, minHeight: 420, resizable: true, multiple: false,  description: '符合ISO/IEC 18004标准的QR码生成器：GF(256)有限域Reed-Solomon纠错、8种掩码模式择优、版本1-10自适应、颜色自定义、PNG下载' },
   // 语音备忘录 — SpeechMemo
   { id: 'speech-memo', name: '语音备忘录', icon: <VoiceIcon />, component: 'SpeechMemo', category: 'utilities', defaultWidth: 500, defaultHeight: 520, minWidth: 400, minHeight: 400, resizable: true, multiple: false,  description: '语音备忘录：文字转语音（SpeechSynthesis）+ 语音录音转写（SpeechRecognition）+ 备忘录管理 + localStorage持久化' },
   { id: 'unit-converter', name: '单位换算', icon: <ListTodoIcon />, component: 'UnitConverter', category: 'utilities', defaultWidth: 480, defaultHeight: 560, minWidth: 380, minHeight: 420, resizable: true, multiple: false,  description: '综合单位换算工具：长度/重量/温度/体积/面积/时间/速度/数据存储/货币9大类，实时汇率API，本地历史记录' },

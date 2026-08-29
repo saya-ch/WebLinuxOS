@@ -129,6 +129,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   AutoFlow: () => import('../../apps/AutoFlow'),
   BackupTool: () => import('../../apps/BackupTool'),
   Base64Tools: () => import('../../apps/Base64Tools'),
+  Base64Toolkit: () => import('../../apps/Base64Toolkit'),
   BrowserInfo: () => import('../../apps/BrowserInfo'),
   BluetoothManager: () => import('../../apps/BluetoothManager'),
   BookmarkManager: () => import('../../apps/BookmarkManager'),
@@ -668,6 +669,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   // === v137 新增应用 ===
   PomodoroTimer: () => import('../../apps/PomodoroTimer'),
   CountdownTimer: () => import('../../apps/CountdownTimer'),
+  CronExpressionParser: () => import('../../apps/CronExpressionParser'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000
