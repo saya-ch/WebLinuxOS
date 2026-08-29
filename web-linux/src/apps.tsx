@@ -36,6 +36,8 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v136 新增实用工具：DevInfoDashboard 开发者信息仪表盘
+  { id: 'dev-info-dashboard', name: 'DevInfoDashboard 开发者仪表盘', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>, component: 'DevInfoDashboard', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '浏览器开发者信息仪表盘：实时FPS/内存/存储监控、设备与系统信息、网络状态、Web API支持检测、安全策略分析、页面信息概览，一键复制任意值' },
   // === v135 新增创新工具：BrowserFingerprint 浏览器指纹识别
   { id: 'browser-fingerprint', name: 'BrowserFingerprint 浏览器指纹', icon: <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, component: 'BrowserFingerprint', category: 'development', defaultWidth: 1100, defaultHeight: 800, minWidth: 800, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '浏览器指纹识别与隐私分析：Canvas/WebGL/Audio指纹采集、8大类别隐私信息检测、风险评级(高/中/低)、隐私评分(A-F)、一键复制全部指纹数据' },
   // === v135 新增创新工具：LocalStorageInspector 存储检查器

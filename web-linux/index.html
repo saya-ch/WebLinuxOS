@@ -273,7 +273,7 @@
       <div class="progress">
         <div class="progress-bar"></div>
       </div>
-      <div class="hint" id="boot-hint">v135.0 · 启动中 · 请稍候</div>
+      <div class="hint" id="boot-hint">v136.0 · 启动中 · 请稍候</div>
     </div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06060c;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
@@ -288,17 +288,18 @@
     <script>
       // 启动日志动画
       (function() {
+        var v = '136';
         var lines = [
-          { type: 'info', text: '[ OK ] Started WebLinuxOS v135 init process' },
+          { type: 'info', text: '[ OK ] Started WebLinuxOS v' + v + ' init process' },
           { type: 'info', text: '[ OK ] Reached target Multi-User System' },
           { type: 'info', text: '[ OK ] Listening on virtual desktop 0.0.0.0:5173' },
           { type: 'ok',   text: '[ OK ] Loaded 700+ integrated applications' },
           { type: 'ok',   text: '[ OK ] Mounted virtual file system via IndexedDB' },
-          { type: 'ok',   text: '[ OK ] Bug fixes: duplicate app IDs resolved' },
-          { type: 'ok',   text: '[ OK ] BrowserFingerprint + LocalStorageInspector loaded' },
-          { type: 'ok',   text: '[ OK ] ErrorBoundary enhanced with diagnostics & cache clearing' },
-          { type: 'ok',   text: '[ OK ] Service Worker cache updated to v135' },
-          { type: 'info', text: '[ OK ] WebLinuxOS v135 ready · Browser fingerprinting, storage inspector & quality improvements' },
+          { type: 'ok',   text: '[ OK ] CI/CD pipeline optimized: Node 22, lint step, asset verification' },
+          { type: 'ok',   text: '[ OK ] Terminal bugs fixed: exit command, RegExp deprecation' },
+          { type: 'ok',   text: '[ OK ] Performance: SystemMonitor RAF lifecycle, cmdHistory limits' },
+          { type: 'ok',   text: '[ OK ] Service Worker cache updated to v' + v },
+          { type: 'info', text: '[ OK ] WebLinuxOS v' + v + ' ready · Quality improvements, bug fixes & CI optimization' },
         ];
         var el = document.getElementById('boot-log');
         if (!el) return;

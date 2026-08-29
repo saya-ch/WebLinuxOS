@@ -45,6 +45,7 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   ColorPaletteGen: () => import('../../apps/ColorPaletteGen'),
   // v124 创新应用
   AICommandPro: () => import('../../apps/AICommandPro'),
+  DevInfoDashboard: () => import('../../apps/DevInfoDashboard'),
   DevOpsHealthCheck: () => import('../../apps/DevOpsHealthCheck'),
   EcoFoodPrint: () => import('../../apps/EcoFoodPrint'),
   GlobalIntelCenter: () => import('../../apps/GlobalIntelCenter'),
@@ -852,6 +853,7 @@ function preloadComponents(): () => void {
     'FontPairing',
     'DailyChallenge',
     'ColorConverter',
+    'DevInfoDashboard',
   ]
 
   const loadWithPriority = (components: string[], delay: number) => {

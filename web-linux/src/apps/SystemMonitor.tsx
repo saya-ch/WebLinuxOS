@@ -315,10 +315,17 @@ const SystemMonitor = () => {
 
   const startTime = useRef(Date.now())
 
-  // --- FPS tracking via requestAnimationFrame ---
+  // --- FPS tracking via requestAnimationFrame (pauses when page is hidden) ---
   useEffect(() => {
     let animId: number
+    let running = true
     const measure = () => {
+      if (!running) return
+      // 页面不可见时暂停RAF，减少CPU消耗
+      if (document.hidden) {
+        animId = requestAnimationFrame(measure)
+        return
+      }
       frameCountRef.current++
       const now = performance.now()
       const elapsed = now - lastFpsTimeRef.current
@@ -330,7 +337,10 @@ const SystemMonitor = () => {
       animId = requestAnimationFrame(measure)
     }
     animId = requestAnimationFrame(measure)
-    return () => cancelAnimationFrame(animId)
+    return () => {
+      running = false
+      cancelAnimationFrame(animId)
+    }
   }, [])
 
   // --- PerformanceObserver for long tasks ---

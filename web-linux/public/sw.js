@@ -1,5 +1,12 @@
-const CACHE_NAME = 'weblinuxos-v135'
-const BASE_PATH = new URL(self.registration.scope || '/WebLinuxOS/').pathname
+let CACHE_NAME = 'weblinuxos-v136'
+
+// 动态获取 BASE_PATH，添加错误处理
+let BASE_PATH
+try {
+  BASE_PATH = new URL(self.registration.scope || '/WebLinuxOS/').pathname
+} catch {
+  BASE_PATH = '/WebLinuxOS/'
+}
 
 const CACHE_ASSETS = [
   BASE_PATH,
@@ -16,7 +23,8 @@ self.addEventListener('install', (event) => {
       return cache.addAll(CACHE_ASSETS)
     }).then(() => {
       self.skipWaiting()
-    }).catch(() => {
+    }).catch((err) => {
+      console.warn('[SW] Cache install failed:', err)
       self.skipWaiting()
     })
   )

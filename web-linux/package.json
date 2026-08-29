@@ -1,7 +1,7 @@
 {
   "name": "weblinux",
   "private": true,
-  "version": "135.0.0",
+  "version": "136.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,9 +10,8 @@
     "build:github": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "clean": "rm -rf ../dist ../assets ../index.html ../favicon.svg ../icons.svg ../.nojekyll ../manifest.json ../screenshots",
-    "predeploy": "npm run clean",
-    "deploy": "npm run build:github",
+    "clean": "rm -rf dist",
+    "deploy": "npm run build",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
@@ -29,7 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/marked": "^5.0.2",
+    
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

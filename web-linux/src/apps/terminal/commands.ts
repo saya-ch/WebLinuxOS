@@ -218,19 +218,28 @@ registerCommand('system', {
     }
 
     const parseBrowser = (userAgent: string): { name: string; version: string } => {
-      if (/Edg\/([\d.]+)/.test(userAgent)) return { name: 'Microsoft Edge', version: RegExp.$1 }
-      if (/OPR\/([\d.]+)/.test(userAgent)) return { name: 'Opera', version: RegExp.$1 }
-      if (/Firefox\/([\d.]+)/.test(userAgent)) return { name: 'Mozilla Firefox', version: RegExp.$1 }
-      if (/Chrome\/([\d.]+)/.test(userAgent)) return { name: 'Google Chrome', version: RegExp.$1 }
-      if (/Version\/([\d.]+).*Safari/.test(userAgent)) return { name: 'Safari', version: RegExp.$1 }
+      const matchEdg = userAgent.match(/Edg\/([\d.]+)/)
+      if (matchEdg) return { name: 'Microsoft Edge', version: matchEdg[1] }
+      const matchOPR = userAgent.match(/OPR\/([\d.]+)/)
+      if (matchOPR) return { name: 'Opera', version: matchOPR[1] }
+      const matchFF = userAgent.match(/Firefox\/([\d.]+)/)
+      if (matchFF) return { name: 'Mozilla Firefox', version: matchFF[1] }
+      const matchChrome = userAgent.match(/Chrome\/([\d.]+)/)
+      if (matchChrome) return { name: 'Google Chrome', version: matchChrome[1] }
+      const matchSafari = userAgent.match(/Version\/([\d.]+).*Safari/)
+      if (matchSafari) return { name: 'Safari', version: matchSafari[1] }
       return { name: '未知', version: '未知' }
     }
 
     const parseOS = (userAgent: string): string => {
-      if (/Windows NT ([\d.]+)/.test(userAgent)) return `Windows NT ${RegExp.$1}`
-      if (/iPhone OS ([\d_]+)/.test(userAgent)) return `iOS ${RegExp.$1.replace(/_/g, '.')}`
-      if (/Android ([\d.]+)/.test(userAgent)) return `Android ${RegExp.$1}`
-      if (/Mac OS X ([\d_]+)/.test(userAgent)) return `macOS ${RegExp.$1.replace(/_/g, '.')}`
+      const matchWin = userAgent.match(/Windows NT ([\d.]+)/)
+      if (matchWin) return `Windows NT ${matchWin[1]}`
+      const matchIOS = userAgent.match(/iPhone OS ([\d_]+)/)
+      if (matchIOS) return `iOS ${matchIOS[1].replace(/_/g, '.')}`
+      const matchAndroid = userAgent.match(/Android ([\d.]+)/)
+      if (matchAndroid) return `Android ${matchAndroid[1]}`
+      const matchMac = userAgent.match(/Mac OS X ([\d_]+)/)
+      if (matchMac) return `macOS ${matchMac[1].replace(/_/g, '.')}`
       if (/Linux/.test(userAgent)) return 'Linux'
       return '未知'
     }

@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -21,13 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: web-linux/package-lock.json
 
@@ -39,15 +37,22 @@ jobs:
         working-directory: ./web-linux
         run: npm run typecheck
 
+      - name: Lint
+        working-directory: ./web-linux
+        run: npm run lint -- --max-warnings 50 || true
+
       - name: Build (GitHub Pages mode)
         working-directory: ./web-linux
-        run: npm run deploy
+        run: npm run build
 
       - name: Copy public assets to dist
         run: |
           cp ./web-linux/public/sw.js ./dist/sw.js
           cp ./web-linux/public/404.html ./dist/404.html
           cp ./web-linux/public/.nojekyll ./dist/.nojekyll
+          cp ./web-linux/public/favicon.svg ./dist/favicon.svg
+          cp ./web-linux/public/icons.svg ./dist/icons.svg
+          cp ./web-linux/public/manifest.json ./dist/manifest.json
 
       - name: Verify build output
         run: |
@@ -63,6 +68,8 @@ jobs:
           test -f ./dist/.nojekyll && echo "OK: dist/.nojekyll exists" || echo "WARN: dist/.nojekyll missing"
           echo "--- Checking dist/sw.js ---"
           test -f ./dist/sw.js && echo "OK: dist/sw.js exists" || (echo "FAIL: dist/sw.js missing - PWA will not work" && exit 1)
+          echo "--- Checking dist/404.html ---"
+          test -f ./dist/404.html && echo "OK: dist/404.html exists" || echo "WARN: dist/404.html missing"
           echo ""
           echo "--- Deployment inventory ---"
           echo "Dist root files:"
@@ -91,4 +98,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

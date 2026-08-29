@@ -293,7 +293,9 @@ export default function Terminal() {
 
       if (command === 'exit') {
         const windows = getWindowsRef.current
-        const terminalWindow = windows.find((w: WindowState) => w.appId === 'terminal')
+        // 优先关闭当前聚焦的终端窗口，如果没有聚焦的则关闭第一个终端
+        const focusedTerminal = windows.find((w: WindowState) => w.appId === 'terminal' && w.focused)
+        const terminalWindow = focusedTerminal || windows.find((w: WindowState) => w.appId === 'terminal')
         if (terminalWindow) {
           closeWindowRef.current(terminalWindow.id)
         }
@@ -388,7 +390,7 @@ export default function Terminal() {
       return
     }
 
-    setCmdHistory(prev => [...prev, cmd])
+    setCmdHistory(prev => [...prev.slice(-499), cmd])
 
     // 帮助命令（特殊处理，不进入管道/多命令逻辑）
     const firstWord = cmd.trim().split(/\s+/)[0].toLowerCase()
