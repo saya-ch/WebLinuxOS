@@ -5,6 +5,23 @@ All notable changes to WebLinuxOS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [140.0.0] - 2026-08-30
+
+### Added — v140 新增实用工具与质量优化
+
+- **UnitConverter 单位转换器** — 全功能单位转换工具：长度/重量/温度/速度/数据存储/时间/面积7大类别共42种单位，双向转换，类别颜色标识，搜索单位，常用快捷按钮，最近10条转换历史记录。(`apps/UnitConverter.tsx`)
+- **QRCodeGenerator 二维码生成器** — 纯前端QR码生成器：完整QR编码算法实现（GF(256)有限域运算、Reed-Solomon纠错编码），支持Version 1-10，4级纠错级别（L/M/Q/H），8种掩码评估，3种模块样式（方块/圆角/圆点），自定义前景色/背景色，WiFi/vCard/邮件/电话/短信/网址6个快捷模板，Canvas API高DPI渲染，下载PNG。(`apps/QRCodeGenerator.tsx`)
+- **JsonToTypeScript JSON转TS类型** — JSON到TypeScript类型定义生成器：智能类型推断（string/number/boolean/null/数组/嵌套对象），可选属性检测，interface/type alias模式切换，左右可拖拽分栏，JSON语法错误高亮，3个预设示例数据，导出.ts文件。(`apps/JsonToTypeScript.tsx`)
+- **MarkdownCheatSheet Markdown速查表** — 交互式Markdown语法参考：11个语法分类（标题/文本格式/列表/链接/代码块/表格/引用/分割线/脚注/数学公式/Mermaid），实时预览编辑器，点击插入语法片段，4种分栏模式（上下/左右/仅编辑/仅预览），搜索过滤，导出HTML。(`apps/MarkdownCheatSheet.tsx`)
+
+### Changed
+
+- **版本升级** — 从v139升级至v140。(`package.json`)
+- **启动日志更新** — 更新为v140版本信息，反映新增工具。(`index.html`)
+- **应用注册表** — 在APP_REGISTRY_EXTRAS中注册v140新增4个应用。(`apps.tsx`)
+- **WindowManager componentMap** — 注册UnitConverter、QRCodeGenerator、JsonToTypeScript、MarkdownCheatSheet的懒加载映射。(`components/desktop/WindowManager.tsx`)
+- **README重写** — 新增"Why WebLinuxOS"章节、"Architecture"技术架构详解、应用分类统计表，优化文档结构和内容质量。(`README.md`)
+
 ## [134.0.0] - 2026-08-29
 
 ### Added — v134 系统健康监控与质量优化

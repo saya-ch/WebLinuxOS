@@ -17,6 +17,11 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v140 新增应用
+  UnitConverter: () => import('../../apps/UnitConverter'),
+  QRCodeGenerator: () => import('../../apps/QRCodeGenerator'),
+  JsonToTypeScript: () => import('../../apps/JsonToTypeScript'),
+  MarkdownCheatSheet: () => import('../../apps/MarkdownCheatSheet'),
   // v135 新增应用
   BrowserFingerprint: () => import('../../apps/BrowserFingerprint'),
   // v134 新增应用

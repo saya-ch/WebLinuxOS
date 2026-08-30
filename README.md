@@ -4,15 +4,15 @@
 
 **A complete Linux desktop environment running entirely in the browser.**
 
-No server. No backend. No dependencies.
+No server. No backend. No dependencies. Just open and use.
 
 [![Deploy Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-139.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-140.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
-**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** &nbsp;|&nbsp; [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) &nbsp;|&nbsp; [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
+**[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
 <br />
 
@@ -22,7 +22,7 @@ No server. No backend. No dependencies.
 
 ## Table of Contents
 
-- [Overview](#overview)
+- [Why WebLinuxOS](#why-weblinuxos)
 - [Screenshots](#screenshots)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
@@ -31,15 +31,17 @@ No server. No backend. No dependencies.
 - [API Integrations](#api-integrations)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Project Structure](#project-structure)
+- [Architecture](#architecture)
 - [Contributing](#contributing)
-- [Roadmap](#roadmap)
 - [License](#license)
 
 ---
 
-## Overview
+## Why WebLinuxOS
 
-WebLinuxOS replicates a full Linux desktop experience in the browser. It features window management, a virtual file system backed by IndexedDB, a terminal emulator with 200+ commands, 700+ applications, and integrations with 25+ public APIs. Everything runs client-side -- no data leaves your browser unless an app explicitly calls a public API.
+WebLinuxOS is not a mock. It is a functional Linux desktop environment that runs in any modern browser. Every application is real -- the terminal executes actual commands, the file system persists across sessions, the code editor runs Monaco (the same engine behind VS Code), and 25+ public APIs deliver live data.
+
+The project demonstrates that a complete, usable desktop experience can be delivered through the web platform alone: no plugins, no WebAssembly runtimes to install, no server-side rendering. Just HTML, CSS, and JavaScript running in the browser you already have.
 
 ---
 
@@ -74,6 +76,7 @@ WebLinuxOS replicates a full Linux desktop experience in the browser. It feature
 - Global search (`Ctrl+Shift+K`) to launch any app instantly
 - 25+ keyboard shortcuts for power users
 - Start menu with categorized app launcher and search history
+- Desktop widgets: clock, system pulse, weather, sticky notes, focus timer
 
 ### Terminal Emulator
 
@@ -97,6 +100,15 @@ WebLinuxOS replicates a full Linux desktop experience in the browser. It feature
 - Theme, accent color, and file changes sync across browser tabs via BroadcastChannel
 - Presence awareness: see which tabs are open with human-readable names
 - Clipboard sharing between tabs
+
+### Built-in Developer Tools
+
+- Monaco code editor (VS Code engine) with syntax highlighting for 40+ languages
+- JSON to TypeScript type generator with smart inference
+- Interactive regex visualizer with real-time matching
+- Cron expression parser with human-readable descriptions
+- Web performance profiler with Core Web Vitals tracking
+- Browser fingerprint detection and privacy analysis
 
 ---
 
@@ -143,6 +155,7 @@ Open `http://localhost:5173/WebLinuxOS/` in your browser.
 
 ```bash
 npm run build        # TypeScript check + production build
+npm run build:local  # Build with root base path
 npm run typecheck    # Type checking only
 npm run lint         # ESLint analysis
 npm run format       # Format code with Prettier
@@ -156,17 +169,18 @@ The production build outputs to `../dist/` with Vite-optimized chunks and PWA as
 
 WebLinuxOS ships with **700+ applications** across 10+ categories:
 
-| Category | Examples |
-|:---------|:---------|
-| System | File Manager, Terminal, Settings, System Monitor, DevInfo Dashboard |
-| Development | Code Editor (Monaco), Markdown Live Preview, API Debugger, Web IDE, Git Assistant |
-| AI | AI Chat, AI Code Assistant, Pollinations Image Gen, Prompt Engineering Lab |
-| Internet | Weather, News Reader, Wikipedia Explorer, GitHub Trending, RSS Aggregator |
-| Productivity | Pomodoro Timer, Countdown Timer, Calendar, Kanban Board, Clipboard Manager |
-| Data | Spreadsheet, JSON Formatter, Regex Visualizer, Base64 Tools, Hash Calculator |
-| Multimedia | Paint, Music Studio, Video Player, Ambient Sound, Sound Recorder |
-| Games | Snake, Tetris, 2048, Breakout, Memory Match |
-| Network | DNS Lookup, IP Info, Speed Test, WebSocket Client, Network Toolkit Pro |
+| Category | Count | Highlights |
+|:---------|:------|:-----------|
+| System | 20+ | File Manager, Terminal, Settings, System Monitor, DevInfo Dashboard |
+| Development | 80+ | Code Editor (Monaco), Markdown Live Studio, API Debugger, JSON-to-TypeScript, Regex Visualizer |
+| AI | 40+ | AI Chat, AI Code Assistant, Prompt Engineering Lab, AI Writing Studio |
+| Internet | 30+ | Weather, News Reader, Wikipedia Explorer, GitHub Trending, RSS Aggregator |
+| Productivity | 50+ | Pomodoro Timer, Calendar, Kanban Board, Clipboard Manager, Focus Timer |
+| Data | 40+ | Spreadsheet, JSON Formatter, Hash Calculator, Base64 Toolkit, Unit Converter |
+| Multimedia | 30+ | Paint, Music Studio, Video Player, Ambient Sound, QR Code Generator |
+| Games | 20+ | Snake, Tetris, 2048, Breakout, Memory Match |
+| Network | 20+ | DNS Lookup, IP Info, Speed Test, WebSocket Client, HTTP Toolkit |
+| Office | 20+ | Markdown Cheat Sheet, Slide Forge, Book Finder, Daily Dashboard |
 
 All apps use real public APIs for live data -- no mock or placeholder content.
 
@@ -174,7 +188,7 @@ All apps use real public APIs for live data -- no mock or placeholder content.
 
 ## API Integrations
 
-WebLinuxOS integrates with **25+ public APIs**:
+WebLinuxOS integrates with **25+ public APIs** for real-time data:
 
 | API | Data | Used By |
 |:----|:-----|:--------|
@@ -227,9 +241,10 @@ WebLinuxOS/
 │   │   │   ├── algorithms/    # Algorithm visualizations
 │   │   │   └── *.tsx          # Individual apps
 │   │   ├── components/        # Core UI (desktop, windows, taskbar)
-│   │   ├── store/             # Zustand state management + IndexedDB
-│   │   ├── services/          # Sync, clipboard, API services
-│   │   ├── styles/            # CSS themes
+│   │   │   └── desktop/       # Desktop, WindowManager, Window, Taskbar
+│   │   ├── store/             # Zustand state + IndexedDB + file utils
+│   │   ├── services/          # Sync, clipboard, AI, API services
+│   │   ├── styles/            # CSS themes (cyberpunk, quantum, etc.)
 │   │   └── utils/             # Utility functions
 │   ├── public/                # PWA assets (sw.js, manifest.json)
 │   ├── screenshots/           # Project screenshots
@@ -240,6 +255,37 @@ WebLinuxOS/
 ├── LICENSE
 └── README.md
 ```
+
+---
+
+## Architecture
+
+### Window Management
+
+The `WindowManager` component handles 700+ applications through a component map with lazy loading. Components are loaded on demand with a 30-second timeout, automatic retry (2 attempts), and error fallback. An LRU cache (100 entries) prevents re-loading recently used components. Critical apps (Terminal, File Manager, Settings) are preloaded during idle time via `requestIdleCallback`.
+
+### State Management
+
+Zustand manages the entire application state in a single store: window positions, file system tree, theme preferences, notifications, and system statistics. State changes trigger targeted re-renders through selector-based subscriptions, keeping the UI responsive even with hundreds of registered apps.
+
+### Storage Architecture
+
+A three-tier storage system ensures data persistence:
+
+1. **IndexedDB** -- primary storage for file trees, bypassing the 5MB localStorage limit
+2. **localStorage** -- quick access for settings, theme, and small state
+3. **Memory fallback** -- when both are unavailable (private browsing, quota exceeded)
+
+A `beforeunload` handler flushes pending writes before the page closes. Automatic migration moves legacy localStorage data to IndexedDB on first load.
+
+### Performance
+
+- React.memo on all core components (Desktop, Taskbar, Window, WindowManager)
+- useMemo/useCallback throughout to prevent unnecessary re-renders
+- Vite manual chunk splitting: vendor libraries, terminal commands, large apps each get separate chunks
+- Particle animations adapt frame rate and count based on measured FPS
+- Debounced storage writes (300ms) prevent I/O thrashing
+- DOM node count cached for 30 seconds to avoid repeated tree traversal
 
 ---
 
@@ -272,16 +318,6 @@ Contributions are welcome. Please follow these steps:
 
 ---
 
-## Roadmap
-
-- [ ] i18n multi-language support
-- [ ] Plugin system for third-party extensions
-- [ ] WebRTC screen sharing
-- [ ] File System Access API integration
-- [ ] Playwright end-to-end testing in CI
-
----
-
 ## License
 
-[MIT](LICENSE) &copy; 2024-2026 [saya-ch](https://github.com/saya-ch)
+[MIT](LICENSE) -- Copyright (c) 2024 Saya Ch
