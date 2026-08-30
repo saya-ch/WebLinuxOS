@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchDailyMegaDashboard, type WeatherData, type QuoteData, type AirQualityData, type HolidayInfo, type NewsArticle, type CryptoPrice } from '../services/apiService'
+import { apiService, fetchDailyMegaDashboard, type WeatherData, type QuoteData, type AirQualityData, type HolidayInfo, type NewsArticle, type CryptoPrice } from '../services/apiService'
 import {
   RefreshCw,
   Droplets,

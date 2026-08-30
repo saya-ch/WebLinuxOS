@@ -17,11 +17,9 @@ import {
   Keyboard,
   FileJson,
   Hash,
-  CalendarDays,
   Zap,
   Activity,
   RefreshCw,
-  ExternalLink,
   Shield,
   BarChart3,
   Code,
@@ -278,6 +276,7 @@ function SectionCard({
 const DeveloperDashboard = memo(function DeveloperDashboard() {
   const openApp = useStore((s) => s.openApp)
   const systemStats = useStore((s) => s.systemStats)
+  const systemStatus = useStore((s) => s.systemStatus)
   const refreshSystemStats = useStore((s) => s.refreshSystemStats)
 
   // 环境信息
@@ -497,7 +496,7 @@ const DeveloperDashboard = memo(function DeveloperDashboard() {
           { label: 'CPU 使用率', value: localMetrics.cpu, icon: Cpu, detail: `${navigator.hardwareConcurrency || '?'} 核心` },
           { label: '内存使用', value: localMetrics.memory, icon: MemoryStick, detail: localMetrics.memoryDetail ? `${formatBytes(localMetrics.memoryDetail.used)} / ${formatBytes(localMetrics.memoryDetail.total)}` : '读取中…' },
           { label: '存储使用', value: localMetrics.storage, icon: HardDrive, detail: 'localStorage 缓存' },
-          { label: '系统状态', value: systemStats.systemStatus === 'online' ? 100 : 0, icon: Wifi, detail: systemStats.systemStatus === 'online' ? '在线' : '离线', fixed: true },
+          { label: '系统状态', value: systemStatus === 'online' ? 100 : 0, icon: Wifi, detail: systemStatus === 'online' ? '在线' : '离线', fixed: true },
         ].map((item) => {
           const color = item.fixed ? (item.value === 100 ? '#10b981' : '#ef4444') : getMetricColor(item.value)
           return (
