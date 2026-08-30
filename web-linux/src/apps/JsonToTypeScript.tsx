@@ -272,51 +272,6 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-// ========== 主转换函数 ==========
-function _jsonToTypeScript(value: unknown, rootName: string, useTypeAlias: boolean): string {
-  const ctx: TypeContext = {
-    interfaces: new Map(),
-    nameCounter: 0,
-    useTypeAlias,
-  }
-
-  // Process root value
-  const rootType = inferType(value, rootName, ctx)
-
-  // Build output
-  const sections: string[] = []
-
-  // If root is an object, its interface was already added
-  // If root is an array, we need a root type alias
-  if (Array.isArray(value)) {
-    if (useTypeAlias) {
-      sections.push(`type ${rootName} = ${rootType}`)
-    } else {
-      sections.push(`type ${rootName} = ${rootType}`)
-    }
-  }
-
-  // Add all collected interfaces/types
-  const sortedEntries = [...ctx.interfaces.entries()].sort((a, b) => {
-    // Root object first
-    if (a[0] === rootName && !Array.isArray(value)) return -1
-    if (b[0] === rootName && !Array.isArray(value)) return 1
-    return a[0].localeCompare(b[0])
-  })
-
-  for (const [name, def] of sortedEntries) {
-    // For non-root object types, output them
-    if (name === rootName && !Array.isArray(value)) {
-      // Root object - already output as first entry
-      sections.unshift(def)
-    } else {
-      sections.push(def)
-    }
-  }
-
-  return sections.join('\n\n')
-}
-
 // ========== 添加可选属性检测 ==========
 function jsonToTypeScriptAdvanced(value: unknown, rootName: string, useTypeAlias: boolean): string {
   const ctx: TypeContext = {
@@ -403,11 +358,6 @@ function highlightTypeScript(text: string): ReactNode {
     const strRegex = /(["'`])(?:(?!\1|\\).|\\.)*\1/g
     // Comments
     const commentRegex = /(\/\/.*$)/gm
-    // Types/interfaces after : or = or < or >
-    const _typeRef = /:\s*([A-Z][a-zA-Z0-9]*)/g
-    // Punctuation
-    const _punctRegex = /([{}()\[\];,.<>=!&|?:])/g
-
     let lastIdx = 0
     const allMatches: Array<{ start: number; end: number; type: string; text: string }> = []
 
