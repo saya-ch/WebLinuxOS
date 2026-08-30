@@ -674,6 +674,8 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   PomodoroTimer: () => import('../../apps/PomodoroTimer'),
   CountdownTimer: () => import('../../apps/CountdownTimer'),
   CronExpressionParser: () => import('../../apps/CronExpressionParser'),
+  // === 新增网络诊断工具 ===
+  NetworkDiagnostics: () => import('../../apps/NetworkDiagnostics'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, useRef, memo } from 'react'
 import { useStore } from '../../store'
 import { SearchIcon, WifiIcon, Volume2Icon, VolumeXIcon, BatteryIcon, BellIcon, SettingsIcon, PinIcon, BluetoothIcon, GlobeIcon, SunIcon, WifiOffIcon, PowerIcon, MinusIcon, SquareIcon, XIcon, RefreshCwIcon, MoonIcon, CalendarIcon, NoteIcon, GridIcon, UsersIcon } from '../../icons'
 import { getSyncService } from '../../services/syncService'
@@ -159,7 +159,9 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
   y,
   onClose,
 }: TaskbarContextMenuProps) {
-  const [showSettings, setShowSettings] = useState(false)
+  const [locked, setLocked] = useState(false)
+  const notifications = useStore((s) => s.notifications)
+  const removeNotification = useStore((s) => s.removeNotification)
 
   useEffect(() => {
     const handleClickOutside = () => onClose()
@@ -186,7 +188,7 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
     padding: '4px',
     zIndex: 99999,
     boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-    minWidth: '200px',
+    minWidth: '180px',
     backdropFilter: 'blur(10px)',
   }
 
@@ -209,43 +211,46 @@ const TaskbarContextMenu = memo(function TaskbarContextMenu({
       (e.currentTarget.style.background = 'transparent'),
   }
 
+  const handleClearNotifications = () => {
+    const ids = notifications.map((n) => n.id)
+    ids.forEach((id) => removeNotification(id))
+    onClose()
+  }
+
   return (
     <div style={style} onClick={(e) => e.stopPropagation()}>
-      <div style={itemStyle} {...hoverHandlers} onClick={() => setShowSettings(!showSettings)}>
-        <span><SettingsIcon size={14} /></span>
-        <span>任务栏设置</span>
+      <div
+        style={itemStyle}
+        {...hoverHandlers}
+        onClick={() => {
+          setLocked((prev) => !prev)
+          onClose()
+        }}
+      >
+        <span><PinIcon size={14} /></span>
+        <span>{locked ? '解锁任务栏' : '锁定任务栏'}</span>
       </div>
-      {showSettings && (
-        <div style={{ padding: '6px 12px', borderTop: '1px solid var(--window-border)' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-            （仅 UI 展示）
-          </div>
-          <div
-            style={{ ...itemStyle, fontSize: '11px' }}
-            {...hoverHandlers}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span><PinIcon size={12} /></span>
-            <span>位置：底部</span>
-          </div>
-          <div
-            style={{ ...itemStyle, fontSize: '11px' }}
-            {...hoverHandlers}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span><PinIcon size={12} /></span>
-            <span>显示已固定应用</span>
-          </div>
-          <div
-            style={{ ...itemStyle, fontSize: '11px' }}
-            {...hoverHandlers}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span><BellIcon size={12} /></span>
-            <span>显示通知</span>
-          </div>
-        </div>
-      )}
+      <div style={{ height: '1px', background: 'var(--window-border)', margin: '2px 8px' }} />
+      <div
+        style={{ ...itemStyle, color: notifications.length > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', opacity: notifications.length > 0 ? 1 : 0.5, pointerEvents: notifications.length > 0 ? 'auto' : 'none' }}
+        {...hoverHandlers}
+        onClick={handleClearNotifications}
+      >
+        <span><BellIcon size={14} /></span>
+        <span>清空通知{notifications.length > 0 ? ` (${notifications.length})` : ''}</span>
+      </div>
+      <div style={{ height: '1px', background: 'var(--window-border)', margin: '2px 8px' }} />
+      <div
+        style={itemStyle}
+        {...hoverHandlers}
+        onClick={() => {
+          useStore.getState().toggleNotificationCenter()
+          onClose()
+        }}
+      >
+        <span><SettingsIcon size={14} /></span>
+        <span>通知中心设置</span>
+      </div>
     </div>
   )
 })
@@ -428,6 +433,21 @@ const Taskbar = memo(function Taskbar() {
   const removeDesktop = useStore((s) => s.removeDesktop)
   const setTheme = useStore((s) => s.setTheme)
   const toggleNotificationCenter = useStore((s) => s.toggleNotificationCenter)
+
+  // 将动画 CSS 注入到 <head> 中，仅执行一次；组件卸载时自动移除
+  const styleRef = useRef<HTMLStyleElement | null>(null)
+  useEffect(() => {
+    const el = document.createElement('style')
+    el.textContent = TASKBAR_ENHANCEMENTS_CSS
+    document.head.appendChild(el)
+    styleRef.current = el
+    return () => {
+      if (styleRef.current) {
+        styleRef.current.remove()
+        styleRef.current = null
+      }
+    }
+  }, [])
 
   const [time, setTime] = useState(new Date())
   const [volume, setVolume] = useState(80)
@@ -665,8 +685,6 @@ const Taskbar = memo(function Taskbar() {
           '0 -6px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(139, 124, 240, 0.15)',
       }}
     >
-      <style>{TASKBAR_ENHANCEMENTS_CSS}</style>
-
       <div className="taskbar-left">
         {/* 启动器按钮：显著视觉区分，44px固定宽度确保点击区域足够大 */}
         <div

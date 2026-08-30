@@ -24,12 +24,6 @@ interface Particle {
   vy: number
 }
 
-interface Connection {
-  from: number
-  to: number
-  opacity: number
-}
-
 const wallpaperStyles = ['', ...wallpaperData.map(w => w.style)]
 
 /* ── Desktop Clock Widget ── */
@@ -315,8 +309,9 @@ const Desktop = memo(function Desktop() {
   const [widgetVisibility, setWidgetVisibilityState] = useState<Record<string, boolean>>(() =>
     getWidgetVisibility()
   )
-  const [particles, setParticles] = useState<Particle[]>([])
-  const [connections, setConnections] = useState<Connection[]>([])
+  const particlesRef = useRef<Particle[]>([])
+  const connectionsRef = useRef<{from: number; to: number; opacity: number}[]>([])
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const mousePosRef = useRef({ x: 0, y: 0 })
   const liveWallpaperRef = useRef(liveWallpaper)
   const liveWallpaperEnabledRef = useRef(liveWallpaperEnabled)
@@ -327,15 +322,13 @@ const Desktop = memo(function Desktop() {
   const [isWindowDragging, setIsWindowDragging] = useState(false)
 
   // 使用useMemo生成星星位置，避免每次渲染时重新生成
-  const nebulaStars = useMemo(() =>
-    Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 3,
-      opacity: Math.random() * 0.7 + 0.3,
-    })), []
-  )
+  const nebulaStars = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    delay: Math.random() * 3,
+    opacity: Math.random() * 0.7 + 0.3,
+  }))
 
   useEffect(() => {
     liveWallpaperRef.current = liveWallpaper
@@ -345,11 +338,39 @@ const Desktop = memo(function Desktop() {
     liveWallpaperEnabledRef.current = liveWallpaperEnabled
   }, [liveWallpaperEnabled])
 
-  const initializeParticles = useCallback(() => {
-    // 粒子数量根据设备性能动态调整，避免低性能设备卡顿
-    const isLowPerformance = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
-    const particleCount = isLowPerformance ? 30 : 60;
-    const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
+  // Canvas 粒子动画：尺寸自适应
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const parent = canvas.parentElement
+    if (!parent) return
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = parent.clientWidth * dpr
+      canvas.height = parent.clientHeight * dpr
+      canvas.style.width = parent.clientWidth + 'px'
+      canvas.style.height = parent.clientHeight + 'px'
+    }
+    resize()
+    const ro = new ResizeObserver(resize)
+    ro.observe(parent)
+    return () => ro.disconnect()
+  }, [])
+
+  // Canvas 粒子动画主循环
+  useEffect(() => {
+    if (!liveWallpaperEnabled) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // 初始化粒子（直接写入 ref，不触发 React 渲染）
+    const isLowPerformance = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2
+    const particleCount = isLowPerformance ? 30 : 60
+    particlesRef.current = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -357,37 +378,25 @@ const Desktop = memo(function Desktop() {
       speed: Math.random() * 0.3 + 0.1,
       color: Math.random() > 0.5 ? 'rgba(139, 124, 240, 0.6)' : 'rgba(0, 206, 201, 0.5)',
       vx: (Math.random() - 0.5) * 0.2,
-      vy: (Math.random() - 0.5) * 0.2
+      vy: (Math.random() - 0.5) * 0.2,
     }))
-    setParticles(newParticles)
-  }, [])
-
-  const particlesRef = useRef<Particle[]>([])
-  
-  useEffect(() => {
-    initializeParticles()
-  }, [initializeParticles])
-
-  useEffect(() => {
-    if (!liveWallpaperEnabled) return
+    connectionsRef.current = []
 
     let animationId: number
     let lastTime = 0
     let running = true
-    // 根据设备性能动态调整目标帧率
-    const isLowPerformance = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
     const targetFPS = isLowPerformance ? 20 : 30
     const frameInterval = 1000 / targetFPS
     let connectionBatchCounter = 0
 
-    const computeConnections = (list: Particle[]): Connection[] => {
-      const active: Connection[] = []
+    const computeConnections = (
+      list: Particle[],
+    ): { from: number; to: number; opacity: number }[] => {
+      const active: { from: number; to: number; opacity: number }[] = []
       for (let i = 0; i < list.length; i++) {
         for (let j = i + 1; j < list.length; j++) {
-          const p1 = list[i]
-          const p2 = list[j]
-          const dx = p1.x - p2.x
-          const dy = p1.y - p2.y
+          const dx = list[i].x - list[j].x
+          const dy = list[i].y - list[j].y
           const dist = Math.sqrt(dx * dx + dy * dy)
           if (dist < 12) {
             active.push({ from: i, to: j, opacity: 1 - dist / 12 })
@@ -406,12 +415,16 @@ const Desktop = memo(function Desktop() {
         lastTime = currentTime - (deltaTime % frameInterval)
         const mp = mousePosRef.current
         const currentMode = liveWallpaperRef.current
+        const list = particlesRef.current
 
-        setParticles((prev) => {
-          if (prev.length === 0) return prev
-          const newParticles: Particle[] = new Array(prev.length)
-          for (let i = 0; i < prev.length; i++) {
-            const p = prev[i]
+        if (list.length > 0) {
+          const w = canvas.width
+          const h = canvas.height
+          ctx.clearRect(0, 0, w, h)
+
+          // 更新粒子位置
+          for (let i = 0; i < list.length; i++) {
+            const p = list[i]
             let newX = p.x + p.vx
             let newY = p.y + p.vy
             let newVx = p.vx
@@ -446,23 +459,57 @@ const Desktop = memo(function Desktop() {
               newVy = (newVy / speed) * maxSpeed
             }
 
-            newParticles[i] = { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
+            list[i] = { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
           }
 
-          particlesRef.current = newParticles
-
+          // 计算连接线
           if (currentMode !== 'particles') {
             connectionBatchCounter++
             if (connectionBatchCounter % 3 === 0) {
-              setConnections(computeConnections(newParticles))
+              connectionsRef.current = computeConnections(list)
             }
           } else {
-            if (connectionBatchCounter % 5 === 0) setConnections([])
+            if (connectionBatchCounter % 5 === 0) connectionsRef.current = []
             connectionBatchCounter = 0
           }
 
-          return newParticles
-        })
+          // 绘制连接线
+          const conns = connectionsRef.current
+          for (let i = 0; i < conns.length; i++) {
+            const c = conns[i]
+            const p1 = list[c.from]
+            const p2 = list[c.to]
+            if (!p1 || !p2) continue
+            ctx.beginPath()
+            ctx.moveTo((p1.x / 100) * w, (p1.y / 100) * h)
+            ctx.lineTo((p2.x / 100) * w, (p2.y / 100) * h)
+            ctx.strokeStyle = `rgba(139, 124, 240, ${c.opacity})`
+            ctx.lineWidth = 1
+            ctx.stroke()
+          }
+
+          // 绘制粒子
+          for (let i = 0; i < list.length; i++) {
+            const p = list[i]
+            const cx = (p.x / 100) * w
+            const cy = (p.y / 100) * h
+            const r = (p.size / 100) * Math.min(w, h)
+            const glow = r * 6
+
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, glow)
+            gradient.addColorStop(0, p.color)
+            gradient.addColorStop(1, 'transparent')
+            ctx.fillStyle = gradient
+            ctx.beginPath()
+            ctx.arc(cx, cy, glow, 0, Math.PI * 2)
+            ctx.fill()
+
+            ctx.fillStyle = p.color
+            ctx.beginPath()
+            ctx.arc(cx, cy, r, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        }
       }
 
       animationId = requestAnimationFrame(animate)
@@ -687,73 +734,41 @@ const Desktop = memo(function Desktop() {
         <div className="desktop-gradient-orb-3" />
       </div>
       
-      {/* Live wallpaper particles */}
-      {liveWallpaperEnabled && (
-        <>
-          {liveWallpaper === 'nebula' ? (
-            <>
-              <div className="desktop-nebula-layer">
-                <div className="desktop-nebula-cloud desktop-nebula-cloud-1" />
-                <div className="desktop-nebula-cloud desktop-nebula-cloud-2" />
-                <div className="desktop-nebula-cloud desktop-nebula-cloud-3" />
-                <div className="desktop-nebula-stars">
-                  {nebulaStars.map(star => (
-                    <div
-                      key={star.id}
-                      className="desktop-nebula-star"
-                      style={{
-                        left: `${star.left}%`,
-                        top: `${star.top}%`,
-                        animationDelay: `${star.delay}s`,
-                        opacity: star.opacity,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {particles.map(p => (
-                <div
-                  key={p.id}
-                  className="desktop-live-particle"
-                  style={{
-                    left: `${p.x}%`,
-                    top: `${p.y}%`,
-                    width: p.size,
-                    height: p.size,
-                    background: p.color,
-                    boxShadow: `0 0 ${p.size * 6}px ${p.color}, 0 0 ${p.size * 12}px ${p.color}`,
-                  }}
-                />
-              ))}
-
-              {/* Connecting lines for particles (waves/network effect) */}
-              {liveWallpaper !== 'particles' && (
-                <svg className="desktop-particle-connections">
-                  {connections.map((conn, idx) => {
-                    const p1 = particles[conn.from]
-                    const p2 = particles[conn.to]
-                    if (!p1 || !p2) return null
-                    return (
-                      <line
-                        key={idx}
-                        x1={`${p1.x}%`}
-                        y1={`${p1.y}%`}
-                        x2={`${p2.x}%`}
-                        y2={`${p2.y}%`}
-                        stroke={`rgba(139, 124, 240, ${conn.opacity})`}
-                        strokeWidth={1}
-                      />
-                    )
-                  })}
-                </svg>
-              )}
-            </>
-          )}
-        </>
-      )}
+      {/* Live wallpaper particles - Canvas 渲染 */}
+      {liveWallpaperEnabled && liveWallpaper === 'nebula' ? (
+        <div className="desktop-nebula-layer">
+          <div className="desktop-nebula-cloud desktop-nebula-cloud-1" />
+          <div className="desktop-nebula-cloud desktop-nebula-cloud-2" />
+          <div className="desktop-nebula-cloud desktop-nebula-cloud-3" />
+          <div className="desktop-nebula-stars">
+            {nebulaStars.map(star => (
+              <div
+                key={star.id}
+                className="desktop-nebula-star"
+                style={{
+                  left: `${star.left}%`,
+                  top: `${star.top}%`,
+                  animationDelay: `${star.delay}s`,
+                  opacity: star.opacity,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : liveWallpaperEnabled ? (
+        <canvas
+          ref={canvasRef}
+          className="desktop-particle-canvas"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
+        />
+      ) : null}
       
       <div className="sr-only" role="status" aria-live="polite">
         Web Linux 桌面环境 - 右键可打开上下文菜单

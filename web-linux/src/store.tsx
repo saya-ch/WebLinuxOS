@@ -277,7 +277,7 @@ let cachedFps = 60
 // DOM 节点数缓存，避免每5秒遍历整个 DOM 树
 let cachedDomNodeCount = 0
 let domNodeCountCacheTime = 0
-const DOM_NODE_CACHE_INTERVAL = 30000 // 30秒缓存
+const DOM_NODE_CACHE_INTERVAL = 60000 // 60秒缓存（避免频繁遍历 DOM 树）
 
 // 清理所有通知定时器的工具函数，用于 store 重置时释放资源
 const clearAllNotificationTimers = () => {
@@ -1104,11 +1104,14 @@ export const useStore = create<Store>((set, get) => ({
 
   focusWindow: (id) =>
     set((s) => ({
-      windows: s.windows.map((w) => ({
-        ...w,
-        focused: w.id === id,
-        zIndex: w.id === id ? s.nextZIndex + 1 : w.zIndex,
-      })),
+      windows: s.windows.map((w) => {
+        if (w.id === id) {
+          if (!w.focused) return { ...w, focused: true, zIndex: s.nextZIndex + 1 }
+          return { ...w, zIndex: s.nextZIndex + 1 }
+        }
+        if (w.focused) return { ...w, focused: false }
+        return w
+      }),
       nextZIndex: s.nextZIndex + 1,
     })),
 
@@ -1457,9 +1460,8 @@ export const useStore = create<Store>((set, get) => ({
       case 'add':
         set((s) => {
           const newFiles = removeFromTree(s.files, operation.fileId)
-          const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
           saveToStorage(STORAGE_KEYS.FILES, newFiles)
-          return { files: newFiles, ...trimHistory(newHistory, newHistory.length - 1) }
+          return { files: newFiles, historyIndex: state.historyIndex - 1 }
         })
         break
       case 'delete':
@@ -1471,9 +1473,8 @@ export const useStore = create<Store>((set, get) => ({
               }
               return undefined
             })
-            const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, restored)
-            return { files: restored, ...trimHistory(newHistory, newHistory.length - 1) }
+            return { files: restored, historyIndex: state.historyIndex - 1 }
           })
         }
         break
@@ -1481,9 +1482,8 @@ export const useStore = create<Store>((set, get) => ({
         if (operation.previousState) {
           set((s) => {
             const updated = updateInTree(s.files, operation.fileId, () => operation.previousState!)
-            const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, updated)
-            return { files: updated, ...trimHistory(newHistory, newHistory.length - 1) }
+            return { files: updated, historyIndex: state.historyIndex - 1 }
           })
         }
         break
@@ -1491,9 +1491,8 @@ export const useStore = create<Store>((set, get) => ({
         if (operation.previousState) {
           set((s) => {
             const updated = updateInTree(s.files, operation.fileId, () => operation.previousState!)
-            const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, updated)
-            return { files: updated, ...trimHistory(newHistory, newHistory.length - 1) }
+            return { files: updated, historyIndex: state.historyIndex - 1 }
           })
         }
         break
@@ -1507,9 +1506,8 @@ export const useStore = create<Store>((set, get) => ({
               }
               return undefined
             })
-            const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, withNode)
-            return { files: withNode, ...trimHistory(newHistory, newHistory.length - 1) }
+            return { files: withNode, historyIndex: state.historyIndex - 1 }
           })
         }
         break
@@ -1517,9 +1515,8 @@ export const useStore = create<Store>((set, get) => ({
         if (operation.fileId) {
           set((s) => {
             const newFiles = removeFromTree(s.files, operation.fileId)
-            const newHistory = s.fileOperationHistory.slice(0, state.historyIndex)
             saveToStorage(STORAGE_KEYS.FILES, newFiles)
-            return { files: newFiles, ...trimHistory(newHistory, newHistory.length - 1) }
+            return { files: newFiles, historyIndex: state.historyIndex - 1 }
           })
         }
         break

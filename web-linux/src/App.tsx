@@ -85,7 +85,6 @@ const App = memo(function App() {
   const accentColor = useStore((s) => s.accentColor)
   const applyAccentToDOM = useStore((s) => s.applyAccentToDOM)
   const setTheme = useStore((s) => s.setTheme)
-  const windows = useStore((s) => s.windows)
   const launcherOpen = useStore((s) => s.launcherOpen)
   const refreshSystemStats = useStore((s) => s.refreshSystemStats)
   const setSystemStatus = useStore((s) => s.setSystemStatus)
@@ -202,6 +201,39 @@ const App = memo(function App() {
 
   const handleLaunchAppRef = useRef<EventListener | null>(null)
 
+  // searchApps 前缀索引：按 app 名称/id 建立 Map<prefix, appId[]>，仅在 apps 变化时重建
+  const appsPrefixIndexRef = useRef<Map<string, string[]>>(new Map())
+  const apps = useStore((s) => s.apps)
+  useEffect(() => {
+    const idx = new Map<string, string[]>()
+    for (const app of apps) {
+      const lowerName = app.name.toLowerCase()
+      const lowerId = app.id.toLowerCase()
+      // 为名称和 id 的每个前缀建立映射
+      for (let len = 1; len <= lowerName.length; len++) {
+        const prefix = lowerName.slice(0, len)
+        const list = idx.get(prefix)
+        if (list) {
+          list.push(app.id)
+        } else {
+          idx.set(prefix, [app.id])
+        }
+      }
+      if (lowerId !== lowerName) {
+        for (let len = 1; len <= lowerId.length; len++) {
+          const prefix = lowerId.slice(0, len)
+          const list = idx.get(prefix)
+          if (list) {
+            list.push(app.id)
+          } else {
+            idx.set(prefix, [app.id])
+          }
+        }
+      }
+    }
+    appsPrefixIndexRef.current = idx
+  }, [apps])
+
   // === v58 全局 API 暴露（useEffect 中挂载，确保不在渲染阶段执行副作用）===
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -251,9 +283,21 @@ const App = memo(function App() {
           listApps: () => st.getState().apps.map(a => ({ id: a.id, name: a.name, category: a.category })),
           searchApps: (query: string) => {
             const q = query.toLowerCase()
-            return st.getState().apps.filter(a =>
-              a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q)
-            ).map(a => ({ id: a.id, name: a.name, category: a.category, description: a.description }))
+            const allApps = st.getState().apps
+            // 利用前缀索引快速缩小候选范围
+            const prefixHits = appsPrefixIndexRef.current.get(q)
+            let candidates = prefixHits
+              ? allApps.filter((a) => prefixHits.includes(a.id))
+              : allApps
+            // 在候选集中做 substring 匹配
+            return candidates
+              .filter(
+                (a) =>
+                  a.name.toLowerCase().includes(q) ||
+                  a.id.toLowerCase().includes(q) ||
+                  (a.description || '').toLowerCase().includes(q),
+              )
+              .map((a) => ({ id: a.id, name: a.name, category: a.category, description: a.description }))
           },
           getSystemStats: () => st.getState().systemStats,
           refreshSystemStats: () => st.getState().refreshSystemStats(),
@@ -312,16 +356,18 @@ const App = memo(function App() {
   }, [setSystemStatus])
 
   const cycleWindows = useCallback((reverse = false) => {
-    if (windows.length <= 1) return
-    const sortedWindows = [...windows].sort((a, b) => b.zIndex - a.zIndex)
+    const currentWindows = useStore.getState().windows
+    if (currentWindows.length <= 1) return
+    const sortedWindows = [...currentWindows].sort((a, b) => b.zIndex - a.zIndex)
     const currentIndex = sortedWindows.findIndex((w) => w.focused)
     const direction = reverse ? -1 : 1
     const nextIndex = (currentIndex + direction + sortedWindows.length) % sortedWindows.length
     focusWindow(sortedWindows[nextIndex].id)
-  }, [windows, focusWindow])
+  }, [focusWindow])
 
   const handleSystemShortcut = useCallback((action: string) => {
-    const focusedWindowId = windows.find((w) => w.focused)?.id
+    const currentWindows = useStore.getState().windows
+    const focusedWindowId = currentWindows.find((w) => w.focused)?.id
     const store = useStore.getState()
     const toggleNotificationCenter = store.toggleNotificationCenter
     const addNotification = store.addNotification
@@ -375,7 +421,7 @@ const App = memo(function App() {
         toggleQuickActionCenter()
         break
     }
-  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, windows, toggleQuickActionCenter])
+  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, toggleQuickActionCenter])
 
   const matchesShortcut = useCallback((config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
     if (config.mod !== undefined && config.mod !== isMod) return false
@@ -521,9 +567,10 @@ const App = memo(function App() {
       // 仅在同一个 appId 下存在多个窗口实例时才执行切换，避免无意义操作。
       if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
         e.preventDefault()
-        const focusedWindow = windows.find(w => w.focused)
+        const currentWindows = useStore.getState().windows
+        const focusedWindow = currentWindows.find(w => w.focused)
         if (focusedWindow) {
-          const sameAppWindows = windows.filter(w => w.appId === focusedWindow.appId)
+          const sameAppWindows = currentWindows.filter(w => w.appId === focusedWindow.appId)
           if (sameAppWindows.length > 1) {
             const idx = sameAppWindows.findIndex(w => w.focused)
             const next = sameAppWindows[(idx - 1 + sameAppWindows.length) % sameAppWindows.length]
@@ -535,9 +582,10 @@ const App = memo(function App() {
 
       if (e.ctrlKey && e.shiftKey && e.key === 'ArrowDown') {
         e.preventDefault()
-        const focusedWindow = windows.find(w => w.focused)
+        const currentWindows = useStore.getState().windows
+        const focusedWindow = currentWindows.find(w => w.focused)
         if (focusedWindow) {
-          const sameAppWindows = windows.filter(w => w.appId === focusedWindow.appId)
+          const sameAppWindows = currentWindows.filter(w => w.appId === focusedWindow.appId)
           if (sameAppWindows.length > 1) {
             const idx = sameAppWindows.findIndex(w => w.focused)
             const next = sameAppWindows[(idx + 1) % sameAppWindows.length]
@@ -580,7 +628,7 @@ const App = memo(function App() {
         }
       }
     },
-    [launcherOpen, toggleLauncher, handleSystemShortcut, openApp, focusWindow, cycleWindows, systemShortcutsArray, appShortcutsArray, matchesShortcut, windows]
+    [launcherOpen, toggleLauncher, handleSystemShortcut, openApp, focusWindow, cycleWindows, systemShortcutsArray, appShortcutsArray, matchesShortcut]
   )
 
   useEffect(() => {

@@ -12253,4 +12253,26 @@ select:focus-visible,
   color: inherit;
 }
 
+/* ── 窗口拖拽/调整 body 状态类（替代直接 DOM style 修改）── */
+body.window-dragging {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+body[class*="window-resizing-"] {
+  user-select: none !important;
+}
+body.window-resizing-nwse-resize {
+  cursor: nwse-resize !important;
+}
+body.window-resizing-ns-resize {
+  cursor: ns-resize !important;
+}
+body.window-resizing-ew-resize {
+  cursor: ew-resize !important;
+}
+body.window-resizing-default {
+  cursor: default !important;
+}
+
 

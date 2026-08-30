@@ -10,7 +10,7 @@ No server. No backend. No dependencies. Just open and use.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-140.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-141.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
 **[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
@@ -179,7 +179,7 @@ WebLinuxOS ships with **700+ applications** across 10+ categories:
 | Data | 40+ | Spreadsheet, JSON Formatter, Hash Calculator, Base64 Toolkit, Unit Converter |
 | Multimedia | 30+ | Paint, Music Studio, Video Player, Ambient Sound, QR Code Generator |
 | Games | 20+ | Snake, Tetris, 2048, Breakout, Memory Match |
-| Network | 20+ | DNS Lookup, IP Info, Speed Test, WebSocket Client, HTTP Toolkit |
+| Network | 20+ | DNS Lookup, IP Info, Speed Test, Network Diagnostics, WebSocket Client, HTTP Toolkit |
 | Office | 20+ | Markdown Cheat Sheet, Slide Forge, Book Finder, Daily Dashboard |
 
 All apps use real public APIs for live data -- no mock or placeholder content.
@@ -282,10 +282,12 @@ A `beforeunload` handler flushes pending writes before the page closes. Automati
 
 - React.memo on all core components (Desktop, Taskbar, Window, WindowManager)
 - useMemo/useCallback throughout to prevent unnecessary re-renders
-- Vite manual chunk splitting: vendor libraries, terminal commands, large apps each get separate chunks
-- Particle animations adapt frame rate and count based on measured FPS
+- Vite manual chunk splitting: vendor libraries, terminal commands, large apps each get separate chunks; apps-misc reduced from 9.5MB to 1.2MB
+- Particle animations rendered via Canvas 2D API, bypassing React reconciliation entirely
+- CSS class-based window dragging instead of direct DOM style manipulation
+- Prefix-indexed app search for O(1) lookup among 700+ apps
 - Debounced storage writes (300ms) prevent I/O thrashing
-- DOM node count cached for 30 seconds to avoid repeated tree traversal
+- DOM node count cached for 60 seconds to avoid repeated tree traversal
 
 ---
 

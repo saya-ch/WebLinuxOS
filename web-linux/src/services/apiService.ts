@@ -228,6 +228,11 @@ export class ApiService {
 
   private constructor() {}
 
+  public logError(method: string, error: unknown): void {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.warn(`[ApiService] ${method} 失败:`, msg)
+  }
+
   public static getInstance(): ApiService {
     if (!ApiService.instance) {
       ApiService.instance = new ApiService()
@@ -239,6 +244,7 @@ export class ApiService {
     try {
       const url = `${this.baseUrls.weather}/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code,feels_like,uv_index,visibility,sunrise,sunset&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=5`
       const response = await fetch(url)
+      if (!response.ok) return null
       const data = await response.json()
 
       if (!data.current) return null
@@ -275,7 +281,8 @@ export class ApiService {
           icon: this.getWeatherIcon(data.daily.weather_code[i])
         }))
       }
-    } catch {
+    } catch (e) {
+      this.logError('fetchWeather', e)
       return null
     }
   }
@@ -284,13 +291,15 @@ export class ApiService {
     try {
       const topStoriesUrl = `${this.baseUrls.news}/topstories.json`
       const response = await fetch(topStoriesUrl)
+      if (!response.ok) return []
       const storyIds = await response.json() as number[]
 
       const top10 = storyIds.slice(0, 10)
-      const articles = await Promise.all(
+      const articles = await Promise.allSettled(
         top10.map(async id => {
           const itemUrl = `${this.baseUrls.news}/item/${id}.json`
           const itemResponse = await fetch(itemUrl)
+          if (!itemResponse.ok) return null
           const item = await itemResponse.json()
           return {
             id: String(id),
@@ -305,7 +314,11 @@ export class ApiService {
       )
 
       return articles
-    } catch {
+        .filter((r): r is PromiseFulfilledResult<NewsArticle | null> => r.status === 'fulfilled')
+        .map(r => r.value)
+        .filter((a): a is NewsArticle => a !== null)
+    } catch (e) {
+      this.logError('fetchNews', e)
       return []
     }
   }
@@ -315,6 +328,7 @@ export class ApiService {
       const ids = symbols.join(',')
       const url = `${this.baseUrls.crypto}/simple/price?ids=${ids}&vs_currencies=usd,cny&include_market_cap=true&include_24hr_change=true&include_24hr_vol=true`
       const response = await fetch(url)
+      if (!response.ok) return []
       const data = await response.json()
 
       const cryptoNames: Record<string, string> = {
@@ -342,7 +356,8 @@ export class ApiService {
           volume24h: info.usd_24h_vol || 0
         }
       }).filter(c => c.priceUsd > 0)
-    } catch {
+    } catch (e) {
+      this.logError('fetchCryptoPrices', e)
       return []
     }
   }
@@ -359,6 +374,7 @@ export class ApiService {
           target: targetLang
         })
       })
+      if (!response.ok) return null
       const data = await response.json()
 
       if (!data.translatedText) return null
@@ -369,7 +385,8 @@ export class ApiService {
         targetLang,
         detectedLang: data.detectedLanguage || 'auto'
       }
-    } catch {
+    } catch (e) {
+      this.logError('translate', e)
       return null
     }
   }
@@ -378,9 +395,11 @@ export class ApiService {
     try {
       const url = `${this.baseUrls.quotes}/random`
       const response = await fetch(url)
+      if (!response.ok) return null
       const data = await response.json()
       return data
-    } catch {
+    } catch (e) {
+      this.logError('fetchRandomQuote', e)
       return null
     }
   }
@@ -389,6 +408,7 @@ export class ApiService {
     try {
       const url = `${this.baseUrls.wikipedia}/page/summary/${encodeURIComponent(query)}`
       const response = await fetch(url)
+      if (!response.ok) return null
       const data = await response.json()
 
       if (data.type === 'disambiguation') {
@@ -402,7 +422,8 @@ export class ApiService {
         url: data.content_urls?.desktop?.page || '',
         thumbnail: data.thumbnail
       }
-    } catch {
+    } catch (e) {
+      this.logError('fetchWikipediaSummary', e)
       return null
     }
   }
@@ -410,8 +431,10 @@ export class ApiService {
   async fetchIPInfo(): Promise<IPInfo | null> {
     try {
       const response = await fetch(this.baseUrls.ipapi)
+      if (!response.ok) return null
       return (await response.json()) as IPInfo
-    } catch {
+    } catch (e) {
+      this.logError('fetchIPInfo', e)
       return null
     }
   }
@@ -437,7 +460,8 @@ export class ApiService {
       const response = await fetch(`${this.baseUrls.github}/users/${username}`)
       if (!response.ok) return null
       return (await response.json()) as GitHubUser
-    } catch {
+    } catch (e) {
+      this.logError('fetchGitHubUser', e)
       return null
     }
   }
@@ -447,7 +471,8 @@ export class ApiService {
       const response = await fetch(`${this.baseUrls.github}/users/${username}/repos?sort=updated&per_page=10`)
       if (!response.ok) return null
       return (await response.json()) as GitHubRepo[]
-    } catch {
+    } catch (e) {
+      this.logError('fetchGitHubRepos', e)
       return null
     }
   }
@@ -455,9 +480,11 @@ export class ApiService {
   async searchGitHubRepos(query: string): Promise<GitHubRepo[] | null> {
     try {
       const response = await fetch(`${this.baseUrls.github}/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=20`)
+      if (!response.ok) return null
       const data = await response.json()
       return (data.items as GitHubRepo[]) || []
-    } catch {
+    } catch (e) {
+      this.logError('searchGitHubRepos', e)
       return null
     }
   }
@@ -466,6 +493,7 @@ export class ApiService {
   async fetchExchangeRates(base: string = 'USD'): Promise<ExchangeRates | null> {
     try {
       const response = await fetch(`${this.baseUrls.exchange}/${base}`)
+      if (!response.ok) return null
       const data = await response.json()
       if (!data.rates) return null
       return {
@@ -473,7 +501,8 @@ export class ApiService {
         date: data.date || new Date().toISOString().split('T')[0],
         rates: data.rates,
       }
-    } catch {
+    } catch (e) {
+      this.logError('fetchExchangeRates', e)
       return null
     }
   }
@@ -493,7 +522,8 @@ export class ApiService {
       } else {
         return { type: 'twopart', setup: data.setup, delivery: data.delivery }
       }
-    } catch {
+    } catch (e) {
+      this.logError('fetchRandomJoke', e)
       return null
     }
   }
@@ -504,7 +534,8 @@ export class ApiService {
       const response = await fetch(`${this.baseUrls.randomuser}?inc=name,email,location,picture`)
       const data = await response.json()
       return (data.results?.[0] as RandomUser) || null
-    } catch {
+    } catch (e) {
+      this.logError('fetchRandomUser', e)
       return null
     }
   }
@@ -515,7 +546,8 @@ export class ApiService {
       const response = await fetch(this.baseUrls.advice)
       const data = await response.json()
       return data.slip?.advice || null
-    } catch {
+    } catch (e) {
+      this.logError('fetchAdvice', e)
       return null
     }
   }
@@ -525,7 +557,8 @@ export class ApiService {
     try {
       const response = await fetch(this.baseUrls.boredapi)
       return (await response.json()) as BoredActivity
-    } catch {
+    } catch (e) {
+      this.logError('fetchRandomActivity', e)
       return null
     }
   }
@@ -536,7 +569,8 @@ export class ApiService {
       const response = await fetch(this.baseUrls.chucknorris)
       const data = await response.json()
       return data.value || null
-    } catch {
+    } catch (e) {
+      this.logError('fetchChuckNorrisJoke', e)
       return null
     }
   }
@@ -558,7 +592,8 @@ export class ApiService {
         age: agifyData.age || 0,
         gender: genderizeData.gender || 'unknown'
       }
-    } catch {
+    } catch (e) {
+      this.logError('analyzeName', e)
       return null
     }
   }
@@ -569,7 +604,8 @@ export class ApiService {
       const response = await fetch(this.baseUrls.catfact)
       const data = await response.json()
       return data.fact || null
-    } catch {
+    } catch (e) {
+      this.logError('fetchCatFact', e)
       return null
     }
   }
@@ -580,7 +616,8 @@ export class ApiService {
       const response = await fetch(this.baseUrls.dogceo)
       const data = await response.json()
       return data.message || null
-    } catch {
+    } catch (e) {
+      this.logError('fetchRandomDogImage', e)
       return null
     }
   }
@@ -589,6 +626,7 @@ export class ApiService {
   async fetchSpaceNews(limit: number = 10): Promise<SpaceArticle[] | null> {
     try {
       const response = await fetch(`${this.baseUrls.spaceflight}?_limit=${limit}`)
+      if (!response.ok) return null
       const data = await response.json()
       if (!Array.isArray(data)) return null
       return data.map((item: { id: number; title: string; url: string; imageUrl: string; newsSite: string; summary: string; publishedAt: string }) => ({
@@ -600,7 +638,8 @@ export class ApiService {
         summary: item.summary,
         publishedAt: item.publishedAt,
       }))
-    } catch {
+    } catch (e) {
+      this.logError('fetchSpaceNews', e)
       return null
     }
   }
@@ -612,6 +651,7 @@ export class ApiService {
     try {
       const url = `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&max_results=${maxResults}&sortBy=relevance&sortOrder=descending`
       const response = await fetch(url)
+      if (!response.ok) return null
       const text = await response.text()
       
       // 解析 Atom XML
@@ -646,7 +686,8 @@ export class ApiService {
       })
       
       return papers
-    } catch {
+    } catch (e) {
+      this.logError('searchArxiv', e)
       return null
     }
   }
@@ -656,6 +697,7 @@ export class ApiService {
     try {
       const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=${limit}&fields=title,abstract,year,authors,externalIds,citationCount,referenceCount,url,publicationDate,venue,openAccessPdf`
       const response = await fetch(url)
+      if (!response.ok) return null
       const data = await response.json()
       
       if (!data.data) return null
@@ -689,7 +731,8 @@ export class ApiService {
         pdfUrl: paper.openAccessPdf?.url || '',
         source: 'Semantic Scholar'
       }))
-    } catch {
+    } catch (e) {
+      this.logError('searchSemanticScholar', e)
       return null
     }
   }
@@ -699,6 +742,7 @@ export class ApiService {
     try {
       const url = `https://api.semanticscholar.org/graph/v1/paper/${paperId}/citations?limit=${limit}&fields=title,year,authors,citationCount,url`
       const response = await fetch(url)
+      if (!response.ok) return null
       const data = await response.json()
       
       if (!data.data) return null
@@ -722,7 +766,8 @@ export class ApiService {
         url: item.citingPaper.url || `https://www.semanticscholar.org/paper/${item.citingPaper.paperId}`,
         source: 'Semantic Scholar'
       }))
-    } catch {
+    } catch (e) {
+      this.logError('getPaperCitations', e)
       return null
     }
   }
@@ -732,6 +777,7 @@ export class ApiService {
     try {
       const url = `https://api.semanticscholar.org/graph/v1/paper/${paperId}/recommendations?limit=${limit}&fields=title,abstract,year,authors,citationCount,url`
       const response = await fetch(url)
+      if (!response.ok) return null
       const data = await response.json()
       
       if (!data.recommendedPapers) return null
@@ -754,7 +800,8 @@ export class ApiService {
         url: paper.url || `https://www.semanticscholar.org/paper/${paper.paperId}`,
         source: 'Semantic Scholar'
       }))
-    } catch {
+    } catch (e) {
+      this.logError('getRecommendedPapers', e)
       return null
     }
   }
@@ -764,6 +811,7 @@ export class ApiService {
     try {
       const url = `https://export.arxiv.org/api/query?search_query=cat:${encodeURIComponent(category)}&max_results=10&sortBy=submittedDate&sortOrder=descending`
       const response = await fetch(url)
+      if (!response.ok) return null
       const text = await response.text()
       
       const parser = new DOMParser()
@@ -795,7 +843,8 @@ export class ApiService {
       })
       
       return papers
-    } catch {
+    } catch (e) {
+      this.logError('fetchDailyPapers', e)
       return null
     }
   }
@@ -819,7 +868,8 @@ export class ApiService {
         this.cachedCoords = { lat: coords.latitude, lon: coords.longitude, timestamp: now }
         return coords
       }
-    } catch {
+    } catch (e) {
+      this.logError('getSmartCoords', e)
       // 忽略错误，使用默认值
     }
 
@@ -855,7 +905,8 @@ export class ApiService {
       if (!response.ok) return null
       const shortened = await response.text()
       return shortened.trim() || null
-    } catch {
+    } catch (e) {
+      this.logError('shortenUrl', e)
       return null
     }
   }
@@ -886,7 +937,8 @@ export class ApiService {
       }
       
       return { breached: false, count: 0 }
-    } catch {
+    } catch (e) {
+      this.logError('checkPasswordBreached', e)
       return null
     }
   }
@@ -908,7 +960,8 @@ export class ApiService {
         rate: Math.round(rate * 10000) / 10000,
         date: data.date || new Date().toISOString().split('T')[0]
       }
-    } catch {
+    } catch (e) {
+      this.logError('convertCurrencyRealTime', e)
       return null
     }
   }
@@ -1014,7 +1067,8 @@ export class ApiService {
         return data.colors.map((c: { hex: { value: string } }) => c.hex.value)
       }
       return null
-    } catch {
+    } catch (e) {
+      this.logError('generateColorPalette', e)
       return null
     }
   }
@@ -1507,7 +1561,8 @@ ApiService.prototype.fetchCountriesAll = async function (): Promise<CountryInfo[
       latlng: (item.latlng as [number, number]) || [0, 0],
       maps: item.maps || { googleMaps: '', openStreetMaps: '' }
     })).sort((a, b) => a.name.localeCompare(b.name))
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('fetchCountriesAll', e)
     return null
   }
 }
@@ -1537,7 +1592,8 @@ ApiService.prototype.searchCountryByName = async function (name: string): Promis
       latlng: (item.latlng as [number, number]) || [0, 0],
       maps: item.maps || { googleMaps: '', openStreetMaps: '' }
     }))
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('searchCountryByName', e)
     return null
   }
 }
@@ -1568,7 +1624,8 @@ ApiService.prototype.fetchCountryByCode = async function (code: string): Promise
       latlng: (item.latlng as [number, number]) || [0, 0],
       maps: item.maps || { googleMaps: '', openStreetMaps: '' }
     }
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('fetchCountryByCode', e)
     return null
   }
 }
@@ -1604,7 +1661,8 @@ ApiService.prototype.fetchAirQuality = async function (latitude: number, longitu
       ozone: Math.round(current.ozone ?? 0),
       europeanAqi: current.european_aqi ? Math.round(current.european_aqi) : undefined
     }
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('fetchAirQuality', e)
     return null
   }
 }
@@ -1623,7 +1681,8 @@ ApiService.prototype.fetchHolidays = async function (countryCode: string, year: 
       global: !!item.global,
       types: item.types || []
     }))
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('fetchHolidays', e)
     return null
   }
 }
@@ -1654,7 +1713,8 @@ ApiService.prototype.searchRecipes = async function (query: string): Promise<Rec
         sourceLink: m.strSource || undefined
       }
     })
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('searchRecipes', e)
     return null
   }
 }
@@ -1684,7 +1744,8 @@ ApiService.prototype.fetchRandomRecipe = async function (): Promise<Recipe | nul
       youtubeLink: m.strYoutube || undefined,
       sourceLink: m.strSource || undefined
     }
-  } catch {
+  } catch (e) {
+    ApiService.getInstance().logError('fetchRandomRecipe', e)
     return null
   }
 }

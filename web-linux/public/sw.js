@@ -1,4 +1,4 @@
-let CACHE_NAME = 'weblinuxos-v139'
+let CACHE_NAME = 'weblinuxos-v141'
 
 // 动态获取 BASE_PATH，添加错误处理
 let BASE_PATH

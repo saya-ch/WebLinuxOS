@@ -2,6 +2,13 @@ import { useCallback, useRef, useEffect, useState, useMemo, memo } from 'react'
 import { useStore } from '../../store'
 import type { WindowState } from '../../types'
 
+// ── 模块级引用计数器：跟踪当前拖拽/调整操作的数量 ──
+// 多个窗口同时拖拽时，只有最后一个操作结束才移除 body class，
+// 避免操作间相互覆盖 cursor / userSelect 样式。
+let activeInteractionCount = 0
+function incrementInteraction(): number { return ++activeInteractionCount }
+function decrementInteraction(): number { return --activeInteractionCount }
+
 interface WindowProps {
   window: WindowState
   children: React.ReactNode
@@ -138,19 +145,24 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   useEffect(() => {
     if (dragging) {
       setDragOpacity(0.85)
-      document.body.style.setProperty('cursor', 'grabbing', 'important')
-      document.body.style.userSelect = 'none'
+      if (incrementInteraction() === 1) {
+        document.body.classList.add('window-dragging')
+      }
       window.dispatchEvent(new CustomEvent('window-drag-start'))
     } else if (!resizing) {
       setDragOpacity(1)
-      document.body.style.setProperty('cursor', '')
-      document.body.style.userSelect = ''
+      if (decrementInteraction() <= 0) {
+        activeInteractionCount = 0
+        document.body.classList.remove('window-dragging')
+      }
       window.dispatchEvent(new CustomEvent('window-drag-end'))
     }
     return () => {
       if (!resizing) {
-        document.body.style.setProperty('cursor', '')
-        document.body.style.userSelect = ''
+        if (decrementInteraction() <= 0) {
+          activeInteractionCount = 0
+          document.body.classList.remove('window-dragging')
+        }
         window.dispatchEvent(new CustomEvent('window-drag-end'))
       }
     }
@@ -158,22 +170,33 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
 
   useEffect(() => {
     if (resizing) {
-      document.body.style.userSelect = 'none'
-      const cursorMap: Record<string, string> = {
-        corner: 'nwse-resize',
-        bottom: 'ns-resize',
-        right: 'ew-resize',
-        left: 'ew-resize',
+      if (incrementInteraction() === 1) {
+        const cursorMap: Record<string, string> = {
+          corner: 'nwse-resize',
+          bottom: 'ns-resize',
+          right: 'ew-resize',
+          left: 'ew-resize',
+        }
+        document.body.classList.add(`window-resizing-${cursorMap[resizing] || 'default'}`)
       }
-      document.body.style.setProperty('cursor', cursorMap[resizing] || 'default', 'important')
     } else if (!dragging) {
-      document.body.style.setProperty('cursor', '')
-      document.body.style.userSelect = ''
+      if (decrementInteraction() <= 0) {
+        activeInteractionCount = 0
+        document.body.className = document.body.className
+          .split(' ')
+          .filter(c => !c.startsWith('window-dragging') && !c.startsWith('window-resizing-'))
+          .join(' ')
+      }
     }
     return () => {
       if (!dragging) {
-        document.body.style.setProperty('cursor', '')
-        document.body.style.userSelect = ''
+        if (decrementInteraction() <= 0) {
+          activeInteractionCount = 0
+          document.body.className = document.body.className
+            .split(' ')
+            .filter(c => !c.startsWith('window-dragging') && !c.startsWith('window-resizing-'))
+            .join(' ')
+        }
       }
     }
   }, [resizing, dragging])
@@ -494,6 +517,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
       }
       
       if (dragging && snapLayout) {
+        const ghostId = `window-snap-ghost-${win.id}`
         const ghostStyle: React.CSSProperties = {
           position: 'fixed',
           left: snapLayout.x,
@@ -509,17 +533,17 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
           transition: 'all 0.15s ease',
         }
         
-        const ghostDiv = document.getElementById('window-snap-ghost')
+        const ghostDiv = document.getElementById(ghostId)
         if (ghostDiv) {
           Object.assign(ghostDiv.style, ghostStyle)
         } else {
           const newGhost = document.createElement('div')
-          newGhost.id = 'window-snap-ghost'
+          newGhost.id = ghostId
           Object.assign(newGhost.style, ghostStyle)
           document.body.appendChild(newGhost)
         }
       } else {
-        const ghostDiv = document.getElementById('window-snap-ghost')
+        const ghostDiv = document.getElementById(`window-snap-ghost-${win.id}`)
         if (ghostDiv) ghostDiv.remove()
       }
       if (resizing) {
@@ -569,7 +593,7 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
         resizeRafRef.current = null
       }
 
-      const ghostDiv = document.getElementById('window-snap-ghost')
+      const ghostDiv = document.getElementById(`window-snap-ghost-${win.id}`)
       if (ghostDiv) ghostDiv.remove()
 
       if (dragging && snapLayout) {
