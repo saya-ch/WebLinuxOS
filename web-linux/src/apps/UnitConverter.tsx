@@ -304,7 +304,7 @@ const UnitConverter: FC = () => {
   const [showSearch, setShowSearch] = useState(false)
   const [history, setHistory] = useState<ConversionHistoryItem[]>([])
   const [copiedId, setCopiedId] = useState<number | null>(null)
-  const [historyIdCounter, setHistoryIdCounter] = useState(0)
+  const [_historyIdCounter, setHistoryIdCounter] = useState(0)
   const [inputFocused, setInputFocused] = useState(false)
 
   const currentCategory = useMemo(

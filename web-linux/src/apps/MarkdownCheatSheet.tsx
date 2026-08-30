@@ -4,7 +4,7 @@ import { SearchIcon, CopyIcon, DownloadIcon, ChevronRightIcon } from '../icons'
 
 // ─── 图标 ──────────────────────────────────────────────────────────
 const ChevronRight = ChevronRightIcon
-const ChevronDown = ({ size = 16 }: { size?: number }) => (
+const _ChevronDown = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
 )
 

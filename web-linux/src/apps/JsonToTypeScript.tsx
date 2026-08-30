@@ -273,7 +273,7 @@ function capitalize(s: string): string {
 }
 
 // ========== 主转换函数 ==========
-function jsonToTypeScript(value: unknown, rootName: string, useTypeAlias: boolean): string {
+function _jsonToTypeScript(value: unknown, rootName: string, useTypeAlias: boolean): string {
   const ctx: TypeContext = {
     interfaces: new Map(),
     nameCounter: 0,
@@ -404,9 +404,9 @@ function highlightTypeScript(text: string): ReactNode {
     // Comments
     const commentRegex = /(\/\/.*$)/gm
     // Types/interfaces after : or = or < or >
-    const typeRef = /:\s*([A-Z][a-zA-Z0-9]*)/g
+    const _typeRef = /:\s*([A-Z][a-zA-Z0-9]*)/g
     // Punctuation
-    const punctRegex = /([{}()\[\];,.<>=!&|?:])/g
+    const _punctRegex = /([{}()\[\];,.<>=!&|?:])/g
 
     let lastIdx = 0
     const allMatches: Array<{ start: number; end: number; type: string; text: string }> = []
