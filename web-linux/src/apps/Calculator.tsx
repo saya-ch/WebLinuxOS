@@ -671,7 +671,7 @@ export default function Calculator() {
   }, [])
 
   const handleYx = useCallback(() => {
-    setExpression((prev) => prev + (display !== 'Error' ? display : '') + '^(1/')
+    setExpression((prev) => prev + (display !== 'Error' ? display : '') + '^(')
     setResetFlag(true)
   }, [display])
 

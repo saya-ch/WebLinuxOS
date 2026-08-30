@@ -679,6 +679,9 @@ const componentMap: Record<string, () => Promise<{ default: React.ComponentType<
   CronExpressionParser: () => import('../../apps/CronExpressionParser'),
   // === 新增网络诊断工具 ===
   NetworkDiagnostics: () => import('../../apps/NetworkDiagnostics'),
+  // CORSProxy & MarkdownLinter
+  CORSProxy: () => import('../../apps/CORSProxy'),
+  MarkdownLinter: () => import('../../apps/MarkdownLinter'),
 }
 
 const COMPONENT_LOAD_TIMEOUT = 30000

@@ -1,12 +1,12 @@
 # WebLinuxOS
 
-一款完全运行于浏览器中的 Linux 桌面环境模拟器。基于 React 19、TypeScript、Zustand 与 Vite 构建，内置 360+ 应用程序、虚拟文件系统、终端模拟器及 Python 运行时，全部在客户端执行，无需后端服务。
+一款完全运行于浏览器中的 Linux 桌面环境。基于 React 19、TypeScript 6、Zustand 5 与 Vite 8 构建，内置 700+ 应用程序、虚拟文件系统、终端模拟器及 Python 运行时，全部在客户端执行，无需后端服务。
 
 **在线体验**: <https://saya-ch.github.io/WebLinuxOS/>
 
 [![GitHub Actions Workflow Status](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml/badge.svg)](https://github.com/saya-ch/WebLinuxOS/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-121.0.0-7c3aed.svg)](./package.json)
+[![Version](https://img.shields.io/badge/version-143.0.0-7c3aed.svg)](./package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs)](https://nodejs.org/)
 

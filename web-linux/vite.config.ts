@@ -84,17 +84,20 @@ export default defineConfig(({ mode }) => {
 
             // ===== Pattern-based auto chunking for apps =====
             // Large apps with submodules or complex dependencies get their own chunks
+            // IMPORTANT: patterns are checked in order — first match wins.
+            // Use \b word boundaries to prevent substring collisions (e.g. CodeForge vs CodeForgeHelper).
+            // Specific patterns must come BEFORE broad catch-alls to avoid overlap.
             const LARGE_APP_PATTERNS: [RegExp, string][] = [
               // ── Code editors / IDEs ──
-              [/CodeEditor|CodeForge|CodeStudio|CodePlayground|CodeSandbox|CodeLab|CodeRunner|CodePen|WebIDE(?!Pro)/i, 'app-codeeditor'],
+              [/CodeEditor|\bCodeForge\b|CodeStudio|CodePlayground(?!Pro)|\bCodeSandbox\b|WebIDE(?!Pro)/i, 'app-codeeditor'],
               // ── File manager ──
               [/FileManager|LocalFileExplorer|DiskUsage|DiskUtility/i, 'app-filemanager'],
               // ── Browser / web browsing ──
               [/WebBrowser|Browser(?!Fingerprint)|WebView|OnlineBrowser/i, 'app-browser'],
               // ── Weather ──
-              [/Weather(?!Dashboard)|AtmosphericWeather|LiveWeather/i, 'app-weather'],
+              [/Weather|LiveWeather|AtmosphericWeather/i, 'app-weather'],
               // ── Music ──
-              [/MusicPlayer|MusicStudio|MusicVisualizer|AudioViz|SoundRecorder|AmbientSound/i, 'app-music'],
+              [/MusicPlayer|MusicStudio|SoundRecorder|AmbientSound/i, 'app-music'],
               // ── Video ──
               [/VideoPlayer|ScreenRecorder|GifExplorer/i, 'app-video'],
               // ── Games ──
@@ -118,7 +121,7 @@ export default defineConfig(({ mode }) => {
               // ── Dev tools / toolbox ──
               [/DevTools|DevBox|DevRadar|DevKit|DevLab|DevForge|DevPortal|DevAtlas|DevHub|DevEcosystem|DevShortcuts|DevToolkit|DeveloperToolbox|DeveloperCheatSheet|DevProductivitySuite/i, 'app-devtools'],
               // ── System / monitor / diagnostics ──
-              [/SystemDashboard|SystemOptimizer|SystemHealthMonitor|SystemAnalytics|SystemAssistant|SystemBackup|SystemDiagnostics|SystemInfo|SystemMonitor|SystemPerformanceAnalyzer|SystemResourceDashboard|SystemSettings|SystemStatusDashboard|SystemTaskManager|SystemToolbox|SystemHealthCheck|SystemHealthDashboard|SystemMonitorDashboard|SystemMonitorPro|SystemDiagnosticsPro|SystemPerformanceAnalyzer|SystemInfoPro|RealSystemMonitor|ProcessMonitor|PerformanceMonitor|ResourceMonitor|PowerManager/i, 'app-system'],
+              [/SystemDashboard|SystemOptimizer|SystemHealthMonitor|SystemAnalytics|SystemAssistant|SystemBackup|SystemDiagnostics|SystemInfo|SystemMonitor|SystemPerformanceAnalyzer|SystemResourceDashboard|SystemSettings|SystemStatusDashboard|SystemTaskManager|SystemToolbox|SystemHealthCheck|SystemHealthDashboard|SystemMonitorDashboard|SystemMonitorPro|SystemDiagnosticsPro|SystemInfoPro|RealSystemMonitor|ProcessMonitor|ResourceMonitor|PowerManager/i, 'app-system'],
               // ── Regex ──
               [/RegexVisualizer|RegexMaster|OnlineRegexTester|RegexBuilder|RegexTester|RegexGolf/i, 'app-regex'],
               // ── JSON / YAML ──
@@ -126,9 +129,9 @@ export default defineConfig(({ mode }) => {
               // ── Prompt engineering / AI writing ──
               [/PromptEngineeringLab|PromptForge|AIWritingStudio|PromptEngineer|AIPromptLibrary|AIPromptOptimizer/i, 'app-prompt'],
               // ── Code sandbox / runner ──
-              [/EnhancedCodeSandbox|OnlineCodeRunnerPro|OnlineCodeRunner|OnlineCodeRunnerEnhanced|OnlineCompiler|OnlineProgrammingLab|CodeRunner|CodeRunnerAdvanced|WebCodeRunner|WebAssemblyPlayground/i, 'app-sandbox'],
+              [/EnhancedCodeSandbox|OnlineCodeRunnerPro|OnlineCodeRunner|OnlineCodeRunnerEnhanced|OnlineCompiler|OnlineProgrammingLab|\bCodeRunner\b|CodeRunnerAdvanced|WebCodeRunner|WebAssemblyPlayground/i, 'app-sandbox'],
               // ── API tools / HTTP ──
-              [/EnhancedApiDebugger|APILab|APILoadTester|APIExplorer|APITester|APIPlaybook|APIPlayground|APIHealthMonitor|APIDesignStudio|ApiDocsViewer|ApiLabPro|ApiTester|OnlineAPIHub|OpenAPIHub|RESTClient|RealHTTPClient|HTTPToolkit|HttpStatusCodes|HttpStatusExplorer|WebRequestLab/i, 'app-api-tools'],
+              [/EnhancedApiDebugger|APILab|APILoadTester|APIExplorer|APITester|APIPlaybook|APIPlayground|APIHealthMonitor|APIDesignStudio|ApiDocsViewer|ApiLabPro|ApiTester|OnlineAPIHub|OpenAPIHub|RESTClient|RealHTTPClient|HTTPToolkit|HttpStatusCodes|HttpStatusExplorer|WebRequestLab|CORSProxy/i, 'app-api-tools'],
               // ── Book / reading / knowledge ──
               [/BookFinder|ReadingList|KnowledgeCards|KnowledgeExplorer|KnowledgeGarden|KnowledgeVine|WikiExplorer|WikipediaExplorer|WikipediaReader|ResearchAssistant|ChinesePoetry|Dictionary/i, 'app-bookfinder'],
               // ── Translation / language ──
@@ -138,7 +141,7 @@ export default defineConfig(({ mode }) => {
               // ── Global data / news / insights ──
               [/GlobalPulse|GlobalIntelCenter|InfoPulseCenter|GlobalInsights|NewsHub|NewsReader|SmartNewsReader|LiveInfoCenter|LiveDataCenter|LivePulse|WorldPulse/i, 'app-global-data'],
               // ── Notes / markdown ──
-              [/SmartNotesPro|MarkdownNotebook|MarkdownLiveStudio|MarkdownLivePreview|MarkdownEditorPro|MarkdownPreviewer|MarkdownPublisher|MarkdownWriter|MarkdownCheatSheet|MarkdownToHTML|MarkdownToPDF|MarkdownQuickNote|MarkdownCollaborator|OnlineCollabNotebook/i, 'app-notes'],
+              [/SmartNotesPro|MarkdownNotebook|MarkdownLiveStudio|MarkdownLivePreview|MarkdownEditorPro|MarkdownPreviewer|MarkdownPublisher|MarkdownWriter|MarkdownCheatSheet|MarkdownToHTML|MarkdownToPDF|MarkdownQuickNote|MarkdownCollaborator|OnlineCollabNotebook|MarkdownLinter/i, 'app-notes'],
               // ── RSS ──
               [/RSSAggregator|RSSReader|SmartRSSReader|HackerNewsReader/i, 'app-rss'],
               // ── Web SSH / serial ──
@@ -149,16 +152,16 @@ export default defineConfig(({ mode }) => {
               [/DevOpsDashboard|DevOpsHealthCheck|DevOpsTools|DeployMonitor|AutoFlow|WorkflowAutomation/i, 'app-devops'],
               // ── Fonts / typography ──
               [/FontPairing|FontViewer|CharacterMap/i, 'app-fonts'],
-              // ── Focus / timer / pomodoro ──
-              [/FocusTimer|FocusFlow|ZenBreath|DeepFocus|FocusMode|Pomodoro|PomodoroFocus|PomodoroPro|PomodoroStudio|PomodoroTimer|FocusFlowPro|CountdownTimer|TimerApp|FocusTimer/i, 'app-focus'],
+              // ── Focus / timer ──
+              [/FocusTimer|FocusFlow|FocusMode|FocusFlowPro|CountdownTimer|TimerApp/i, 'app-focus'],
               // ── Quick tools / clipboard / sharing ──
               [/QuickShare|QuickCapture|QuickCommands|QuickLauncher|QuickTools|ClipboardManager|QuickNotesPro/i, 'app-quickshare'],
               // ── Browser info / dev info ──
-              [/BrowserInfo|DevInfoDashboard|WebMetaExtractor|DevConsole/i, 'app-browser-info'],
+              [/BrowserInfo|BrowserFingerprint|DevInfoDashboard|WebMetaExtractor|DevConsole/i, 'app-browser-info'],
               // ── Link / URL ──
               [/LinkAnalyzer|URLTools|URLToolsEnhanced|WebContentExtractor|WebSnapshot|WebSummarizer|WebClipper/i, 'app-link'],
               // ── Batch image ──
-              [/BatchImageProcessor|ImageCompressor|ImageForge|ImageOptimizer|ImageViewer|BackgroundRemover|AiImageStudio|ImageCompressor/i, 'app-batchimg'],
+              [/BatchImageProcessor|ImageCompressor|ImageForge|ImageOptimizer|ImageViewer|BackgroundRemover|AiImageStudio/i, 'app-batchimg'],
               // ── Storage / cookies ──
               [/LocalStorageInspector|CookieManager|ArchiveManager/i, 'app-storage'],
               // ── WebSocket / network ──
@@ -166,27 +169,27 @@ export default defineConfig(({ mode }) => {
               // ── Mindfulness / wellness ──
               [/ZenBreath|DeepFocus|HabitTracker/i, 'app-mindfulness'],
               // ── Web tools / clipper ──
-              [/SmartWebClipper|WebToMarkdown|WebDevToolkit|WebDevChecklist|WebToolbox|WebToolsHub|WebServicesToolbox|WebPerformanceProfiler|WebPerformanceTesterPro|WebsitePerformanceTester/i, 'app-web-tools'],
+              [/SmartWebClipper|WebToMarkdown|WebDevToolkit|WebDevChecklist|WebToolbox|WebToolsHub|WebServicesToolbox|\bWebPerformanceProfiler\b|WebPerformanceTesterPro|WebsitePerformanceTester/i, 'app-web-tools'],
               // ── Code snap / screenshot ──
-              [/CodeSnapPro|CodeScreenshotter|CodeSnapShare|Screenshot|ScreenCapture|CodeShare|CodeScreenshotter/i, 'app-code-snap'],
+              [/CodeSnapPro|CodeScreenshotter|CodeSnapShare|Screenshot|ScreenCapture|CodeShare/i, 'app-code-snap'],
               // ── Data visualization ──
               [/DataVizWorkbench|DataViz|DataVizDashboard|DataVizStudio|DataVisualizer|AdvancedDataViz|DataPulsePro|DataVerseLive|LiveDashboard|RealTimeDashboard|RealTimeDataDashboard|RealTimeDataHub|LiveDataPipeline|LiveDataHub|NeuroGraph|InsightPulse/i, 'app-dataviz'],
               // ── Crypto / finance ──
               [/CryptoDashboard|CryptoMarketHub|CryptoPortfolioTracker|CryptoPriceTracker|CryptoSimulator|CryptoTracker|FinanceDashboard|StockDashboard|StockTracker|GlobalEconomicDashboard|NebulaDashboard/i, 'app-crypto'],
-              // ── Travel / weather dashboard ──
-              [/GlobalTravelAssistant|WeatherDashboard|CountryInfo|GeoAtlas|Maps|AirQualityMonitor|AtmosphericWeather/i, 'app-travel'],
+              // ── Travel / geo ──
+              [/GlobalTravelAssistant|CountryInfo|GeoAtlas|Maps|AirQualityMonitor/i, 'app-travel'],
               // ── Performance ──
-              [/WebsitePerformanceTester|PerformanceDashboard|PerformanceMonitor|ResourceMonitor|WebPerformanceProfiler|PerformanceProfiler/i, 'app-perf'],
+              [/WebsitePerformanceTester|PerformanceDashboard|\bPerformanceMonitor\b|ResourceMonitor|\bPerformanceProfiler\b/i, 'app-perf'],
               // ── Password / security ──
               [/PasswordGeneratorPro|PasswordGenerator|PasswordChecker|PasswordStrength|PasswordManager|SmartPasswordManager|PasswordManagerEnhanced|SecureVault|PrivacyDashboard|PrivacyGuard|SecurityCenter|SecurityTools/i, 'app-password'],
               // ── Presentation / slides ──
               [/MarkdownToSlides|SlideForge|Presentation/i, 'app-slides'],
               // ── Snippet / code tools ──
-              [/SnippetForge|SnippetManager|SnippetShare|SnippetVault|CodeSnippetHub|CodeSnippetLibrary|CodeSnippetManager|CodeSnippetPlayground|CodeSnippetShare|CodeSnippetsManager|CodeFormatter|CodePolisher|CodeSearch|CodeVault|CodePerfAnalyzer|CodeInterpreter|CodeDocGen|CodeAssistantPro|CodeDiffViewer|CodeDiffViewerEnhanced|CodeGenerator|CodeInterviewPrep|CodeLab|CodePenLite|CodePlaygroundPro|CodeRefactorAI|CodeReviewBot|CodeReviewer|CodeCollaborationHub|CodeCollaborationPlatform|DeveloperToolkitPro|CollaborationEnhanced|WebContainerIDE|WebSandboxIDE|WebIDEPro|ComponentSandbox|WebDB|DatabaseDesigner|Spreadsheet/i, 'app-snippet'],
+              [/SnippetForge|SnippetManager|SnippetShare|SnippetVault|CodeSnippetHub|CodeSnippetLibrary|CodeSnippetManager|CodeSnippetPlayground|CodeSnippetShare|CodeSnippetsManager|CodeFormatter|CodePolisher|CodeSearch|CodeVault|CodePerfAnalyzer|CodeInterpreter|CodeDocGen|\bCodeAssistantPro\b|CodeDiffViewer|CodeDiffViewerEnhanced|CodeGenerator|CodeLab|CodePenLite|CodePlaygroundPro|CodeRefactorAI|CodeReviewBot|CodeReviewer|CodeCollaborationHub|CodeCollaborationPlatform|DeveloperToolkitPro|CollaborationEnhanced|WebContainerIDE|WebSandboxIDE|WebIDEPro|ComponentSandbox|WebDB|DatabaseDesigner|Spreadsheet/i, 'app-snippet'],
               // ── Task / project management ──
               [/TaskManager|TaskManagerPlus|TaskManagerPro|TaskBoard|TaskDashboard|TaskAutomation|ProjectManager|ProjectPlanner|KanbanBoard|DailyAgenda|DailyDashboard|SmartScheduleAssistant|DailyInspo|SmartDailyHub|ProductivityCenter|ProductivityDashboard|ProductivityHub|MotivationalDashboard|UnifiedCommandHub|UnifiedDashboard/i, 'app-tasks'],
               // ── Code AI (catch-all for AI+Code combos) ──
-              [/AIAssistant|AIChat|AICodeAnalyzer|AICodeAssistant|AICodeCompanion|AICodeMentor|AICodeTutor|AICommand|AICreation|AIDesktop|AIDoc|AIGenerator|AIHelper|AILearning|AIPoetry|AIProgramming|AIRewriter|AISmart|AISnippet|AIStory|AITask|AIText|AIUltimate|AIWallpaper|AIWiki|AIWorkbench|AIWorkflow|AIWorkspace|ChatAI|IntelligentCode|SmartCode|SmartAI|SmartRefactor|AIRegex|PollinationsAI|PollinationsStudio|AIArt/i, 'app-code-ai'],
+              [/AIAssistant|AIChat|AICodeAnalyzer|AICodeAssistant|AICodeCompanion|AICodeMentor|AICodeTutor|AICommand|AICreation|AIDesktop|AIDoc|AIGenerator|AIHelper|AILearning|AIPoetry|AIProgramming|AIRewriter|AISmart|AISnippet|AIStory|AITask|AIText|AIUltimate|AIWallpaper|AIWiki|AIWorkbench|AIWorkflow|AIWorkspace|ChatAI|IntelligentCode|SmartCode|SmartAI|AIRegex|PollinationsAI|PollinationsStudio|AIArt/i, 'app-code-ai'],
               // ── Content creation / creative ──
               [/ContentStudio|CreativeToolkit|CreativeInspiration|AsciiArtGenerator|CSSArtStudio|CssAnimationStudio|CssGradientStudio|CssStudio|CSSToolbox|MemeGenerator|ParticleSystem|Visualizers|Whiteboard|WhiteboardPro|RealTimeWhiteboard|RealTimeCollaborativeWhiteboard|CollaborativeWhiteboard|RealtimeWhiteboard|MindMap|FlowBoard/i, 'app-content'],
               // ── Markdown tools (broader catch) ──
@@ -195,8 +198,8 @@ export default defineConfig(({ mode }) => {
               [/GitAssistant|GitCheatsheet|GitHubExplorer|GitHubProfile|GitHubTrending|GitVisualizer|GitProbe|CodeDiff/i, 'app-git'],
               // ── Collab / real-time ──
               [/Collaboration|RealTimeCodeCollab|RealTimeCollaboration|RealtimeDocument|LiveCollabBoard|OnlineCollab/i, 'app-collab'],
-              // ── Social / contacts / messaging ──
-              [/Social|Contacts|Chat(?!AI)|VoiceAssistant|VoiceTranscriber|WebSpeechSynth|SpeechMemo|IdeaBoard|IdeaCapture|IdeaStream|IdeaBoardInfinite/i, 'app-social'],
+              // ── Social / messaging ──
+              [/Social|Chat(?!AI)|VoiceAssistant|VoiceTranscriber|WebSpeechSynth|SpeechMemo|IdeaBoard|IdeaCapture|IdeaStream|IdeaBoardInfinite/i, 'app-social'],
               // ── Charts / gauges ──
               [/Chart|Gauge|Dashboard(?!System|Weather|Performance|Finance|Crypto|Real)/i, 'app-charts'],
               // ── Emoji / icon / gallery ──
@@ -205,8 +208,8 @@ export default defineConfig(({ mode }) => {
               [/Pomodoro/i, 'app-pomodoro'],
               // ── Code review / refactor ──
               [/CodeReview|Refactor|CodeInterviewPrep|TechInterviewPrep/i, 'app-codereview'],
-              // ── Recorder / player ──
-              [/Recorder|Player|AudioViz|MusicVisualizer/i, 'app-recorder'],
+              // ── Audio recorder / player ──
+              [/\bAudioRecorder\b|\bVideoRecorder\b|\bMusicPlayer\b|\bAudioViz\b|\bMusicVisualizer\b/i, 'app-recorder'],
               // ── Scheduler / planner ──
               [/Scheduler|Planner|Schedule|Automation/i, 'app-scheduler'],
               // ── Debugging / profiling ──
@@ -216,7 +219,7 @@ export default defineConfig(({ mode }) => {
               // ── Name / nameplate ──
               [/Nameplate|Name/i, 'app-nameplate'],
               // ── API / HTTP (remaining) ──
-              [/API|HTTP|REST|GraphQL/i, 'app-api-remaining'],
+              [/API(?!Hub)|HTTP|REST|GraphQL/i, 'app-api-remaining'],
               // ── Translation (remaining) ──
               [/Translat/i, 'app-translat'],
               // ── Generator (remaining) ──
@@ -224,13 +227,13 @@ export default defineConfig(({ mode }) => {
               // ── Testing ──
               [/Test|Probe|Check/i, 'app-testing'],
               // ── Recording / audio ──
-              [/Record|Audio|Sound|Speech|Voice/i, 'app-audio'],
+              [/\bRecord\b|\bAudio\b|\bSound\b|\bSpeech\b|\bVoice\b/i, 'app-audio'],
               // ── Word / text ──
-              [/Word|Text|TextAnalyze|TextAnalyze|Editor/i, 'app-text'],
+              [/Word|Text|TextAnalyze|Editor/i, 'app-text'],
               // ── Manager (remaining catch-all for XxxManager) ──
-              [/Manager|Hub|Center|Console|Toolkit|Toolbox|Stack|Suite|Hub|Forge|Studio/i, 'app-manager'],
+              [/Manager(?!Pro|Plus|Enhanced)|Hub(?!API|Open|Online)|Center|Console|Toolkit|Toolbox|Stack|Suite|Forge|Studio/i, 'app-manager'],
               // ── Database ──
-              [/Database|DB|SQL/i, 'app-database'],
+              [/Database|\bDB\b|SQL/i, 'app-database'],
               // ── Setup / onboarding ──
               [/Setup|Wizard|Onboard|Welcome|Intro/i, 'app-setup'],
               // ── Manifest / registry ──

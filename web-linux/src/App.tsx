@@ -84,7 +84,6 @@ const App = memo(function App() {
   const resolvedTheme = useStore((s) => s.resolvedTheme)
   const accentColor = useStore((s) => s.accentColor)
   const applyAccentToDOM = useStore((s) => s.applyAccentToDOM)
-  const setTheme = useStore((s) => s.setTheme)
   const launcherOpen = useStore((s) => s.launcherOpen)
   const refreshSystemStats = useStore((s) => s.refreshSystemStats)
   const setSystemStatus = useStore((s) => s.setSystemStatus)
@@ -136,12 +135,13 @@ const App = memo(function App() {
     if (theme !== 'auto') return
     const mql = window.matchMedia('(prefers-color-scheme: light)')
     const handler = () => {
-      // 触发主题系统重新解析：通过一个微妙的setTheme调用让store重新计算resolvedTheme
-      setTheme('auto')
+      // 直接更新 resolvedTheme，避免调用 setTheme 导致的冗余存储和循环依赖
+      useStore.setState({ resolvedTheme: mql.matches ? 'light' : 'dark' })
     }
+    handler() // 初始化时同步一次
     mql.addEventListener('change', handler)
     return () => mql.removeEventListener('change', handler)
-  }, [theme, setTheme])
+  }, [theme])
 
   useEffect(() => {
     refreshSystemStats()

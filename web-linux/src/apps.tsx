@@ -18,10 +18,18 @@ import {
   BarChartIcon, ResearchIcon, DatabaseIcon, BarChart3Icon,
   GlobeIcon, HashIcon, MonitorIcon, SystemAnalyticsIcon, ShortcutCustomizerIcon,
   PlaneIcon, FileJsonIcon,
-  // v106 新增：仅保留 icons.tsx 独有的，不与 apps.tsx 本地 function 定义冲突
-  DailyDashboardIcon
+  DailyDashboardIcon,
+  // v107+ 修复：将底部本地 function 定义的同名图标改为从 icons.tsx 导入
+  MarkdownPublisherIcon, StudioSuiteIcon, AudioVizIcon, PulseIcon, VineIcon,
+  DevPortalIcon, DiceIcon, DashboardIcon, CustomGlobeIcon, NexusHubIcon,
+  EcoTrackIcon, NeuroGraphIcon, ImageForgeIcon, TimeCapsuleIcon, OpenAPIHubIcon,
+  ResumeForgeIcon, DataVizStudioIcon, CodeReviewBotIcon, FlashMasterIcon,
+  GitHubIcon, CloudIcon, ZapIcon, IdeaBoardIcon, LivePulseIcon,
+  InsightPulseIcon, CodeDocGenIcon, NebulaIcon, PollinationsAIIcon, DevAtlasIcon,
+  WikiExplorerIcon, SnippetVaultIcon, GeoAtlasIcon, GlobeInsightsIcon, WorkflowIcon
 } from './icons'
 
+import { Globe, FileText } from 'lucide-react'
 import type { AppDefinition } from './types'
 
 // 批量注册常量：如果未来需要从外部（如单独配置文件 / 插件系统 / API 拉取）
@@ -563,93 +571,6 @@ export function registerApps(extras: AppDefinition[]) {
   }
 }
 
-function MarkdownPublisherIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <path d="M9 13l-2 3h4l-2 3" />
-      <path d="M15 13v6" />
-      <path d="M13 15l2-2 2 2" />
-    </svg>
-  )
-}
-
-function StudioSuiteIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-      <path d="M2 17l10 5 10-5" />
-      <path d="M2 12l10 5 10-5" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function AudioVizIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12h2l2-5 3 10 3-8 2 3 2-5 2 5h2" />
-      <circle cx="12" cy="12" r="9" strokeDasharray="2 3" opacity="0.5" />
-    </svg>
-  )
-}
-
-function PulseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12h3l2-6 3 12 3-8 2 4h5" />
-      <circle cx="22" cy="12" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function VineIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22V12" />
-      <path d="M12 12C12 8 10 6 6 6" />
-      <path d="M12 12C12 8 14 6 18 6" />
-      <path d="M6 6C6 4 5 2 3 2" />
-      <path d="M18 6C18 4 19 2 21 2" />
-      <circle cx="3" cy="2" r="1" fill="currentColor" stroke="none" />
-      <circle cx="21" cy="2" r="1" fill="currentColor" stroke="none" />
-      <path d="M12 22C12 18 10 16 6 16" />
-      <path d="M12 22C12 18 14 16 18 16" />
-      <path d="M6 16C6 14 5 12 3 12" />
-      <path d="M18 16C18 14 19 12 21 12" />
-      <circle cx="3" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="21" cy="12" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function DevPortalIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <path d="M17.5 14L14 17.5L17.5 21" />
-      <path d="M21 17.5H14" />
-    </svg>
-  )
-}
-
-
-function DiceIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-      <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" />
-      <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor" />
-      <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-    </svg>
-  )
-}
-
 function DevAssistantIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -767,18 +688,6 @@ function AutoFlowIcon() {
     </svg>
   )
 }
-
-function DashboardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <rect x="3" y="3" width="7" height="9" rx="1" />
-      <rect x="14" y="3" width="7" height="5" rx="1" />
-      <rect x="14" y="12" width="7" height="9" rx="1" />
-      <rect x="3" y="16" width="7" height="5" rx="1" />
-    </svg>
-  )
-}
-
 function UnifiedDashboardIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -889,152 +798,7 @@ function ComponentSandboxIcon() {
 }
 
 
-
-function NexusHubIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3" />
-      <circle cx="4" cy="7" r="2" />
-      <circle cx="20" cy="7" r="2" />
-      <circle cx="4" cy="17" r="2" />
-      <circle cx="20" cy="17" r="2" />
-      <path d="M6 8.5L10 11" />
-      <path d="M18 8.5L14 11" />
-      <path d="M6 15.5L10 13" />
-      <path d="M18 15.5L14 13" />
-      <path d="M4 9V5" />
-      <path d="M20 9V5" />
-      <path d="M4 15v4" />
-      <path d="M20 15v4" />
-    </svg>
-  )
-}
-
-function EcoTrackIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22c4-4 6-8 6-12A6 6 0 0 0 6 6c-4 0-8 2-12 6Z" />
-      <path d="M12 22c-4-4-6-8-6-12a6 6 0 0 1 6-6c0 4 2 8 6 12Z" />
-      <circle cx="12" cy="12" r="2" />
-      <path d="M12 4V2" />
-      <path d="M4 12H2" />
-    </svg>
-  )
-}
-
-function NeuroGraphIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="6" cy="6" r="2.5" fill="currentColor" stroke="none" opacity="0.7" />
-      <circle cx="18" cy="6" r="2.5" fill="currentColor" stroke="none" opacity="0.7" />
-      <circle cx="12" cy="14" r="2.5" fill="currentColor" stroke="none" opacity="0.9" />
-      <circle cx="5" cy="18" r="2" fill="currentColor" stroke="none" opacity="0.6" />
-      <circle cx="19" cy="18" r="2" fill="currentColor" stroke="none" opacity="0.6" />
-      <line x1="7.5" y1="7" x2="11" y2="13" />
-      <line x1="16.5" y1="7" x2="13" y2="13" />
-      <line x1="10.5" y1="15.5" x2="6.5" y2="17" />
-      <line x1="13.5" y1="15.5" x2="17.5" y2="17" />
-    </svg>
-  )
-}
-
-function ImageForgeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 4V2" />
-      <path d="M15 16v-2" />
-      <path d="M8 9h2" />
-      <path d="M20 9h2" />
-      <path d="M17.8 11.8L19 13" />
-      <path d="M15 9h0" />
-      <path d="M17.8 6.2L19 5" />
-      <path d="M3 21l9-9 4 4-3 3" />
-      <path d="M3 21h6" />
-      <path d="M9 21l3-3" />
-      <circle cx="15" cy="9" r="2" />
-    </svg>
-  )
-}
-
-function TimeCapsuleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M19 5l1.5-1.5" />
-      <path d="M5 19l-1.5 1.5" />
-    </svg>
-  )
-}
-
 // === v55 新增 5 个图标函数
-function OpenAPIHubIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="3" />
-      <path d="M8 9l-2 3 2 3" />
-      <path d="M16 9l2 3-2 3" />
-      <path d="M12 9l-1 6" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function ResumeForgeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="8" y1="12" x2="16" y2="12" />
-      <line x1="8" y1="16" x2="14" y2="16" />
-      <path d="M18 14l2 2-2 2" />
-    </svg>
-  )
-}
-
-function DataVizStudioIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="4" y1="20" x2="4" y2="12" />
-      <line x1="9" y1="20" x2="9" y2="6" />
-      <line x1="14" y1="20" x2="14" y2="15" />
-      <line x1="19" y1="20" x2="19" y2="9" />
-      <polyline points="4,12 9,6 14,15 19,9" />
-      <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="9" cy="6" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="15" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="19" cy="9" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function CodeReviewBotIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 17l-7.5-5L9 7" />
-      <path d="M15 7l7.5 5L15 17" />
-      <circle cx="12" cy="12" r="3.2" />
-      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
-      <path d="M3 4l2-2" />
-      <path d="M21 20l-2 2" />
-      <path d="M3 20l-2 2" />
-      <path d="M21 4l2-2" />
-    </svg>
-  )
-}
-
-function FlashMasterIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="13" height="16" rx="2" />
-      <path d="M16 8l6 3-6 3" />
-      <rect x="6" y="6" width="7" height="12" rx="1" />
-      <path d="M9 8l-2 5 2-1-1 3" />
-    </svg>
-  )
-}
-
 function URLToolsIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1213,15 +977,6 @@ function CustomMusicIcon() {
   )
 }
 
-
-function GitHubIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-    </svg>
-  )
-}
-
 function GitHubExplorerIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1254,34 +1009,6 @@ function CustomClipboardIcon() {
     </svg>
   )
 }
-
-function CloudIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
-    </svg>
-  )
-}
-
-
-function ZapIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  )
-}
-
-function CustomGlobeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  )
-}
-
 function CustomBookIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1371,102 +1098,7 @@ function AITaskAssistantIcon() {
     </svg>
   )
 }
-
-function IdeaBoardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-      <path d="M2 17l10 5 10-5" />
-      <path d="M2 12l10 5 10-5" />
-      <circle cx="12" cy="7" r="1" fill="currentColor" />
-      <circle cx="8" cy="14.5" r="1" fill="currentColor" />
-      <circle cx="16" cy="14.5" r="1" fill="currentColor" />
-    </svg>
-  )
-}
-
-function LivePulseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M3 12h3l2-5 3 10 3-8 2 3h5" />
-      <circle cx="21" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="4" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function InsightPulseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2" />
-      <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M12 3a9 9 0 016.36 2.64" />
-      <path d="M12 3v4" />
-      <path d="M21 12h-4" />
-      <path d="M18.36 18.36A9 9 0 0112 21" />
-      <path d="M12 21v-4" />
-      <path d="M3 12h4" />
-      <path d="M5.64 5.64A9 9 0 0112 3" />
-      <rect x="6" y="8" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.7" />
-      <rect x="15" y="14" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.7" />
-    </svg>
-  )
-}
-
-function CodeDocGenIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <path d="M9 14l-2 2 2 2" />
-      <path d="M15 14l2 2-2 2" />
-      <path d="M13 13l-1 6" />
-      <line x1="8" y1="12" x2="16" y2="12" strokeWidth="2.5" />
-    </svg>
-  )
-}
-
 /* === v62 三大创新应用图标 === */
-function NebulaIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <ellipse cx="12" cy="12" rx="9" ry="3.5" />
-      <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(60 12 12)" />
-      <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(120 12 12)" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" />
-      <circle cx="18.5" cy="8.5" r="0.8" fill="currentColor" stroke="none" />
-      <circle cx="5" cy="15" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function PollinationsAIIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" />
-      <path d="M12 7v10" />
-      <path d="M3 7l9 5 9-5" />
-      <circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M7 9.5l5 2.8M17 9.5l-5 2.8" />
-    </svg>
-  )
-}
-
-function DevAtlasIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
-      <path d="M8 12c0-2.2 1.8-4 4-4M16 12c0 2.2-1.8 4-4 4" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M3 6l3 2M21 6l-3 2M3 18l3-2M21 18l-3-2" />
-    </svg>
-  )
-}
-
 function TaskManagerPlusIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
@@ -1494,65 +1126,6 @@ function SpaceExplorerIcon() {
       <circle cx="12" cy="12" r="1.5" />
       <circle cx="5.5" cy="12" r="0.8" fill="currentColor" stroke="none" />
       <circle cx="18.5" cy="12" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-
-function WorkflowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="5" cy="6" r="2" />
-      <circle cx="5" cy="18" r="2" />
-      <circle cx="19" cy="12" r="2" />
-      <path d="M7 6h4a3 3 0 0 1 3 3v0a3 3 0 0 0 3 3h2" />
-      <path d="M7 18h4a3 3 0 0 0 3-3v0a3 3 0 0 1 3-3h2" />
-    </svg>
-  )
-}
-
-function GlobeInsightsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  )
-}
-
-function GeoAtlasIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M5 7h14" opacity="0.4" />
-      <path d="M5 17h14" opacity="0.4" />
-      <circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="9" cy="15" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function WikiExplorerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      <circle cx="12" cy="9" r="3" />
-      <path d="M12 12v2" />
-      <line x1="9" y1="16" x2="15" y2="16" />
-    </svg>
-  )
-}
-
-function SnippetVaultIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-      <line x1="14" y1="4" x2="10" y2="20" />
     </svg>
   )
 }
@@ -1815,6 +1388,36 @@ export const appRegistry: AppDefinition[] = [
   // === v41.0 创新功能扩展 — 真实可用的开发者工具 ===
   { id: 'system-info-pro', name: '系统信息诊断', icon: <InfoIcon />, component: 'SystemInfoPro', category: 'system', defaultWidth: 1150, defaultHeight: 800, minWidth: 850, minHeight: 600, resizable: true, multiple: false, isNew: true, description: '详细的浏览器与系统信息诊断：CPU核心数、内存估算、电池状态、网络类型、屏幕信息、字体能力、权限状态、WebGL能力、CPU压力测试、实时性能监控' },
   { id: 'web-code-runner', name: 'Web代码运行器', icon: <Code2Icon />, component: 'WebCodeRunner', category: 'development', defaultWidth: 1150, defaultHeight: 780, minWidth: 800, minHeight: 550, resizable: true, multiple: false, isNew: true, description: '浏览器内 JavaScript 真实执行环境：代码编辑器、控制台输出、错误捕获、预设代码片段、执行时间测量、历史记录、代码分享链接' },
+  {
+    id: 'cors-proxy-debugger',
+    name: 'CORS Proxy',
+    icon: <Globe size={18} />,
+    component: 'CORSProxy',
+    category: 'development' as const,
+    defaultWidth: 900,
+    defaultHeight: 600,
+    minWidth: 600,
+    minHeight: 400,
+    resizable: true,
+    multiple: false,
+    isNew: true,
+    description: 'CORS 跨域请求调试与代理工具',
+  },
+  {
+    id: 'markdown-linter',
+    name: 'Markdown Linter',
+    icon: <FileText size={18} />,
+    component: 'MarkdownLinter',
+    category: 'development' as const,
+    defaultWidth: 850,
+    defaultHeight: 550,
+    minWidth: 600,
+    minHeight: 400,
+    resizable: true,
+    multiple: false,
+    isNew: true,
+    description: 'Markdown 格式检查与一键修复工具',
+  },
   // === v40.0 创新功能扩展 ===
   // 注意：以下 ...APP_REGISTRY_EXTRAS 必须放在 appRegistry 数组末尾，
   // 否则会被后续字面量项覆盖。

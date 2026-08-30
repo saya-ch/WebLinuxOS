@@ -10,7 +10,7 @@ No server. No backend. No dependencies. Just open and use.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-142.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-143.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
 **[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
@@ -34,6 +34,17 @@ No server. No backend. No dependencies. Just open and use.
 - [Architecture](#architecture)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## What's New in v143
+
+- **CORS Proxy Debugger**: new developer tool for testing cross-origin requests with proxy selection (AllOrigins, CorsProxy.io) and detailed CORS header analysis
+- **Markdown Linter**: format checker with 9 detection rules (heading hierarchy, unclosed code blocks, inconsistent list markers, etc.) and one-click auto-fix
+- **System Monitor upgrade**: disk space data now uses real `navigator.storage.estimate()` API instead of hardcoded values, with graceful fallback
+- **Bug fixes**: Calculator y^x power function corrected, theme listener infinite loop resolved, Terminal command parsing refactored
+- **Build optimization**: Vite chunk splitting patterns refined with word boundaries and negative lookaheads to eliminate 25+ overlap cases
+- **Code quality**: eliminated 34 duplicate icon definitions, extracted shared constants, deduplicated file operation type labels
 
 ---
 
@@ -111,6 +122,9 @@ The project demonstrates that a complete, usable desktop experience can be deliv
 - Cron expression parser with human-readable descriptions
 - Web performance profiler with Core Web Vitals tracking
 - Browser fingerprint detection and privacy analysis
+- CORS Proxy Debugger: test cross-origin requests with proxy selection and CORS header analysis
+- Markdown Linter: format checking with 9 rules and one-click auto-fix
+- QR Code Generator: zero-dependency implementation of the full QR Code Model 2 specification (ISO/IEC 18004)
 
 ---
 
@@ -173,13 +187,13 @@ WebLinuxOS ships with **700+ applications** across 10+ categories:
 
 | Category | Count | Highlights |
 |:---------|:------|:-----------|
-| System | 20+ | File Manager, Terminal, Settings, System Monitor, DevInfo Dashboard |
-| Development | 80+ | Code Editor (Monaco), Developer Dashboard, JSON Diff, Markdown Live Studio, API Debugger, JSON-to-TypeScript, Regex Visualizer |
+| System | 20+ | File Manager, Terminal, Settings, System Monitor (with real browser API data), DevInfo Dashboard |
+| Development | 80+ | Code Editor (Monaco), Developer Dashboard, CORS Proxy Debugger, Markdown Linter, JSON Diff, API Debugger, Regex Visualizer, QR Code Generator (zero-dependency ISO 18004) |
 | AI | 40+ | AI Chat, AI Code Assistant, Prompt Engineering Lab, AI Writing Studio |
-| Internet | 30+ | Weather, News Reader, Wikipedia Explorer, GitHub Trending, RSS Aggregator |
+| Internet | 30+ | Weather (Open-Meteo API), News Reader, Wikipedia Explorer, GitHub Trending, RSS Aggregator |
 | Productivity | 50+ | Pomodoro Timer, Calendar, Kanban Board, Clipboard Manager, Focus Timer |
 | Data | 40+ | Spreadsheet, JSON Formatter, Hash Calculator, Base64 Toolkit, Unit Converter |
-| Multimedia | 30+ | Paint, Music Studio, Video Player, Ambient Sound, QR Code Generator |
+| Multimedia | 30+ | Paint, Music Studio, Video Player, Ambient Sound, Batch Image Processor |
 | Games | 20+ | Snake, Tetris, 2048, Breakout, Memory Match |
 | Network | 20+ | DNS Lookup, IP Info, Speed Test, Network Diagnostics, WebSocket Client, HTTP Toolkit |
 | Office | 20+ | Markdown Cheat Sheet, Slide Forge, Book Finder, Daily Dashboard |

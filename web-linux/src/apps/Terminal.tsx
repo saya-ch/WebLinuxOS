@@ -196,8 +196,8 @@ export default function Terminal() {
     return null
   }, [cwd, files, addFile, updateFileContent])
 
-  // 解析管道：按 | 分割命令，但排除被引号包裹的 |
-  const splitPipes = (cmdStr: string): string[] => {
+  // 通用分隔符解析：按指定分隔符分割命令，但排除被引号包裹的分隔符
+  const splitByDelimiter = (cmdStr: string, delimiter: string): string[] => {
     const parts: string[] = []
     let current = ''
     let inSingleQuote = false
@@ -206,7 +206,7 @@ export default function Terminal() {
       const ch = cmdStr[i]
       if (ch === "'" && !inDoubleQuote) { inSingleQuote = !inSingleQuote; current += ch; continue }
       if (ch === '"' && !inSingleQuote) { inDoubleQuote = !inDoubleQuote; current += ch; continue }
-      if (ch === '|' && !inSingleQuote && !inDoubleQuote) {
+      if (ch === delimiter && !inSingleQuote && !inDoubleQuote) {
         parts.push(current.trim())
         current = ''
         continue
@@ -217,26 +217,8 @@ export default function Terminal() {
     return parts
   }
 
-  // 解析多命令：按 ; 分割，但排除引号包裹的 ;
-  const splitSemicolons = (cmdStr: string): string[] => {
-    const parts: string[] = []
-    let current = ''
-    let inSingleQuote = false
-    let inDoubleQuote = false
-    for (let i = 0; i < cmdStr.length; i++) {
-      const ch = cmdStr[i]
-      if (ch === "'" && !inDoubleQuote) { inSingleQuote = !inSingleQuote; current += ch; continue }
-      if (ch === '"' && !inSingleQuote) { inDoubleQuote = !inDoubleQuote; current += ch; continue }
-      if (ch === ';' && !inSingleQuote && !inDoubleQuote) {
-        parts.push(current.trim())
-        current = ''
-        continue
-      }
-      current += ch
-    }
-    if (current.trim()) parts.push(current.trim())
-    return parts
-  }
+  const splitPipes = (cmdStr: string): string[] => splitByDelimiter(cmdStr, '|')
+  const splitSemicolons = (cmdStr: string): string[] => splitByDelimiter(cmdStr, ';')
 
   // 执行单个命令（无管道/重定向），返回输出和 cwd 变更
   const runSingleCommand = useCallback(async (command: string, args: string[], stdin?: string): Promise<{ output: string; newCwd?: string; newPrevCwd?: string | null }> => {

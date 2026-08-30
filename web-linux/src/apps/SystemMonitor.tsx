@@ -296,6 +296,7 @@ const SystemMonitor = () => {
     { name: '/home', used: 85 * 1024 * 1024 * 1024, total: 200 * 1024 * 1024 * 1024 },
     { name: '/tmp', used: 512 * 1024 * 1024, total: 2 * 1024 * 1024 * 1024 },
   ])
+  const [isRealStorageData, setIsRealStorageData] = useState(false)
 
   // Memory — based on real device memory
   const [memory, setMemory] = useState(() => {
@@ -361,20 +362,28 @@ const SystemMonitor = () => {
 
   // --- Storage estimate (async, once) ---
   useEffect(() => {
-    getStorageEstimate().then((est) => {
-      if (est && est.quota > 0) {
-        const usageRatio = est.usage / est.quota
-        // Map browser storage to realistic Linux partition sizes
-        const rootTotal = 60 * 1024 * 1024 * 1024
-        const homeTotal = 200 * 1024 * 1024 * 1024
-        const tmpTotal = 2 * 1024 * 1024 * 1024
-        setDisk([
-          { name: '/ (root)', used: Math.round(rootTotal * Math.min(usageRatio * 1.2, 0.95)), total: rootTotal },
-          { name: '/home', used: Math.round(homeTotal * Math.min(usageRatio * 0.8, 0.9)), total: homeTotal },
-          { name: '/tmp', used: Math.round(tmpTotal * Math.min(usageRatio * 0.3, 0.5)), total: tmpTotal },
-        ])
+    const fetchStorageData = async () => {
+      try {
+        const est = await getStorageEstimate()
+        if (est && est.quota > 0) {
+          // 使用真实API数据
+          setDisk([{
+            name: '/ (root)',
+            used: est.usage,
+            total: est.quota,
+          }])
+          setIsRealStorageData(true)
+        } else {
+          // API返回无效数据，使用模拟数据
+          setIsRealStorageData(false)
+        }
+      } catch (error) {
+        console.warn('获取存储配额信息失败:', error)
+        setIsRealStorageData(false)
       }
-    })
+    }
+    
+    fetchStorageData()
   }, [])
 
   // --- Battery (unchanged) ---
@@ -646,6 +655,11 @@ const SystemMonitor = () => {
               <span className="sm-badge" style={{ color: getUsageColor(totalDiskPercent) }}>
                 {totalDiskPercent.toFixed(1)}%
               </span>
+              {isRealStorageData && (
+                <span className="sm-disk-source" title="使用浏览器存储API获取的真实数据">
+                  真实数据
+                </span>
+              )}
             </div>
             <div className="sm-gauge-bar">
               <div
@@ -1178,6 +1192,15 @@ const SystemMonitor = () => {
         .sm-disk-detail {
           font-size: 11px;
           color: var(--text-secondary, #6b7280);
+        }
+
+        .sm-disk-source {
+          font-size: 10px;
+          padding: 2px 6px;
+          background: #22c55e22;
+          color: #22c55e;
+          border-radius: 4px;
+          font-weight: 500;
         }
 
         .sm-net-grid {

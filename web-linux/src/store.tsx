@@ -285,6 +285,16 @@ const clearAllNotificationTimers = () => {
   notificationTimers.clear()
 }
 
+// 文件操作类型中文映射，用于 undo/redo 通知
+const FILE_OP_TYPE_LABELS: Record<string, string> = {
+  add: '添加文件',
+  delete: '删除文件',
+  rename: '重命名文件',
+  move: '移动文件',
+  copy: '复制文件',
+  update: '更新文件内容',
+}
+
 export const useStore = create<Store>((set, get) => ({
   windows: [],
   apps: [],
@@ -1446,16 +1456,6 @@ export const useStore = create<Store>((set, get) => ({
     const operation = state.fileOperationHistory[state.historyIndex]
     if (!operation) return
 
-    // 简单的操作类型中文映射，用于通知
-    const typeLabel: Record<string, string> = {
-      add: '新建',
-      delete: '删除',
-      rename: '重命名',
-      update: '修改',
-      move: '移动',
-      copy: '复制',
-    }
-
     switch (operation.type) {
       case 'add':
         set((s) => {
@@ -1526,7 +1526,7 @@ export const useStore = create<Store>((set, get) => ({
     setTimeout(() => {
       get().addNotification({
         title: '已撤销',
-        message: `撤销操作：${typeLabel[operation.type] || operation.type}`,
+        message: `撤销操作：${FILE_OP_TYPE_LABELS[operation.type] || operation.type}`,
         type: 'info',
         duration: 2500,
       })
@@ -1540,15 +1540,6 @@ export const useStore = create<Store>((set, get) => ({
 
     const operation = state.fileOperationHistory[state.historyIndex + 1]
     if (!operation) return
-
-    const typeLabel: Record<string, string> = {
-      add: '新建',
-      delete: '删除',
-      rename: '重命名',
-      update: '修改',
-      move: '移动',
-      copy: '复制',
-    }
 
     switch (operation.type) {
       case 'add':
@@ -1636,7 +1627,7 @@ export const useStore = create<Store>((set, get) => ({
     setTimeout(() => {
       get().addNotification({
         title: '已重做',
-        message: `重做操作：${typeLabel[operation.type] || operation.type}`,
+        message: `重做操作：${FILE_OP_TYPE_LABELS[operation.type] || operation.type}`,
         type: 'info',
         duration: 2500,
       })
