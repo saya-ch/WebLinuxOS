@@ -173,7 +173,7 @@ function deepDiff(oldObj: unknown, newObj: unknown, basePath: string = ''): Diff
           results.push(...deepDiff(oldVal, newVal, path))
         } else if (Array.isArray(oldVal) && Array.isArray(newVal)) {
           // 两者都是数组
-          results.push(...diffArrays(oldVal, newVal, path))
+          results.push(...diffArrays(oldVal as unknown[], newVal as unknown[], path))
         } else {
           // 值不同
           results.push({ path, type: 'modified', oldValue: oldVal, newValue: newVal, key })
@@ -189,7 +189,7 @@ function deepDiff(oldObj: unknown, newObj: unknown, basePath: string = ''): Diff
 
   // 两者都是数组
   if (Array.isArray(oldObj) && Array.isArray(newObj)) {
-    return diffArrays(oldObj, newObj, basePath)
+    return diffArrays(oldObj as unknown[], newObj as unknown[], basePath)
   }
 
   // 值不同
@@ -222,7 +222,7 @@ function diffArrays(oldArr: unknown[], newArr: unknown[], basePath: string): Dif
     ) {
       results.push(...deepDiff(oldArr[i], newArr[i], path))
     } else if (Array.isArray(oldArr[i]) && Array.isArray(newArr[i])) {
-      results.push(...diffArrays(oldArr[i], newArr[i], path))
+      results.push(...diffArrays(oldArr[i] as unknown[], newArr[i] as unknown[], path))
     } else {
       results.push({ path, type: 'modified', oldValue: oldArr[i], newValue: newArr[i], key })
     }
