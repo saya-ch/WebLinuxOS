@@ -206,11 +206,15 @@ const App = memo(function App() {
   const apps = useStore((s) => s.apps)
   useEffect(() => {
     const idx = new Map<string, string[]>()
+    // 优化：只为每个 app 生成最短有区分度的前缀（至少3字符），而非每个字符位置都建索引
+    // 这将索引条目从 O(n*L) 降低到 O(n * min(L, MAX_PREFIXES))
+    const MAX_PREFIXES_PER_APP = 6
     for (const app of apps) {
       const lowerName = app.name.toLowerCase()
       const lowerId = app.id.toLowerCase()
-      // 为名称和 id 的每个前缀建立映射
-      for (let len = 1; len <= lowerName.length; len++) {
+      const nameLen = Math.min(lowerName.length, MAX_PREFIXES_PER_APP)
+      const idLen = Math.min(lowerId.length, MAX_PREFIXES_PER_APP)
+      for (let len = 3; len <= nameLen; len++) {
         const prefix = lowerName.slice(0, len)
         const list = idx.get(prefix)
         if (list) {
@@ -220,7 +224,7 @@ const App = memo(function App() {
         }
       }
       if (lowerId !== lowerName) {
-        for (let len = 1; len <= lowerId.length; len++) {
+        for (let len = 3; len <= idLen; len++) {
           const prefix = lowerId.slice(0, len)
           const list = idx.get(prefix)
           if (list) {

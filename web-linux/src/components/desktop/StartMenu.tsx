@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, memo } from 'react'
 import { useStore } from '../../store'
 import { PinIcon, PinOffIcon, SearchIcon, ListTodoIcon, FileTextIcon, GlobeIcon, MusicIcon, WrenchIcon, CodeIcon, SettingsIcon, InfoIcon, BookIcon, GamepadIcon, StarIcon, StarOffIcon, ClockIcon, GridIcon } from '../../icons'
 
@@ -80,7 +80,7 @@ function saveFavoriteApps(favorites: string[]) {
 
 type SortMode = 'default' | 'frequency'
 
-const StartMenu = function StartMenu() {
+const StartMenu = memo(function StartMenu() {
   const apps = useStore((s) => s.apps)
   const openApp = useStore((s) => s.openApp)
   const closeLauncher = useStore((s) => s.closeLauncher)
@@ -610,6 +610,6 @@ const StartMenu = function StartMenu() {
       </div>
     </>
   )
-}
+})
 
 export default StartMenu

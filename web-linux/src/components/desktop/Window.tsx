@@ -21,7 +21,6 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const maximizeWindow = useStore((s) => s.maximizeWindow)
   const updateWindowPosition = useStore((s) => s.updateWindowPosition)
   const updateWindowSize = useStore((s) => s.updateWindowSize)
-  const apps = useStore((s) => s.apps)
   const setWindowSnapshot = useStore((s) => s.setWindowSnapshot)
   const removeWindowSnapshot = useStore((s) => s.removeWindowSnapshot)
   const snapWindow = useStore((s) => s.snapWindow)
@@ -52,10 +51,8 @@ const Window = memo(function Window({ window: win, children }: WindowProps) {
   const resizeRafRef = useRef<number | null>(null)
   const dragRafRef = useRef<number | null>(null)
 
-  const safeApps = Array.isArray(apps)
-    ? apps.filter((a) => a !== null && a !== undefined && typeof a === 'object' && !!a.id)
-    : []
-  const app = safeApps.find((a) => a.id === win.appId)
+  // 使用 selector 直接按 appId 查找 app，避免每次渲染遍历 350+ apps 数组
+  const app = useStore((s) => s.apps.find((a) => a?.id === win.appId))
 
   const [isMinimizing, setIsMinimizing] = useState(false)
   const [isOpening, setIsOpening] = useState(true)

@@ -10,7 +10,7 @@ No server. No backend. No dependencies. Just open and use.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-141.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-142.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
 **[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
@@ -104,6 +104,8 @@ The project demonstrates that a complete, usable desktop experience can be deliv
 ### Built-in Developer Tools
 
 - Monaco code editor (VS Code engine) with syntax highlighting for 40+ languages
+- Developer Dashboard: system monitoring, quick launch, environment info, code snippets, API health checks
+- JSON Diff tool: deep recursive comparison with tree/list views and color-coded highlighting
 - JSON to TypeScript type generator with smart inference
 - Interactive regex visualizer with real-time matching
 - Cron expression parser with human-readable descriptions
@@ -172,7 +174,7 @@ WebLinuxOS ships with **700+ applications** across 10+ categories:
 | Category | Count | Highlights |
 |:---------|:------|:-----------|
 | System | 20+ | File Manager, Terminal, Settings, System Monitor, DevInfo Dashboard |
-| Development | 80+ | Code Editor (Monaco), Markdown Live Studio, API Debugger, JSON-to-TypeScript, Regex Visualizer |
+| Development | 80+ | Code Editor (Monaco), Developer Dashboard, JSON Diff, Markdown Live Studio, API Debugger, JSON-to-TypeScript, Regex Visualizer |
 | AI | 40+ | AI Chat, AI Code Assistant, Prompt Engineering Lab, AI Writing Studio |
 | Internet | 30+ | Weather, News Reader, Wikipedia Explorer, GitHub Trending, RSS Aggregator |
 | Productivity | 50+ | Pomodoro Timer, Calendar, Kanban Board, Clipboard Manager, Focus Timer |

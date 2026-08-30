@@ -854,7 +854,7 @@ export class ApiService {
   private readonly COORDS_CACHE_TTL = 30 * 60 * 1000 // 30分钟
 
   // 智能获取坐标：优先使用缓存，然后尝试IP定位，最后使用默认
-  private async getSmartCoords(): Promise<{ latitude: number; longitude: number }> {
+  public async getSmartCoords(): Promise<{ latitude: number; longitude: number }> {
     const now = Date.now()
     if (this.cachedCoords && (now - this.cachedCoords.timestamp) < this.COORDS_CACHE_TTL) {
       return { latitude: this.cachedCoords.lat, longitude: this.cachedCoords.lon }
@@ -1458,6 +1458,9 @@ export class ApiService {
   // === v106 新增：REST Countries API - 国家信息查询 ===
 }
 
+// 扩展 ApiService 的额外方法：country、air quality、holidays、recipes 等
+// 重构：将 prototype 扩展改为独立函数，避免 TypeScript 反模式
+
 export interface CountryInfo {
   name: string
   officialName: string
@@ -1515,122 +1518,69 @@ export interface Recipe {
   sourceLink?: string
 }
 
-// 扩展 ApiService 的 baseUrls 定义和方法
-declare module './apiService' {
-  interface ApiService {
-    fetchCountriesAll(): Promise<CountryInfo[] | null>
-    searchCountryByName(name: string): Promise<CountryInfo[] | null>
-    fetchCountryByCode(code: string): Promise<CountryInfo | null>
-    fetchAirQuality(latitude: number, longitude: number): Promise<AirQualityData | null>
-    fetchHolidays(countryCode: string, year: number): Promise<HolidayInfo[] | null>
-    searchRecipes(query: string): Promise<Recipe[] | null>
-    fetchRandomRecipe(): Promise<Recipe | null>
-    fetchDailyMegaDashboard(): Promise<{
-      weather: WeatherData | null
-      quote: QuoteData | null
-      airQuality: AirQualityData | null
-      holidays: HolidayInfo[]
-      news: NewsArticle[]
-      crypto: CryptoPrice[]
-    }>
+const COUNTRY_FIELDS = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
+
+function parseCountryItem(item: Record<string, unknown>): CountryInfo {
+  const name = (item.name as Record<string, string>) || {}
+  return {
+    name: name.common || '',
+    officialName: name.official || '',
+    cca2: (item.cca2 as string) || '',
+    cca3: (item.cca3 as string) || '',
+    capital: (item.capital as string[]) || [],
+    region: (item.region as string) || '',
+    subregion: (item.subregion as string) || '',
+    population: (item.population as number) || 0,
+    area: (item.area as number) || 0,
+    languages: (item.languages as Record<string, string>) || {},
+    currencies: (item.currencies as Record<string, { name: string; symbol: string }>) || {},
+    flag: (item.flag as string) || '',
+    flags: (item.flags as { png: string; svg: string }) || { png: '', svg: '' },
+    timezones: (item.timezones as string[]) || [],
+    borders: (item.borders as string[]) || [],
+    latlng: (item.latlng as [number, number]) || [0, 0],
+    maps: (item.maps as { googleMaps: string; openStreetMaps: string }) || { googleMaps: '', openStreetMaps: '' }
   }
 }
 
-ApiService.prototype.fetchCountriesAll = async function (): Promise<CountryInfo[] | null> {
+export async function fetchCountriesAll(): Promise<CountryInfo[] | null> {
   try {
-    const fields = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
-    const response = await fetch(`https://restcountries.com/v3.1/all?fields=${fields}`)
+    const response = await fetch(`https://restcountries.com/v3.1/all?fields=${COUNTRY_FIELDS}`)
     if (!response.ok) return null
     const data = await response.json()
-    return (data as any[]).map(item => ({
-      name: item.name?.common || '',
-      officialName: item.name?.official || '',
-      cca2: item.cca2 || '',
-      cca3: item.cca3 || '',
-      capital: item.capital || [],
-      region: item.region || '',
-      subregion: item.subregion || '',
-      population: item.population || 0,
-      area: item.area || 0,
-      languages: item.languages || {},
-      currencies: item.currencies || {},
-      flag: item.flag || '',
-      flags: item.flags || { png: '', svg: '' },
-      timezones: item.timezones || [],
-      borders: item.borders || [],
-      latlng: (item.latlng as [number, number]) || [0, 0],
-      maps: item.maps || { googleMaps: '', openStreetMaps: '' }
-    })).sort((a, b) => a.name.localeCompare(b.name))
+    return (data as Record<string, unknown>[]).map(parseCountryItem).sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
-    ApiService.getInstance().logError('fetchCountriesAll', e)
+    apiService.logError('fetchCountriesAll', e)
     return null
   }
 }
 
-ApiService.prototype.searchCountryByName = async function (name: string): Promise<CountryInfo[] | null> {
+export async function searchCountryByName(name: string): Promise<CountryInfo[] | null> {
   try {
-    const fields = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
-    const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=${fields}`)
+    const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=${COUNTRY_FIELDS}`)
     if (!response.ok) return []
     const data = await response.json()
-    return (data as any[]).map(item => ({
-      name: item.name?.common || '',
-      officialName: item.name?.official || '',
-      cca2: item.cca2 || '',
-      cca3: item.cca3 || '',
-      capital: item.capital || [],
-      region: item.region || '',
-      subregion: item.subregion || '',
-      population: item.population || 0,
-      area: item.area || 0,
-      languages: item.languages || {},
-      currencies: item.currencies || {},
-      flag: item.flag || '',
-      flags: item.flags || { png: '', svg: '' },
-      timezones: item.timezones || [],
-      borders: item.borders || [],
-      latlng: (item.latlng as [number, number]) || [0, 0],
-      maps: item.maps || { googleMaps: '', openStreetMaps: '' }
-    }))
+    return (data as Record<string, unknown>[]).map(parseCountryItem)
   } catch (e) {
-    ApiService.getInstance().logError('searchCountryByName', e)
+    apiService.logError('searchCountryByName', e)
     return null
   }
 }
 
-ApiService.prototype.fetchCountryByCode = async function (code: string): Promise<CountryInfo | null> {
+export async function fetchCountryByCode(code: string): Promise<CountryInfo | null> {
   try {
-    const fields = 'name,cca2,cca3,capital,region,subregion,population,area,languages,currencies,flag,flags,timezones,borders,latlng,maps'
-    const response = await fetch(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(code)}?fields=${fields}`)
+    const response = await fetch(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(code)}?fields=${COUNTRY_FIELDS}`)
     if (!response.ok) return null
     const data = await response.json()
-    const item = data[0] || data
-    return {
-      name: item.name?.common || '',
-      officialName: item.name?.official || '',
-      cca2: item.cca2 || '',
-      cca3: item.cca3 || '',
-      capital: item.capital || [],
-      region: item.region || '',
-      subregion: item.subregion || '',
-      population: item.population || 0,
-      area: item.area || 0,
-      languages: item.languages || {},
-      currencies: item.currencies || {},
-      flag: item.flag || '',
-      flags: item.flags || { png: '', svg: '' },
-      timezones: item.timezones || [],
-      borders: item.borders || [],
-      latlng: (item.latlng as [number, number]) || [0, 0],
-      maps: item.maps || { googleMaps: '', openStreetMaps: '' }
-    }
+    const item = (Array.isArray(data) ? data[0] : data) as Record<string, unknown>
+    return parseCountryItem(item)
   } catch (e) {
-    ApiService.getInstance().logError('fetchCountryByCode', e)
+    apiService.logError('fetchCountryByCode', e)
     return null
   }
 }
 
-ApiService.prototype.fetchAirQuality = async function (latitude: number, longitude: number): Promise<AirQualityData | null> {
+export async function fetchAirQuality(latitude: number, longitude: number): Promise<AirQualityData | null> {
   try {
     const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=european_aqi,us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone`
     const response = await fetch(url)
@@ -1662,38 +1612,38 @@ ApiService.prototype.fetchAirQuality = async function (latitude: number, longitu
       europeanAqi: current.european_aqi ? Math.round(current.european_aqi) : undefined
     }
   } catch (e) {
-    ApiService.getInstance().logError('fetchAirQuality', e)
+    apiService.logError('fetchAirQuality', e)
     return null
   }
 }
 
-ApiService.prototype.fetchHolidays = async function (countryCode: string, year: number): Promise<HolidayInfo[] | null> {
+export async function fetchHolidays(countryCode: string, year: number): Promise<HolidayInfo[] | null> {
   try {
     const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${encodeURIComponent(countryCode)}`)
     if (!response.ok) return []
     const data = await response.json()
-    return (data as any[]).map(item => ({
-      date: item.date || '',
-      localName: item.localName || '',
-      name: item.name || '',
-      countryCode: item.countryCode || '',
+    return (data as Record<string, unknown>[]).map(item => ({
+      date: (item.date as string) || '',
+      localName: (item.localName as string) || '',
+      name: (item.name as string) || '',
+      countryCode: (item.countryCode as string) || '',
       fixed: !!item.fixed,
       global: !!item.global,
-      types: item.types || []
+      types: (item.types as string[]) || []
     }))
   } catch (e) {
-    ApiService.getInstance().logError('fetchHolidays', e)
+    apiService.logError('fetchHolidays', e)
     return null
   }
 }
 
-ApiService.prototype.searchRecipes = async function (query: string): Promise<Recipe[] | null> {
+export async function searchRecipes(query: string): Promise<Recipe[] | null> {
   try {
     const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`)
     if (!response.ok) return null
     const data = await response.json()
     if (!data.meals) return []
-    return data.meals.map((m: any) => {
+    return data.meals.map((m: Record<string, string>) => {
       const ingredients: { name: string; measure: string }[] = []
       for (let i = 1; i <= 20; i++) {
         const ing = m[`strIngredient${i}`]
@@ -1714,12 +1664,12 @@ ApiService.prototype.searchRecipes = async function (query: string): Promise<Rec
       }
     })
   } catch (e) {
-    ApiService.getInstance().logError('searchRecipes', e)
+    apiService.logError('searchRecipes', e)
     return null
   }
 }
 
-ApiService.prototype.fetchRandomRecipe = async function (): Promise<Recipe | null> {
+export async function fetchRandomRecipe(): Promise<Recipe | null> {
   try {
     const response = await fetch(`https://www.themealdb.com/api/json/v1/1/random.php`)
     if (!response.ok) return null
@@ -1745,12 +1695,12 @@ ApiService.prototype.fetchRandomRecipe = async function (): Promise<Recipe | nul
       sourceLink: m.strSource || undefined
     }
   } catch (e) {
-    ApiService.getInstance().logError('fetchRandomRecipe', e)
+    apiService.logError('fetchRandomRecipe', e)
     return null
   }
 }
 
-ApiService.prototype.fetchDailyMegaDashboard = async function (): Promise<{
+export async function fetchDailyMegaDashboard(): Promise<{
   weather: WeatherData | null
   quote: QuoteData | null
   airQuality: AirQualityData | null
@@ -1758,15 +1708,15 @@ ApiService.prototype.fetchDailyMegaDashboard = async function (): Promise<{
   news: NewsArticle[]
   crypto: CryptoPrice[]
 }> {
-  const coords = await (ApiService.prototype as any).getSmartCoords.call(ApiService.getInstance())
+  const coords = await apiService.getSmartCoords()
   const year = new Date().getFullYear()
   const [weather, quote, airQuality, holidays, news, crypto] = await Promise.all([
-    ApiService.getInstance().fetchWeather(coords.latitude, coords.longitude),
-    ApiService.getInstance().fetchRandomQuote(),
-    ApiService.getInstance().fetchAirQuality(coords.latitude, coords.longitude),
-    ApiService.getInstance().fetchHolidays('CN', year).then(r => r || []),
-    ApiService.getInstance().fetchNews(),
-    ApiService.getInstance().fetchCryptoPrices(['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple'])
+    apiService.fetchWeather(coords.latitude, coords.longitude),
+    apiService.fetchRandomQuote(),
+    fetchAirQuality(coords.latitude, coords.longitude),
+    fetchHolidays('CN', year).then(r => r || []),
+    apiService.fetchNews(),
+    apiService.fetchCryptoPrices(['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple'])
   ])
 
   return { weather, quote, airQuality, holidays, news, crypto }

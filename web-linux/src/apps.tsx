@@ -36,6 +36,9 @@ import type { AppDefinition } from './types'
 //   ]
 //   // 并在下方 appRegistry 数组末尾追加：...APP_REGISTRY_EXTRAS
 export const APP_REGISTRY_EXTRAS: AppDefinition[] = [
+  // === v142 新增实用工具 ===
+  { id: 'developer-dashboard', name: '开发者仪表盘', icon: <MonitorIcon />, component: 'DeveloperDashboard', category: 'development', defaultWidth: 1280, defaultHeight: 880, minWidth: 960, minHeight: 660, resizable: true, multiple: false, isNew: true, description: '开发者一站式仪表盘：系统实时监控、快速启动常用工具、环境信息、键盘快捷键参考、实用代码片段、API健康检测' },
+  { id: 'json-diff', name: 'JSON Diff 对比工具', icon: <FileJsonIcon />, component: 'JsonDiff', category: 'utilities', defaultWidth: 1200, defaultHeight: 800, minWidth: 900, minHeight: 600, resizable: true, multiple: false, isNew: true, description: 'JSON深度对比工具：双栏编辑器、递归差异检测、树形/列表视图、颜色高亮、文件加载、复制报告' },
   // === 新增网络诊断工具 ===
   { id: 'network-diagnostics', name: '网络诊断工具', icon: <WifiIcon />, component: 'NetworkDiagnostics', category: 'networking', defaultWidth: 1280, defaultHeight: 860, minWidth: 900, minHeight: 640, resizable: true, multiple: false, isNew: true, description: '综合网络诊断工具：网络信息面板(navigator.connection)、DNS-over-HTTPS查询(Cloudflare 1.1.1.1)、端口可达性检测、WHOIS/RDAP域名查询、Ping延迟测试、网络速度测试，6大功能模块' },
   // === v140 新增实用工具

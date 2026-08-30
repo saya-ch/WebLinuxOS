@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { apiService, type WeatherData, type QuoteData, type AirQualityData, type HolidayInfo, type NewsArticle, type CryptoPrice } from '../services/apiService'
+import { fetchDailyMegaDashboard, type WeatherData, type QuoteData, type AirQualityData, type HolidayInfo, type NewsArticle, type CryptoPrice } from '../services/apiService'
 import {
   RefreshCw,
   Droplets,
@@ -38,7 +38,7 @@ export default function DailyDashboard() {
     try {
       isRefresh ? setRefreshing(true) : setLoading(true)
       setError(null)
-      const data = await apiService.fetchDailyMegaDashboard()
+      const data = await fetchDailyMegaDashboard()
       setWeather(data.weather)
       setQuote(data.quote)
       setAirQuality(data.airQuality)

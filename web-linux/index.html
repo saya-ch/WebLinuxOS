@@ -21,7 +21,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="WebLinuxOS - Web Native Linux Desktop" />
     <meta name="twitter:description" content="700+ apps, AI integration, developer tools, real-time dashboards, running entirely in your browser" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; connect-src 'self' https: wss: ws:; media-src 'self' blob: https:; frame-src 'self' https: data:; object-src 'none'; base-uri 'self'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; connect-src 'self' https: wss: ws:; media-src 'self' blob: https:; frame-src 'self' https: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'" />
     <link rel="manifest" href="./manifest.json" />
     <!-- 预连接字体服务，但标记为可选以避免阻塞渲染 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -273,7 +273,7 @@
       <div class="progress">
         <div class="progress-bar"></div>
       </div>
-      <div class="hint" id="boot-hint">v141.0 · 启动中 · 请稍候</div>
+      <div class="hint" id="boot-hint">v142.0 · 启动中 · 请稍候</div>
     </div>
     <noscript>
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06060c;color:#e0e0e8;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
@@ -288,17 +288,17 @@
     <script>
       // 启动日志动画
       (function() {
-        var v = '141';
+        var v = '142';
       var lines = [
           { type: 'info', text: '[ OK ] Started WebLinuxOS v' + v + ' init process' },
           { type: 'info', text: '[ OK ] Reached target Multi-User System' },
           { type: 'info', text: '[ OK ] Listening on virtual desktop 0.0.0.0:5173' },
           { type: 'ok',   text: '[ OK ] Loaded 700+ integrated applications' },
           { type: 'ok',   text: '[ OK ] Mounted virtual file system via IndexedDB' },
-          { type: 'ok',   text: '[ OK ] New: Unit Converter, QR Generator, JSON→TS, Markdown CheatSheet' },
-          { type: 'ok',   text: '[ OK ] Pure-front QR encoding with Reed-Solomon ECC' },
+          { type: 'ok',   text: '[ OK ] New: Developer Dashboard, JSON Diff Tool' },
+          { type: 'ok',   text: '[ OK ] Refactored: ApiService prototype -> standalone functions' },
           { type: 'ok',   text: '[ OK ] Service Worker cache updated to v' + v },
-          { type: 'info', text: '[ OK ] WebLinuxOS v' + v + ' ready · Real tools, API integrations & quality improvements' },
+          { type: 'info', text: '[ OK ] WebLinuxOS v' + v + ' ready · Performance optimizations & quality improvements' },
         ];
         var el = document.getElementById('boot-log');
         if (!el) return;
