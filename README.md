@@ -10,7 +10,7 @@ No server. No backend. No dependencies. Just open and use.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-143.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-144.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
 **[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
@@ -37,7 +37,16 @@ No server. No backend. No dependencies. Just open and use.
 
 ---
 
-## What's New in v143
+## What's New in v144
+
+- **Clipboard History Manager**: smart clipboard tracking with content type detection (text/URL/code/JSON), search, pin favorites, and one-click copy
+- **Color Toolkit**: comprehensive color utility with palette generator, HEX/RGB/HSL converter, WCAG contrast checker, picker, CSS variable export, and gradient generator
+- **Screen Ruler**: pixel-precise measurement tool with distance/angle measurement, grid overlay, magnifier, color picker, and guide lines
+- **Bug fixes**: Service Worker update interval now properly cleaned up on page unload to prevent memory leaks
+- **Performance**: keyboard shortcut handler optimized with ref-based store access to reduce unnecessary re-registrations
+- **Code quality**: ErrorBoundary refactored for more reliable error recovery
+
+### Previous Highlights (v143)
 
 - **CORS Proxy Debugger**: new developer tool for testing cross-origin requests with proxy selection (AllOrigins, CorsProxy.io) and detailed CORS header analysis
 - **Markdown Linter**: format checker with 9 detection rules (heading hierarchy, unclosed code blocks, inconsistent list markers, etc.) and one-click auto-fix

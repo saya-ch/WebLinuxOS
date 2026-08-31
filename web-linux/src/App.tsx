@@ -369,16 +369,39 @@ const App = memo(function App() {
     focusWindow(sortedWindows[nextIndex].id)
   }, [focusWindow])
 
+  // 使用 ref 缓存 handleSystemShortcut 中引用的 store 方法，避免其作为 useCallback 依赖
+  // 导致频繁重建 handleKeyDown。store 方法引用稳定，无需作为依赖。
+  const storeActionsRef = useRef({
+    toggleLauncher,
+    maximizeWindow,
+    minimizeWindow,
+    closeWindow,
+    openApp,
+    toggleQuickActionCenter,
+    toggleNotificationCenter: useStore.getState().toggleNotificationCenter,
+    addNotification: useStore.getState().addNotification,
+  })
+  useEffect(() => {
+    storeActionsRef.current = {
+      toggleLauncher,
+      maximizeWindow,
+      minimizeWindow,
+      closeWindow,
+      openApp,
+      toggleQuickActionCenter,
+      toggleNotificationCenter: useStore.getState().toggleNotificationCenter,
+      addNotification: useStore.getState().addNotification,
+    }
+  }, [toggleLauncher, maximizeWindow, minimizeWindow, closeWindow, openApp, toggleQuickActionCenter])
+
   const handleSystemShortcut = useCallback((action: string) => {
+    const actions = storeActionsRef.current
     const currentWindows = useStore.getState().windows
     const focusedWindowId = currentWindows.find((w) => w.focused)?.id
-    const store = useStore.getState()
-    const toggleNotificationCenter = store.toggleNotificationCenter
-    const addNotification = store.addNotification
     
     switch (action) {
       case 'launcher':
-        toggleLauncher()
+        actions.toggleLauncher()
         break
       case 'cycle-windows':
         cycleWindows()
@@ -387,19 +410,19 @@ const App = memo(function App() {
         cycleWindows(true)
         break
       case 'maximize-f11':
-        if (focusedWindowId) maximizeWindow(focusedWindowId)
+        if (focusedWindowId) actions.maximizeWindow(focusedWindowId)
         break
       case 'screenshot':
-        openApp('screenshot')
+        actions.openApp('screenshot')
         break
       case 'close-window':
-        if (focusedWindowId) closeWindow(focusedWindowId)
+        if (focusedWindowId) actions.closeWindow(focusedWindowId)
         break
       case 'minimize-window':
-        if (focusedWindowId) minimizeWindow(focusedWindowId)
+        if (focusedWindowId) actions.minimizeWindow(focusedWindowId)
         break
       case 'new-terminal':
-        openApp('terminal')
+        actions.openApp('terminal')
         break
       case 'global-search':
         setSearchOpenRef.current(true)
@@ -408,7 +431,7 @@ const App = memo(function App() {
         setCommandPaletteOpenRef.current(true)
         break
       case 'lock-screen':
-        addNotification({
+        actions.addNotification({
           title: '屏幕已锁定',
           message: '按任意键或点击解锁',
           type: 'info',
@@ -416,16 +439,16 @@ const App = memo(function App() {
         })
         break
       case 'notification-center':
-        toggleNotificationCenter()
+        actions.toggleNotificationCenter()
         break
       case 'shortcuts':
         setShortcutPanelOpen(true)
         break
       case 'quick-action-center':
-        toggleQuickActionCenter()
+        actions.toggleQuickActionCenter()
         break
     }
-  }, [toggleLauncher, cycleWindows, maximizeWindow, minimizeWindow, closeWindow, openApp, toggleQuickActionCenter])
+  }, [cycleWindows])
 
   const matchesShortcut = useCallback((config: ShortcutConfig, isMod: boolean, isShift: boolean, isAlt: boolean, key: string): boolean => {
     if (config.mod !== undefined && config.mod !== isMod) return false

@@ -120,6 +120,7 @@ function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     // 使用 import.meta.env.BASE_URL 适配 VITE_BASE_PATH 自定义部署
     const swUrl = `${import.meta.env.BASE_URL}sw.js`
+    let swUpdateInterval: ReturnType<typeof setInterval> | null = null
     window.addEventListener('load', () => {
       navigator.serviceWorker.register(swUrl)
         .then((registration) => {
@@ -137,14 +138,22 @@ function registerServiceWorker() {
             }
           })
 
-          // 检查更新（每小时一次）
-          setInterval(() => {
+          // 检查更新（每小时一次），保存 interval 引用以便清理
+          swUpdateInterval = setInterval(() => {
             registration.update().catch(() => { /* 静默忽略更新检查错误 */ })
           }, 60 * 60 * 1000)
         })
         .catch((err) => {
           console.warn('[WebLinuxOS] Service Worker 注册失败:', err)
         })
+
+      // 页面卸载时清理 interval
+      window.addEventListener('beforeunload', () => {
+        if (swUpdateInterval !== null) {
+          clearInterval(swUpdateInterval)
+          swUpdateInterval = null
+        }
+      })
     })
 
     // 监听控制器变更，自动重载以应用新版本
