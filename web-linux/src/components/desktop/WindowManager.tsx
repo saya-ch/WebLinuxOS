@@ -19,6 +19,9 @@ interface WindowComponent {
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
   // v145 新增应用
   JsonQueryTool: () => import('../../apps/JsonQueryTool'),
+  // v146 新增应用
+  WebPerformanceInsights: () => import('../../apps/WebPerformanceInsights'),
+  NetworkConnectivityChecker: () => import('../../apps/NetworkConnectivityChecker'),
   // v142 新增应用
   DeveloperDashboard: () => import('../../apps/DeveloperDashboard'),
   JsonDiff: () => import('../../apps/JsonDiff'),

@@ -105,7 +105,7 @@ export default defineConfig(({ mode }) => {
               // ── AI assistants (smaller group) ──
               [/NexusAI|AICraft|AIBackgroundRemover|AIUpscaler|AICodeReview/i, 'app-ai-suite'],
               // ── Terminal ──
-              [/TerminalPro|NeoTerminal|SmartShell|LinuxCommandLab|LinuxCommandPlayground/i, 'app-terminalpro'],
+              [/\bTerminal\b|TerminalPro|NeoTerminal|SmartShell|LinuxCommandLab|LinuxCommandPlayground/i, 'app-terminalpro'],
               // ── Calendar / dates ──
               [/Calendar/i, 'app-calendar'],
               // ── Calculator / math ──
@@ -121,7 +121,7 @@ export default defineConfig(({ mode }) => {
               // ── Dev tools / toolbox ──
               [/DevTools|DevBox|DevRadar|DevKit|DevLab|DevForge|DevPortal|DevAtlas|DevHub|DevEcosystem|DevShortcuts|DevToolkit|DeveloperToolbox|DeveloperCheatSheet|DevProductivitySuite/i, 'app-devtools'],
               // ── System / monitor / diagnostics ──
-              [/SystemDashboard|SystemOptimizer|SystemHealthMonitor|SystemAnalytics|SystemAssistant|SystemBackup|SystemDiagnostics|SystemInfo|SystemMonitor|SystemPerformanceAnalyzer|SystemResourceDashboard|SystemSettings|SystemStatusDashboard|SystemTaskManager|SystemToolbox|SystemHealthCheck|SystemHealthDashboard|SystemMonitorDashboard|SystemMonitorPro|SystemDiagnosticsPro|SystemInfoPro|RealSystemMonitor|ProcessMonitor|ResourceMonitor|PowerManager/i, 'app-system'],
+              [/SystemDashboard|SystemOptimizer|SystemHealthMonitor|SystemAnalytics|SystemAssistant|SystemBackup|SystemDiagnostics|SystemInfo|SystemMonitor|SystemPerformanceAnalyzer|SystemResourceDashboard|SystemSettings|SystemStatusDashboard|SystemTaskManager|SystemToolbox|SystemHealthCheck|SystemHealthDashboard|SystemMonitorDashboard|SystemMonitorPro|SystemDiagnosticsPro|SystemInfoPro|RealSystemMonitor|ProcessMonitor|ResourceMonitor|PowerManager|\bAbout\b|\bHelp\b/i, 'app-system'],
               // ── Regex ──
               [/RegexVisualizer|RegexMaster|OnlineRegexTester|RegexBuilder|RegexTester|RegexGolf/i, 'app-regex'],
               // ── JSON / YAML ──
@@ -238,6 +238,32 @@ export default defineConfig(({ mode }) => {
               [/Setup|Wizard|Onboard|Welcome|Intro/i, 'app-setup'],
               // ── Manifest / registry ──
               [/Manifest|Registry|RegistryDB/i, 'app-manifest'],
+              // ── Space / astronomy ──
+              [/Space|Astro/i, 'app-space'],
+              // ── Recipe / eco / lifestyle ──
+              [/Recipe|Eco|Pet|Food/i, 'app-lifestyle'],
+              // ── Flash / learning / cards ──
+              [/Flash|Card|Quiz|Challenge|Habit/i, 'app-learning'],
+              // ── Dev assistant / workbench / flow ──
+              [/DevAssistant|DevFlow|DevWorkbench|SmartDevFlow|NebulaDev|SmartWorkbench/i, 'app-dev-assistant'],
+              // ── JSON diff / query (remaining) ──
+              [/JsonDiff|JsonQuery|JwtDecoder|Base64|Uuid|Timestamp|FileHash|CommandRef/i, 'app-dev-utils'],
+              // ── Data exporter / log viewer ──
+              [/DataExporter|LogViewer|PulseBoard|SmartOverview|AppMarketplace/i, 'app-data-export'],
+              // ── Notes (remaining) ──
+              [/\bNotes\b|NotesApp|StickyNotes|QuickQuote|DailyQuote|TimeCapsule|TimeTravel/i, 'app-notes-extra'],
+              // ── Search / magnifier ──
+              [/GlobalSearch|SmartSearch|Magnifier|ShortcutCustomizer/i, 'app-search'],
+              // ── Activity / tracker / heatmap ──
+              [/Activity|Tracker|Heatmap/i, 'app-activity'],
+              // ── PDF / camera / dice ──
+              [/PDF|Camera|OnlineDice/i, 'app-media-extra'],
+              // ── Learning platform / knowledge graph ──
+              [/LearningPlatform|KnowledgeGraph|MindSync/i, 'app-knowledge-extra'],
+              // ── Currency / algorithm / time management ──
+              [/CurrencyLive|Algorithm|TimeManagement/i, 'app-misc-tools'],
+              // ── Performance / connectivity insights ──
+              [/WebPerformanceInsights|NetworkConnectivity/i, 'app-perf-insights'],
             ]
 
             for (const [pattern, chunkName] of LARGE_APP_PATTERNS) {

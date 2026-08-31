@@ -10,7 +10,7 @@ No server. No backend. No dependencies. Just open and use.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-145.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-146.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
 **[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
@@ -37,7 +37,15 @@ No server. No backend. No dependencies. Just open and use.
 
 ---
 
-## What's New in v145
+## What's New in v146
+
+- **Web Performance Insights**: real browser performance dashboard using Navigation Timing, Resource Timing, Core Web Vitals (LCP/CLS/FID), memory monitoring, long task detection, and a 0-100 performance score with 4 analysis views
+- **Network Connectivity Checker**: tests 16+ popular services (CDN, API, DNS, Social) for reachability, latency, and HTTP status, with category filtering and batch/single checking
+- **Security**: fixed 3 high-severity npm vulnerabilities (brace-expansion DoS, nanoid infinite loop, PostCSS path traversal)
+- **Performance**: eliminated the 1.2MB apps-misc chunk by splitting 61 unclassified apps into 15 logical sub-chunks, reducing initial load time
+- **Service Worker**: updated cache version to v146 for proper cache invalidation after updates
+
+### Previous Highlights (v145)
 
 - **JSON Query Tool**: jq-inspired JSON data query tool with JSONPath syntax support (`$.key`, `$[0]`, `$[*]`, filter expressions), preset query templates, split-pane editing with live results, and one-click copy
 - **Security fix**: Terminal `calc` command replaced unsafe `new Function()` (eval equivalent) with a custom safe math expression parser that supports `+-*/%^` and parentheses
@@ -137,6 +145,8 @@ The project demonstrates that a complete, usable desktop experience can be deliv
 
 - Monaco code editor (VS Code engine) with syntax highlighting for 40+ languages
 - Developer Dashboard: system monitoring, quick launch, environment info, code snippets, API health checks
+- **Web Performance Insights**: real-time performance analysis with Navigation Timing waterfall, Web Vitals, memory monitoring, and performance scoring
+- **Network Connectivity Checker**: test reachability and latency of 16+ popular services (CDN, API, DNS, Social)
 - JSON Diff tool: deep recursive comparison with tree/list views and color-coded highlighting
 - JSON to TypeScript type generator with smart inference
 - Interactive regex visualizer with real-time matching
