@@ -22,6 +22,25 @@ function formatSize(bytes: number | undefined): string {
   return `${(bytes / 1073741824).toFixed(1)} GB`;
 }
 
+/** 估算字符串的 UTF-8 字节大小 */
+function estimateBytes(content: string | undefined): number {
+  if (!content) return 0;
+  // 使用 TextEncoder 获取真实的 UTF-8 字节长度
+  if (typeof TextEncoder !== 'undefined') {
+    return new TextEncoder().encode(content).byteLength;
+  }
+  // 降级方案：统计多字节字符
+  let bytes = 0;
+  for (let i = 0; i < content.length; i++) {
+    const code = content.charCodeAt(i);
+    if (code <= 0x7f) bytes += 1;
+    else if (code <= 0x7ff) bytes += 2;
+    else if (code <= 0xd7ff || (code >= 0xe000 && code <= 0xffff)) bytes += 3;
+    else { bytes += 4; i++ } // 代理对
+  }
+  return bytes;
+}
+
 function getFileExtension(name: string): string {
   const parts = name.split('.');
   return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
@@ -325,7 +344,7 @@ export default function FileManager() {
     let totalSize = 0;
     currentChildren.forEach(f => {
       if (f.type === 'folder') folderCount++;
-      else { fileCount++; totalSize += (f.content?.length || 0) * 2; }
+      else { fileCount++; totalSize += estimateBytes(f.content); }
     });
     return { folderCount, fileCount, totalSize, total: currentChildren.length };
   }, [currentChildren]);
@@ -962,7 +981,7 @@ export default function FileManager() {
         </span>
         <span className="app-file-col-type">{getFileTypeLabel(file)}</span>
         <span className="app-file-col-size">
-          {file.type === 'folder' ? `${file.children?.length || 0} 项` : formatSize((file.content?.length || 0) * 2)}
+          {file.type === 'folder' ? `${file.children?.length || 0} 项` : formatSize(estimateBytes(file.content))}
         </span>
         <span className="app-file-col-date">{formatDateDisplay(file)}</span>
       </div>
@@ -1015,7 +1034,7 @@ export default function FileManager() {
           <div className="app-file-grid-name" title={file.name}>{file.name}</div>
         )}
         {file.type === 'file' && (
-          <div className="app-file-grid-size">{formatSize((file.content?.length || 0) * 2)}</div>
+          <div className="app-file-grid-size">{formatSize(estimateBytes(file.content))}</div>
         )}
         {file.type === 'folder' && (
           <div className="app-file-grid-size">{file.children?.length || 0} 项</div>
@@ -1074,7 +1093,7 @@ export default function FileManager() {
             {previewFile.type === 'file' && (
               <div className="app-preview-info-row">
                 <span className="app-preview-info-label">大小</span>
-                <span className="app-preview-info-value">{formatSize((previewFile.content?.length || 0) * 2)}</span>
+                <span className="app-preview-info-value">{formatSize(estimateBytes(previewFile.content))}</span>
               </div>
             )}
             <div className="app-preview-info-row">

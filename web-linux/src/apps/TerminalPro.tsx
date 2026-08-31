@@ -111,6 +111,7 @@ export default function TerminalPro() {
   const [commandSearch, setCommandSearch] = useState('')
   const [copiedText, setCopiedText] = useState<string | null>(null)
   const [recordingStep, setRecordingStep] = useState(-1)
+  const [commandHistoryIndex, setCommandHistoryIndex] = useState(-1)
 
   const activeSession = useMemo(() => sessions.find((s) => s.id === activeSessionId), [sessions, activeSessionId])
   const theme = useMemo(() => THEMES.find((t) => t.id === themeId) || THEMES[0], [themeId])
@@ -312,12 +313,93 @@ export default function TerminalPro() {
       case 'calc':
         try {
           const expr = args.join(' ')
-          const sanitized = expr.replace(/[^-()\d/*+.%\s]/g, '')
-          if (!sanitized.trim()) throw new Error('空表达式')
-          const result = new Function(`return (${sanitized})`)()
+          if (!expr.trim()) throw new Error('空表达式')
+          // 安全数学表达式求值器 —— 替代不安全的 new Function/eval
+          const safeCalc = (expression: string): number => {
+            const tokens: (number | string)[] = []
+            let i = 0
+            const s = expression.replace(/\s+/g, '')
+            while (i < s.length) {
+              const ch = s[i]
+              if (ch === '(' || ch === ')' || ch === '+' || ch === '-' || ch === '*' || ch === '/' || ch === '%' || ch === '^') {
+                // 一元负号：出现在表达式开头或运算符/左括号之后
+                if (ch === '-' && (tokens.length === 0 || typeof tokens[tokens.length - 1] === 'string')) {
+                  i++
+                  let numStr = ''
+                  if (i < s.length && s[i] === '(') {
+                    // -(...) 形式
+                    let depth = 0, start = i
+                    for (; i < s.length; i++) {
+                      if (s[i] === '(') depth++
+                      else if (s[i] === ')') { depth--; if (depth === 0) { i++; break } }
+                    }
+                    const inner = safeCalc(s.substring(start + 1, i - 1))
+                    tokens.push(-inner)
+                    continue
+                  }
+                  while (i < s.length && (s[i] >= '0' && s[i] <= '9' || s[i] === '.')) numStr += s[i++]
+                  if (!numStr) throw new Error('无效的表达式')
+                  tokens.push(-parseFloat(numStr))
+                } else {
+                  tokens.push(ch)
+                  i++
+                }
+              } else if ((ch >= '0' && ch <= '9') || ch === '.') {
+                let numStr = ''
+                while (i < s.length && ((s[i] >= '0' && s[i] <= '9') || s[i] === '.')) numStr += s[i++]
+                tokens.push(parseFloat(numStr))
+              } else {
+                throw new Error('非法字符: ' + ch)
+              }
+            }
+            // 处理括号
+            const evalTokens = (tks: (number | string)[]): number => {
+              // 先处理括号
+              while (tks.includes('(')) {
+                let start = -1, end = -1, depth = 0
+                for (let j = 0; j < tks.length; j++) {
+                  if (tks[j] === '(') { if (depth === 0) start = j; depth++ }
+                  else if (tks[j] === ')') { depth--; if (depth === 0) { end = j; break } }
+                }
+                if (start === -1 || end === -1) throw new Error('括号不匹配')
+                const inner = evalTokens(tks.slice(start + 1, end) as (number | string)[])
+                tks.splice(start, end - start + 1, inner)
+              }
+              // 处理 ^ (幂运算)
+              for (let j = tks.length - 1; j >= 0; j--) {
+                if (tks[j] === '^') {
+                  const left = Number(tks[j - 1]), right = Number(tks[j + 1])
+                  tks.splice(j - 1, 3, Math.pow(left, right))
+                }
+              }
+              // 处理 * / %
+              for (let j = 1; j < tks.length; j += 2) {
+                const op = tks[j]
+                if (op === '*' || op === '/' || op === '%') {
+                  const left = Number(tks[j - 1]), right = Number(tks[j + 1])
+                  const result = op === '*' ? left * right : op === '/' ? left / right : left % right
+                  tks.splice(j - 1, 3, result)
+                  j -= 2
+                }
+              }
+              // 处理 + -
+              for (let j = 1; j < tks.length; j += 2) {
+                const op = tks[j]
+                if (op === '+' || op === '-') {
+                  const left = Number(tks[j - 1]), right = Number(tks[j + 1])
+                  tks.splice(j - 1, 3, op === '+' ? left + right : left - right)
+                  j -= 2
+                }
+              }
+              return Number(tks[0])
+            }
+            return evalTokens(tokens)
+          }
+          const result = safeCalc(expr)
+          if (!isFinite(result)) throw new Error('结果不是有效数字')
           output = `${expr} = ${result}`
-        } catch {
-          output = '错误: 无效的表达式'
+        } catch (err) {
+          output = '错误: ' + (err instanceof Error ? err.message : '无效的表达式')
           outputType = 'error'
         }
         break
@@ -333,7 +415,14 @@ export default function TerminalPro() {
         output = await simpleHash(args.join(' '))
         break
       case 'base64':
-        output = btoa(args.join(' '))
+        try {
+          // 支持中文等非 ASCII 字符的 Base64 编码
+          const text = args.join(' ')
+          output = btoa(unescape(encodeURIComponent(text)))
+        } catch {
+          output = '错误: 编码失败'
+          outputType = 'error'
+        }
         break
       case 'cowsay':
         output = generateCowsay(args.join(' '))
@@ -439,18 +528,33 @@ export default function TerminalPro() {
       e.preventDefault()
       const input = (e.target as HTMLInputElement).value
       executeCommand(input)
+      setCommandHistoryIndex(-1)
       ;(e.target as HTMLInputElement).value = ''
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       const input = e.target as HTMLInputElement
       const hist = activeSession.commandHistory
       if (hist.length > 0) {
-        input.value = hist[hist.length - 1]
+        const idx = commandHistoryIndex === -1 ? hist.length - 1 : Math.max(0, commandHistoryIndex - 1)
+        setCommandHistoryIndex(idx)
+        input.value = hist[idx]
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
       const input = e.target as HTMLInputElement
-      input.value = ''
+      const hist = activeSession.commandHistory
+      if (commandHistoryIndex >= 0) {
+        const idx = commandHistoryIndex + 1
+        if (idx >= hist.length) {
+          setCommandHistoryIndex(-1)
+          input.value = ''
+        } else {
+          setCommandHistoryIndex(idx)
+          input.value = hist[idx]
+        }
+      } else {
+        input.value = ''
+      }
     } else if (e.key === 'Tab') {
       e.preventDefault()
       const input = e.target as HTMLInputElement

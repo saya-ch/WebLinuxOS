@@ -729,7 +729,7 @@ export const useStore = create<Store>((set, get) => ({
       const timerId = setTimeout(() => {
         get().removeNotification(id)
         notificationTimers.delete(id)
-      }, notification.duration || 5000)
+      }, notification.duration ?? 5000)
       notificationTimers.set(id, timerId)
     } catch (err) {
       console.warn('[store] 添加通知时出现异常：', err)
@@ -792,6 +792,7 @@ export const useStore = create<Store>((set, get) => ({
 
   clearRecentFiles: () => {
     set({ recentFiles: [] })
+    saveToStorage(STORAGE_KEYS.RECENT_FILES, [])
   },
 
   clearFavorites: () => {

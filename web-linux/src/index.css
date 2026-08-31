@@ -2441,6 +2441,11 @@ body {
   transform: scale(0.95);
 }
 
+.launcher-app-item--selected {
+  background: var(--launcher-category-hover);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
 .launcher-app-item-icon {
   font-size: 28px;
   margin-bottom: 4px;

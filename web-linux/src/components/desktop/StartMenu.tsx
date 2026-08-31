@@ -197,20 +197,32 @@ const StartMenu = memo(function StartMenu() {
   // 搜索框键盘导航：Enter打开首个结果，↑↓切换选中项
   const handleSearchKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const total = filteredApps.length
-      if (total === 0) {
-        if (e.key === 'Escape') {
-          e.preventDefault()
-          closeLauncher()
-        }
+      // Escape 始终关闭菜单
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeLauncher()
         return
       }
+      const total = filteredApps.length
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setSelectedAppIndex((prev) => (prev + 1) % total)
+        setSelectedAppIndex((prev) => {
+          const next = (prev + 1) % total
+          // 滚动到可视区域
+          requestAnimationFrame(() => {
+            document.querySelector(`[data-app-index="${next}"]`)?.scrollIntoView({ block: 'nearest' })
+          })
+          return next
+        })
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setSelectedAppIndex((prev) => (prev - 1 + total) % total)
+        setSelectedAppIndex((prev) => {
+          const next = (prev - 1 + total) % total
+          requestAnimationFrame(() => {
+            document.querySelector(`[data-app-index="${next}"]`)?.scrollIntoView({ block: 'nearest' })
+          })
+          return next
+        })
       } else if (e.key === 'Enter') {
         e.preventDefault()
         const targetApp = filteredApps[selectedAppIndex] || filteredApps[0]
@@ -446,7 +458,7 @@ const StartMenu = memo(function StartMenu() {
           )}
 
           <div className={useGridLayout && (activeCategory === 'all' || search) ? 'start-menu-grid-layout launcher-app-list' : 'launcher-app-list'}>
-            {filteredApps.map((app) => {
+            {filteredApps.map((app, idx) => {
               const isPinned = pinnedApps.includes(app.id)
               const isFavorite = favoriteApps.includes(app.id)
               const usageCount = appUsage[app.id] || 0
@@ -454,7 +466,8 @@ const StartMenu = memo(function StartMenu() {
               return (
                 <div
                   key={app.id}
-                  className="launcher-app-item"
+                  data-app-index={idx}
+                  className={`launcher-app-item${selectedAppIndex === idx ? ' launcher-app-item--selected' : ''}`}
                   onClick={() => handleAppClick(app.id)}
                   onMouseEnter={() => setHoveredApp(app.id)}
                   onMouseLeave={() => setHoveredApp(null)}

@@ -17,6 +17,8 @@ interface WindowComponent {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const componentMap: Record<string, () => Promise<{ default: React.ComponentType<any> }>> = {
+  // v145 新增应用
+  JsonQueryTool: () => import('../../apps/JsonQueryTool'),
   // v142 新增应用
   DeveloperDashboard: () => import('../../apps/DeveloperDashboard'),
   JsonDiff: () => import('../../apps/JsonDiff'),

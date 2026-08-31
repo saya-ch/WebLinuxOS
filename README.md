@@ -10,7 +10,7 @@ No server. No backend. No dependencies. Just open and use.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saya-ch/WebLinuxOS)](https://github.com/saya-ch/WebLinuxOS/network/members)
-[![Version](https://img.shields.io/badge/version-144.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
+[![Version](https://img.shields.io/badge/version-145.0.0-green.svg)](https://github.com/saya-ch/WebLinuxOS/releases)
 
 **[Live Demo](https://saya-ch.github.io/WebLinuxOS/)** | [Report a Bug](https://github.com/saya-ch/WebLinuxOS/issues) | [Request a Feature](https://github.com/saya-ch/WebLinuxOS/issues)
 
@@ -37,7 +37,19 @@ No server. No backend. No dependencies. Just open and use.
 
 ---
 
-## What's New in v144
+## What's New in v145
+
+- **JSON Query Tool**: jq-inspired JSON data query tool with JSONPath syntax support (`$.key`, `$[0]`, `$[*]`, filter expressions), preset query templates, split-pane editing with live results, and one-click copy
+- **Security fix**: Terminal `calc` command replaced unsafe `new Function()` (eval equivalent) with a custom safe math expression parser that supports `+-*/%^` and parentheses
+- **Bug fix**: Terminal `base64` command now properly encodes Chinese/Unicode text using `encodeURIComponent` + `btoa` instead of crashing with `InvalidCharacterError`
+- **Bug fix**: Terminal command history (ArrowUp/ArrowDown) now properly cycles through all previous commands instead of always showing the last one
+- **Bug fix**: FileManager file size calculation now uses `TextEncoder` for accurate UTF-8 byte estimation instead of the incorrect `length * 2` heuristic
+- **Bug fix**: Recent files list now persists to localStorage when cleared, preventing stale data from reappearing after page refresh
+- **UX improvement**: StartMenu now closes on Escape key in all cases (previously only worked when search returned no results)
+- **UX improvement**: StartMenu keyboard navigation now highlights selected item with accent border and auto-scrolls to keep it visible
+- **Notification fix**: Duration parameter `0` is now properly respected instead of being overridden to 5000ms
+
+### Previous Highlights (v144)
 
 - **Clipboard History Manager**: smart clipboard tracking with content type detection (text/URL/code/JSON), search, pin favorites, and one-click copy
 - **Color Toolkit**: comprehensive color utility with palette generator, HEX/RGB/HSL converter, WCAG contrast checker, picker, CSS variable export, and gradient generator
